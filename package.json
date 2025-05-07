@@ -67,7 +67,7 @@
       {
         "key": "Escape",
         "command": "extension.vim_escape",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !inlineSuggestionVisible && !inlineEditIsVisible && !testing.isPeekVisible && !testing.isInPeek && !suggestWidgetVisible && !dirtyDiffVisible && (vim.mode == 'Insert' || !notebookEditorFocused)"
       },
       {
         "key": "Escape",
@@ -112,7 +112,7 @@
       {
         "key": "tab",
         "command": "extension.vim_tab",
-        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl && !inlineEditIsVisible"
       },
       {
         "key": "shift+tab",
@@ -1206,7 +1206,7 @@
     "@types/glob": "8.1.0",
     "@types/lodash": "4.17.16",
     "@types/mocha": "10.0.10",
-    "@types/node": "22.14.1",
+    "@types/node": "22.15.14",
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "17.0.4",
     "@types/vscode": "1.74.0",
@@ -1229,14 +1229,14 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "minimist": "1.2.8",
-    "mocha": "11.1.0",
+    "mocha": "11.2.2",
     "plugin-error": "2.0.1",
     "prettier": "3.5.3",
     "sinon": "20.0.0",
     "ts-loader": "9.5.2",
     "typescript": "5.8.3",
     "vsce": "2.15.0",
-    "webpack": "5.99.6",
+    "webpack": "5.99.8",
     "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"
