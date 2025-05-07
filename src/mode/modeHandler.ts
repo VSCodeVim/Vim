@@ -992,23 +992,27 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           !this.vimState.returnToInsertAfterCommand &&
           (this.vimState.currentMode === Mode.Normal || isVisualMode(this.vimState.currentMode))
         ) {
-          const currentLineLength = TextEditor.getLineLength(cursor.stop.line);
+          const currentStopLineLength = TextEditor.getLineLength(cursor.stop.line);
           const currentStartLineLength = TextEditor.getLineLength(cursor.start.line);
 
           // When in visual mode you can move the cursor past the last character in order
           // to select that character. We use this offset to allow for that, otherwise
           // we would consider the position invalid and change it to the left of the last
           // character.
-          const offsetAllowed =
-            isVisualMode(this.vimState.currentMode) && currentLineLength > 0 ? 1 : 0;
-          if (cursor.start.character >= currentStartLineLength) {
+          const offsetStartAllowed =
+            isVisualMode(this.vimState.currentMode) && currentStartLineLength > 0 ? 1 : 0;
+          const offsetStopAllowed =
+            isVisualMode(this.vimState.currentMode) && currentStopLineLength > 0 ? 1 : 0;
+
+          if (cursor.start.character >= currentStartLineLength + offsetStartAllowed) {
             cursor = cursor.withNewStart(
               cursor.start.withColumn(Math.max(currentStartLineLength - 1, 0)),
             );
           }
-
-          if (cursor.stop.character >= currentLineLength + offsetAllowed) {
-            cursor = cursor.withNewStop(cursor.stop.withColumn(Math.max(currentLineLength - 1, 0)));
+          if (cursor.stop.character >= currentStopLineLength + offsetStopAllowed) {
+            cursor = cursor.withNewStop(
+              cursor.stop.withColumn(Math.max(currentStopLineLength - 1, 0)),
+            );
           }
         }
         return cursor;
