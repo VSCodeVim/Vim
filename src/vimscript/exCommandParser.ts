@@ -52,6 +52,7 @@ import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
 import { LetCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
+import { PwdCommand } from '../cmd_line/commands/pwd';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -419,7 +420,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ptr', 'ewind'], undefined],
   [['pts', 'elect'], undefined],
   [['pu', 't'], PutExCommand.argParser],
-  [['pw', 'd'], undefined],
+  [['pw', 'd'], succeed(new PwdCommand())],
   [['py', 'thon'], undefined],
   [['py3', ''], undefined],
   [['py3d', 'o'], undefined],
