@@ -149,7 +149,7 @@ export class Address {
           return res;
         case 'mark':
           const mark = vimState.historyTracker.getMark(this.specifier.mark);
-          if (!mark || (mark.document && mark.document !== vimState.document)) {
+          if (!mark || (mark.isUppercaseMark && mark.document !== vimState.document)) {
             throw VimError.fromCode(ErrorCode.MarkNotSet);
           }
           return mark.position.line;
