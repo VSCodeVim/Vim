@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.29.1](https://github.com/vscodevim/vim/tree/v1.29.1) (2025-05-15)
+
+### Fixed
+
+- fix(keybindings): make tab and escape play nicer with native vscode keybindings ([@ulugbekna](https://github.com/ulugbekna)).
+
 ## [v1.29.0](https://github.com/vscodevim/vim/tree/v1.29.0) (2024-12-04)
 
 ### Added
