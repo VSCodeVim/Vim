@@ -39,6 +39,7 @@ export class CommandEscInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void vscode.commands.executeCommand('closeParameterHints');
+    void vscode.commands.executeCommand('editor.action.inlineSuggest.hide');
 
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
