@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.29.0",
+  "version": "1.29.1",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -1206,7 +1206,7 @@
     "@types/glob": "8.1.0",
     "@types/lodash": "4.17.16",
     "@types/mocha": "10.0.10",
-    "@types/node": "22.15.3",
+    "@types/node": "22.15.18",
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "17.0.4",
     "@types/vscode": "1.74.0",
@@ -1236,7 +1236,7 @@
     "ts-loader": "9.5.2",
     "typescript": "5.8.3",
     "vsce": "2.15.0",
-    "webpack": "5.99.7",
+    "webpack": "5.99.8",
     "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"
