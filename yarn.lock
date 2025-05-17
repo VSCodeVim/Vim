@@ -279,10 +279,12 @@
   resolved "https://registry.yarnpkg.com/@types/diff-match-patch/-/diff-match-patch-1.0.36.tgz#dcef10a69d357fe9d43ac4ff2eca6b85dbf466af"
   integrity sha512-xFdR6tkm0MWvBfO8xXCSsinYxHcqkQUlcHeSpMC2ukzOb6lwQAfDmW+Qt0AvlGd8HpsS28qKsB+oPeJn9I39jg==
 
-"@types/diff@5.2.3":
-  version "5.2.3"
-  resolved "https://registry.yarnpkg.com/@types/diff/-/diff-5.2.3.tgz#dcdcfa40df9f011f9465180e0196dfbd921971d9"
-  integrity sha512-K0Oqlrq3kQMaO2RhfrNQX5trmt+XLyom88zS0u84nnIcLvFnRUMRRHmrGny5GSM+kNO9IZLARsdQHDzkhAgmrQ==
+"@types/diff@8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@types/diff/-/diff-8.0.0.tgz#8fc38b6488d2b228bf0b26c3d86a6822dc0961c5"
+  integrity sha512-o7jqJM04gfaYrdCecCVMbZhNdG6T1MHg/oQoRFdERLV+4d+V7FijhiEAbFu0Usww84Yijk9yH58U4Jk4HbtzZw==
+  dependencies:
+    diff "*"
 
 "@types/eslint-scope@^3.7.7":
   version "3.7.7"
@@ -1546,6 +1548,11 @@ diff-match-patch@1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/diff-match-patch/-/diff-match-patch-1.0.5.tgz#abb584d5f10cd1196dfc55aa03701592ae3f7b37"
   integrity sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw==
+
+diff@*:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-8.0.1.tgz#1562531dbca460fe5be98a026412996ccab1abd5"
+  integrity sha512-rEaM3KmVm78zE3dFZaop3aCQa2MTm+T4kcigUFLVU/KbOYdiY6JnL2g2puOYnct3QFw9pjZadaCbCZ1O8ArMlQ==
 
 diff@^5.2.0:
   version "5.2.0"
