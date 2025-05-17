@@ -9,6 +9,17 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { Parser, seq, optWhitespace, whitespace } from 'parsimmon';
 import { fileNameParser } from '../../vimscript/parserUtils';
 
+// Still missing:
+// When a number is put before the command this is used
+// as the maximum number of matches to find.  Use
+// ":1vimgrep pattern file" to find only the first.
+// Useful if you only want to check if there is a match
+// and quit quickly when it's found.
+
+// Without the 'j' flag Vim jumps to the first match.
+// With 'j' only the quickfix list is updated.
+// With the [!] any changes in the current buffer are
+// abandoned.
 interface IGrepCommandArguments {
   pattern: Pattern;
   files: string[];
@@ -20,6 +31,7 @@ export class GrepCommand extends ExCommand {
   public static readonly argParser: Parser<GrepCommand> = optWhitespace.then(
     seq(
       Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }),
+
       fileNameParser.sepBy(whitespace),
     ).map(([pattern, files]) => new GrepCommand({ pattern, files })),
   );
@@ -51,6 +63,7 @@ export class GrepCommand extends ExCommand {
       triggerSearch: true,
       isRegex: true,
     });
+    await vscode.commands.executeCommand('search.action.focusSearchList');
     // TODO: this will always throw an error, since the command returns nothing
     // if (!grepResults) {
     //   throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);
