@@ -28,10 +28,10 @@ interface IGrepCommandArguments {
 // Implements :grep
 // https://vimdoc.sourceforge.net/htmldoc/quickfix.html#:vimgrep
 export class GrepCommand extends ExCommand {
+  // TODO: pattern match the entire command to see if there are slashes and a flag to determine what to parse
   public static readonly argParser: Parser<GrepCommand> = optWhitespace.then(
     seq(
-      Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }),
-
+      Pattern.parser({ direction: SearchDirection.Backward, delimiter: '' }),
       fileNameParser.sepBy(whitespace),
     ).map(([pattern, files]) => new GrepCommand({ pattern, files })),
   );
@@ -64,6 +64,8 @@ export class GrepCommand extends ExCommand {
       isRegex: true,
     });
     await vscode.commands.executeCommand('search.action.focusSearchList');
+    // Only if there's no [j] flag
+    await vscode.commands.executeCommand('search.action.focusNextSearchResult');
     // TODO: this will always throw an error, since the command returns nothing
     // if (!grepResults) {
     //   throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);
