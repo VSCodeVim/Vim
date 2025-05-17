@@ -15,7 +15,7 @@ interface IGrepCommandArguments {
 }
 
 // Implements :grep
-// http://vimdoc.sourceforge.net/htmldoc/quickref.html#:grep
+// https://vimdoc.sourceforge.net/htmldoc/quickfix.html#:vimgrep
 export class GrepCommand extends ExCommand {
   public static readonly argParser: Parser<GrepCommand> = optWhitespace.then(
     seq(
