@@ -42,15 +42,19 @@ export class GrepCommand extends ExCommand {
       (cmd) => cmd.toLowerCase().includes('search') || cmd.toLowerCase().includes('find'),
     );
     console.log('Filtered commands:', filteredCommands);
-    // workbench.view.search is one of the commands that can be used to search
-    const grepResults = await vscode.commands.executeCommand(
-      'search.action.getSearchResults',
-      pattern.patternString,
-      files,
-    );
-
-    if (!grepResults) {
-      throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);
-    }
+    // There are other arguments that can be passed, but probably need to dig into the VSCode source code, since they are not listed in the API reference
+    // https://code.visualstudio.com/api/references/commands
+    // This link on the other hand has the commands and I used this as a reference
+    // https://stackoverflow.com/questions/62251045/search-find-in-files-keybinding-can-take-arguments-workbench-view-search-can
+    const grepResults = await vscode.commands.executeCommand('workbench.action.findInFiles', {
+      query: pattern.patternString,
+      filesToInclude: files.join(','),
+      triggerSearch: true,
+      isRegex: true,
+    });
+    // TODO: this will always throw an error, since the command returns nothing
+    // if (!grepResults) {
+    //   throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);
+    // }
   }
 }

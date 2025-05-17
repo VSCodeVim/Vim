@@ -13,6 +13,7 @@ import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
 import { EchoCommand } from '../cmd_line/commands/echo';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
+import { GrepCommand } from '../cmd_line/commands/grep';
 import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
 import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/leftRightCenter';
@@ -247,7 +248,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['fu', 'nction'], undefined],
   [['g', 'lobal'], undefined],
   [['go', 'to'], GotoCommand.argParser],
-  [['gr', 'ep'], undefined],
+  [['gr', 'ep'], GrepCommand.argParser],
   [['grepa', 'dd'], undefined],
   [['gu', 'i'], undefined],
   [['gv', 'im'], undefined],
@@ -576,7 +577,10 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['vert', 'ical'], undefined],
   [['vi', 'sual'], undefined],
   [['vie', 'w'], undefined],
-  [['vim', 'grep'], undefined],
+  [['vim', 'grep'], GrepCommand.argParser],
+  [['vimg', 'rep'], GrepCommand.argParser],
+  [['vimgrep', ''], GrepCommand.argParser],
+  [['grep', ''], GrepCommand.argParser],
   [['vimgrepa', 'dd'], undefined],
   [['viu', 'sage'], undefined],
   [['vm', 'ap'], undefined],
