@@ -5,9 +5,8 @@ import * as vscode from 'vscode';
 import * as error from '../../error';
 import { VimState } from '../../state/vimState';
 import { Pattern, SearchDirection } from '../../vimscript/pattern';
-import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
-import { Parser, seq, regexp, optWhitespace, whitespace } from 'parsimmon';
+import { Parser, seq, optWhitespace, whitespace } from 'parsimmon';
 import { fileNameParser } from '../../vimscript/parserUtils';
 
 interface IGrepCommandArguments {
@@ -46,7 +45,7 @@ export class GrepCommand extends ExCommand {
     // https://code.visualstudio.com/api/references/commands
     // This link on the other hand has the commands and I used this as a reference
     // https://stackoverflow.com/questions/62251045/search-find-in-files-keybinding-can-take-arguments-workbench-view-search-can
-    const grepResults = await vscode.commands.executeCommand('workbench.action.findInFiles', {
+    await vscode.commands.executeCommand('workbench.action.findInFiles', {
       query: pattern.patternString,
       filesToInclude: files.join(','),
       triggerSearch: true,
