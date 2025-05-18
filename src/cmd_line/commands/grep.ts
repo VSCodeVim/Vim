@@ -28,10 +28,9 @@ interface IGrepCommandArguments {
 // Implements :grep
 // https://vimdoc.sourceforge.net/htmldoc/quickfix.html#:vimgrep
 export class GrepCommand extends ExCommand {
-  // TODO: pattern match the entire command to see if there are slashes and a flag to determine what to parse
   public static readonly argParser: Parser<GrepCommand> = optWhitespace.then(
     seq(
-      Pattern.parser({ direction: SearchDirection.Backward, delimiter: '' }),
+      Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }),
       fileNameParser.sepBy(whitespace),
     ).map(([pattern, files]) => new GrepCommand({ pattern, files })),
   );
