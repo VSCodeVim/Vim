@@ -41,17 +41,12 @@ export class GrepCommand extends ExCommand {
     this.arguments = args;
   }
 
-  async execute(vimState: VimState): Promise<void> {
+  async execute(): Promise<void> {
     const { pattern, files } = this.arguments;
     console.log('GrepCommand', pattern.patternString, files);
     if (files.length === 0) {
       throw error.VimError.fromCode(error.ErrorCode.NoFileName);
     }
-    const listOfCommands = await vscode.commands.getCommands();
-    const filteredCommands = listOfCommands.filter(
-      (cmd) => cmd.toLowerCase().includes('search') || cmd.toLowerCase().includes('find'),
-    );
-    console.log('Filtered commands:', filteredCommands);
     // There are other arguments that can be passed, but probably need to dig into the VSCode source code, since they are not listed in the API reference
     // https://code.visualstudio.com/api/references/commands
     // This link on the other hand has the commands and I used this as a reference
