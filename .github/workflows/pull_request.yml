@@ -1,15 +1,15 @@
-name: build
+name: Pull Request
 
 on:
-  push:
+  pull_request:
     branches:
-      - 'master'
+      - '**'
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout VSCodeVim
@@ -25,7 +25,6 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Prettier
-        if: matrix.os != 'windows-latest'
         run: yarn prettier:check
 
       - name: Lint
@@ -34,14 +33,7 @@ jobs:
       - name: Build
         run: gulp webpack
 
-      - name: Test on ubuntu-latest
-        if: matrix.os != 'windows-latest'
+      - name: Test
         run: |
           gulp prepare-test
           xvfb-run -a yarn test
-
-      - name: Test on windows-latest
-        if: matrix.os == 'windows-latest'
-        run: |
-          gulp prepare-test
-          yarn test

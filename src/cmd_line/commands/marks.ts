@@ -20,7 +20,7 @@ class MarkQuickPickItem implements QuickPickItem {
   constructor(vimState: VimState, mark: IMark) {
     this.mark = mark;
     this.label = mark.name;
-    if (mark.document && mark.document !== vimState.document) {
+    if (mark.isUppercaseMark && mark.document !== vimState.document) {
       this.description = mark.document.fileName;
     } else {
       this.description = vimState.document.lineAt(mark.position).text.trim();

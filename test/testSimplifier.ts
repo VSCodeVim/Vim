@@ -74,6 +74,7 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: Mode;
+  endFsPath?: string | (() => string);
   registers?: { [name: string]: string | undefined };
   statusBar?: string;
   jumps?: string[];
@@ -263,6 +264,14 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
       Mode[modeHandler.vimState.currentMode],
       Mode[testObj.endMode],
       "Didn't enter correct mode.",
+    );
+  }
+
+  if (testObj.endFsPath !== undefined) {
+    assert.strictEqual(
+      vscode.window.activeTextEditor?.document.uri.fsPath,
+      typeof testObj.endFsPath === 'string' ? testObj.endFsPath : testObj.endFsPath(),
+      'Active document is wrong.',
     );
   }
 
