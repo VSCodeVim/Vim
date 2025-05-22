@@ -1,10 +1,10 @@
+import { execFileSync } from 'child_process';
+import { existsSync } from 'fs';
+import * as path from 'path';
+import * as process from 'process';
+import { configurationValidator } from '../configurationValidator';
 import { IConfiguration } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
-import { execFileSync } from 'child_process';
-import * as path from 'path';
-import { existsSync } from 'fs';
-import { configurationValidator } from '../configurationValidator';
-import * as process from 'process';
 
 export class NeovimValidator implements IConfigurationValidator {
   validate(config: IConfiguration): Promise<ValidatorResults> {
@@ -33,6 +33,7 @@ export class NeovimValidator implements IConfigurationValidator {
         }
         execFileSync(config.neovimPath, ['--version']);
       } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         let errorMessage = `Invalid neovimPath. ${e.message}.`;
         if (triedToParsePath) {
           errorMessage += `Tried to parse PATH ${config.neovimPath}.`;

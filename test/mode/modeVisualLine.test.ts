@@ -4,7 +4,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;
@@ -14,14 +14,12 @@ suite('Mode Visual Line', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  teardown(cleanUpWorkspace);
-
   test('can be activated', async () => {
     await modeHandler.handleKeyEvent('V');
-    assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
 
     await modeHandler.handleKeyEvent('V');
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   test('<count>V selects <count> lines', async () => {
@@ -29,7 +27,7 @@ suite('Mode Visual Line', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
 
     await modeHandler.handleMultipleKeyEvents(['j', '3', 'V']);
-    assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
     assert.strictEqual(modeHandler.vimState.cursorStartPosition.line, 1);
     assert.strictEqual(modeHandler.vimState.cursorStopPosition.line, 3);
   });
@@ -61,7 +59,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['ne two three']);
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   test('Can handle x across a selection', async () => {
@@ -70,7 +68,7 @@ suite('Mode Visual Line', () => {
 
     assertEqualLines(['wo three']);
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   test('Can do vwd in middle of sentence', async () => {
@@ -137,7 +135,7 @@ suite('Mode Visual Line', () => {
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
 
     assertEqualLines(['wo three']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
   });
 
   suite("Vim's EOL handling is weird", () => {
@@ -300,7 +298,7 @@ suite('Mode Visual Line', () => {
       await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', 'V', '<C-c>']);
 
       // ensuring we're back in normal
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
       // test copy by pasting back from clipboard
       await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
@@ -370,18 +368,18 @@ suite('Mode Visual Line', () => {
 
     test('gv selects the last pasted text (which is shorter than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split('')
+        'ireplace this\nwith me\nor with me longer than the target'.split(''),
       );
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        '2ggyy'.split('') // yank the second line
+        '2ggyy'.split(''), // yank the second line
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split('') // replace the first line
+        'ggVp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
       assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
 
       const selection = modeHandler.vimState.editor.selection;
@@ -394,18 +392,18 @@ suite('Mode Visual Line', () => {
 
     test('gv selects the last pasted text (which is longer than original)', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split('')
+        'ireplace this\nwith me\nor with me longer than the target'.split(''),
       );
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        'yy'.split('') // yank the last line
+        'yy'.split(''), // yank the last line
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split('') // replace the first line
+        'ggVp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
       assertEqualLines([
         'or with me longer than the target',
         'with me',
@@ -424,14 +422,14 @@ suite('Mode Visual Line', () => {
       await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
       await modeHandler.handleMultipleKeyEvents(['<Esc>']);
       await modeHandler.handleMultipleKeyEvents(
-        'Vky'.split('') // yank 'foo\nbar\n'
+        'Vky'.split(''), // yank 'foo\nbar\n'
       );
       await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split('') // replace the first line
+        'ggVp'.split(''), // replace the first line
       );
       await modeHandler.handleMultipleKeyEvents(['g', 'v']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.VisualLine);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
       assertEqualLines(['foo', 'bar', 'foo', 'bar']);
 
       const selection = modeHandler.vimState.editor.selection;

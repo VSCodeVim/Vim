@@ -1,14 +1,10 @@
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
-import { Configuration } from '../testConfiguration';
+import { setupWorkspace } from './../testUtils';
 import { newTest } from '../testSimplifier';
 
 suite('camelCaseMotion plugin if not enabled', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.camelCaseMotion.enable = false;
-    await setupWorkspace(configuration);
+    await setupWorkspace({ config: { camelCaseMotion: { enable: false } } });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: "basic motion doesn't work",
@@ -20,11 +16,8 @@ suite('camelCaseMotion plugin if not enabled', () => {
 
 suite('camelCaseMotion plugin', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.camelCaseMotion.enable = true;
-    await setupWorkspace(configuration);
+    await setupWorkspace({ config: { camelCaseMotion: { enable: true } } });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   suite('handles <leader>w for camelCaseText', () => {
     newTest({

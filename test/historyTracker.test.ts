@@ -1,9 +1,8 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import vscode from 'vscode';
-import { Position } from 'vscode';
+import vscode, { Position } from 'vscode';
 
-import { HistoryTracker, IMark } from '../src/history/historyTracker';
+import { HistoryTracker, ILocalMark, IMark } from '../src/history/historyTracker';
 import { Jump } from '../src/jumps/jump';
 import { globalState } from '../src/state/globalState';
 import { VimState } from '../src/state/vimState';
@@ -13,7 +12,7 @@ suite('historyTracker unit tests', () => {
   let historyTracker: HistoryTracker;
   const document = { fileName: 'file name' } as vscode.TextDocument;
 
-  const retrieveLocalMark = (markName: string): IMark | undefined =>
+  const retrieveLocalMark = (markName: string): ILocalMark | undefined =>
     historyTracker.getLocalMarks().find((mark) => mark.name === markName);
 
   const retrieveFileMark = (markName: string): IMark | undefined =>
@@ -23,7 +22,7 @@ suite('historyTracker unit tests', () => {
 
   const setupHistoryTracker = (vimState = setupVimState()) => new HistoryTracker(vimState);
 
-  const buildMockPosition = (): Position => sandbox.createStubInstance(Position) as any;
+  const buildMockPosition = (): Position => sandbox.createStubInstance(Position);
 
   setup(() => {
     sandbox = sinon.createSandbox();
@@ -73,7 +72,6 @@ suite('historyTracker unit tests', () => {
       if (mark !== undefined) {
         assert.strictEqual(mark.position, position);
         assert.strictEqual(mark.isUppercaseMark, false);
-        assert.strictEqual(mark.document, undefined);
       }
     });
 
@@ -169,7 +167,6 @@ suite('historyTracker unit tests', () => {
   });
 });
 
-// tslint:disable: no-empty
 class TextEditorStub implements vscode.TextEditor {
   readonly document!: vscode.TextDocument;
   selection!: vscode.Selection;
@@ -178,29 +175,35 @@ class TextEditorStub implements vscode.TextEditor {
   options!: vscode.TextEditorOptions;
   readonly viewColumn!: vscode.ViewColumn;
 
-  constructor() {}
+  constructor() {
+    // NoOp
+  }
   async edit(
     callback: (editBuilder: vscode.TextEditorEdit) => void,
-    options?: { undoStopBefore: boolean; undoStopAfter: boolean }
+    options?: { undoStopBefore: boolean; undoStopAfter: boolean },
   ) {
     return true;
   }
   async insertSnippet(
     snippet: vscode.SnippetString,
-    location?:
-      | vscode.Position
-      | vscode.Range
-      | ReadonlyArray<Position>
-      | ReadonlyArray<vscode.Range>,
-    options?: { undoStopBefore: boolean; undoStopAfter: boolean }
+    location?: vscode.Position | vscode.Range | readonly Position[] | readonly vscode.Range[],
+    options?: { undoStopBefore: boolean; undoStopAfter: boolean },
   ) {
     return true;
   }
   setDecorations(
     decorationType: vscode.TextEditorDecorationType,
-    rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]
-  ) {}
-  revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType) {}
-  show(column?: vscode.ViewColumn) {}
-  hide() {}
+    rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[],
+  ) {
+    // NoOp
+  }
+  revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType) {
+    // NoOp
+  }
+  show(column?: vscode.ViewColumn) {
+    // NoOp
+  }
+  hide() {
+    // NoOp
+  }
 }

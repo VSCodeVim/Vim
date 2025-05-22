@@ -1,22 +1,22 @@
 import * as vscode from 'vscode';
 
+import { SUPPORT_IME_SWITCHER, SUPPORT_NVIM } from 'platform/constants';
+import { Position } from 'vscode';
 import { IMovement } from '../actions/baseMotion';
-import { configuration } from '../configuration/configuration';
 import { IEasyMotion } from '../actions/plugins/easymotion/types';
-import { HistoryTracker } from './../history/historyTracker';
-import { Logger } from '../util/logger';
-import { Mode } from '../mode/mode';
+import { SurroundState } from '../actions/plugins/surround';
+import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { Cursor } from '../common/motion/cursor';
-import { RecordedState } from './recordedState';
+import { configuration } from '../configuration/configuration';
+import { DotCommandStatus, Mode, NormalCommandState } from '../mode/mode';
+import { ModeData } from '../mode/modeData';
+import { Logger } from '../util/logger';
+import { SearchDirection } from '../vimscript/pattern';
+import { HistoryTracker } from './../history/historyTracker';
 import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
-import { SurroundState } from '../actions/plugins/surround';
-import { SUPPORT_NVIM, SUPPORT_IME_SWITCHER } from 'platform/constants';
-import { Position } from 'vscode';
-import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
-import { ModeData } from '../mode/modeData';
-import { SearchDirection } from '../vimscript/pattern';
 import { globalState } from './globalState';
+import { RecordedState } from './recordedState';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -26,7 +26,7 @@ interface IBaseMovement {
   execActionWithCount(
     position: Position,
     vimState: VimState,
-    count: number
+    count: number,
   ): Promise<Position | IMovement>;
 }
 
@@ -93,17 +93,15 @@ export class VimState implements vscode.Disposable {
    */
   public lastCommaRepeatableMovement: IBaseMovement | undefined = undefined;
 
-  // TODO: move into ModeHandler
-  public lastMovementFailed: boolean = false;
-
   /**
    * Keep track of whether the last command that ran is able to be repeated
    * with the dot command.
    */
   public lastCommandDotRepeatable: boolean = true;
 
-  public isRunningDotCommand = false;
+  public dotCommandStatus: DotCommandStatus = DotCommandStatus.Waiting;
   public isReplayingMacro: boolean = false;
+  public normalCommandState: NormalCommandState = NormalCommandState.Waiting;
 
   /**
    * The last visual selection before running the dot command
@@ -179,11 +177,11 @@ export class VimState implements vscode.Disposable {
   /**
    * Initial state of cursors prior to any action being performed
    */
-  private _cursorsInitialState!: Cursor[];
-  public get cursorsInitialState(): Cursor[] {
+  private _cursorsInitialState!: readonly Cursor[];
+  public get cursorsInitialState(): readonly Cursor[] {
     return this._cursorsInitialState;
   }
-  public set cursorsInitialState(cursors: Cursor[]) {
+  public set cursorsInitialState(cursors: readonly Cursor[]) {
     this._cursorsInitialState = [...cursors];
   }
 
@@ -256,26 +254,26 @@ export class VimState implements vscode.Disposable {
             mode,
             replaceState: new ReplaceState(
               this.cursors.map((cursor) => cursor.stop),
-              this.recordedState.count
+              this.recordedState.count,
             ),
           }
         : mode === Mode.CommandlineInProgress
-        ? {
-            mode,
-            commandLine: new ExCommandLine('', this.modeData.mode),
-          }
-        : mode === Mode.SearchInProgressMode
-        ? {
-            mode,
-            commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
-            firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
-          }
-        : mode === Mode.Insert
-        ? {
-            mode,
-            highSurrogate: undefined,
-          }
-        : { mode }
+          ? {
+              mode,
+              commandLine: new ExCommandLine('', this.modeData.mode),
+            }
+          : mode === Mode.SearchInProgressMode
+            ? {
+                mode,
+                commandLine: new SearchCommandLine(this, '', SearchDirection.Forward),
+                firstVisibleLineBeforeSearch: this.editor.visibleRanges[0].start.line,
+              }
+            : mode === Mode.Insert
+              ? {
+                  mode,
+                  highSurrogate: undefined,
+                }
+              : { mode },
     );
   }
 

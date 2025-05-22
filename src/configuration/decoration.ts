@@ -16,6 +16,16 @@ class DecorationImpl {
   private _markDecorationCache = new Map<string, vscode.TextEditorDecorationType>();
 
   private _createMarkDecoration(name: string): vscode.TextEditorDecorationType {
+    const escape: Record<string, string> = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '&': '&amp;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    if (name in escape) {
+      name = escape[name];
+    }
     const svg = [
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
       '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',
@@ -195,6 +205,8 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchHighlightBackgroundColor,
       },
+      border: '1px solid',
+      borderColor: new vscode.ThemeColor('editor.findMatchHighlightBorder'),
     });
 
     const searchMatchBackgroundColor = configuration.searchMatchColor
@@ -209,6 +221,8 @@ class DecorationImpl {
         color: 'transparent',
         backgroundColor: searchMatchBackgroundColor,
       },
+      border: '2px solid',
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
     });
 
     const substitutionBackgroundColor = configuration.substitutionColor
@@ -222,7 +236,11 @@ class DecorationImpl {
       after: {
         color: configuration.substitutionTextColor,
         backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
       },
+      border: '1px dashed',
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
     });
 
     // Use letterSpacing and opacity to hide the decorated range, so that before text gets rendered over it
@@ -233,6 +251,8 @@ class DecorationImpl {
       before: {
         color: configuration.substitutionTextColor,
         backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
       },
     });
 

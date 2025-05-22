@@ -1,9 +1,7 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
@@ -11,11 +9,12 @@ suite('Mode Normal', () => {
   let modeHandler: ModeHandler;
 
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.tabstop = 4;
-    configuration.expandtab = false;
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        tabstop: 4,
+        expandtab: false,
+      },
+    });
     modeHandler = (await getAndUpdateModeHandler())!;
   });
   suiteTeardown(cleanUpWorkspace);
@@ -27,13 +26,13 @@ suite('Mode Normal', () => {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
 
     await modeHandler.handleKeyEvent('v');
     await modeHandler.handleKeyEvent('v');
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -521,6 +520,14 @@ suite('Mode Normal', () => {
     start: ['print(|"hello")'],
     keysPressed: 'cib',
     end: ['print(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cib' between sets of parentheses",
+    start: ['one (two) th|ree (four) five'],
+    keysPressed: 'cib',
+    end: ['one (two) three (|) five'],
     endMode: Mode.Insert,
   });
 
@@ -1794,7 +1801,7 @@ suite('Mode Normal', () => {
         '// because it is hard.',
       ],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   newTest({
@@ -1812,7 +1819,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|// abc def'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1823,7 +1830,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/*', ' * abc def', ' */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1834,7 +1841,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/*', ' * abc def */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1845,7 +1852,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/* abc def', ' */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   newTest({
@@ -1870,7 +1877,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/* abc */', '/* def */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1881,7 +1888,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ['|/* abc', ' */', '/* def', ' */'],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   // TODO(#4844): this fails on Windows
@@ -1892,7 +1899,7 @@ suite('Mode Normal', () => {
       keysPressed: 'gqG',
       end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
     },
-    process.platform === 'win32'
+    process.platform === 'win32',
   );
 
   newTest({
@@ -2738,60 +2745,48 @@ suite('Mode Normal', () => {
     endMode: Mode.Normal,
   });
 
-  newTest({
-    title: 'can handle <C-u> when first line is visible and starting column is at the beginning',
-    start: ['\t hello world', 'hello', 'hi hello', '|foo'],
-    keysPressed: '<C-u>',
-    end: ['\t |hello world', 'hello', 'hi hello', 'foo'],
-  });
-
-  newTest({
-    title: 'can handle <C-u> when first line is visible and starting column is at the end',
-    start: ['\t hello world', 'hello', 'hi hello', 'very long line at the bottom|'],
-    keysPressed: '<C-u>',
-    end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
-  });
-
-  newTest({
-    title: 'can handle <C-u> when first line is visible and starting column is in the middle',
-    start: ['\t hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
-    keysPressed: '<C-u>',
-    end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
-  });
-
-  suite('marks', async () => {
-    const jumpToNewFile = async () => {
-      const configuration = new Configuration();
-      configuration.tabstop = 4;
-      configuration.expandtab = false;
-      await setupWorkspace(configuration);
-      return (await getAndUpdateModeHandler())!;
-    };
-
-    test('capital marks can change the editors active document', async () => {
-      const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
-      await modeHandler.handleMultipleKeyEvents('mA'.split(''));
-
-      const otherModeHandler = await jumpToNewFile();
-      const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
-      assert.notStrictEqual(firstDocumentName, otherDocumentName);
-
-      await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
-      assert.strictEqual(vscode.window.activeTextEditor!.document.fileName, firstDocumentName);
+  suite('<C-u> / <C-d>', () => {
+    newTest({
+      title: 'can handle <C-u> when first line is visible and starting column is at the beginning',
+      start: ['\t hello world', 'hello', 'hi hello', '|foo'],
+      keysPressed: '<C-u>',
+      end: ['\t |hello world', 'hello', 'hi hello', 'foo'],
     });
 
     newTest({
-      title: `can jump to lowercase mark`,
-      start: ['|hello world and mars'],
-      keysPressed: 'wma2w`a',
-      end: ['hello |world and mars'],
-      endMode: Mode.Normal,
+      title: 'can handle <C-u> when first line is visible and starting column is at the end',
+      start: ['\t hello world', 'hello', 'hi hello', 'very long line at the bottom|'],
+      keysPressed: '<C-u>',
+      end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+    });
+
+    newTest({
+      title: 'can handle <C-u> when first line is visible and starting column is in the middle',
+      start: ['\t hello world', 'hello', 'hi hello', 'very long line |at the bottom'],
+      keysPressed: '<C-u>',
+      end: ['\t |hello world', 'hello', 'hi hello', 'very long line at the bottom'],
+    });
+
+    newTest({
+      title: '[count]<C-u> sets and adheres to scroll option',
+      start: ['abc', 'def', 'ghi', 'jkl', 'mno', 'pqr', 'st|u'],
+      keysPressed: '2<C-u><C-u>',
+      end: ['abc', 'def', '|ghi', 'jkl', 'mno', 'pqr', 'stu'],
+    });
+
+    newTest({
+      title: '[count]<C-d> sets and adheres to scroll option',
+      start: ['ab|c', 'def', 'ghi', 'jkl', 'mno', 'pqr', 'stu'],
+      keysPressed: '2<C-d><C-d>',
+      end: ['abc', 'def', 'ghi', 'jkl', '|mno', 'pqr', 'stu'],
     });
   });
 
   suite('<C-g>', () => {
     // TODO: test with untitled file
     // TODO: test [count]<C-g>
+
+    suiteSetup(cleanUpWorkspace);
 
     newTest({
       title: '<C-g> displays info about the file in status bar (line 1 of 3)',

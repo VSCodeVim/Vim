@@ -4,12 +4,7 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import {
-  assertEqualLines,
-  cleanUpWorkspace,
-  setupWorkspace,
-  reloadConfiguration,
-} from './../testUtils';
+import { assertEqualLines, setupWorkspace, reloadConfiguration } from './../testUtils';
 import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
 
@@ -21,17 +16,15 @@ suite('Mode Insert', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  teardown(cleanUpWorkspace);
-
   test('can be activated', async () => {
     const activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
       await modeHandler.handleKeyEvent(key);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     }
   });
 
@@ -47,7 +40,7 @@ suite('Mode Insert', () => {
     assert.strictEqual(
       vscode.window.activeTextEditor!.selection.start.character,
       4,
-      '<Esc> moved cursor position.'
+      '<Esc> moved cursor position.',
     );
   });
 
@@ -82,7 +75,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleKeyEvent('i');
     for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
-      assert.strictEqual(modeHandler.currentMode === Mode.Insert, true);
+      assert.strictEqual(modeHandler.vimState.currentMode === Mode.Insert, true);
     }
   });
 
@@ -221,7 +214,7 @@ suite('Mode Insert', () => {
     assert.strictEqual(
       vscode.window.activeTextEditor!.selection.start.character,
       3,
-      '<BS> moved cursor to correct position'
+      '<BS> moved cursor to correct position',
     );
   });
 
@@ -324,34 +317,80 @@ suite('Mode Insert', () => {
   });
 
   newTest({
-    title: 'Can <Esc> after entering insert mode from <ctrl+o>',
-    start: ['|'],
-    keysPressed: 'i<C-o>i<Esc>',
-    end: ['|'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: 'Can perform <ctrl+o> to exit and perform one command in normal',
-    start: ['testtest|'],
-    keysPressed: 'a123<C-o>b123',
-    end: ['123|testtest123'],
-  });
-
-  newTest({
-    title: 'Can <ctrl-o> after entering insert mode from <ctrl-o>',
-    start: ['|'],
-    keysPressed: 'i<C-o>i<C-o>',
-    end: ['|'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
     title:
-      'Can perform <ctrl+o> to exit and perform one command in normal at the beginning of a row',
+      'Can perform <Esc> to exit and move cursor back one character from the most right position',
     start: ['|testtest'],
-    keysPressed: 'i<C-o>l123',
-    end: ['t123|esttest'],
+    keysPressed: 'A<Esc>',
+    end: ['testtes|t'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'Can perform <Esc> to exit and move cursor back one character from middle of text',
+    start: ['test|test'],
+    keysPressed: 'i<Esc>',
+    end: ['tes|ttest'],
+    endMode: Mode.Normal,
+  });
+
+  suite('<C-o>', () => {
+    newTest({
+      title: 'Can <Esc> after entering insert mode from <ctrl+o>',
+      start: ['|'],
+      keysPressed: 'i<C-o>i<Esc>',
+      end: ['|'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: 'Can perform <ctrl-o> after entering insert mode from <ctrl-o>',
+      start: ['test|test'],
+      keysPressed: 'i<C-o>i<C-o>',
+      end: ['test|test'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title:
+        'Can perform <ctrl-o> to exit and perform one command in normal at the beginning of a line',
+      start: ['|testtest'],
+      keysPressed: 'i<C-o>l123',
+      end: ['t123|esttest'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title:
+        'Can perform <ctrl-o> to exit and perform one command in normal at the middle of a row',
+      start: ['test|test'],
+      keysPressed: 'i<C-o>l123',
+      end: ['testt123|est'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'Can perform <ctrl-o> to exit and perform one command in normal at the end of a row',
+      start: ['testtest|'],
+      keysPressed: 'a123<C-o>zz',
+      end: ['testtest123|'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'Can perform <ctrl-o> to exit and paste',
+      start: ['|XXX', '123456'],
+      keysPressed: 'ye' + 'j' + 'A<C-o>p',
+      end: ['XXX', '123456XXX|'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'Can perform <ctrl-o> to exit and paste',
+      start: ['|XXX', '123456'],
+      keysPressed: 'ye' + 'j2|' + 'i<C-o>p',
+      end: ['XXX', '12XXX|3456'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({
@@ -446,6 +485,14 @@ suite('Mode Insert', () => {
     await reloadConfiguration();
     await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!', '<C-k>', '!', 'R']);
     assertEqualLines(['🚀🚀']);
+  });
+
+  newTest({
+    title: 'Can insert custom digraph made with :dig[raphs]`',
+    start: ['|'],
+    keysPressed: ':dig R! 55357 56960\n' + 'i<C-k>R!',
+    end: ['🚀|'],
+    endMode: Mode.Insert,
   });
 
   suite('<C-a>', () => {
@@ -623,6 +670,50 @@ suite('Mode Insert', () => {
       keysPressed: 'i' + '<C-d>',
       end: ['\tx|yz'],
       endMode: Mode.Insert,
+    });
+  });
+
+  suite('VSCode auto-surround', () => {
+    test('preserves selection', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 's', 'e', 'l', 'e', 'c', 't']);
+      await vscode.commands.executeCommand('editor.action.selectAll');
+      await modeHandler.handleKeyEvent('"');
+      assertEqualLines(['"select"']);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 1);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 7);
+    });
+
+    test('replaces selection', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 't', 'e', 'm', 'p']);
+      await vscode.commands.executeCommand('editor.action.selectAll');
+      await modeHandler.handleMultipleKeyEvents(['"', 'f', 'i', 'n', 'a', 'l']);
+      assertEqualLines(['"final"']);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 6);
+      assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 6);
+    });
+
+    test('stacks', async () => {
+      await modeHandler.handleMultipleKeyEvents(['i', 't', 'e', 'x', 't']);
+      await vscode.commands.executeCommand('editor.action.selectAll');
+
+      await modeHandler.handleMultipleKeyEvents(['"', "'", '(', '[', '{', '<', '`']);
+      assertEqualLines(['"\'([{<`text`>}])\'"']);
+    });
+
+    test('handles snippet', async () => {
+      await modeHandler.handleKeyEvent('i');
+      await vscode.commands.executeCommand('editor.action.insertSnippet', {
+        snippet: '${3:foo} ${1:bar} ${2:baz}',
+      });
+      await modeHandler.handleMultipleKeyEvents(['(', 'o', 'n', 'e']);
+      await vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
+      await modeHandler.handleMultipleKeyEvents(['<', 't', 'w', 'o']);
+      await vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
+      await modeHandler.handleKeyEvent('`');
+      assertEqualLines(['`foo` (one) <two>']);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     });
   });
 });

@@ -1,10 +1,10 @@
-import assert = require('assert');
+import { strict as assert } from 'assert';
 import { LineRange } from '../../src/vimscript/lineRange';
 import { ITestObject, testIt } from '../testSimplifier';
 import { setupWorkspace } from '../testUtils';
 
 function resolveTest(input: ITestObject & { lineRanges: Record<string, [number, number]> }) {
-  suite(input.title, async () => {
+  suite(input.title, () => {
     for (const lineRange in input.lineRanges) {
       if (lineRange in input.lineRanges) {
         test(lineRange, async () => {
@@ -14,7 +14,7 @@ function resolveTest(input: ITestObject & { lineRanges: Record<string, [number, 
             {
               start: input.lineRanges[lineRange][0],
               end: input.lineRanges[lineRange][1],
-            }
+            },
           );
         });
       }

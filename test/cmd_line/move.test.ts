@@ -1,10 +1,6 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite(':[range]m[ove] [address] command', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: ':move [address] will move the cursor line to below the line given by {address}',
     start: ['|one', 'two', 'three'],

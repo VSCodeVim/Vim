@@ -4,8 +4,8 @@ import { Position, Selection } from 'vscode';
 import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
-import { VimError, ErrorCode } from '../../error';
-import { isVisualMode, Mode } from '../../mode/mode';
+import { ErrorCode, VimError } from '../../error';
+import { Mode, isVisualMode } from '../../mode/mode';
 import { Register } from '../../register/register';
 import { globalState } from '../../state/globalState';
 import { SearchState } from '../../state/searchState';
@@ -15,8 +15,8 @@ import { TextEditor } from '../../textEditor';
 import { TextObject } from '../../textobject/textobject';
 import { reportSearch } from '../../util/statusBarTextUtils';
 import { SearchDirection } from '../../vimscript/pattern';
-import { RegisterAction, BaseCommand } from '../base';
-import { failedMovement, IMovement } from '../baseMotion';
+import { BaseCommand, RegisterAction } from '../base';
+import { IMovement, failedMovement } from '../baseMotion';
 
 /**
  * Search for the word under the cursor; used by [g]* and [g]#
@@ -25,7 +25,7 @@ async function searchCurrentWord(
   position: Position,
   vimState: VimState,
   direction: SearchDirection,
-  isExact: boolean
+  isExact: boolean,
 ): Promise<void> {
   let currentWord = TextEditor.getWord(vimState.document, position);
 
@@ -99,7 +99,7 @@ async function createSearchStateAndMoveToMatch(args: {
     return;
   }
 
-  const escapedNeedle = escapeRegExp(needle).replace('/', '\\/');
+  const escapedNeedle = escapeRegExp(needle).replaceAll('/', '\\/');
   const searchString = isExact ? `\\<${escapedNeedle}\\>` : escapedNeedle;
 
   // Start a search for the given term.
@@ -107,17 +107,17 @@ async function createSearchStateAndMoveToMatch(args: {
     args.direction,
     vimState.cursorStopPosition,
     searchString,
-    { ignoreSmartcase: true }
+    { ignoreSmartcase: true },
   );
   Register.setReadonlyRegister('/', globalState.searchState.searchString);
-  SearchCommandLine.addSearchStateToHistory(globalState.searchState);
+  void SearchCommandLine.addSearchStateToHistory(globalState.searchState);
 
   // Turn one of the highlighting flags back on (turned off with :nohl)
   globalState.hl = true;
 
   const nextMatch = globalState.searchState.getNextSearchMatchPosition(
     vimState,
-    args.searchStartCursorPosition
+    args.searchStartCursorPosition,
   );
   if (nextMatch) {
     vimState.cursorStopPosition = nextMatch.pos;
@@ -125,7 +125,7 @@ async function createSearchStateAndMoveToMatch(args: {
     reportSearch(
       nextMatch.index,
       globalState.searchState.getMatchRanges(vimState).length,
-      vimState
+      vimState,
     );
   } else {
     StatusBar.displayError(
@@ -134,8 +134,8 @@ async function createSearchStateAndMoveToMatch(args: {
         args.direction === SearchDirection.Forward
           ? ErrorCode.SearchHitBottom
           : ErrorCode.SearchHitTop,
-        globalState.searchState.searchString
-      )
+        globalState.searchState.searchString,
+      ),
     );
   }
 }
@@ -249,7 +249,7 @@ abstract class SearchObject extends TextObject {
       this.direction,
       vimState.cursorStopPosition,
       searchState.searchString,
-      {}
+      {},
     );
 
     // At first, try to search for current word, and stop searching if matched.
@@ -294,7 +294,7 @@ abstract class SearchObject extends TextObject {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<IMovement> {
     return this.execAction(position, vimState);
   }

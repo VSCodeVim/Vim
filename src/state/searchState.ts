@@ -29,7 +29,7 @@ export class SearchState {
     direction: SearchDirection,
     startPosition: Position,
     searchString = '',
-    { ignoreSmartcase = false } = {}
+    { ignoreSmartcase = false } = {},
   ) {
     this._searchString = searchString;
 
@@ -124,13 +124,13 @@ export class SearchState {
     vimState: VimState,
     startPosition: Position,
     direction = SearchDirection.Forward,
-    relativeIndex = 0
+    relativeIndex = 0,
   ): IndexedPosition | undefined {
     const nextMatch = this.getNextSearchMatchRange(
       vimState,
       startPosition,
       direction,
-      relativeIndex
+      relativeIndex,
     );
     if (nextMatch === undefined) {
       return undefined;
@@ -155,7 +155,7 @@ export class SearchState {
     vimState: VimState,
     fromPosition: Position,
     direction = SearchDirection.Forward,
-    relativeIndex = 0
+    relativeIndex = 0,
   ): IndexedRange | undefined {
     const matchRanges = this.recalculateSearchRanges(vimState);
 

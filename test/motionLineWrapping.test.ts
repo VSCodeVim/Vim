@@ -1,18 +1,16 @@
-import { Configuration } from './testConfiguration';
 import { newTest } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('motion line wrapping', () => {
-  suiteTeardown(cleanUpWorkspace);
-
   suite('whichwrap enabled', () => {
     suiteSetup(async () => {
-      const configuration = new Configuration();
-      configuration.tabstop = 4;
-      configuration.expandtab = false;
-      configuration.whichwrap = 'h,l,<,>,[,]';
-
-      await setupWorkspace(configuration);
+      await setupWorkspace({
+        config: {
+          tabstop: 4,
+          expandtab: false,
+          whichwrap: 'h,l,<,>,[,]',
+        },
+      });
     });
 
     suite('normal mode', () => {
@@ -77,11 +75,12 @@ suite('motion line wrapping', () => {
 
   suite('whichwrap disabled', () => {
     suiteSetup(async () => {
-      const configuration = new Configuration();
-      configuration.tabstop = 4;
-      configuration.expandtab = false;
-
-      await setupWorkspace(configuration);
+      await setupWorkspace({
+        config: {
+          tabstop: 4,
+          expandtab: false,
+        },
+      });
     });
 
     suite('normal mode', () => {
@@ -133,10 +132,11 @@ suite('motion line wrapping', () => {
 
   suite('wrapscan enabled', () => {
     suiteSetup(async () => {
-      const configuration = new Configuration();
-      configuration.wrapscan = true;
-
-      await setupWorkspace(configuration);
+      await setupWorkspace({
+        config: {
+          wrapscan: true,
+        },
+      });
     });
 
     newTest({
@@ -156,10 +156,11 @@ suite('motion line wrapping', () => {
 
   suite('wrapscan disabled', () => {
     suiteSetup(async () => {
-      const configuration = new Configuration();
-      configuration.wrapscan = false;
-
-      await setupWorkspace(configuration);
+      await setupWorkspace({
+        config: {
+          wrapscan: false,
+        },
+      });
     });
 
     newTest({

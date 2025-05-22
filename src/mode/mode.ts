@@ -27,6 +27,23 @@ export enum VSCodeVimCursorType {
   UnderlineThin,
 }
 
+export enum NormalCommandState {
+  Waiting,
+  Executing,
+  Finished,
+}
+
+export enum DotCommandStatus {
+  Waiting,
+  Executing,
+  Finished,
+}
+
+export enum ReplayMode {
+  Insert,
+  Replace,
+}
+
 /**
  * Is the given mode visual, visual line, or visual block?
  */
@@ -39,7 +56,7 @@ export function isVisualMode(mode: Mode): mode is Mode.Visual | Mode.VisualLine 
  * This means SearchInProgess and CommandlineInProgress modes.
  */
 export function isStatusBarMode(
-  mode: Mode
+  mode: Mode,
 ): mode is Mode.CommandlineInProgress | Mode.SearchInProgressMode {
   return [Mode.SearchInProgressMode, Mode.CommandlineInProgress].includes(mode);
 }

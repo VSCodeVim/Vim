@@ -1,12 +1,13 @@
-import { VimState } from '../../state/vimState';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, optWhitespace, string } from 'parsimmon';
 import {
-  CommandShowSearchHistory,
   CommandShowCommandHistory,
+  CommandShowSearchHistory,
 } from '../../actions/commands/actions';
+import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { SearchDirection } from '../../vimscript/pattern';
-import { alt, optWhitespace, Parser, string } from 'parsimmon';
 import { nameAbbrevParser } from '../../vimscript/parserUtils';
+import { SearchDirection } from '../../vimscript/pattern';
 
 export enum HistoryCommandType {
   Cmd,
@@ -23,7 +24,7 @@ const historyTypeParser: Parser<HistoryCommandType> = alt(
   alt(nameAbbrevParser('e', 'xpr'), string('=')).result(HistoryCommandType.Expr),
   alt(nameAbbrevParser('i', 'nput'), string('@')).result(HistoryCommandType.Input),
   alt(nameAbbrevParser('d', 'ebug'), string('>')).result(HistoryCommandType.Debug),
-  nameAbbrevParser('a', 'll').result(HistoryCommandType.All)
+  nameAbbrevParser('a', 'll').result(HistoryCommandType.All),
 );
 
 export interface IHistoryCommandArguments {
@@ -51,7 +52,7 @@ export class HistoryCommand extends ExCommand {
       case HistoryCommandType.Search:
         await new CommandShowSearchHistory(SearchDirection.Forward).exec(
           vimState.cursorStopPosition,
-          vimState
+          vimState,
         );
         break;
       // TODO: Implement these

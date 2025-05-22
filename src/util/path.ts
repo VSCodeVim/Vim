@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import untildify = require('untildify');
 
 /**
@@ -109,7 +111,7 @@ interface PathDetails {
 export function getPathDetails(
   partialPath: string,
   currentUri: vscode.Uri,
-  isRemote: boolean
+  isRemote: boolean,
 ): PathDetails {
   let isWindows: boolean;
   if (currentUri.scheme === 'untitled') {
@@ -150,7 +152,7 @@ export function getPathDetails(
       // path will return /home/user for example even 'vscode-remote' is used on windows
       // as we relied of our isWindows detection
       separatePath(isWindows ? currentUri.fsPath : currentUri.path, p.sep)[0],
-      dirName
+      dirName,
     );
   }
 
@@ -179,7 +181,7 @@ export function resolveUri(
   absolutePath: string,
   sep: string,
   currentUri: vscode.Uri,
-  isRemote: boolean
+  isRemote: boolean,
 ) {
   const isWindows = sep === path.win32.sep;
   if (isWindows && !/^(\\\\.+\\)|([a-zA-Z]:\\)/.test(absolutePath)) {
@@ -221,7 +223,7 @@ export async function readDirectory(
   sep: string,
   currentUri: vscode.Uri,
   isRemote: boolean,
-  addCurrentAndUp: boolean
+  addCurrentAndUp: boolean,
 ) {
   try {
     const directoryUri = resolveUri(absolutePath, sep, currentUri, isRemote);

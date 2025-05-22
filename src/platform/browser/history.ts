@@ -12,7 +12,7 @@ export class HistoryBase {
   constructor(
     context: vscode.ExtensionContext,
     historyFileName: string,
-    extensionStoragePath: string
+    extensionStoragePath: string,
   ) {
     this.context = context;
     this.historyFileName = historyFileName;
@@ -50,7 +50,7 @@ export class HistoryBase {
   }
 
   public async clear() {
-    this.context.workspaceState.update(this.historyKey, undefined);
+    void this.context.workspaceState.update(this.historyKey, undefined);
     this.history = [];
   }
 
@@ -60,14 +60,16 @@ export class HistoryBase {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsedData = JSON.parse(data);
     if (!Array.isArray(parsedData)) {
       throw Error('Unexpected format in history. Expected JSON.');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.history = parsedData;
   }
 
   async save(): Promise<void> {
-    this.context.workspaceState.update(this.historyKey, JSON.stringify(this.history));
+    void this.context.workspaceState.update(this.historyKey, JSON.stringify(this.history));
   }
 }

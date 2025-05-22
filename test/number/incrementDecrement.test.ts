@@ -1,11 +1,7 @@
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 
 suite('Increment/decrement (<C-a> and <C-x>)', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: 'can ctrl-a correctly behind a word',
     start: ['|one 9'],

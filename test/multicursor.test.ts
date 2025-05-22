@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { Configuration } from './testConfiguration';
+import { assertEqualLines, setupWorkspace } from './testUtils';
 import { newTest } from './testSimplifier';
 
 suite('Multicursor', () => {
@@ -12,8 +11,6 @@ suite('Multicursor', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('can add multiple cursors below', async () => {
     await modeHandler.handleMultipleKeyEvents('i11\n22'.split(''));
@@ -62,7 +59,7 @@ suite('Multicursor', () => {
 
   test('vibd with multicursors deletes the content between brackets and keeps the cursors', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split('')
+      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split(''),
     );
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
     assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
@@ -77,7 +74,7 @@ suite('Multicursor', () => {
 
   test('vi[d with multicursors deletes the content between brackets and keeps the cursors', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split('')
+      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split(''),
     );
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
     assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
@@ -92,7 +89,7 @@ suite('Multicursor', () => {
 
   test('vitd with multicursors deletes the content between tags and keeps the cursors', async () => {
     await modeHandler.handleMultipleKeyEvents(
-      'i<div> foo bar</div> asd\n<div>foo asd</div>'.split('')
+      'i<div> foo bar</div> asd\n<div>foo asd</div>'.split(''),
     );
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', '0', 'W']);
     assertEqualLines(['<div> foo bar</div> asd', '<div>foo asd</div>']);
@@ -122,18 +119,17 @@ suite('Multicursor', () => {
 
 suite('Multicursor with remaps', () => {
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.insertModeKeyBindings = [
-      {
-        before: ['j', 'j', 'k'],
-        after: ['<esc>'],
+    await setupWorkspace({
+      config: {
+        insertModeKeyBindings: [
+          {
+            before: ['j', 'j', 'k'],
+            after: ['<esc>'],
+          },
+        ],
       },
-    ];
-
-    await setupWorkspace(configuration);
+    });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: "Using 'jjk' mapped to '<Esc>' doesn't leave trailing characters",
@@ -145,19 +141,18 @@ suite('Multicursor with remaps', () => {
 
 suite('Multicursor selections', () => {
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.normalModeKeyBindings = [
-      {
-        before: ['<leader>', 'a', 'f'],
-        commands: ['editor.action.smartSelect.grow'],
+    await setupWorkspace({
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<leader>', 'a', 'f'],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+        leader: ' ',
       },
-    ];
-    configuration.leader = ' ';
-
-    await setupWorkspace(configuration);
+    });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title:
