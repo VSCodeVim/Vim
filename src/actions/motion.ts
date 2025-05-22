@@ -566,13 +566,12 @@ export abstract class BaseMarkMovement extends BaseMovement {
   override isJump = true;
   protected registerMode?: RegisterMode;
 
-  private isCurrentDocument(document: vscode.TextDocument): boolean {
-    return document === vscode.window.activeTextEditor?.document;
-  }
-
   protected abstract getNewPosition(document: vscode.TextDocument, position: Position): Position;
 
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+  ): Promise<Position | IMovement> {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
@@ -596,12 +595,12 @@ export abstract class BaseMarkMovement extends BaseMovement {
     const newPosition = this.getNewPosition(document, mark.position);
 
     // Navigate to mark in another document
-    if (mark.isUppercaseMark && !this.isCurrentDocument(mark.document)) {
+    if (mark.isUppercaseMark && mark.document !== vimState.document) {
       const options: vscode.TextDocumentShowOptions = {
         selection: new vscode.Range(newPosition, newPosition),
       };
       await vscode.window.showTextDocument(mark.document, options);
-      return newPosition;
+      return failedMovement(vimState); // Don't move cursor in current document
     }
 
     // Navigate to mark in the current document

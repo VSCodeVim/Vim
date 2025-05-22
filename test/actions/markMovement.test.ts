@@ -5,6 +5,7 @@ import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Cursor } from '../../src/common/motion/cursor';
 import { VimState } from '../../src/state/vimState';
 import { cleanUpWorkspace, replaceContent, setupWorkspace } from '../testUtils';
+import { failedMovement } from '../../src/actions/baseMotion';
 
 class Location {
   public position: Position;
@@ -117,14 +118,18 @@ suite('mark movement', () => {
           const result = await movement.execAction(vimState.cursorStartPosition, vimState);
 
           // Assert
-          const expectedPosition = expect?.position ?? mark.position;
-          assert.deepStrictEqual(result, expectedPosition, 'returned position must be correct');
+          const _expect = expect ?? mark;
+          if (_expect.document === start.document) {
+            assert.deepStrictEqual(result, _expect.position, 'returned position must be correct');
+          } else {
+            // Movement fails so our position in the starting document doesn't get changed
+            assert.deepStrictEqual(result, failedMovement(vimState), 'movement should have failed');
+          }
 
-          const expectedDocument = expect?.document ?? mark.document;
-          if (expectedDocument) {
+          if (_expect.document) {
             assert.deepStrictEqual(
               window.activeTextEditor?.document,
-              expectedDocument,
+              _expect.document,
               'active document must be correct',
             );
           }
@@ -132,11 +137,11 @@ suite('mark movement', () => {
           // If this test case is moving between documents then we need to check the actual editor's selection to
           // verify the cursor has been moved. This is because we rely on `vscode.window.showTextDocument` when jumping
           // between documents
-          if (expectedDocument !== start.document) {
+          if (_expect.document !== start.document) {
             const editorPosition = window.activeTextEditor?.selection.active;
             assert.deepStrictEqual(
               editorPosition,
-              expectedPosition,
+              _expect.position,
               'active selection must be correct when moving between documents',
             );
           }
