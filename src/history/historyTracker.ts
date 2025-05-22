@@ -96,7 +96,7 @@ class DocumentChange {
   }
 }
 
-export interface IMarkBase {
+interface IMarkBase {
   name: string;
   position: Position;
 }
