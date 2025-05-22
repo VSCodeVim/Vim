@@ -1699,6 +1699,25 @@ suite('Mode Visual', () => {
     endMode: Mode.Normal,
   });
 
+  suite('Can handle o', () => {
+    newTest({
+      title: 'Can select the space after the last character',
+      start: ['ab', 'ab|c', 'abcd'],
+      keysPressed: 'vkd',
+      end: ['a|b', 'abcd'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title:
+        'After executing o twice, can keep the selection of the space after the last character',
+      start: ['ab', 'ab|c', 'abcd'],
+      keysPressed: 'vkood',
+      end: ['a|b', 'abcd'],
+      endMode: Mode.Normal,
+    });
+  });
+
   suite('C, R, and S', () => {
     for (const command of ['C', 'R', 'S']) {
       newTest({
