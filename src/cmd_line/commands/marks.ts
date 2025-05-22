@@ -2,11 +2,13 @@ import { QuickPickItem, window } from 'vscode';
 
 // eslint-disable-next-line id-denylist
 import { Parser, alt, noneOf, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
+import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { ErrorCode, VimError } from '../../error';
 import { IMark } from '../../history/historyTracker';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
 class MarkQuickPickItem implements QuickPickItem {
   mark: IMark;
@@ -149,6 +151,16 @@ export class MarkCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     const position = vimState.cursorStopPosition;
+    vimState.historyTracker.addMark(vimState.document, position, this.markName);
+  }
+
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    /**
+     * When a range is specified, the mark is set at the last line of the range.
+     * For example, :1,5mark a will set mark 'a' at line 5.
+     */
+    const { end } = range.resolve(vimState);
+    const position = new Position(end, 0);
     vimState.historyTracker.addMark(vimState.document, position, this.markName);
   }
 }
