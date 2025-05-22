@@ -1915,7 +1915,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
           break;
         }
         const lineText = vimState.document.lineAt(lineNum).text;
-        const matchIndex = lineText.indexOf(this.charToMatch);
+        const matchIndex = lineText.indexOf(this.charToMatch, selStart.character);
         if (matchIndex !== -1) {
           openPos = new Position(lineNum, matchIndex);
           break;

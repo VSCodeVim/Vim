@@ -448,6 +448,7 @@ class CommandEsc extends BaseCommand {
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
+          vscode.commands.executeCommand('editor.action.inlineSuggest.hide'),
         ]);
       }
     } else {
