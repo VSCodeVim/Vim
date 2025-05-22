@@ -67,7 +67,7 @@ defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool fa
 defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
 ```
 
-We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
+We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Settings/Preferences -> Keyboard_.
 
 ### Windows
 
