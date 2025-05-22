@@ -107,7 +107,7 @@ export interface ILocalMark extends IMarkBase {
 
 export interface IGlobalMark extends IMarkBase {
   isUppercaseMark: true;
-  document: vscode.TextDocument; // Required for global marks
+  document: vscode.TextDocument;
 }
 
 export type IMark = ILocalMark | IGlobalMark;
