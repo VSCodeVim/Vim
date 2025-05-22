@@ -17,7 +17,7 @@ import { GrepCommand } from '../cmd_line/commands/grep';
 import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
 import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/leftRightCenter';
-import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
+import { DeleteMarksCommand, MarksCommand, MarkCommand } from '../cmd_line/commands/marks';
 import { ExploreCommand } from '../cmd_line/commands/explore';
 import { MoveCommand } from '../cmd_line/commands/move';
 import { NohlCommand } from '../cmd_line/commands/nohl';
@@ -53,6 +53,7 @@ import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
 import { LetCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
+import { PwdCommand } from '../cmd_line/commands/pwd';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -351,7 +352,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lvimgrepa', 'dd'], undefined],
   [['lw', 'indow'], succeed(new VsCodeCommand('workbench.action.focusCommentsPanel'))],
   [['m', 'ove'], MoveCommand.argParser],
-  [['ma', 'rk'], undefined],
+  [['ma', 'rk'], MarkCommand.argParser],
   [['mak', 'e'], undefined],
   [['map', ''], undefined],
   [['mapc', 'lear'], undefined],
@@ -420,7 +421,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ptr', 'ewind'], undefined],
   [['pts', 'elect'], undefined],
   [['pu', 't'], PutExCommand.argParser],
-  [['pw', 'd'], undefined],
+  [['pw', 'd'], succeed(new PwdCommand())],
   [['py', 'thon'], undefined],
   [['py3', ''], undefined],
   [['py3d', 'o'], undefined],
