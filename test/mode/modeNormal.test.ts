@@ -524,6 +524,14 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: "Can handle 'cib' between sets of parentheses",
+    start: ['one (two) th|ree (four) five'],
+    keysPressed: 'cib',
+    end: ['one (two) three (|) five'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
     title: "Can handle 'ci(' across multiple lines with last character at beginning",
     start: ['(|a', 'b)'],
     keysPressed: 'ci)',
