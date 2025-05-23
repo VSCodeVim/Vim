@@ -41,7 +41,6 @@ export class GrepCommand extends ExCommand {
 
   async execute(): Promise<void> {
     const { pattern, files } = this.arguments;
-    console.log('GrepCommand', pattern.patternString, files);
     if (files.length === 0) {
       throw error.VimError.fromCode(error.ErrorCode.NoFileName);
     }
