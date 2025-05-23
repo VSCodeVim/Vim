@@ -2,7 +2,7 @@
 
 This document offers a set of guidelines for contributing to VSCodeVim.
 These are just guidelines, not rules; use your best judgment and feel free to propose changes to this document.
-If you need help, drop by on [Slack](https://vscodevim.herokuapp.com/).
+If you need help, drop by on [GitHub Discussions](https://github.com/VSCodeVim/Vim/discussions) or [Slack](https://vscodevim.slack.com/).
 
 Thanks for helping us in making VSCodeVim better! :clap:
 
@@ -33,7 +33,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1. Install prerequisites:
 
    - [Visual Studio Code](https://code.visualstudio.com/), latest stable or insiders
-   - [Node.js](https://nodejs.org/) v18.x or higher
+   - [Node.js](https://nodejs.org/) v20.x or higher
    - [Yarn](https://classic.yarnpkg.com/) v1.x
    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 
@@ -100,13 +100,13 @@ Actions are all currently stuffed into actions.ts (sorry!). There are:
 - `BaseMovement` - A movement (e.g.`w`, `h`, `{`, etc.) _ONLY_ updates the cursor position or returns an `IMovement`, which indicates a start and stop. This is used for movements like `aw` which may actually start before the cursor.
 - `BaseCommand` - Anything which is not just a movement is a Command. That includes motions which also update the state of Vim in some way, like `*`.
 
-At one point, I wanted to have actions.ts be completely pure (no side effects whatsoever), so commands would just return objects indicating what side effects on the editor they would have. This explains the giant switch in handleCommand in ModeHandler. I now believe this to be a dumb idea and someone should get rid of it.
+Actions should, when possible, avoid side effects other than modifying `vimState`.
 
 ### The Vim State Machine
 
 Consists of two data structures:
 
-- `VimState` - this is the state of Vim. It's what actions update.
+- `VimState` - this is the state of Vim, scoped to a `TextEditor`. It's what actions update.
 - `RecordedState` - this is temporary state that will reset at the end of a change.
 
 #### How it works
@@ -148,7 +148,3 @@ If you notice a slowdown and have ever run `yarn test` in the past instead of ru
 ```bash
 rm -rf .vscode-test/
 ```
-
-## Style Guide
-
-Please try your best to adhere to our [style guidelines](https://github.com/VSCodeVim/Vim/blob/master/STYLE.md).
