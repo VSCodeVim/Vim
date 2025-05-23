@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.29.2](https://github.com/vscodevim/vim/tree/v1.29.2) (2025-05-16)
+
+### Fixed
+
+- Revert make tab and escape fix for native vscode keybindings ([@ulugbekna](https://github.com/ulugbekna)).
+- Dismiss inline suggestion/NES on Escape without interfering with Vim modes ([@ulugbekna](https://github.com/ulugbekna)).
+
 ## [v1.29.1](https://github.com/vscodevim/vim/tree/v1.29.1) (2025-05-15)
 
 ### Fixed

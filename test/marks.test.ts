@@ -1,10 +1,11 @@
-import * as vscode from 'vscode';
 import { strict as assert } from 'assert';
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../extensionBase';
 import { Mode } from '../src/mode/mode';
+import { ModeHandler } from '../src/mode/modeHandler';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { newTest, newTestSkip } from './testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './testUtils';
-import { ModeHandler } from '../src/mode/modeHandler';
 
 suite('Marks', () => {
   let modeHandler: ModeHandler;
@@ -13,30 +14,21 @@ suite('Marks', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
+
   suiteTeardown(cleanUpWorkspace);
 
-  const jumpToNewFile = async () => {
+  const jumpToNewFile = async (content?: string) => {
     await setupWorkspace({
       config: {
         tabstop: 4,
         expandtab: false,
       },
+      newFileContent: content,
+      forceNewFile: true,
+      disableCleanUp: true,
     });
     return (await getAndUpdateModeHandler())!;
   };
-
-  // TODO: Skipped
-  test.skip(`Capital marks can change the editor's active document`, async () => {
-    const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
-    await modeHandler.handleMultipleKeyEvents('mA'.split(''));
-
-    const otherModeHandler = await jumpToNewFile();
-    const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
-    assert.notStrictEqual(firstDocumentName, otherDocumentName);
-
-    await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
-    assert.strictEqual(vscode.window.activeTextEditor!.document.fileName, firstDocumentName);
-  });
 
   newTest({
     title: 'Can jump to lowercase mark',
@@ -126,6 +118,34 @@ suite('Marks', () => {
       keysPressed: 'v<Esc>' + 'j' + 'm<' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
       endMode: Mode.Normal,
+    });
+  });
+
+  suite('global marks', () => {
+    let otherModeHandler: ModeHandler;
+
+    setup(async () => {
+      await setupWorkspace();
+      modeHandler = (await getAndUpdateModeHandler())!;
+
+      const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
+      await modeHandler.handleMultipleKeyEvents('mA'.split(''));
+      otherModeHandler = await jumpToNewFile();
+
+      const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
+      assert.notStrictEqual(firstDocumentName, otherDocumentName);
+    });
+
+    teardown(async () => {
+      ModeHandlerMap.delete(otherModeHandler.vimState.documentUri);
+    });
+
+    newTest({
+      title: 'changes the active document',
+      start: ['|'],
+      keysPressed: "'A",
+      end: ['|'],
+      endFsPath: () => modeHandler.vimState.documentUri.fsPath,
     });
   });
 });

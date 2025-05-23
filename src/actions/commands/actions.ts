@@ -36,6 +36,7 @@ import { TextEditor } from './../../textEditor';
 import { Transformation } from './../../transformations/transformations';
 import { BaseCommand, RegisterAction } from './../base';
 import * as operator from './../operator';
+import { Uri } from 'vscode';
 
 /**
  * A very special snowflake.
@@ -448,6 +449,7 @@ class CommandEsc extends BaseCommand {
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
+          vscode.commands.executeCommand('editor.action.inlineSuggest.hide'),
         ]);
       }
     } else {
@@ -1027,22 +1029,36 @@ class CommandOpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const workspaceRootPath = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri
-        .fsPath;
-      const filePath =
-        path.isAbsolute(fileInfo[1]) || !workspaceRootPath
-          ? fileInfo[1]
-          : path.join(workspaceRootPath, fileInfo[1]);
-      const line = parseInt(fileInfo[2], 10);
-      const fileCommand = new FileCommand({
-        name: 'edit',
-        bang: false,
-        opt: [],
-        file: filePath,
-        cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
-        createFileIfNotExists: false,
-      });
-      void fileCommand.execute(vimState);
+      const fileUri = await (async () => {
+        if (path.isAbsolute(fileInfo[1])) {
+          return Uri.file(fileInfo[1]);
+        } else {
+          let uri = Uri.file(path.resolve(path.dirname(vimState.document.uri.fsPath), fileInfo[1]));
+          if (!(await doesFileExist(uri))) {
+            const workspaceRoot = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri;
+            if (workspaceRoot) {
+              uri = Uri.file(path.join(workspaceRoot.fsPath, fileInfo[1]));
+              if (!(await doesFileExist(uri))) {
+                return undefined;
+              }
+            }
+          }
+          return uri;
+        }
+      })();
+
+      if (fileUri) {
+        const line = parseInt(fileInfo[2], 10);
+        const fileCommand = new FileCommand({
+          name: 'edit',
+          bang: false,
+          opt: [],
+          file: fileUri.fsPath,
+          cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
+          createFileIfNotExists: false,
+        });
+        void fileCommand.execute(vimState);
+      }
     }
   }
 }
