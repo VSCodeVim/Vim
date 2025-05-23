@@ -69,9 +69,8 @@ suite('Basic grep command', () => {
     // Assert that the active editor is Untitled-1
     const activeEditor = vscode.window.activeTextEditor;
     assert.ok(activeEditor, 'There should be an active editor');
-    assert.strictEqual(
+    assert.ok(
       activeEditor?.document.fileName.endsWith('Untitled-1'),
-      true,
       'Active editor should be Untitled-1 after grep',
     );
     assert.ok(modeHandler, 'modeHandler should be defined');
