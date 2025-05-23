@@ -8,6 +8,7 @@ import { Jump } from './src/jumps/jump';
 import { Mode } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
+import { cleanupOurSelectionsUpdates, hashSelections } from './src/mode/ourSelectionsUpdates';
 import { Register } from './src/register/register';
 import { CompositionState } from './src/state/compositionState';
 import { globalState } from './src/state/globalState';
@@ -283,24 +284,27 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
+      // Clean up stale `ourSelectionUpdates` that never triggered a selectionChange event, before
+      // we use them in our logic below
+      mh.selectionsChanged.ourSelectionsUpdates = cleanupOurSelectionsUpdates(
+        mh.selectionsChanged.ourSelectionsUpdates,
+      );
+
       if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
-        const selectionsHash = e.selections.reduce(
-          (hash, s) =>
-            hash +
-            `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
-          '',
+        const selectionsHash = hashSelections(e.selections);
+        const idx = mh.selectionsChanged.ourSelectionsUpdates.findIndex(
+          (entry) => entry.selectionsHash === selectionsHash,
         );
-        const idx = mh.selectionsChanged.ourSelections.indexOf(selectionsHash);
         if (idx > -1) {
-          mh.selectionsChanged.ourSelections.splice(idx, 1);
+          mh.selectionsChanged.ourSelectionsUpdates.splice(idx, 1);
           Logger.trace(
-            `Ignoring selection: ${selectionsHash}. ${mh.selectionsChanged.ourSelections.length} left`,
+            `Ignoring selection: ${selectionsHash}. ${mh.selectionsChanged.ourSelectionsUpdates.length} left`,
           );
           return;
         } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
           Logger.trace(`Ignoring intermediate selection change: ${selectionsHash}`);
           return;
-        } else if (mh.selectionsChanged.ourSelections.length > 0) {
+        } else if (mh.selectionsChanged.ourSelectionsUpdates.length > 0) {
           // Some intermediate selection must have slipped in after setting the
           // 'ignoreIntermediateSelections' to false. Which means we didn't count
           // for it yet, but since we have selections to be ignored then we probably

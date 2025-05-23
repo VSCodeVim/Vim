@@ -11,6 +11,7 @@ import { IBaseAction } from '../actions/types';
 import { Cursor } from '../common/motion/cursor';
 import { configuration } from '../configuration/configuration';
 import { decoration } from '../configuration/decoration';
+import { isLiteralMode, remapKey } from '../configuration/langmap';
 import { Notation } from '../configuration/notation';
 import { Remappers } from '../configuration/remapper';
 import { Jump } from '../jumps/jump';
@@ -59,7 +60,7 @@ import {
   isStatusBarMode,
   isVisualMode,
 } from './mode';
-import { isLiteralMode, remapKey } from '../configuration/langmap';
+import { OurSelectionsUpdate, hashSelections } from './ourSelectionsUpdates';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -89,7 +90,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
    * Used internally to ignore selection changes that were performed by us.
    * 'ignoreIntermediateSelections': set to true when running an action, during this time
    * all selections change events will be ignored.
-   * 'ourSelections': keeps track of our selections that will trigger a selection change event
+   * 'ourSelectionsUpdates': keeps track of our selections that will trigger a selection change event
    * so that we can ignore them.
    */
   public selectionsChanged = {
@@ -102,7 +103,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
      * keeps track of our selections that will trigger a selection change event
      * so that we can ignore them.
      */
-    ourSelections: Array<string>(),
+    ourSelectionsUpdates: Array<OurSelectionsUpdate>(),
   };
 
   /**
@@ -1456,16 +1457,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         );
 
       if (willTriggerChange) {
-        const selectionsHash = selections.reduce(
-          (hash, s) =>
-            hash +
-            `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
-          '',
-        );
-        this.selectionsChanged.ourSelections.push(selectionsHash);
+        const selectionsHash = hashSelections(selections);
+        this.selectionsChanged.ourSelectionsUpdates.push({ selectionsHash, updatedAt: Date.now() });
         Logger.trace(
           `Adding selection change to be ignored! (total: ${
-            this.selectionsChanged.ourSelections.length
+            this.selectionsChanged.ourSelectionsUpdates.length
           }) Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`,
         );
       }
