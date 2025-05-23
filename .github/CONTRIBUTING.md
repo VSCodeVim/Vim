@@ -2,7 +2,7 @@
 
 This document offers a set of guidelines for contributing to VSCodeVim.
 These are just guidelines, not rules; use your best judgment and feel free to propose changes to this document.
-If you need help, drop by on [Slack](https://vscodevim.herokuapp.com/).
+If you need help, drop by on [GitHub Discussions](https://github.com/VSCodeVim/Vim/discussions) or [Slack](https://vscodevim.slack.com/).
 
 Thanks for helping us in making VSCodeVim better! :clap:
 
