@@ -2,11 +2,13 @@ import { QuickPickItem, window } from 'vscode';
 
 // eslint-disable-next-line id-denylist
 import { Parser, alt, noneOf, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
+import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { ErrorCode, VimError } from '../../error';
 import { IMark } from '../../history/historyTracker';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
 class MarkQuickPickItem implements QuickPickItem {
   mark: IMark;
@@ -20,7 +22,7 @@ class MarkQuickPickItem implements QuickPickItem {
   constructor(vimState: VimState, mark: IMark) {
     this.mark = mark;
     this.label = mark.name;
-    if (mark.document && mark.document !== vimState.document) {
+    if (mark.isUppercaseMark && mark.document !== vimState.document) {
       this.description = mark.document.fileName;
     } else {
       this.description = vimState.document.lineAt(mark.position).text.trim();
@@ -131,5 +133,34 @@ export class DeleteMarksCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     const marks = DeleteMarksCommand.resolveMarkList(vimState, this.args);
     vimState.historyTracker.removeMarks(marks);
+  }
+}
+
+export class MarkCommand extends ExCommand {
+  public static readonly argParser: Parser<MarkCommand> = seq(
+    optWhitespace,
+    regexp(/[a-zA-Z'`<>[\].]/).desc('mark name'),
+    optWhitespace,
+  ).map(([, markName]) => new MarkCommand(markName));
+
+  private markName: string;
+  constructor(markName: string) {
+    super();
+    this.markName = markName;
+  }
+
+  async execute(vimState: VimState): Promise<void> {
+    const position = vimState.cursorStopPosition;
+    vimState.historyTracker.addMark(vimState.document, position, this.markName);
+  }
+
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    /**
+     * When a range is specified, the mark is set at the last line of the range.
+     * For example, :1,5mark a will set mark 'a' at line 5.
+     */
+    const { end } = range.resolve(vimState);
+    const position = new Position(end, 0);
+    vimState.historyTracker.addMark(vimState.document, position, this.markName);
   }
 }
