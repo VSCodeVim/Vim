@@ -1,6 +1,5 @@
-import { QuickPickItem, window } from 'vscode';
+import { QuickPickItem, Range, window } from 'vscode';
 
-import { Cursor } from '../../common/motion/cursor';
 import { Jump } from '../../jumps/jump';
 import { globalState } from '../../state/globalState';
 import { VimState } from '../../state/vimState';
@@ -36,8 +35,9 @@ export class JumpsCommand extends ExCommand {
         canPickMany: false,
       });
       if (item && item.jump.document !== undefined) {
-        void window.showTextDocument(item.jump.document);
-        vimState.cursors = [new Cursor(item.jump.position, item.jump.position)];
+        void window.showTextDocument(item.jump.document, {
+          selection: new Range(item.jump.position, item.jump.position),
+        });
       }
     } else {
       void window.showInformationMessage('No jumps available');

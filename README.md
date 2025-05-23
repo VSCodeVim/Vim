@@ -67,7 +67,7 @@ defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool fa
 defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
 ```
 
-We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
+We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Settings/Preferences -> Keyboard_.
 
 ### Windows
 
@@ -75,7 +75,7 @@ Like real vim, VSCodeVim will take over your control keys. This behavior can be 
 
 ## ⚙️ Settings
 
-The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-gallery#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-gallery) of VS Code.
+The settings documented here are a subset of the supported settings; the full list is described in the `FEATURES` -> `Settings` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-marketplace#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-marketplace) of VS Code.
 
 ### Quick Example
 
@@ -114,8 +114,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
     "<C-a>": false,
     "<C-f>": false
   },
-
-  "// To improve performance",
+  // To improve performance
   "extensions.experimental.affinity": {
     "vscodevim.vim": 1
   }

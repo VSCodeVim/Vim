@@ -177,8 +177,9 @@ class ListBreakpointsCommand extends ExCommand {
         const id = selected.breakpointId;
         const breakpoint = breakpoints.find((b) => b.id === id);
         if (breakpoint && isSourceBreakpoint(breakpoint)) {
-          await vscode.window.showTextDocument(breakpoint.location.uri).then(() => {
-            vimState.cursorStopPosition = breakpoint.location.range.start;
+          const pos = breakpoint.location.range.start;
+          await vscode.window.showTextDocument(breakpoint.location.uri, {
+            selection: new vscode.Range(pos, pos),
           });
         }
       }
