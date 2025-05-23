@@ -38,7 +38,7 @@
     "onStartupFinished",
     "onCommand:type"
   ],
-  "qna": "https://vscodevim.herokuapp.com/",
+  "qna": "https://github.com/VSCodeVim/Vim/discussions",
   "main": "./out/extension",
   "browser": "./out/extensionWeb",
   "capabilities": {
