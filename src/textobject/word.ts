@@ -8,10 +8,12 @@ export enum WordType {
   Big,
   CamelCase,
   FileName,
+  TagName,
 }
 
 const nonBigWordCharRegex = makeWordRegex('');
 const nonFileNameRegex = makeWordRegex('"\'`;<>{}[]()');
+const nonTagNameRegex = makeWordRegex('</>');
 
 function regexForWordType(wordType: WordType): RegExp {
   switch (wordType) {
@@ -23,6 +25,8 @@ function regexForWordType(wordType: WordType): RegExp {
       return makeCamelCaseWordRegex(configuration.iskeyword);
     case WordType.FileName:
       return nonFileNameRegex;
+    case WordType.TagName:
+      return nonTagNameRegex;
   }
 }
 
