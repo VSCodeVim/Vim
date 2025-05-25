@@ -6,6 +6,7 @@ import {
   SelectWord,
   TextObject,
 } from '../../textobject/textobject';
+import { WordType } from '../../textobject/word';
 import { isIMovement } from '../baseMotion';
 import {
   MoveAroundBacktick,
