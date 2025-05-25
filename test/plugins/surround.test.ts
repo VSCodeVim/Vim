@@ -457,6 +457,18 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: 'change surround with tags with kebab case names',
+    start: ['<custom-tag>|</custom-tag>'],
+    keysPressed: 'cstt',
+    end: ['<h1>|</h1>'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'h1',
+    },
+  });
+
+  newTest({
     title: 'change surround with tags that contain an attribute and remove them',
     start: ['<h2 test class="foo">b|ar</h2>'],
     keysPressed: 'cstt',
