@@ -851,9 +851,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
-    ranRepeatableAction =
-      (ranRepeatableAction && this.vimState.currentMode === Mode.Normal) ||
-      this.createUndoPointForBrackets();
+    ranRepeatableAction &&= this.vimState.currentMode === Mode.Normal;
 
     // We don't want to record a repeatable action when exiting from these modes
     // by pressing <Esc>
@@ -1749,46 +1747,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (!/\s+/.test(this.vimState.document.getText(range))) {
       void vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
-  }
-
-  // Return true if a new undo point should be created based on brackets and parentheses
-  private createUndoPointForBrackets(): boolean {
-    // }])> keys all start a new undo state when directly next to an {[(< opening character
-    const key =
-      this.vimState.recordedState.actionKeys[this.vimState.recordedState.actionKeys.length - 1];
-
-    if (key === undefined) {
-      return false;
-    }
-
-    if (this.vimState.currentMode === Mode.Insert) {
-      // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
-      let result = PairMatcher.nextPairedChar(
-        this.vimState.cursorStopPosition,
-        key,
-        this.vimState,
-        false,
-      );
-      if (result !== undefined) {
-        if (this.vimState.cursorStopPosition.isEqual(result)) {
-          return true;
-        }
-      }
-
-      result = PairMatcher.nextPairedChar(
-        this.vimState.cursorStopPosition.getLeft(),
-        key,
-        this.vimState,
-        false,
-      );
-      if (result !== undefined) {
-        if (this.vimState.cursorStopPosition.getLeft(2).isEqual(result)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
   }
 
   dispose() {
