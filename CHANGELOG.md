@@ -1,6 +1,43 @@
 # Change Log
 
-## Unreleased
+## [v1.30.0](https://github.com/vscodevim/vim/tree/v1.30.0) (2025-05-22)
+
+### Added
+
+- Added `:pw[d]` ([@zeevoffen](https://github.com/zeevoffen)).
+- Added `:ma[rk]` ([@arunchaganty](https://github.com/arunchaganty)).
+
+### Changed
+
+- Enabled emulated Vim plugins in web extension ([@joshuali925](https://github.com/joshuali925)).
+- `gf` now interprets relative paths as relative to current file. If that fails, it tries relative to workspace root ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed Python function motions `[m`/`]m` with `async def` ([@nathan-gage](https://github.com/nathan-gage)).
+- Fixed `o` in Visual mode when selection starts at line end ([@kajikentaro](https://github.com/kajikentaro)).
+- Fixed `i(` when cursor is between two pairs of parentheses ([@prakhargupta-jan](https://github.com/prakhargupta-jan)).
+- Fixed global marks jumping to the wrong position ([@NeedsSoySauce](https://github.com/NeedsSoySauce)).
+- Fixed global marks messing up your position in the file you came from ([@J-Fields](https://github.com/J-Fields)).
+- Fixed `gf` with paths containing `..` ([@ekinakkaya](https://github.com/ekinakkaya)).
+- Fixed cursor position after `:ju[mps]` and `breakl[ist]` ([@J-Fields](https://github.com/J-Fields))
+- Fixed jumps going to right file, but wrong line ([@J-Fields](https://github.com/J-Fields)).
+- Fixed `:norm[al]` with a double quote (`"`) in the argument ([@s-kai273](https://github.com/s-kai273)).
+
+## [v1.29.2](https://github.com/vscodevim/vim/tree/v1.29.2) (2025-05-16)
+
+### Fixed
+
+- Revert make tab and escape fix for native vscode keybindings ([@ulugbekna](https://github.com/ulugbekna)).
+- Dismiss inline suggestion/NES on Escape without interfering with Vim modes ([@ulugbekna](https://github.com/ulugbekna)).
+
+## [v1.29.1](https://github.com/vscodevim/vim/tree/v1.29.1) (2025-05-15)
+
+### Fixed
+
+- fix(keybindings): make tab and escape play nicer with native vscode keybindings ([@ulugbekna](https://github.com/ulugbekna)).
+
+## [v1.29.0](https://github.com/vscodevim/vim/tree/v1.29.0) (2024-12-04)
 
 ### Added
 

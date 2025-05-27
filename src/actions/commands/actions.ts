@@ -36,6 +36,7 @@ import { TextEditor } from './../../textEditor';
 import { Transformation } from './../../transformations/transformations';
 import { BaseCommand, RegisterAction } from './../base';
 import * as operator from './../operator';
+import { Uri } from 'vscode';
 
 /**
  * A very special snowflake.
@@ -448,6 +449,7 @@ class CommandEsc extends BaseCommand {
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
           vscode.commands.executeCommand('closeDirtyDiff'),
+          vscode.commands.executeCommand('editor.action.inlineSuggest.hide'),
         ]);
       }
     } else {
@@ -1027,18 +1029,31 @@ class CommandOpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const workspaceRootPath = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri
-        .fsPath;
-      const filePath =
-        path.isAbsolute(fileInfo[1]) || !workspaceRootPath
-          ? fileInfo[1]
-          : path.join(workspaceRootPath, fileInfo[1]);
+      const fileUri: Uri = await (async () => {
+        const pathStr = fileInfo[1];
+        if (path.isAbsolute(pathStr)) {
+          return Uri.file(pathStr);
+        } else {
+          let uri = Uri.file(path.resolve(path.dirname(vimState.document.uri.fsPath), pathStr));
+          if (!(await doesFileExist(uri))) {
+            const workspaceRoot = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri;
+            if (workspaceRoot) {
+              uri = Uri.file(path.join(workspaceRoot.fsPath, pathStr));
+              if (!(await doesFileExist(uri))) {
+                throw VimError.fromCode(ErrorCode.CantFindFileInPath, pathStr);
+              }
+            }
+          }
+          return uri;
+        }
+      })();
+
       const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
         name: 'edit',
         bang: false,
         opt: [],
-        file: filePath,
+        file: fileUri.fsPath,
         cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
         createFileIfNotExists: false,
       });

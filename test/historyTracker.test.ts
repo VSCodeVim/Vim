@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import vscode, { Position } from 'vscode';
 
-import { HistoryTracker, IMark } from '../src/history/historyTracker';
+import { HistoryTracker, ILocalMark, IMark } from '../src/history/historyTracker';
 import { Jump } from '../src/jumps/jump';
 import { globalState } from '../src/state/globalState';
 import { VimState } from '../src/state/vimState';
@@ -12,7 +12,7 @@ suite('historyTracker unit tests', () => {
   let historyTracker: HistoryTracker;
   const document = { fileName: 'file name' } as vscode.TextDocument;
 
-  const retrieveLocalMark = (markName: string): IMark | undefined =>
+  const retrieveLocalMark = (markName: string): ILocalMark | undefined =>
     historyTracker.getLocalMarks().find((mark) => mark.name === markName);
 
   const retrieveFileMark = (markName: string): IMark | undefined =>
@@ -72,7 +72,6 @@ suite('historyTracker unit tests', () => {
       if (mark !== undefined) {
         assert.strictEqual(mark.position, position);
         assert.strictEqual(mark.isUppercaseMark, false);
-        assert.strictEqual(mark.document, undefined);
       }
     });
 
