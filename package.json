@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.29.2",
+  "version": "1.30.0",
   "publisher": "vscodevim",
   "galleryBanner": {
     "color": "#e3f4ff",
@@ -38,7 +38,7 @@
     "onStartupFinished",
     "onCommand:type"
   ],
-  "qna": "https://vscodevim.herokuapp.com/",
+  "qna": "https://github.com/VSCodeVim/Vim/discussions",
   "main": "./out/extension",
   "browser": "./out/extensionWeb",
   "capabilities": {

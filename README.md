@@ -9,7 +9,6 @@
 
 VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
-- 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
 - 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
 - Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
 
