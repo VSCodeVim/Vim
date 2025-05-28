@@ -71,8 +71,8 @@ export function maybeGetLeft(
   return dontMove
     ? position
     : throughLineBreaks
-    ? position.getOffsetThroughLineBreaks(-count)
-    : position.getLeft(count);
+      ? position.getOffsetThroughLineBreaks(-count)
+      : position.getLeft(count);
 }
 export function maybeGetRight(
   position: Position,
@@ -85,8 +85,8 @@ export function maybeGetRight(
   return dontMove
     ? position
     : throughLineBreaks
-    ? position.getOffsetThroughLineBreaks(count)
-    : position.getRight(count);
+      ? position.getOffsetThroughLineBreaks(count)
+      : position.getRight(count);
 }
 
 export function searchPosition(

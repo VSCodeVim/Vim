@@ -1,17 +1,19 @@
 import * as _ from 'lodash';
 import { Position, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
-import { getAllPositions, getAllEndPositions } from './util';
+import { getAllEndPositions, getAllPositions } from './util';
 
 export enum WordType {
   Normal,
   Big,
   CamelCase,
   FileName,
+  TagName,
 }
 
 const nonBigWordCharRegex = makeWordRegex('');
 const nonFileNameRegex = makeWordRegex('"\'`;<>{}[]()');
+const nonTagNameRegex = makeWordRegex('</>');
 
 function regexForWordType(wordType: WordType): RegExp {
   switch (wordType) {
@@ -23,6 +25,8 @@ function regexForWordType(wordType: WordType): RegExp {
       return makeCamelCaseWordRegex(configuration.iskeyword);
     case WordType.FileName:
       return nonFileNameRegex;
+    case WordType.TagName:
+      return nonTagNameRegex;
   }
 }
 
@@ -181,7 +185,6 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   // Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
   let supportsLookbehind = true;
   try {
-    // tslint:disable-next-line
     new RegExp('(?<=x)');
   } catch {
     supportsLookbehind = false;

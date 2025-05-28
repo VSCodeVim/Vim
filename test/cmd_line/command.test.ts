@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace, assertStatusBarEqual } from '../testUtils';
+import { setupWorkspace, assertStatusBarEqual } from '../testUtils';
 
 suite('cmd_line/search command', () => {
   let modeHandler: ModeHandler;
@@ -11,8 +11,6 @@ suite('cmd_line/search command', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('command <C-w> can remove word in cmd line', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'a', 'b', 'c', '-', '1', '2', '3', '<C-w>']);
@@ -163,7 +161,7 @@ suite('cmd_line/search command', () => {
     test(`${key} with empty command line goes to normal mode`, async () => {
       await modeHandler.handleKeyEvent(':');
       await modeHandler.handleKeyEvent(key);
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     });
 
     test(`${key} at start of non-empty command does nothing`, async () => {
@@ -184,7 +182,7 @@ suite('cmd_line/search command', () => {
   test(`<Del> with empty command line goes to normal mode`, async () => {
     await modeHandler.handleKeyEvent(':');
     await modeHandler.handleKeyEvent('<Del>');
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   test(`<Del> at start of non-empty command acts normally`, async () => {

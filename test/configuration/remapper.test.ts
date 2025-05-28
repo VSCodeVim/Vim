@@ -1,16 +1,16 @@
 import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 
-import { Remappers, Remapper } from '../../src/configuration/remapper';
+import { getAndUpdateModeHandler } from '../../extension';
+import { IKeyRemapping } from '../../src/configuration/iconfiguration';
+import { Remapper, Remappers } from '../../src/configuration/remapper';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Configuration } from '../testConfiguration';
-import { setupWorkspace, cleanUpWorkspace, assertEqualLines } from '../testUtils';
-import { IKeyRemapping } from '../../src/configuration/iconfiguration';
 import { IRegisterContent, Register } from '../../src/register/register';
-import { getAndUpdateModeHandler } from '../../extension';
 import { VimState } from '../../src/state/vimState';
 import { StatusBar } from '../../src/statusBar';
+import { Configuration } from '../testConfiguration';
+import { assertEqualLines, setupWorkspace } from '../testUtils';
 
 suite('Remapper', () => {
   let modeHandler: ModeHandler;
@@ -102,19 +102,18 @@ suite('Remapper', () => {
     normalModeKeyBindingsNonRecursive?: IKeyRemapping[];
     visualModeKeyBindings?: IKeyRemapping[];
   }) => {
-    const configuration = new Configuration();
-    configuration.leader = leaderKey;
-    configuration.insertModeKeyBindings = insertModeKeyBindings || [];
-    configuration.normalModeKeyBindings = normalModeKeyBindings || [];
-    configuration.normalModeKeyBindingsNonRecursive = normalModeKeyBindingsNonRecursive || [];
-    configuration.visualModeKeyBindings = visualModeKeyBindings || [];
-
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        leader: leaderKey,
+        insertModeKeyBindings: insertModeKeyBindings || [],
+        normalModeKeyBindings: normalModeKeyBindings || [],
+        normalModeKeyBindingsNonRecursive: normalModeKeyBindingsNonRecursive || [],
+        visualModeKeyBindings: visualModeKeyBindings || [],
+      },
+    });
     modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   };
-
-  teardown(cleanUpWorkspace);
 
   test('getLongestedRemappedKeySequence', async () => {
     // setup
@@ -217,7 +216,7 @@ suite('Remapper', () => {
       }
 
       if (testCase.expectedAfterMode) {
-        assert.strictEqual(modeHandler.currentMode, testCase.expectedAfterMode);
+        assert.strictEqual(modeHandler.vimState.currentMode, testCase.expectedAfterMode);
         assert.strictEqual(modeHandler.vimState.currentMode, testCase.expectedAfterMode);
       }
     }
@@ -245,19 +244,20 @@ suite('Remapper', () => {
     await vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
 
     // act
     let actual = false;
     try {
       actual = await remapper.sendKey(['j', 'j'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
     // assert
     assert.strictEqual(actual, true);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -271,13 +271,14 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     // act
     let actual = false;
     try {
       actual = await remapper.sendKey(['0'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -308,19 +309,20 @@ suite('Remapper', () => {
     await vscode.workspace.applyEdit(edit);
 
     await modeHandler.handleKeyEvent('i');
-    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
 
     // act
     let actual = false;
     try {
       actual = await remapper.sendKey(['<C-e>'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
     // assert
     assert.strictEqual(actual, true);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     assert.strictEqual(vscode.window.activeTextEditor!.document.getText(), expectedDocumentContent);
   });
 
@@ -334,13 +336,14 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     // act
     let actual = false;
     try {
       actual = await remapper.sendKey([leaderKey, 'w'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -359,16 +362,17 @@ suite('Remapper', () => {
     });
 
     const remapper = new Remappers();
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     await modeHandler.handleKeyEvent('v');
-    assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
 
     // act
     let actual = false;
     try {
       actual = await remapper.sendKey([leaderKey, 'c'], modeHandler);
     } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       assert.fail(e);
     }
 
@@ -386,7 +390,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'line1', '<Esc>', '0']);
@@ -414,7 +418,7 @@ suite('Remapper', () => {
       visualModeKeyBindings: defaultVisualModeKeyBindings,
     });
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
@@ -444,18 +448,18 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['c', 'i', 'w']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     await modeHandler.handleMultipleKeyEvents(['j', 'j']);
 
     // assert
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   test('jj -> <Esc> after using <Count>i=jj should insert ===', async () => {
@@ -469,18 +473,18 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', 'b']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['3', 'i', '=']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     await modeHandler.handleMultipleKeyEvents(['j', 'j']);
 
     // assert
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     assertEqualLines(['word1 ===word2']);
   });
 
@@ -495,19 +499,19 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     await modeHandler.handleMultipleKeyEvents(['j', 'j']);
     assertEqualLines(['foobar']);
 
     // assert
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   test('jj -> <Esc> does not modify undo stack', async () => {
@@ -521,19 +525,19 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     await modeHandler.handleMultipleKeyEvents(['j', 'j']);
     assertEqualLines(['foobar']);
 
     // assert
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     await modeHandler.handleMultipleKeyEvents(['u']);
     assertEqualLines(['foo']);
@@ -554,16 +558,16 @@ suite('Remapper', () => {
       ],
     });
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
     // act
     await modeHandler.handleMultipleKeyEvents(['x']);
 
     // assert
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     assert.strictEqual(StatusBar.getText(), 'E223: Recursive mapping');
     assertEqualLines(['foo']);
   });
@@ -592,10 +596,10 @@ suite('Remapper', () => {
     // Offset because the timeout might not finish exactly on time.
     const timeoutOffset = 250;
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
     await modeHandler.handleMultipleKeyEvents(['i', 'foo', ' ', 'bar', ' ', 'biz', '<Esc>', '0']);
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     assertEqualLines(['foo bar biz']);
     assert.strictEqual(
       modeHandler.vimState.cursorStopPosition.character,
@@ -813,5 +817,3 @@ suite('Remapper', () => {
     assert.strictEqual(elapsedTime < timeout - timeoutOffset, true);
   });
 });
-
-/* tslint:enable:no-string-literal */

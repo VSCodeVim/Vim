@@ -1,22 +1,21 @@
 import { strict as assert } from 'assert';
-import * as vscode from 'vscode';
 import * as sinon from 'sinon';
+import * as vscode from 'vscode';
 
-import { Globals } from '../src/globals';
-import { Mode } from '../src/mode/mode';
-import { assertEqualLines, reloadConfiguration } from './testUtils';
-import { globalState } from '../src/state/globalState';
-import { IKeyRemapping } from '../src/configuration/iconfiguration';
 import * as os from 'os';
+import { Position } from 'vscode';
+import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration';
 import { VimrcImpl } from '../src/configuration/vimrc';
 import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder';
-import { IConfiguration } from '../src/configuration/iconfiguration';
-import { Position } from 'vscode';
-import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
-import { StatusBar } from '../src/statusBar';
-import { Register } from '../src/register/register';
+import { Globals } from '../src/globals';
+import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
+import { Register } from '../src/register/register';
+import { globalState } from '../src/state/globalState';
+import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
+import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
@@ -31,16 +30,12 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
     const prevConfig = { ...Globals.mockConfiguration };
     try {
       if (testObj.config) {
-        for (const key in testObj.config) {
-          if (testObj.config.hasOwnProperty(key)) {
-            const value = testObj.config[key];
-            Globals.mockConfiguration[key] = value;
-          }
-        }
+        Object.assign(Globals.mockConfiguration, testObj.config);
         await reloadConfiguration();
       }
       await innerTest(testObj);
     } catch (reason) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       reason.stack = stack;
       throw reason;
     } finally {
@@ -79,6 +74,7 @@ interface ITestObject {
   keysPressed: string;
   end: string[];
   endMode?: Mode;
+  endFsPath?: string | (() => string);
   registers?: { [name: string]: string | undefined };
   statusBar?: string;
   jumps?: string[];
@@ -142,12 +138,12 @@ class DocState {
     this.lines = lines;
   }
 
-  cursor: Position;
-  lines: string[];
+  public readonly cursor: Position; // TODO(#4582): support multiple cursors
+  public readonly lines: string[];
 }
 
 /**
- * Tokenize a string like "abc<Esc>d<C-c>" into ["a", "b", "c", "<Esc>", "d", "<C-c>"]
+ * Tokenize a string like `"abc<Esc>d<C-c>"` into `["a", "b", "c", "<Esc>", "d", "<C-c>"]`
  */
 function tokenizeKeySequence(sequence: string): string[] {
   let isBracketedKey = false;
@@ -156,15 +152,15 @@ function tokenizeKeySequence(sequence: string): string[] {
 
   // no close bracket, probably trying to do a left shift, take literal
   // char sequence
-  function rawTokenize(characters: string): void {
-    // tslint:disable-next-line:prefer-for-of
+  const rawTokenize = (characters: string): void => {
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < characters.length; i++) {
       result.push(characters[i]);
     }
-  }
+  };
 
   // don't use a for of here, since the iterator doesn't split surrogate pairs
-  // tslint:disable-next-line:prefer-for-of
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < sequence.length; i++) {
     const char = sequence[i];
 
@@ -199,6 +195,12 @@ function tokenizeKeySequence(sequence: string): string[] {
 }
 
 async function testIt(testObj: ITestObject): Promise<ModeHandler> {
+  if (vscode.window.activeTextEditor === undefined) {
+    await setupWorkspace({
+      config: testObj.config,
+    });
+  }
+
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
@@ -217,9 +219,10 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
         start.lines.join('\n'),
       );
     }),
+    'Edit failed',
   );
   if (testObj.saveDocBeforeTest) {
-    assert.ok(await editor.document.save());
+    assert.ok(await editor.document.save(), 'Save failed');
   }
   editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
 
@@ -234,13 +237,14 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   if (testObj.stub) {
     const confirmStub = sinon
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
       .resolves(testObj.stub.returnValue);
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
     confirmStub.restore();
   } else {
     // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
   }
 
   // Check given end output is correct
@@ -257,9 +261,17 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   if (testObj.endMode !== undefined) {
     assert.strictEqual(
-      Mode[modeHandler.currentMode],
+      Mode[modeHandler.vimState.currentMode],
       Mode[testObj.endMode],
       "Didn't enter correct mode.",
+    );
+  }
+
+  if (testObj.endFsPath !== undefined) {
+    assert.strictEqual(
+      vscode.window.activeTextEditor?.document.uri.fsPath,
+      typeof testObj.endFsPath === 'string' ? testObj.endFsPath : testObj.endFsPath(),
+      'Active document is wrong.',
     );
   }
 
@@ -392,7 +404,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
           p1Resolve({
             lines: modeHandler.vimState.document.getText(),
             position: modeHandler.vimState.editor.selection.start,
-            endMode: modeHandler.currentMode,
+            endMode: modeHandler.vimState.currentMode,
           });
         }, timeoutOffset);
       });
@@ -422,7 +434,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
             p2Resolve({
               lines: modeHandler.vimState.document.getText(),
               position: modeHandler.vimState.editor.selection.start,
-              endMode: modeHandler.currentMode,
+              endMode: modeHandler.vimState.currentMode,
             });
           }, timeout + timeoutOffset);
         } else {
@@ -432,7 +444,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     };
 
     // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed));
+    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed), false);
 
     // Only start the end check promises after the keys were handled to make sure they don't
     // finish before all the keys are pressed. The keys handler above will resolve when the
@@ -534,5 +546,5 @@ async function parseVimRCMappings(lines: string[]): Promise<void> {
   }
 }
 
-export type { ITestObject };
 export { testIt };
+export type { ITestObject };

@@ -1,9 +1,8 @@
 import { newTest, newTestSkip } from '../../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../../testUtils';
+import { setupWorkspace } from '../../testUtils';
 
 suite('Undo', () => {
   suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
 
   suite('u', () => {
     newTest({

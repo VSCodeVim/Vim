@@ -1,7 +1,7 @@
-import { RegisterAction } from '../../base';
-import { VimState } from '../../../state/vimState';
-import { BaseMovement, failedMovement, IMovement } from '../../baseMotion';
 import { Position, TextDocument } from 'vscode';
+import { VimState } from '../../../state/vimState';
+import { RegisterAction } from '../../base';
+import { BaseMovement, failedMovement, IMovement } from '../../baseMotion';
 
 type Type = 'function' | 'class';
 type Edge = 'start' | 'end';
@@ -22,7 +22,6 @@ interface StructureElement {
 // Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
 let supportsLookbehind = true;
 try {
-  // tslint:disable-next-line
   new RegExp('(?<=x)');
 } catch {
   supportsLookbehind = false;
@@ -43,7 +42,7 @@ export class PythonDocument {
   static readonly reLastNonWhiteSpaceCharacter = supportsLookbehind
     ? new RegExp('(?<=\\S)\\s*$')
     : /(\S)\s*$/;
-  static readonly reDefOrClass = /^\s*(def|class) /;
+  static readonly reDefOrClass = /^\s*(?:async\s+)?(def|class) /;
 
   constructor(document: TextDocument) {
     this._document = document;
@@ -149,8 +148,11 @@ export class PythonDocument {
     const isDirection = direction === 'next' ? 'isAfter' : 'isBefore';
 
     // Filter function for all elements whose "edge" is in the correct "direction"
-    // relative to the cursor's position
-    const dir = (element: StructureElement) => element[edge][isDirection](position);
+    // relative to the cursor's position, excluding the current function for prev direction
+    const dir = (element: StructureElement) => {
+      const pos = element[edge];
+      return direction === 'next' ? pos.isAfter(position) : pos.line < position.line; // For prev, we want strictly before
+    };
 
     // Filter out elements from structure based on type and direction
     const elements = this.structure.filter((elem) => elem.type === type).filter(dir);

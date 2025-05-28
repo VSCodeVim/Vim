@@ -1,10 +1,6 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite(':sort', () => {
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: 'Sort whole file, ascending',
     start: ['Eggplant', 'dragonfruit', 'ap|ple', 'Banana', 'cabbage'],

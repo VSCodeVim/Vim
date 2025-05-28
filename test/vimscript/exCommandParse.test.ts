@@ -1,4 +1,4 @@
-import assert = require('assert');
+import { strict as assert } from 'assert';
 import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
@@ -9,7 +9,8 @@ import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
 import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
-import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
+import { LetCommand } from '../../src/cmd_line/commands/let';
+import { DeleteMarksCommand, MarksCommand, MarkCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
@@ -23,6 +24,7 @@ import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
+import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
@@ -144,9 +146,39 @@ suite('Ex command parsing', () => {
   });
 
   suite(':b[uffer]', () => {
-    exParseTest(':b', new TabCommand({ type: TabCommandType.Absolute, count: 0 }));
-    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
-    exParseTest(':b5', new TabCommand({ type: TabCommandType.Absolute, count: 5 }));
+    exParseTest(':b', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(':b5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':b +20 5',
+      new TabCommand({ type: TabCommandType.Edit, cmd: { type: 'line_number', line: 20 }, buf: 5 }),
+    );
+    exParseTest(
+      ':b bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':b +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
+    );
+    exParseTest(':buffer', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':buffer 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':buffer bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':buffer +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
+    );
   });
 
   suite(':clo[se]', () => {
@@ -200,20 +232,14 @@ suite('Ex command parsing', () => {
   });
 
   suite(':dig[raphs]', () => {
-    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraphs: [] }));
-    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraphs: [] }));
+    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraph: undefined }));
+    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraph: undefined }));
+    exParseTest(':dig e: 235', new DigraphsCommand({ bang: false, newDigraph: ['e', ':', [235]] }));
     exParseTest(
-      ':dig e: 235',
-      new DigraphsCommand({ bang: false, newDigraphs: [['e', ':', 235]] }),
-    );
-    exParseTest(
-      ':dig e: 235 a: 238',
+      ':dig R! 55357 56960',
       new DigraphsCommand({
         bang: false,
-        newDigraphs: [
-          ['e', ':', 235],
-          ['a', ':', 238],
-        ],
+        newDigraph: ['R', '!', [55357, 56960]],
       }),
     );
 
@@ -299,6 +325,54 @@ suite('Ex command parsing', () => {
   });
 
   suite(':let', () => {
+    exParseTest(':let', new LetCommand({ operation: 'print', variables: [] }));
+    exParseTest(
+      ':let foo bar',
+      new LetCommand({ operation: 'print', variables: [variable('foo'), variable('bar')] }),
+    );
+
+    exParseTest(
+      ':let foo = 5',
+      new LetCommand({
+        operation: '=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ':let foo += 5',
+      new LetCommand({
+        operation: '+=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ':let foo -= 5',
+      new LetCommand({
+        operation: '-=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ":let foo .= 'bar'",
+      new LetCommand({
+        operation: '.=',
+        variable: variable('foo'),
+        expression: str('bar'),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':const foo = 5',
+      new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true }),
+    );
+
     // TODO
   });
 
@@ -306,6 +380,11 @@ suite('Ex command parsing', () => {
     exParseTest(':marks', new MarksCommand([]));
     exParseTest(':marks aB', new MarksCommand(['a', 'B']));
     exParseTest(':marks 0 1', new MarksCommand(['0', '1']));
+  });
+
+  suite(':mark', () => {
+    exParseTest(':mark a', new MarkCommand('a'));
+    exParseTest(':mark `', new MarkCommand('`'));
   });
 
   suite(':p[rint]', () => {
@@ -325,6 +404,18 @@ suite('Ex command parsing', () => {
     // No space, alpha register
     exParseFails(':putx');
     exParseTest(':put!x', new PutExCommand({ bang: true, register: 'x' }));
+
+    // Expression register
+    exParseTest(':put=', new PutExCommand({ bang: false, register: '=' }));
+    exParseTest(':put=5+2', new PutExCommand({ bang: false, fromExpression: add(int(5), int(2)) }));
+    exParseTest(
+      ':put = range(4)',
+      new PutExCommand({ bang: false, fromExpression: funcCall('range', [int(4)]) }),
+    );
+    exParseTest(
+      ':put!=[1,2,3]',
+      new PutExCommand({ bang: true, fromExpression: list([int(1), int(2), int(3)]) }),
+    );
   });
 
   suite(':q[uit] and :qa[ll]', () => {

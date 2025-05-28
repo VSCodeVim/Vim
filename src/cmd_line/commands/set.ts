@@ -1,6 +1,7 @@
+// eslint-disable-next-line id-denylist
 import { alt, oneOf, Parser, regexp, seq, string, whitespace } from 'parsimmon';
 import { configuration, optionAliases } from '../../configuration/configuration';
-import { VimError, ErrorCode } from '../../error';
+import { ErrorCode, VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -153,6 +154,13 @@ export class SetCommand extends ExCommand {
     this.operation = operation;
   }
 
+  // Listeners for options that need to be updated when they change
+  private static listeners: { [key: string]: Array<() => void> } = {};
+  static addListener(option: string, listener: () => void) {
+    if (!(option in SetCommand.listeners)) SetCommand.listeners[option] = [];
+    SetCommand.listeners[option].push(listener);
+  }
+
   async execute(vimState: VimState): Promise<void> {
     if (this.operation.option === undefined) {
       // TODO: Show all options that differ from their default value
@@ -160,7 +168,7 @@ export class SetCommand extends ExCommand {
     }
 
     const option = optionAliases.get(this.operation.option) ?? this.operation.option;
-    const currentValue = configuration[option];
+    const currentValue = configuration[option] as string | number | boolean | undefined;
     if (currentValue === undefined) {
       throw VimError.fromCode(ErrorCode.UnknownOption, option);
     }
@@ -168,8 +176,8 @@ export class SetCommand extends ExCommand {
       typeof currentValue === 'boolean'
         ? 'boolean'
         : typeof currentValue === 'string'
-        ? 'string'
-        : 'number';
+          ? 'string'
+          : 'number';
 
     switch (this.operation.type) {
       case 'show_or_set': {
@@ -192,7 +200,7 @@ export class SetCommand extends ExCommand {
         if (type === 'boolean') {
           configuration[option] = false;
         } else {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `no${option}`);
+          throw VimError.fromCode(ErrorCode.InvalidArgument474, `no${option}`);
         }
         break;
       }
@@ -201,7 +209,7 @@ export class SetCommand extends ExCommand {
           configuration[option] = !currentValue;
         } else {
           // TODO: Could also be {option}!
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `inv${option}`);
+          throw VimError.fromCode(ErrorCode.InvalidArgument474, `inv${option}`);
         }
         break;
       }
@@ -216,7 +224,10 @@ export class SetCommand extends ExCommand {
       case 'equal': {
         if (type === 'boolean') {
           // TODO: Could also be {option}:{value}
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}=${this.operation.value}`,
+          );
         } else if (type === 'string') {
           configuration[option] = this.operation.value;
         } else {
@@ -234,7 +245,10 @@ export class SetCommand extends ExCommand {
       }
       case 'add': {
         if (type === 'boolean') {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}+=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}+=${this.operation.value}`,
+          );
         } else if (type === 'string') {
           configuration[option] = currentValue + this.operation.value;
         } else {
@@ -245,13 +259,16 @@ export class SetCommand extends ExCommand {
               `${option}+=${this.operation.value}`,
             );
           }
-          configuration[option] = currentValue + value;
+          configuration[option] = (currentValue as number) + value;
         }
         break;
       }
       case 'multiply': {
         if (type === 'boolean') {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}^=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}^=${this.operation.value}`,
+          );
         } else if (type === 'string') {
           configuration[option] = this.operation.value + currentValue;
         } else {
@@ -262,15 +279,18 @@ export class SetCommand extends ExCommand {
               `${option}^=${this.operation.value}`,
             );
           }
-          configuration[option] = currentValue * value;
+          configuration[option] = (currentValue as number) * value;
         }
         break;
       }
       case 'subtract': {
         if (type === 'boolean') {
-          throw VimError.fromCode(ErrorCode.InvalidArgument, `${option}-=${this.operation.value}`);
+          throw VimError.fromCode(
+            ErrorCode.InvalidArgument474,
+            `${option}-=${this.operation.value}`,
+          );
         } else if (type === 'string') {
-          configuration[option] = currentValue.split(this.operation.value).join('');
+          configuration[option] = (currentValue as string).split(this.operation.value).join('');
         } else {
           const value = Number.parseInt(this.operation.value, 10);
           if (isNaN(value)) {
@@ -279,13 +299,19 @@ export class SetCommand extends ExCommand {
               `${option}-=${this.operation.value}`,
             );
           }
-          configuration[option] = currentValue - value;
+          configuration[option] = (currentValue as number) - value;
         }
         break;
       }
       default:
         const guard: never = this.operation;
         throw new Error('Got unexpected SetOperation.type');
+    }
+
+    if (option in SetCommand.listeners) {
+      for (const listener of SetCommand.listeners[option]) {
+        listener();
+      }
     }
   }
 

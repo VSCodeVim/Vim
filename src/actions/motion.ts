@@ -85,6 +85,7 @@ abstract class MoveByScreenLine extends BaseMovement {
       await vscode.commands.executeCommand('cursorMove', {
         to: this.movementType,
         select: vimState.currentMode !== Mode.Normal,
+        // select: ![Mode.Normal, Mode.Insert].includes(vimState.currentMode),
         by: this.by,
         value: this.value * count,
       });
@@ -261,7 +262,6 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let t: Position | IMovement = position;
     let prevLine: number = position.line;
     let prevChar: number = position.character;
-    const prevDesiredColumn = vimState.desiredColumn;
     const moveDownByScreenLine = new MoveDownByScreenLine();
     do {
       t = await moveDownByScreenLine.execAction(t, vimState);
@@ -276,12 +276,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       prevChar = t.character;
       prevLine = t.line;
     } while (t.line === position.line);
-    // fix column change at last line caused by wrappedLine movement
-    // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
-    }
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 
@@ -373,18 +368,12 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
-    const prevDesiredColumn = vimState.desiredColumn;
     const moveUpByScreenLine = new MoveUpByScreenLine();
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
     } while (t.line === position.line);
-    // fix column change at last line caused by wrappedLine movement
-    // causes cursor lag and flicker if a large repeat prefix is given to movement
-    if (t.character !== prevDesiredColumn) {
-      t = new Position(t.line, prevDesiredColumn);
-    }
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 
@@ -573,12 +562,16 @@ class CommandPreviousSearchMatch extends BaseMovement {
   }
 }
 
-@RegisterAction
-class MarkMovementBOL extends BaseMovement {
-  keys = ["'", '<character>'];
+export abstract class BaseMarkMovement extends BaseMovement {
   override isJump = true;
+  protected registerMode?: RegisterMode;
 
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+  protected abstract getNewPosition(document: vscode.TextDocument, position: Position): Position;
+
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+  ): Promise<Position | IMovement> {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
@@ -586,42 +579,64 @@ class MarkMovementBOL extends BaseMovement {
       throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    if (mark.isUppercaseMark && mark.document !== undefined) {
-      if (vimState.recordedState.operator && mark.document !== vimState.document) {
-        // Operators don't work across files
-        throw VimError.fromCode(ErrorCode.MarkNotSet);
-      }
-      await ensureEditorIsActive(mark.document);
+    if (
+      mark.isUppercaseMark &&
+      vimState.recordedState.operator &&
+      mark.document !== vimState.document
+    ) {
+      throw VimError.fromCode(ErrorCode.MarkNotSet);
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, mark.position.line);
+    if (this.registerMode) {
+      vimState.currentRegisterMode = this.registerMode;
+    }
+
+    const document = mark.isUppercaseMark ? mark.document : vimState.document;
+    const newPosition = this.getNewPosition(document, mark.position);
+
+    // Navigate to mark in another document
+    if (mark.isUppercaseMark && mark.document !== vimState.document) {
+      const options: vscode.TextDocumentShowOptions = {
+        selection: new vscode.Range(newPosition, newPosition),
+      };
+      await vscode.window.showTextDocument(mark.document, options);
+      return failedMovement(vimState); // Don't move cursor in current document
+    }
+
+    // Navigate to mark in the current document
+    return newPosition;
   }
 }
 
 @RegisterAction
-class MarkMovement extends BaseMovement {
-  keys = ['`', '<character>'];
-  override isJump = true;
+export class MarkMovementBOL extends BaseMarkMovement {
+  keys = ["'", '<register>'];
+  protected override registerMode = RegisterMode.LineWise;
 
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const markName = this.keysPressed[1];
-    const mark = vimState.historyTracker.getMark(markName);
+  protected override getNewPosition(document: vscode.TextDocument, position: Position): Position {
+    return TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line);
+  }
+}
 
-    if (mark === undefined) {
-      throw VimError.fromCode(ErrorCode.MarkNotSet);
+@RegisterAction
+export class MarkMovement extends BaseMarkMovement {
+  keys = ['`', '<register>'];
+
+  /**
+   * If the exact position exists, returns that position.
+   * If the character position is beyond the end of line, returns the end of line.
+   * Otherwise returns the position at the end of the document.
+   */
+  protected override getNewPosition(document: vscode.TextDocument, position: Position): Position {
+    const lastLine = document.lineCount - 1;
+    if (position.line > lastLine) {
+      const lastLineLength = document.lineAt(lastLine).text.length;
+      return new Position(lastLine, lastLineLength);
     }
 
-    if (mark.isUppercaseMark && mark.document !== undefined) {
-      if (vimState.recordedState.operator && mark.document !== vimState.document) {
-        // Operators don't work across files
-        throw VimError.fromCode(ErrorCode.MarkNotSet);
-      }
-      await ensureEditorIsActive(mark.document);
-    }
-
-    return mark.position;
+    const { text } = document.lineAt(position.line);
+    const character = Math.min(position.character, text.length);
+    return new Position(position.line, character);
   }
 }
 
@@ -687,12 +702,6 @@ class PrevMarkLinewise extends BaseMovement {
   }
 }
 
-async function ensureEditorIsActive(document: vscode.TextDocument) {
-  if (document !== vscode.window.activeTextEditor?.document) {
-    await vscode.window.showTextDocument(document);
-  }
-}
-
 @RegisterAction
 class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
@@ -700,11 +709,20 @@ class MoveLeft extends BaseMovement {
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     const getLeftWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
-      const newPosition = p.getLeft();
-      if (newPosition.character === 0) {
-        return newPosition;
+
+      if (p.character === 0) {
+        return p;
       }
       if (
+        isLowSurrogate(line.charCodeAt(p.character)) &&
+        isHighSurrogate(line.charCodeAt(p.character - 1))
+      ) {
+        p = p.getLeft();
+      }
+
+      const newPosition = p.getLeft();
+      if (
+        newPosition.character > 0 &&
         isLowSurrogate(line.charCodeAt(newPosition.character)) &&
         isHighSurrogate(line.charCodeAt(newPosition.character - 1))
       ) {
@@ -1286,21 +1304,69 @@ class MoveScreenToLeftHalf extends MoveByScreenLine {
 }
 
 @RegisterAction
-class MoveToLineFromViewPortTop extends MoveByScreenLine {
+class MoveToLineFromViewPortTop extends BaseMovement {
   keys = ['H'];
-  movementType: CursorMovePosition = 'viewPortTop';
-  override by: CursorMoveByUnit = 'line';
-  override value = 1;
   override isJump = true;
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    const topLine = vimState.editor.visibleRanges[0].start.line ?? 0;
+    if (topLine === 0) {
+      return {
+        start: vimState.cursorStartPosition,
+        stop: position.with({ line: topLine }).obeyStartOfLine(vimState.document),
+      };
+    }
+
+    const scrolloff = configuration
+      .getConfiguration('editor')
+      .get<number>('cursorSurroundingLines', 0);
+    const line = topLine + scrolloff;
+
+    return {
+      start: vimState.cursorStartPosition,
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
+    };
+  }
 }
 
 @RegisterAction
-class MoveToLineFromViewPortBottom extends MoveByScreenLine {
+class MoveToLineFromViewPortBottom extends BaseMovement {
   keys = ['L'];
-  movementType: CursorMovePosition = 'viewPortBottom';
-  override by: CursorMoveByUnit = 'line';
-  override value = 1;
   override isJump = true;
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    vimState.currentRegisterMode = RegisterMode.LineWise;
+
+    const bottomLine = vimState.editor.visibleRanges[0].end.line ?? 0;
+    const numLines = vimState.editor.document.lineCount;
+    if (bottomLine === numLines - 1) {
+      // NOTE: editor will scroll to accommodate editor.cursorSurroundingLines in this scenario
+      return {
+        start: vimState.cursorStartPosition,
+        stop: position.with({ line: bottomLine }).obeyStartOfLine(vimState.document),
+      };
+    }
+
+    const scrolloff = configuration
+      .getConfiguration('editor')
+      .get<number>('cursorSurroundingLines', 0);
+    const line = bottomLine - scrolloff;
+
+    return {
+      start: vimState.cursorStartPosition,
+      stop: position.with({ line }).obeyStartOfLine(vimState.document),
+    };
+  }
 }
 
 @RegisterAction
@@ -1848,7 +1914,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
           break;
         }
         const lineText = vimState.document.lineAt(lineNum).text;
-        const matchIndex = lineText.indexOf(this.charToMatch);
+        const matchIndex = lineText.indexOf(this.charToMatch, selStart.character);
         if (matchIndex !== -1) {
           openPos = new Position(lineNum, matchIndex);
           break;

@@ -9,7 +9,6 @@
 
 VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
-- 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
 - 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
 - Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
 
@@ -60,14 +59,14 @@ VSCodeVim can be installed via the VS Code [Marketplace](https://marketplace.vis
 To enable key-repeating, execute the following in your Terminal, log out and back in, and then restart VS Code:
 
 ```sh
-$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
-$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
-$ defaults write com.vscodium ApplePressAndHoldEnabled -bool false                      # For VS Codium
-$ defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
-$ defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
+defaults write com.vscodium ApplePressAndHoldEnabled -bool false                      # For VS Codium
+defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
+defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
 ```
 
-We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
+We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Settings/Preferences -> Keyboard_.
 
 ### Windows
 
@@ -75,7 +74,7 @@ Like real vim, VSCodeVim will take over your control keys. This behavior can be 
 
 ## ⚙️ Settings
 
-The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-gallery#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-gallery) of VS Code.
+The settings documented here are a subset of the supported settings; the full list is described in the `FEATURES` -> `Settings` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-marketplace#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-marketplace) of VS Code.
 
 ### Quick Example
 
@@ -114,8 +113,7 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
     "<C-a>": false,
     "<C-f>": false
   },
-
-  "// To improve performance",
+  // To improve performance
   "extensions.experimental.affinity": {
     "vscodevim.vim": 1
   }

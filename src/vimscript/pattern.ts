@@ -1,4 +1,5 @@
-import { alt, any, lazy, noneOf, oneOf, Parser, seq, string, seqMap, eof } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, any, eof, lazy, noneOf, oneOf, seq, seqMap, string } from 'parsimmon';
 import { Position, Range, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { VimState } from '../state/vimState';
@@ -187,7 +188,7 @@ export class Pattern {
   }
 
   private static compileRegex(regexString: string, ignoreCase?: boolean): RegExp {
-    const flags = ignoreCase ?? configuration.ignorecase ? 'gim' : 'gm';
+    const flags = (ignoreCase ?? configuration.ignorecase) ? 'gim' : 'gm';
     try {
       return new RegExp(regexString, flags);
     } catch (err) {
@@ -205,8 +206,8 @@ export class Pattern {
     const delimiter = args.delimiter
       ? args.delimiter
       : args.direction === SearchDirection.Forward
-      ? '/'
-      : '?';
+        ? '/'
+        : '?';
     // TODO: Some escaped characters need special treatment
     return seqMap(
       string('|').result(true).fallback(false), // Leading | matches everything
@@ -219,6 +220,7 @@ export class Pattern {
           .then(eof)
           .map(() => ({ emptyBranch: true })), // Trailing | matches everything
         string('\\')
+          // eslint-disable-next-line id-denylist
           .then(any.fallback(undefined))
           .map((escaped) => {
             if (escaped === undefined) {
@@ -229,6 +231,31 @@ export class Pattern {
               return { ignorecase: true };
             } else if (escaped === 'C') {
               return { ignorecase: false };
+            } else if (escaped === 'x') {
+              return '[0-9A-Fa-f]'; // Hex digit
+            } else if (escaped === 'X') {
+              return '[^0-9A-Fa-f]'; // Non-hex digit
+            } else if (escaped === 'o') {
+              return '[0-7]'; // Octal digit
+            } else if (escaped === 'o') {
+              return '[^0-7]'; // Non-octal digit
+            } else if (escaped === 'h') {
+              return '[A-Za-z_]'; // Head of word character
+            } else if (escaped === 'H') {
+              return '[^A-Za-z_]'; // Non-head of word character
+            } else if (escaped === 'a') {
+              return '[A-Za-z]'; // Alphabetic character
+            } else if (escaped === 'A') {
+              return '[^A-Za-z]'; // Non-alphabetic character
+            } else if (escaped === 'l') {
+              // TODO: Lowercase and uppercase don't work with ignorecase
+              return '[a-z]'; // Lowercase character
+            } else if (escaped === 'L') {
+              return '[^a-z]'; // Non-lowercase character
+            } else if (escaped === 'u') {
+              return '[A-Z]'; // Uppercase character
+            } else if (escaped === 'U') {
+              return '[^A-Z]'; // Non-uppercase character
             } else if (escaped === '<' || escaped === '>') {
               // TODO: not QUITE the same
               return '\\b';
@@ -240,6 +267,7 @@ export class Pattern {
         alt(
           // Allow unescaped delimiter inside [], and don't transform ^ or $
           string('\\')
+            // eslint-disable-next-line id-denylist
             .then(any.fallback(undefined))
             .map((escaped) => '\\' + (escaped ?? '\\')),
           noneOf(']'),
@@ -259,12 +287,16 @@ export class Pattern {
           if (typeof atom === 'string') {
             patternString += atom;
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (atom.emptyBranch) {
               emptyBranch = true;
               patternString += '|';
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             } else if (atom.ignorecase) {
               caseOverride = true;
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             } else if (atom.inSelection) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
               inSelection = atom.inSelection;
             } else if (caseOverride === undefined) {
               caseOverride = false;

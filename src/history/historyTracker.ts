@@ -9,7 +9,7 @@
  *
  * Undo/Redo will advance forward or backwards through Steps.
  */
-import DiffMatchPatch = require('diff-match-patch');
+import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
 import { VimState } from './../state/vimState';
@@ -96,12 +96,21 @@ class DocumentChange {
   }
 }
 
-export interface IMark {
+interface IMarkBase {
   name: string;
   position: Position;
-  isUppercaseMark: boolean;
-  document?: vscode.TextDocument; // only required when using global marks (isUppercaseMark is true)
 }
+
+export interface ILocalMark extends IMarkBase {
+  isUppercaseMark: false;
+}
+
+export interface IGlobalMark extends IMarkBase {
+  isUppercaseMark: true;
+  document: vscode.TextDocument;
+}
+
+export type IMark = ILocalMark | IGlobalMark;
 
 /**
  * An undo's worth of changes; generally corresponds to a single action.
@@ -143,7 +152,7 @@ class HistoryStep {
   /**
    * "global" marks which operate across files. (when IMark.name is uppercase)
    */
-  static globalMarks: IMark[] = [];
+  static globalMarks: IGlobalMark[] = [];
 
   constructor(init: { marks: IMark[]; changes?: DocumentChange[]; cameFromU?: boolean }) {
     this.changes = init.changes ?? [];
@@ -526,20 +535,59 @@ export class HistoryTracker {
    * Adds a mark.
    */
   public addMark(document: vscode.TextDocument, position: Position, markName: string): void {
-    // Sets previous context mark (adds current position to jump list).
-
     if (markName === "'" || markName === '`') {
-      return globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+      globalState.jumpTracker.recordJump(Jump.fromStateNow(this.vimState));
+    } else if (markName === '<') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.start = position;
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position,
+          end: position,
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.end.isBefore(this.vimState.lastVisualSelection.start)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else if (markName === '>') {
+      if (this.vimState.lastVisualSelection) {
+        this.vimState.lastVisualSelection.end = position.getRight();
+      } else {
+        this.vimState.lastVisualSelection = {
+          mode: Mode.Visual,
+          start: position.getRight(),
+          end: position.getRight(),
+        };
+      }
+      if (
+        this.vimState.lastVisualSelection.mode === Mode.Visual &&
+        this.vimState.lastVisualSelection.start.isAfter(this.vimState.lastVisualSelection.end)
+      ) {
+        // HACK: Visual mode representation is stupid
+        this.vimState.lastVisualSelection.start = this.vimState.lastVisualSelection.end.getLeft();
+        this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
+      }
+    } else {
+      const isUppercaseMark = markName.toUpperCase() === markName;
+      const newMark: IMark = isUppercaseMark
+        ? {
+            position,
+            name: markName,
+            isUppercaseMark,
+            document,
+          }
+        : {
+            position,
+            name: markName,
+            isUppercaseMark,
+          };
+      this.putMarkInList(newMark);
     }
-
-    const isUppercaseMark = markName.toUpperCase() === markName;
-    const newMark: IMark = {
-      position,
-      name: markName,
-      isUppercaseMark,
-      document: isUppercaseMark ? document : undefined,
-    };
-    this.putMarkInList(newMark);
   }
 
   /**
@@ -618,8 +666,8 @@ export class HistoryTracker {
    * Gets all local marks.  I.e., marks that are specific for the current
    * editor.
    */
-  public getLocalMarks(): IMark[] {
-    return [...this.undoStack.getCurrentMarkList()];
+  public getLocalMarks(): ILocalMark[] {
+    return [...this.undoStack.getCurrentMarkList().filter((mark) => !mark.isUppercaseMark)];
   }
 
   /**
