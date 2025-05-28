@@ -220,6 +220,31 @@ export class Pattern {
               return { ignorecase: true };
             } else if (escaped === 'C') {
               return { ignorecase: false };
+            } else if (escaped === 'x') {
+              return '[0-9A-Fa-f]'; // Hex digit
+            } else if (escaped === 'X') {
+              return '[^0-9A-Fa-f]'; // Non-hex digit
+            } else if (escaped === 'o') {
+              return '[0-7]'; // Octal digit
+            } else if (escaped === 'o') {
+              return '[^0-7]'; // Non-octal digit
+            } else if (escaped === 'h') {
+              return '[A-Za-z_]'; // Head of word character
+            } else if (escaped === 'H') {
+              return '[^A-Za-z_]'; // Non-head of word character
+            } else if (escaped === 'a') {
+              return '[A-Za-z]'; // Alphabetic character
+            } else if (escaped === 'A') {
+              return '[^A-Za-z]'; // Non-alphabetic character
+            } else if (escaped === 'l') {
+              // TODO: Lowercase and uppercase don't work with ignorecase
+              return '[a-z]'; // Lowercase character
+            } else if (escaped === 'L') {
+              return '[^a-z]'; // Non-lowercase character
+            } else if (escaped === 'u') {
+              return '[A-Z]'; // Uppercase character
+            } else if (escaped === 'U') {
+              return '[^A-Z]'; // Non-uppercase character
             } else if (escaped === '<' || escaped === '>') {
               // TODO: not QUITE the same
               return '\\b';
