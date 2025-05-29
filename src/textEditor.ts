@@ -258,7 +258,7 @@ export class TextEditor {
         word,
       };
 
-      if (wordEnd.getRight().isLineEnd()) {
+      if (wordEnd.getRight().isLineEnd(document)) {
         return;
       }
       start = start.nextWordStart(document);

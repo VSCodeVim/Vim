@@ -1519,7 +1519,7 @@ export class MoveWordBegin extends BaseMovement {
       return position.getLineEnd();
     }
 
-    if (result.isLineEnd()) {
+    if (result.isLineEnd(vimState.document)) {
       return new Position(result.line, result.character + 1);
     }
 
@@ -1694,7 +1694,7 @@ class MoveParagraphEnd extends BaseMovement {
        * current paragraph, we want the position just before that one to
        * accurately emulate Vim's behaviour, unless we are at EOF.
        */
-      return isLastIteration && !paragraphEnd.isAtDocumentEnd()
+      return isLastIteration && !paragraphEnd.isAtDocumentEnd(vimState.document)
         ? paragraphEnd.getLeftThroughLineBreaks(true)
         : paragraphEnd;
     }

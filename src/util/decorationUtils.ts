@@ -1,4 +1,4 @@
-import { DecorationOptions, Range } from 'vscode';
+import { DecorationOptions, Range, TextDocument, window } from 'vscode';
 
 /**
  * Alias for the types of arrays that can be passed to a TextEditor's setDecorations method
@@ -23,8 +23,8 @@ export type SearchDecorations = {
  * returned object will specify an after element with the width of a single
  * character.
  */
-export function ensureVisible(range: Range): DecorationOptions {
-  return (range.isEmpty || range.end.isLineBeginning()) && range.start.isLineEnd()
+export function ensureVisible(range: Range, document: TextDocument): DecorationOptions {
+  return (range.isEmpty || range.end.isLineBeginning()) && range.start.isLineEnd(document)
     ? {
         // range is at EOL, possibly containing EOL char(s).
         range: range.with(undefined, range.start),
@@ -62,13 +62,16 @@ export function formatDecorationText(
  */
 export function getDecorationsForSearchMatchRanges(
   ranges: Range[],
+  document: TextDocument,
   currentMatchIndex?: number,
 ): SearchDecorations {
   const searchHighlight: DecorationOptions[] = [];
   const searchMatch: DecorationOptions[] = [];
 
   for (let i = 0; i < ranges.length; i++) {
-    (i === currentMatchIndex ? searchMatch : searchHighlight).push(ensureVisible(ranges[i]));
+    (i === currentMatchIndex ? searchMatch : searchHighlight).push(
+      ensureVisible(ranges[i], document),
+    );
   }
 
   return { searchHighlight, searchMatch };

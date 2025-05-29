@@ -840,7 +840,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (position.isLineEnd()) {
+    if (position.isLineEnd(vimState.document)) {
       return;
     }
 

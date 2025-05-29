@@ -414,7 +414,7 @@ export class InsertCharAbove extends BaseCommand {
     }
 
     const charPos = position.getUp();
-    if (charPos.isLineEnd()) {
+    if (charPos.isLineEnd(vimState.document)) {
       return;
     }
 
@@ -435,7 +435,7 @@ export class InsertCharBelow extends BaseCommand {
     }
 
     const charPos = position.getDown();
-    if (charPos.isLineEnd()) {
+    if (charPos.isLineEnd(vimState.document)) {
       return;
     }
 

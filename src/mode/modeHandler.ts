@@ -323,7 +323,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         } else if (
           e.kind === vscode.TextEditorSelectionChangeKind.Keyboard &&
           this.vimState.cursorStopPosition.isEqual(this.vimState.cursorStartPosition) &&
-          this.vimState.cursorStopPosition.getRight().isLineEnd() &&
+          this.vimState.cursorStopPosition.getRight().isLineEnd(this.vimState.document) &&
           this.vimState.cursorStopPosition.getLineEnd().isEqual(selection.active)
         ) {
           // We get here when we use a 'cursorMove' command (that is considered a selection changed
@@ -904,7 +904,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
-              c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight(),
+              c.stop.isLineEnd(this.vimState.document)
+                ? c.stop.getRightThroughLineBreaks()
+                : c.stop.getRight(),
             )
           : c,
       );
@@ -1310,6 +1312,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // If there are no decorations from the command line, get decorations for previous SearchState
         decorations = getDecorationsForSearchMatchRanges(
           globalState.searchState.getMatchRanges(this.vimState),
+          this.vimState.document,
         );
         this.searchDecorationCacheKey = {
           searchString: globalState.searchState.searchString,
@@ -1625,7 +1628,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         };
 
         for (const { stop: cursorStop } of this.vimState.cursors) {
-          if (cursorStop.isLineEnd()) {
+          if (cursorStop.isLineEnd(this.vimState.document)) {
             iModeVirtualCharDecorationOptions.push({
               range: new vscode.Range(cursorStop, cursorStop.getLineEndIncludingEOL()),
               renderOptions: eolRenderOptions,
