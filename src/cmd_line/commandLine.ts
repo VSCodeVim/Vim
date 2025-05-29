@@ -457,6 +457,7 @@ export class SearchCommandLine extends CommandLine {
   public getDecorations(vimState: VimState): SearchDecorations | undefined {
     return getDecorationsForSearchMatchRanges(
       this.searchState.getMatchRanges(vimState),
+      vimState.document,
       configuration.incsearch && vimState.currentMode === Mode.SearchInProgressMode
         ? this.getCurrentMatchRange(vimState)?.index
         : undefined,

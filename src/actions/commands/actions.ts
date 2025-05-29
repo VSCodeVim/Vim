@@ -840,7 +840,7 @@ class CommandDeleteToLineEnd extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (position.isLineEnd()) {
+    if (position.isLineEnd(vimState.document)) {
       return;
     }
 
@@ -1029,17 +1029,18 @@ class CommandOpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const fileUri = await (async () => {
-        if (path.isAbsolute(fileInfo[1])) {
-          return Uri.file(fileInfo[1]);
+      const fileUri: Uri = await (async () => {
+        const pathStr = fileInfo[1];
+        if (path.isAbsolute(pathStr)) {
+          return Uri.file(pathStr);
         } else {
-          let uri = Uri.file(path.resolve(path.dirname(vimState.document.uri.fsPath), fileInfo[1]));
+          let uri = Uri.file(path.resolve(path.dirname(vimState.document.uri.fsPath), pathStr));
           if (!(await doesFileExist(uri))) {
             const workspaceRoot = vscode.workspace.getWorkspaceFolder(vimState.document.uri)?.uri;
             if (workspaceRoot) {
-              uri = Uri.file(path.join(workspaceRoot.fsPath, fileInfo[1]));
+              uri = Uri.file(path.join(workspaceRoot.fsPath, pathStr));
               if (!(await doesFileExist(uri))) {
-                return undefined;
+                throw VimError.fromCode(ErrorCode.CantFindFileInPath, pathStr);
               }
             }
           }
@@ -1047,18 +1048,16 @@ class CommandOpenFile extends BaseCommand {
         }
       })();
 
-      if (fileUri) {
-        const line = parseInt(fileInfo[2], 10);
-        const fileCommand = new FileCommand({
-          name: 'edit',
-          bang: false,
-          opt: [],
-          file: fileUri.fsPath,
-          cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
-          createFileIfNotExists: false,
-        });
-        void fileCommand.execute(vimState);
-      }
+      const line = parseInt(fileInfo[2], 10);
+      const fileCommand = new FileCommand({
+        name: 'edit',
+        bang: false,
+        opt: [],
+        file: fileUri.fsPath,
+        cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
+        createFileIfNotExists: false,
+      });
+      void fileCommand.execute(vimState);
     }
   }
 }

@@ -30,6 +30,7 @@ export enum ErrorCode {
   SearchHitTop = 384,
   SearchHitBottom = 385,
   CannotCloseLastWindow = 444,
+  CantFindFileInPath = 447,
   ArgumentRequired = 471,
   InvalidArgument474 = 474,
   InvalidArgument475 = 475,
@@ -111,6 +112,7 @@ export const ErrorMessage: IErrorMessage = {
   384: 'Search hit TOP without match for',
   385: 'Search hit BOTTOM without match for',
   444: 'Cannot close last window',
+  447: 'Can\'t find file "{FILE_NAME}" in path',
   471: 'Argument required',
   474: 'Invalid argument',
   475: 'Invalid argument',
@@ -175,17 +177,23 @@ export class VimError extends Error {
   }
 
   static fromCode(code: ErrorCode, extraValue?: string): VimError {
-    if (ErrorMessage[code]) {
+    let message = ErrorMessage[code];
+    if (message) {
+      // TODO: Come up with a more elegant solution
       if (extraValue) {
         if (code === ErrorCode.NothingInRegister) {
           extraValue = ` ${extraValue}`;
         } else if (code === ErrorCode.NoMatchingBuffer || code === ErrorCode.MultipleMatches) {
           extraValue = ` for ${extraValue}`;
+        } else if (code === ErrorCode.CantFindFileInPath) {
+          message = message.replace('{FILE_NAME}', extraValue);
+          extraValue = '';
         } else {
           extraValue = `: ${extraValue}`;
         }
       }
-      return new VimError(code, ErrorMessage[code] + (extraValue ?? ''));
+
+      return new VimError(code, message + (extraValue ?? ''));
     }
 
     throw new Error('unknown error code: ' + code);

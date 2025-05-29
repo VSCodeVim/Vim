@@ -43,7 +43,6 @@ import {
   InsertCharAbove,
   InsertCharBelow,
 } from './../actions/commands/insert';
-import { PairMatcher } from './../common/matching/matcher';
 import { earlierOf, laterOf } from './../common/motion/position';
 import { ForceStopRemappingError, VimError } from './../error';
 import { Register, RegisterMode } from './../register/register';
@@ -324,7 +323,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         } else if (
           e.kind === vscode.TextEditorSelectionChangeKind.Keyboard &&
           this.vimState.cursorStopPosition.isEqual(this.vimState.cursorStartPosition) &&
-          this.vimState.cursorStopPosition.getRight().isLineEnd() &&
+          this.vimState.cursorStopPosition.getRight().isLineEnd(this.vimState.document) &&
           this.vimState.cursorStopPosition.getLineEnd().isEqual(selection.active)
         ) {
           // We get here when we use a 'cursorMove' command (that is considered a selection changed
@@ -852,9 +851,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
-    ranRepeatableAction =
-      (ranRepeatableAction && this.vimState.currentMode === Mode.Normal) ||
-      this.createUndoPointForBrackets();
+    ranRepeatableAction &&= this.vimState.currentMode === Mode.Normal;
 
     // We don't want to record a repeatable action when exiting from these modes
     // by pressing <Esc>
@@ -907,7 +904,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
-              c.stop.isLineEnd() ? c.stop.getRightThroughLineBreaks() : c.stop.getRight(),
+              c.stop.isLineEnd(this.vimState.document)
+                ? c.stop.getRightThroughLineBreaks()
+                : c.stop.getRight(),
             )
           : c,
       );
@@ -1313,6 +1312,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // If there are no decorations from the command line, get decorations for previous SearchState
         decorations = getDecorationsForSearchMatchRanges(
           globalState.searchState.getMatchRanges(this.vimState),
+          this.vimState.document,
         );
         this.searchDecorationCacheKey = {
           searchString: globalState.searchState.searchString,
@@ -1623,7 +1623,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         };
 
         for (const { stop: cursorStop } of this.vimState.cursors) {
-          if (cursorStop.isLineEnd()) {
+          if (cursorStop.isLineEnd(this.vimState.document)) {
             iModeVirtualCharDecorationOptions.push({
               range: new vscode.Range(cursorStop, cursorStop.getLineEndIncludingEOL()),
               renderOptions: eolRenderOptions,
@@ -1705,12 +1705,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.currentMode === Mode.EasyMotionInputMode &&
       configuration.easymotionDimBackground &&
       this.vimState.easyMotion.searchAction instanceof SearchByNCharCommand
-        ? [
-            new vscode.Range(
-              TextEditor.getDocumentBegin(),
-              TextEditor.getDocumentEnd(this.vimState.document),
-            ),
-          ]
+        ? [TextEditor.getDocumentRange(this.vimState.document)]
         : [];
     const easyMotionHighlightRanges =
       this.currentMode === Mode.EasyMotionInputMode &&
@@ -1745,46 +1740,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (!/\s+/.test(this.vimState.document.getText(range))) {
       void vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
-  }
-
-  // Return true if a new undo point should be created based on brackets and parentheses
-  private createUndoPointForBrackets(): boolean {
-    // }])> keys all start a new undo state when directly next to an {[(< opening character
-    const key =
-      this.vimState.recordedState.actionKeys[this.vimState.recordedState.actionKeys.length - 1];
-
-    if (key === undefined) {
-      return false;
-    }
-
-    if (this.vimState.currentMode === Mode.Insert) {
-      // Check if the keypress is a closing bracket to a corresponding opening bracket right next to it
-      let result = PairMatcher.nextPairedChar(
-        this.vimState.cursorStopPosition,
-        key,
-        this.vimState,
-        false,
-      );
-      if (result !== undefined) {
-        if (this.vimState.cursorStopPosition.isEqual(result)) {
-          return true;
-        }
-      }
-
-      result = PairMatcher.nextPairedChar(
-        this.vimState.cursorStopPosition.getLeft(),
-        key,
-        this.vimState,
-        false,
-      );
-      if (result !== undefined) {
-        if (this.vimState.cursorStopPosition.getLeft(2).isEqual(result)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
   }
 
   dispose() {
