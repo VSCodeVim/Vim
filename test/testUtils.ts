@@ -75,6 +75,9 @@ export async function createFile(
     contents?: string;
   } = {},
 ): Promise<string> {
+  if (args.fileExtension) {
+    assert.ok(args.fileExtension.startsWith('.'));
+  }
   args.fsPath ??= join(os.tmpdir(), rndName() + (args.fileExtension ?? ''));
   await promisify(fs.writeFile)(args.fsPath, args.contents ?? '');
   return args.fsPath;
@@ -115,7 +118,7 @@ export async function waitForEditorsToClose(numExpectedEditors: number = 0): Pro
 }
 
 export function assertEqualLines(expectedLines: string[]) {
-  assert.strictEqual(
+  assert.equal(
     vscode.window.activeTextEditor?.document.getText(),
     expectedLines.join(os.EOL),
     'Document content does not match.',
@@ -126,7 +129,7 @@ export function assertStatusBarEqual(
   expectedText: string,
   message: string = 'Status bar text does not match',
 ) {
-  assert.strictEqual(StatusBar.getText(), expectedText, message);
+  assert.equal(StatusBar.getText(), expectedText, message);
 }
 
 export async function setupWorkspace(
@@ -169,12 +172,7 @@ export async function setupWorkspace(
 
   assert.ok(
     await activeTextEditor.edit((builder) => {
-      builder.delete(
-        new vscode.Range(
-          new vscode.Position(0, 0),
-          TextEditor.getDocumentEnd(activeTextEditor.document),
-        ),
-      );
+      builder.delete(TextEditor.getDocumentRange(activeTextEditor.document));
     }),
     'Edit failed',
   );
@@ -184,7 +182,7 @@ export async function setupWorkspace(
 
 export async function cleanUpWorkspace(): Promise<void> {
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-  assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
+  assert.equal(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
   assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
 }
 
@@ -219,12 +217,8 @@ export async function replaceContent(
   document: vscode.TextDocument,
   content: string,
 ): Promise<void> {
-  const firstLine = document.lineAt(0);
-  const lastLine = document.lineAt(document.lineCount - 1);
-  const range = new vscode.Range(firstLine.range.start, lastLine.range.end);
-
   const edit = new vscode.WorkspaceEdit();
-  edit.replace(document.uri, range, content);
+  edit.replace(document.uri, TextEditor.getDocumentRange(document), content);
   const isApplied = vscode.workspace.applyEdit(edit);
 
   if (!isApplied) throw new Error(`Failed to replace content`);

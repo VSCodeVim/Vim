@@ -360,7 +360,7 @@ export class SubstituteCommand extends ExCommand {
           },
         });
       } else {
-        searchHighlight.push(ensureVisible(match.range));
+        searchHighlight.push(ensureVisible(match.range, vimState.document));
       }
     }
     return { substitutionAppend, substitutionReplace, searchHighlight };
@@ -416,7 +416,9 @@ export class SubstituteCommand extends ExCommand {
 
     vimState.editor.revealRange(new Range(match.range.start.line, 0, match.range.start.line, 0));
     vimState.editor.setDecorations(decoration.searchHighlight, newConfirmationSearchHighlights);
-    vimState.editor.setDecorations(decoration.searchMatch, [ensureVisible(match.range)]);
+    vimState.editor.setDecorations(decoration.searchMatch, [
+      ensureVisible(match.range, vimState.document),
+    ]);
     vimState.editor.setDecorations(
       decoration.confirmedSubstitution,
       this.confirmedSubstitutions ?? [],
@@ -561,7 +563,9 @@ export class SubstituteCommand extends ExCommand {
         this.confirmedSubstitutions = [];
       }
       if (configuration.incsearch) {
-        this.cSearchHighlights = replaceableMatches.map((match) => ensureVisible(match.range));
+        this.cSearchHighlights = replaceableMatches.map((match) =>
+          ensureVisible(match.range, vimState.document),
+        );
       }
     }
 
