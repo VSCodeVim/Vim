@@ -549,8 +549,7 @@ Position.prototype.isAtDocumentEnd = function (
   this: Position,
   document: vscode.TextDocument,
 ): boolean {
-  const lastLine = document.lineAt(document.lineCount - 1);
-  return this.isEqual(lastLine.range.end);
+  return this.isEqual(TextEditor.getDocumentEnd(document));
 };
 
 /**

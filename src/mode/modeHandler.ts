@@ -42,7 +42,6 @@ import {
   InsertCharAbove,
   InsertCharBelow,
 } from './../actions/commands/insert';
-import { PairMatcher } from './../common/matching/matcher';
 import { earlierOf, laterOf } from './../common/motion/position';
 import { ForceStopRemappingError, VimError } from './../error';
 import { Register, RegisterMode } from './../register/register';
@@ -1710,12 +1709,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.currentMode === Mode.EasyMotionInputMode &&
       configuration.easymotionDimBackground &&
       this.vimState.easyMotion.searchAction instanceof SearchByNCharCommand
-        ? [
-            new vscode.Range(
-              TextEditor.getDocumentBegin(),
-              TextEditor.getDocumentEnd(this.vimState.document),
-            ),
-          ]
+        ? [TextEditor.getDocumentRange(this.vimState.document)]
         : [];
     const easyMotionHighlightRanges =
       this.currentMode === Mode.EasyMotionInputMode &&

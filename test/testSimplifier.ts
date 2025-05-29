@@ -214,10 +214,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   // Initialize the editor with the starting text and cursor selection
   assert.ok(
     await editor.edit((builder) => {
-      builder.replace(
-        new vscode.Range(new Position(0, 0), TextEditor.getDocumentEnd(editor.document)),
-        start.lines.join('\n'),
-      );
+      builder.replace(TextEditor.getDocumentRange(editor.document), start.lines.join('\n'));
     }),
     'Edit failed',
   );

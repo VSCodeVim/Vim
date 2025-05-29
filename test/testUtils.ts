@@ -169,12 +169,7 @@ export async function setupWorkspace(
 
   assert.ok(
     await activeTextEditor.edit((builder) => {
-      builder.delete(
-        new vscode.Range(
-          new vscode.Position(0, 0),
-          TextEditor.getDocumentEnd(activeTextEditor.document),
-        ),
-      );
+      builder.delete(TextEditor.getDocumentRange(activeTextEditor.document));
     }),
     'Edit failed',
   );
@@ -219,12 +214,8 @@ export async function replaceContent(
   document: vscode.TextDocument,
   content: string,
 ): Promise<void> {
-  const firstLine = document.lineAt(0);
-  const lastLine = document.lineAt(document.lineCount - 1);
-  const range = new vscode.Range(firstLine.range.start, lastLine.range.end);
-
   const edit = new vscode.WorkspaceEdit();
-  edit.replace(document.uri, range, content);
+  edit.replace(document.uri, TextEditor.getDocumentRange(document), content);
   const isApplied = vscode.workspace.applyEdit(edit);
 
   if (!isApplied) throw new Error(`Failed to replace content`);

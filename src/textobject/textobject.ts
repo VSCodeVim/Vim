@@ -565,10 +565,8 @@ export class SelectEntire extends TextObject {
   keys = ['a', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: TextEditor.getDocumentBegin(),
-      stop: TextEditor.getDocumentEnd(vimState.document),
-    };
+    const range = TextEditor.getDocumentRange(vimState.document);
+    return { start: range.start, stop: range.end };
   }
 }
 
