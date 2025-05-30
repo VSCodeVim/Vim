@@ -44,6 +44,8 @@ import { EvalCommand } from '../../src/cmd_line/commands/eval';
 import { EchoCommand } from '../../src/cmd_line/commands/echo';
 import { Expression } from '../../src/vimscript/expression/types';
 import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
+import { ThrowCommand } from '../../src/cmd_line/commands/throw';
+import { FunctionCommand } from '../../src/cmd_line/commands/function';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -323,6 +325,14 @@ suite('Ex command parsing', () => {
     exParseFails(':eval', VimError.InvalidExpression(''));
     // TODO: exParseFails(':eval 6abc', VimError.InvalidExpression('6abc'));
     exParseFails(':eval 1 1', VimError.TrailingCharacters('1'));
+  });
+
+  suite(':fu[nction]', () => {
+    exParseTest(
+      ':function Foo(x, y) range',
+      new FunctionCommand({ name: 'Foo', bang: false, args: ['x', 'y'], range: true }),
+    );
+    // TODO
   });
 
   suite(':go[to]', () => {
@@ -782,6 +792,10 @@ suite('Ex command parsing', () => {
     exParseTest(':tabonly!5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
     exParseTest(':tabonly 5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
     exParseTest(':tabonly! 5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
+  });
+
+  suite(':th[row]', () => {
+    exParseTest(':throw 5 + 7', new ThrowCommand(add(int(5), int(7))));
   });
 
   suite(':vim[grep]', () => {

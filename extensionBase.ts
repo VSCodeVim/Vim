@@ -17,6 +17,7 @@ import { Logger } from './src/util/logger';
 import { SpecialKeys } from './src/util/specialKeys';
 import { VSCodeContext } from './src/util/vscodeContext';
 import { exCommandParser } from './src/vimscript/exCommandParser';
+import { Script } from './src/vimscript/script';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -473,6 +474,33 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     void toggleExtension(configuration.disableExtension, compositionState);
   });
 
+  registerCommand(
+    context,
+    'vim.runVimscript',
+    async (uri: vscode.Uri | undefined) => {
+      const mh = await getAndUpdateModeHandler();
+      if (mh) {
+        if (uri === undefined) {
+          uri = (
+            await vscode.window.showOpenDialog({
+              canSelectMany: false,
+              title: 'Select a Vimscript file to run',
+              openLabel: 'Run',
+              filters: {
+                Vimscript: ['vim', 'vimrc'],
+              },
+            })
+          )?.at(0);
+        }
+        if (uri) {
+          const script = await Script.fromFile(uri);
+          await script.execute(mh.vimState);
+        }
+      }
+    },
+    true,
+  );
+
   for (const boundKey of configuration.boundKeyCombinations) {
     const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
       ? async () => {
@@ -578,6 +606,7 @@ export function registerCommand(
   callback: (...args: any[]) => any,
   requiresActiveEditor: boolean = true,
 ) {
+  // TODO: Should probably use `vscode.commands.registerTextEditorCommand` when `requiresActiveEditor` is true
   const disposable = vscode.commands.registerCommand(command, async (args) => {
     if (requiresActiveEditor && !vscode.window.activeTextEditor) {
       return;

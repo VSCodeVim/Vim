@@ -1,3 +1,5 @@
+// See https://github.com/vim/vim/blob/master/src/errors.h
+
 export enum ErrorCode {
   InvalidAddress = 14,
   InvalidExpression = 15,
@@ -19,6 +21,11 @@ export enum ErrorCode {
   TooManyArgs = 118,
   NotEnoughArgs = 119,
   UndefinedVariable = 121,
+  MissingEndFunction = 126,
+  FinishUsedOutsideOfASourcedFile = 168,
+  MissingEndLoop = 170,
+  MissingEndIf = 171,
+  EndFunctionNotInsideFunction = 193,
   ErrorWritingToFile = 208,
   FileNoLongerAvailable = 211,
   RecursiveMapping = 223,
@@ -29,6 +36,7 @@ export enum ErrorCode {
   SearchHitBottom = 385,
   CannotCloseLastWindow = 444,
   CantFindFileInPath = 447,
+  IllegalVariableName = 461,
   ArgumentRequired = 471,
   InvalidArgument474 = 474,
   InvalidArgument475 = 475,
@@ -39,6 +47,13 @@ export enum ErrorCode {
   NoBuffersDeleted = 516,
   UnknownOption = 518,
   NumberRequiredAfterEqual = 521,
+  EndIfWithoutIf = 580,
+  ElseWithoutIf = 581,
+  ElseIfWithoutIf = 582,
+  ContinueWithoutWhileOrFor = 586,
+  BreakWithoutWhileOrFor = 587,
+  EndLoopWithoutLoop = 588,
+  ExceptionNotCaught = 605,
   AtStartOfChangeList = 662,
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
@@ -92,6 +107,7 @@ export enum ErrorCode {
   InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
   CannotLock = 996,
+  StringListOrBlobRequired = 1098,
   ListRequiredForArgument = 1211,
 }
 
@@ -178,6 +194,27 @@ export class VimError extends Error {
   static UndefinedVariable(name: string): VimError {
     return new VimError(ErrorCode.UndefinedVariable, `Undefined variable: ${name}`);
   }
+  static MissingEndFunction(): VimError {
+    return new VimError(ErrorCode.MissingEndFunction, 'Missing :endfunction');
+  }
+  static FinishUsedOutsideOfASourcedFile(): VimError {
+    return new VimError(
+      ErrorCode.FinishUsedOutsideOfASourcedFile,
+      ':finish used outside of a sourced file',
+    );
+  }
+  static MissingEndLoop(loop: 'for' | 'while'): VimError {
+    return new VimError(ErrorCode.MissingEndLoop, `Missing :end${loop}`);
+  }
+  static MissingEndIf(): VimError {
+    return new VimError(ErrorCode.MissingEndIf, 'Missing :endif');
+  }
+  static EndFunctionNotInsideFunction(): VimError {
+    return new VimError(
+      ErrorCode.EndFunctionNotInsideFunction,
+      ':endfunction not inside a function',
+    );
+  }
   static ErrorWritingToFile(): VimError {
     return new VimError(ErrorCode.ErrorWritingToFile, 'Error writing to file');
   }
@@ -210,6 +247,9 @@ export class VimError extends Error {
   }
   static CantFindFileInPath(fileName: string): VimError {
     return new VimError(ErrorCode.CantFindFileInPath, `Can't find file "${fileName}" in path`);
+  }
+  static IllegalVariableName(name: string): VimError {
+    return new VimError(ErrorCode.IllegalVariableName, `Illegal variable name: ${name}`);
   }
   static ArgumentRequired(): VimError {
     return new VimError(ErrorCode.ArgumentRequired, 'Argument required');
@@ -249,6 +289,27 @@ export class VimError extends Error {
   }
   static NumberRequiredAfterEqual(what: string): VimError {
     return new VimError(ErrorCode.NumberRequiredAfterEqual, `Number required after =: ${what}`);
+  }
+  static EndIfWithoutIf(): VimError {
+    return new VimError(ErrorCode.EndIfWithoutIf, ':endif without :if');
+  }
+  static ElseWithoutIf(): VimError {
+    return new VimError(ErrorCode.ElseWithoutIf, ':else without :if');
+  }
+  static ElseIfWithoutIf(): VimError {
+    return new VimError(ErrorCode.ElseIfWithoutIf, ':elseif without :if');
+  }
+  static ContinueWithoutWhileOrFor(): VimError {
+    return new VimError(ErrorCode.ContinueWithoutWhileOrFor, ':continue without :while or :for');
+  }
+  static BreakWithoutWhileOrFor(): VimError {
+    return new VimError(ErrorCode.BreakWithoutWhileOrFor, ':break without :while or :for');
+  }
+  static EndLoopWithoutLoop(loop: 'for' | 'while'): VimError {
+    return new VimError(ErrorCode.EndLoopWithoutLoop, `:end${loop} without :${loop}`);
+  }
+  static ExceptionNotCaught(message: string): VimError {
+    return new VimError(ErrorCode.ExceptionNotCaught, `Exception not caught: ${message}`);
   }
   static AtStartOfChangeList(): VimError {
     return new VimError(ErrorCode.AtStartOfChangeList, 'At start of changelist');
@@ -449,6 +510,9 @@ export class VimError extends Error {
     what: 'a range' | 'an option' | 'a list or dict' | 'an environment variable' | 'a register',
   ): VimError {
     return new VimError(ErrorCode.CannotLock, `Cannot lock ${what}`);
+  }
+  static StringListOrBlobRequired(): VimError {
+    return new VimError(ErrorCode.StringListOrBlobRequired, 'String, List or Blob required');
   }
   static ListRequiredForArgument(idx: number): VimError {
     return new VimError(ErrorCode.ListRequiredForArgument, `List required for argument ${idx}`);
