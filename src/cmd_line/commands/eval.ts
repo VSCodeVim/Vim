@@ -17,7 +17,7 @@ export class EvalCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    const ctx = new EvaluationContext(vimState);
+    const ctx = this.script ? this.script.evalContext : new EvaluationContext(vimState);
     ctx.evaluate(this.expression);
   }
 }
@@ -34,7 +34,7 @@ export class CallCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    const ctx = new EvaluationContext(vimState);
+    const ctx = this.script ? this.script.evalContext : new EvaluationContext(vimState);
     ctx.evaluate(this.expression);
   }
 }

@@ -2,6 +2,8 @@ interface IErrorMessage {
   [index: number]: string;
 }
 
+// See https://github.com/vim/vim/blob/master/src/errors.h
+
 export enum ErrorCode {
   InvalidAddress = 14,
   InvalidExpression = 15,
@@ -22,6 +24,11 @@ export enum ErrorCode {
   TooManyArgs = 118,
   NotEnoughArgs = 119,
   UndefinedVariable = 121,
+  MissingEndFunction = 126,
+  FinishUsedOutsideOfASourcedFile = 168,
+  MissingEndWhile = 170,
+  MissingEndIf = 171,
+  EndFunctionNotInsideFunction = 193,
   ErrorWritingToFile = 208,
   FileNoLongerAvailable = 211,
   RecursiveMapping = 223,
@@ -32,6 +39,7 @@ export enum ErrorCode {
   SearchHitBottom = 385,
   CannotCloseLastWindow = 444,
   CantFindFileInPath = 447,
+  IllegalVariableName = 461,
   ArgumentRequired = 471,
   InvalidArgument474 = 474,
   InvalidArgument475 = 475,
@@ -42,6 +50,13 @@ export enum ErrorCode {
   NoBuffersDeleted = 516,
   UnknownOption = 518,
   NumberRequiredAfterEqual = 521,
+  EndIfWithoutIf = 580,
+  ElseWithoutIf = 581,
+  ElseIfWithoutIf = 582,
+  ContinueWithoutWhileOrFor = 586,
+  BreakWithoutWhileOrFor = 587,
+  EndWhileWithoutWhile = 588,
+  ExceptionNotCaught = 605,
   AtStartOfChangeList = 662,
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
@@ -93,6 +108,7 @@ export enum ErrorCode {
   InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
   CannotLockARegister = 996,
+  StringListOrBlobRequired = 1098,
   ListRequiredForArgument = 1211,
 }
 
@@ -116,6 +132,11 @@ export const ErrorMessage: IErrorMessage = {
   118: 'Too many arguments for function',
   119: 'Not enough arguments for function',
   121: 'Undefined variable',
+  126: 'Missing :endfunction',
+  168: ':finish used outside of a sourced file',
+  170: 'Missing :endwhile',
+  171: 'Missing :endif',
+  193: ':endfunction not inside a function',
   208: 'Error writing to file',
   211: 'File no longer available', // TODO: Should be `File "[file_name]" no longer available`
   223: 'Recursive mapping',
@@ -126,6 +147,7 @@ export const ErrorMessage: IErrorMessage = {
   385: 'Search hit BOTTOM without match for',
   444: 'Cannot close last window',
   447: 'Can\'t find file "{FILE_NAME}" in path',
+  461: 'Illegal variable name',
   471: 'Argument required',
   474: 'Invalid argument',
   475: 'Invalid argument',
@@ -136,6 +158,13 @@ export const ErrorMessage: IErrorMessage = {
   516: 'No buffers were deleted',
   518: 'Unknown option',
   521: 'Number required after =',
+  580: ':endif without :if',
+  581: ':else without :if',
+  582: ':elseif without :if',
+  586: ':continue without :while or :for',
+  587: ':break without :while or :for',
+  588: ':endwhile without :while',
+  605: 'Exception not caught',
   662: 'At start of changelist',
   663: 'At end of changelist',
   664: 'changelist is empty',
@@ -187,6 +216,7 @@ export const ErrorMessage: IErrorMessage = {
   978: 'Invalid operation for Blob',
   995: 'Cannot modify existing variable',
   996: 'Cannot lock a register',
+  1098: 'String, List or Blob required',
   1211: 'List required for argument {IDX}',
 };
 
