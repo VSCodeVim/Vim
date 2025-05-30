@@ -155,6 +155,7 @@ export class InternalSelectionsTracker {
    */
   public startIgnoringIntermediateSelections(): void {
     this.shouldIgnoreIntermediateSelections = true;
+    this.logDebug('Now ignoring intermediate selection change events while running action');
   }
 
   /**
@@ -162,6 +163,7 @@ export class InternalSelectionsTracker {
    */
   public stopIgnoringIntermediateSelections(): void {
     this.shouldIgnoreIntermediateSelections = false;
+    this.logDebug('Resuming handling of selection change events after running action');
   }
 
   // #endregion
@@ -248,6 +250,9 @@ export class InternalSelectionsTracker {
   // #region Logging helpers
   private logTrace(message: string): void {
     Logger.trace(`[InternalSelectionsTracker] ${message}`);
+  }
+  private logDebug(message: string): void {
+    Logger.debug(`[InternalSelectionsTracker] ${message}`);
   }
   private logWarn(message: string): void {
     Logger.warn(`[InternalSelectionsTracker] ${message}`);
