@@ -153,13 +153,13 @@ export class LetCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const context = new EvaluationContext();
+    const ctx = this.script ? this.script.evalContext : new EvaluationContext();
     if (this.args.operation === 'print') {
       if (this.args.variables.length === 0) {
         // TODO
       } else {
         const variable = this.args.variables.at(-1)!;
-        const value = context.evaluate(variable);
+        const value = ctx.evaluate(variable);
         const prefix = value.type === 'number' ? '#' : value.type === 'funcref' ? '*' : '';
         StatusBar.setText(vimState, `${variable.name}    ${prefix}${displayValue(value)}`);
       }
@@ -175,28 +175,28 @@ export class LetCommand extends ExCommand {
         }
       }
 
-      const value = context.evaluate(this.args.expression);
+      const value = ctx.evaluate(this.args.expression);
       const newValue = (_var: Expression, _value: Value) => {
         if (this.args.operation === '+=') {
-          return context.evaluate(add(_var, _value));
+          return ctx.evaluate(add(_var, _value));
         } else if (this.args.operation === '-=') {
-          return context.evaluate(subtract(_var, _value));
+          return ctx.evaluate(subtract(_var, _value));
         } else if (this.args.operation === '*=') {
-          return context.evaluate(multiply(_var, _value));
+          return ctx.evaluate(multiply(_var, _value));
         } else if (this.args.operation === '/=') {
-          return context.evaluate(divide(_var, _value));
+          return ctx.evaluate(divide(_var, _value));
         } else if (this.args.operation === '%=') {
-          return context.evaluate(modulo(_var, _value));
+          return ctx.evaluate(modulo(_var, _value));
         } else if (this.args.operation === '.=') {
-          return context.evaluate(concat(_var, _value));
+          return ctx.evaluate(concat(_var, _value));
         } else if (this.args.operation === '..=') {
-          return context.evaluate(concat(_var, _value));
+          return ctx.evaluate(concat(_var, _value));
         }
         return _value;
       };
 
       if (variable.type === 'variable') {
-        context.setVariable(variable, newValue(variable, value), this.args.lock);
+        ctx.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
         // TODO
       } else if (variable.type === 'option') {
@@ -216,12 +216,12 @@ export class LetCommand extends ExCommand {
         }
         for (const [i, name] of variable.names.entries()) {
           const item: VariableExpression = { type: 'variable', namespace: undefined, name };
-          context.setVariable(item, newValue(item, value.items[i]), this.args.lock);
+          ctx.setVariable(item, newValue(item, value.items[i]), this.args.lock);
         }
       } else if (variable.type === 'index') {
-        const varValue = context.evaluate(variable.variable);
+        const varValue = ctx.evaluate(variable.variable);
         if (varValue.type === 'list') {
-          const idx = toInt(context.evaluate(variable.index));
+          const idx = toInt(ctx.evaluate(variable.index));
           const newItem = newValue(
             {
               type: 'index',
@@ -231,9 +231,9 @@ export class LetCommand extends ExCommand {
             value,
           );
           varValue.items[idx] = newItem;
-          context.setVariable(variable.variable, varValue, this.args.lock);
+          ctx.setVariable(variable.variable, varValue, this.args.lock);
         } else if (varValue.type === 'dict_val') {
-          const key = toString(context.evaluate(variable.index));
+          const key = toString(ctx.evaluate(variable.index));
           const newItem = newValue(
             {
               type: 'entry',
@@ -243,7 +243,7 @@ export class LetCommand extends ExCommand {
             value,
           );
           varValue.items.set(key, newItem);
-          context.setVariable(variable.variable, varValue, this.args.lock);
+          ctx.setVariable(variable.variable, varValue, this.args.lock);
         } else {
           // TODO: Support blobs
           throw VimError.fromCode(ErrorCode.CanOnlyIndexAListDictionaryOrBlob);
@@ -251,21 +251,19 @@ export class LetCommand extends ExCommand {
       } else if (variable.type === 'slice') {
         // TODO: Operations other than `=`?
         // TODO: Support blobs
-        const varValue = context.evaluate(variable.variable);
+        const varValue = ctx.evaluate(variable.variable);
         if (varValue.type !== 'list' || value.type !== 'list') {
           throw VimError.fromCode(ErrorCode.CanOnlyIndexAListDictionaryOrBlob);
         }
         if (value.type !== 'list') {
           throw VimError.fromCode(ErrorCode.SliceRequiresAListOrBlobValue);
         }
-        const start = variable.start ? toInt(context.evaluate(variable.start)) : 0;
+        const start = variable.start ? toInt(ctx.evaluate(variable.start)) : 0;
         if (start > varValue.items.length - 1) {
           throw VimError.fromCode(ErrorCode.ListIndexOutOfRange, start.toString());
         }
         // NOTE: end is inclusive, unlike in JS
-        const end = variable.end
-          ? toInt(context.evaluate(variable.end))
-          : varValue.items.length - 1;
+        const end = variable.end ? toInt(ctx.evaluate(variable.end)) : varValue.items.length - 1;
         const slots = end - start + 1;
         if (slots > value.items.length) {
           throw VimError.fromCode(ErrorCode.ListValueHasNotEnoughItems);
@@ -278,7 +276,7 @@ export class LetCommand extends ExCommand {
           varValue.items[i] = item;
           ++i;
         }
-        context.setVariable(variable.variable, varValue, this.args.lock);
+        ctx.setVariable(variable.variable, varValue, this.args.lock);
       }
     }
   }
@@ -305,9 +303,9 @@ export class UnletCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const ctx = new EvaluationContext();
+    const ctx = this.script ? this.script.evalContext : new EvaluationContext();
     for (const variable of this.variables) {
-      const store = ctx.getVariableStore(variable.namespace);
+      const store = ctx.getVariableStore(variable);
       const existed = store?.delete(variable.name);
       if (!existed && !this.bang) {
         throw VimError.fromCode(ErrorCode.NoSuchVariable, `"${variable.name}"`);
