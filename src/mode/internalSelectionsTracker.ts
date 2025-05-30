@@ -23,7 +23,7 @@ const SELECTIONS_UPDATE_TO_IGNORE_EXPIRY_MS = 1000;
 export type InternalSelectionsUpdate = {
   /** Hash for the updated selections, based on each selection's anchor and active position. */
   selectionsHash: string;
-  /** Unix timestamp of when this internal selections update was added to the tracker. */
+  /** Timestamp (in ms since Unix epoch) of when this selections update was added to the tracker. */
   trackedAt: number;
 };
 
