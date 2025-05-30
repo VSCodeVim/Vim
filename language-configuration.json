@@ -1,5 +1,20 @@
 {
   "comments": {
     "lineComment": "\""
-  }
+  },
+  // TODO: indentationRules
+  "onEnterRules": [
+    {
+      "beforeText": "\\s*(if|elseif|else|while|for|try|catch|finally)\\b",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "\\s*(endif|endwhile|endfor|endtry)\\b",
+      "action": {
+        "indent": "outdent"
+      }
+    }
+  ]
 }

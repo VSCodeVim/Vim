@@ -6,27 +6,43 @@
   "patterns": [
     {
       "name": "comment.line",
-      "match": "(^| |\t)\".*$"
+      "match": "^\\s*\".*$"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(let|const|eval|call)"
+      "match": "^\\s*(let|const|eval|call)"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(map|nmap|vmap|smap|xmap|omap|map!|imap|lmap|cmap)"
+      "match": "^\\s*(map|nmap|vmap|smap|xmap|omap|map!|imap|lmap|cmap)"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(noremap|nnoremap|vnoremap|snoremap|xnoremap|onoremap|noremap!|inoremap|lnoremap|cnoremap)"
+      "match": "^\\s*(noremap|nnoremap|vnoremap|snoremap|xnoremap|onoremap|noremap!|inoremap|lnoremap|cnoremap)"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(unmap|nunmap|vunmap|sunmap|xunmap|ounmap|unmap!|iunmap|lunmap|cunmap)"
+      "match": "^\\s*(unmap|nunmap|vunmap|sunmap|xunmap|ounmap|unmap!|iunmap|lunmap|cunmap)"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*set"
+      "match": "^\\s*set"
+    },
+    {
+      "name": "keyword.control",
+      "match": "^\\s*(if|elseif|else|endif|while|endwhile|for|endfor|break|continue|finish|throw)"
+    },
+    {
+      "name": "keyword.operator",
+      "match": "(\\+|-|\\*|/|%|\\.\\?)=?"
+    },
+    {
+      "name": "keyword.operator",
+      "match": "="
+    },
+    {
+      "name": "constant.language",
+      "match": "v:(true|false)"
     },
     {
       "name": "constant.numeric",
@@ -55,6 +71,14 @@
     {
       "name": "constant",
       "match": "(?i)<[CD]-.>"
+    },
+    {
+      "name": "string.quoted.single",
+      "match": "'.*'"
+    },
+    {
+      "name": "string.quoted.double",
+      "match": "\".*\""
     },
     {
       "name": "string.unquoted",
