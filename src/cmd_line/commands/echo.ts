@@ -36,7 +36,7 @@ export class EchoCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    const ctx = new EvaluationContext(vimState);
+    const ctx = this.script ? this.script.evalContext : new EvaluationContext(vimState);
     const values = this.expressions.map((x) => ctx.evaluate(x));
     const message = values.map((v) => displayValue(v)).join(this.sep);
     StatusBar.setText(vimState, message, this.error);

@@ -79,7 +79,8 @@ export class PutExCommand extends ExCommand {
 
       this.arguments.register = '=';
 
-      const value = new EvaluationContext(vimState).evaluate(this.arguments.fromExpression);
+      const ctx = this.script ? this.script.evalContext : new EvaluationContext(vimState);
+      const value = ctx.evaluate(this.arguments.fromExpression);
       const stringified =
         value.type === 'list' ? value.items.map(toString).join('\n') : toString(value);
       Register.overwriteRegister(vimState, this.arguments.register, stringified, 0);

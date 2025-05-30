@@ -9,6 +9,7 @@ import { globalState } from '../../state/globalState';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { Pattern, SearchDirection } from '../pattern';
+import { Script } from '../script';
 import {
   blob,
   bool,
@@ -171,11 +172,13 @@ export class EvaluationContext {
   ]);
 
   private vimState: VimState | undefined;
+  private script: Script | undefined;
   private localScopes: VariableStore[] = [];
   private errors: string[] = [];
 
-  constructor(vimState: VimState | undefined) {
+  constructor(vimState?: VimState, script?: Script) {
     this.vimState = vimState;
+    this.script = script;
   }
 
   /**
@@ -321,7 +324,7 @@ export class EvaluationContext {
       throw VimError.FuncrefVariableNameMustStartWithACapital(varExpr.name);
     }
 
-    const store = this.getVariableStore(varExpr.namespace);
+    const store = this.getVariableStore(varExpr);
 
     if (store) {
       const _var = store.get(varExpr.name);
@@ -355,9 +358,17 @@ export class EvaluationContext {
         throw VimError.UndefinedVariable(
           varExpr.namespace ? `${varExpr.namespace}:${varExpr.name}` : varExpr.name,
         );
-      } else {
-        return _var.value;
       }
+      return _var.value;
+    } else if (varExpr.namespace === 's') {
+      if (this.script === undefined) {
+        throw VimError.UndefinedVariable(`s:${varExpr.name}`);
+      }
+      const _var = this.script.variables.get(varExpr.name);
+      if (_var === undefined) {
+        throw VimError.UndefinedVariable(`s:${varExpr.name}`);
+      }
+      return _var.value;
     } else if (varExpr.namespace === 'v') {
       // TODO: v:count, v:count1, v:prevcount
       // TODO: v:operator
@@ -385,11 +396,16 @@ export class EvaluationContext {
     );
   }
 
-  public getVariableStore(namespace: string | undefined): VariableStore | undefined {
-    if (this.localScopes.length > 0 && namespace === undefined) {
-      return this.localScopes.at(-1);
-    } else if (namespace === 'g' || namespace === undefined) {
+  public getVariableStore(varExpr: VariableExpression): VariableStore | undefined {
+    if (varExpr.namespace === undefined) {
+      return this.localScopes.at(-1) ?? EvaluationContext.globalVariables;
+    } else if (varExpr.namespace === 'g') {
       return EvaluationContext.globalVariables;
+    } else if (varExpr.namespace === 's') {
+      if (this.script === undefined) {
+        throw VimError.IllegalVariableName(`s:${varExpr.name}`);
+      }
+      return this.script.variables;
     }
     // TODO
     return undefined;
@@ -535,7 +551,7 @@ export class EvaluationContext {
     }
   }
 
-  private evaluateComparison(
+  public evaluateComparison(
     operator: ComparisonOp,
     matchCase: boolean,
     lhs: Value,
@@ -1122,7 +1138,7 @@ export class EvaluationContext {
         }
         // TODO:
         // if (toString(name!) is invalid function) {
-        //   throw VimError.fromCode(ErrorCode.UnknownFunction_funcref, toString(name!));
+        //   throw VimError.UnknownFunction_funcref(toString(name!));
         // }
         return funcref({ name: toString(name!), arglist, dict });
       }

@@ -14,6 +14,7 @@ import {
   ExFoldopenCommand,
 } from '../../src/cmd_line/commands/exFold';
 import { FileCommand } from '../../src/cmd_line/commands/file';
+import { FunctionCommand } from '../../src/cmd_line/commands/function';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { GrepCommand } from '../../src/cmd_line/commands/grep';
@@ -31,6 +32,7 @@ import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 import { SortCommand } from '../../src/cmd_line/commands/sort';
 import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute';
 import { TabCommand, TabCommandType } from '../../src/cmd_line/commands/tab';
+import { ThrowCommand } from '../../src/cmd_line/commands/throw';
 import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
 import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
@@ -330,6 +332,14 @@ suite('Ex command parsing', () => {
     exParseFails(':eval', VimError.InvalidExpression(''));
     // TODO: exParseFails(':eval 6abc', VimError.InvalidExpression('6abc'));
     exParseFails(':eval 1 1', VimError.TrailingCharacters('1'));
+  });
+
+  suite(':fu[nction]', () => {
+    exParseTest(
+      ':function Foo(x, y) range',
+      new FunctionCommand({ name: 'Foo', bang: false, args: ['x', 'y'], range: true }),
+    );
+    // TODO
   });
 
   suite(':go[to]', () => {
@@ -789,6 +799,10 @@ suite('Ex command parsing', () => {
     exParseTest(':tabonly!5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
     exParseTest(':tabonly 5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
     exParseTest(':tabonly! 5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
+  });
+
+  suite(':th[row]', () => {
+    exParseTest(':throw 5 + 7', new ThrowCommand(add(int(5), int(7))));
   });
 
   suite(':vim[grep]', () => {

@@ -6,27 +6,51 @@
   "patterns": [
     {
       "name": "comment.line",
-      "match": "(^| |\t)\".*$"
+      "match": "^\\s*\".*$"
+    },
+    {
+      "name": "variable.language",
+      "match": "@[a-zA-Z]"
+    },
+    {
+      "name": "storage.type",
+      "match": "^\\s*(let|const)\\b"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(let|const|eval|call)"
+      "match": "^\\s*(eval|call)\\b"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(map|nmap|vmap|smap|xmap|omap|map!|imap|lmap|cmap)"
+      "match": "^\\s*(map|nmap|vmap|smap|xmap|omap|map!|imap|lmap|cmap)\\b"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(noremap|nnoremap|vnoremap|snoremap|xnoremap|onoremap|noremap!|inoremap|lnoremap|cnoremap)"
+      "match": "^\\s*(noremap|nnoremap|vnoremap|snoremap|xnoremap|onoremap|noremap!|inoremap|lnoremap|cnoremap)\\b"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*(unmap|nunmap|vunmap|sunmap|xunmap|ounmap|unmap!|iunmap|lunmap|cunmap)"
+      "match": "^\\s*(unmap|nunmap|vunmap|sunmap|xunmap|ounmap|unmap!|iunmap|lunmap|cunmap)\\b"
     },
     {
       "name": "entity.name.function",
-      "match": "^( |\t)*set"
+      "match": "^\\s*set\\b"
+    },
+    {
+      "name": "keyword.control",
+      "match": "^\\s*(if|elseif|else|endif|while|endwhile|for|endfor|break|continue|finish|throw)\\b"
+    },
+    {
+      "name": "keyword.operator",
+      "match": "(\\+|-|\\*|/|%|\\.\\?)=?"
+    },
+    {
+      "name": "keyword.operator",
+      "match": "="
+    },
+    {
+      "name": "constant.language",
+      "match": "v:(true|false)"
     },
     {
       "name": "constant.numeric",
@@ -55,6 +79,14 @@
     {
       "name": "constant",
       "match": "(?i)<[CD]-.>"
+    },
+    {
+      "name": "string.quoted.single",
+      "match": "'.*'"
+    },
+    {
+      "name": "string.quoted.double",
+      "match": "\".*\""
     },
     {
       "name": "string.unquoted",
