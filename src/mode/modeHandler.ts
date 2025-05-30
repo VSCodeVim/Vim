@@ -49,6 +49,7 @@ import { Register, RegisterMode } from './../register/register';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
+import { InternalSelectionsTracker } from './internalSelectionsTracker';
 import {
   DotCommandStatus,
   Mode,
@@ -59,7 +60,6 @@ import {
   isStatusBarMode,
   isVisualMode,
 } from './mode';
-import { OurSelectionsUpdate, hashSelections } from './ourSelectionsUpdates';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -85,25 +85,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   private readonly handlerMap: IModeHandlerMap;
   private readonly remappers: Remappers;
 
-  /**
-   * Used internally to ignore selection changes that were performed by us.
-   * 'ignoreIntermediateSelections': set to true when running an action, during this time
-   * all selections change events will be ignored.
-   * 'ourSelectionsUpdates': keeps track of our selections that will trigger a selection change event
-   * so that we can ignore them.
-   */
-  public selectionsChanged = {
-    /**
-     * Set to true when running an action, during this time
-     * all selections change events will be ignored.
-     */
-    ignoreIntermediateSelections: false,
-    /**
-     * keeps track of our selections that will trigger a selection change event
-     * so that we can ignore them.
-     */
-    ourSelectionsUpdates: Array<OurSelectionsUpdate>(),
-  };
+  public internalSelectionsTracker = new InternalSelectionsTracker();
 
   /**
    * Was the previous mouse click past EOL
@@ -554,7 +536,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
       }
     } catch (e) {
-      this.selectionsChanged.ignoreIntermediateSelections = false;
+      this.internalSelectionsTracker.stopIgnoringIntermediateSelections();
       if (e instanceof VimError) {
         StatusBar.displayError(this.vimState, e);
         this.vimState.recordedState = new RecordedState();
@@ -758,7 +740,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   private async runAction(recordedState: RecordedState, action: IBaseAction): Promise<void> {
-    this.selectionsChanged.ignoreIntermediateSelections = true;
+    this.internalSelectionsTracker.startIgnoringIntermediateSelections();
 
     // We handle the end of selections different to VSCode. In order for VSCode to select
     // including the last character we will at the end of 'runAction' shift our stop position
@@ -1031,7 +1013,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       };
     }
 
-    this.selectionsChanged.ignoreIntermediateSelections = false;
+    this.internalSelectionsTracker.stopIgnoringIntermediateSelections();
   }
 
   private async executeMovement(movement: BaseMovement): Promise<RecordedState> {
@@ -1445,26 +1427,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       };
       selections = getSelectionsCombined(selections);
 
-      // Check if the selection we are going to set is different than the current one.
-      // If they are the same vscode won't trigger a selectionChangeEvent so we don't
-      // have to add it to the ignore selections.
-      const willTriggerChange =
-        selections.length !== this.vimState.editor.selections.length ||
-        selections.some(
-          (s, i) =>
-            !s.anchor.isEqual(this.vimState.editor.selections[i].anchor) ||
-            !s.active.isEqual(this.vimState.editor.selections[i].active),
-        );
-
-      if (willTriggerChange) {
-        const selectionsHash = hashSelections(selections);
-        this.selectionsChanged.ourSelectionsUpdates.push({ selectionsHash, updatedAt: Date.now() });
-        Logger.trace(
-          `Adding selection change to be ignored! (total: ${
-            this.selectionsChanged.ourSelectionsUpdates.length
-          }) Hash: ${selectionsHash}, Selections: ${selections[0].anchor.toString()}, ${selections[0].active.toString()}`,
-        );
-      }
+      this.internalSelectionsTracker.maybeTrackSelectionsUpdateToIgnore({
+        updatedSelections: selections,
+        currentEditorSelections: this.vimState.editor.selections,
+      });
 
       this.vimState.editor.selections = selections;
     }

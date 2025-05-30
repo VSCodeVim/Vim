@@ -8,7 +8,6 @@ import { Jump } from './src/jumps/jump';
 import { Mode } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
-import { cleanupOurSelectionsUpdates, hashSelections } from './src/mode/ourSelectionsUpdates';
 import { Register } from './src/register/register';
 import { CompositionState } from './src/state/compositionState';
 import { globalState } from './src/state/globalState';
@@ -284,34 +283,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      // Clean up stale `ourSelectionUpdates` that never triggered a selectionChange event, before
-      // we use them in our logic below
-      mh.selectionsChanged.ourSelectionsUpdates = cleanupOurSelectionsUpdates(
-        mh.selectionsChanged.ourSelectionsUpdates,
-      );
-
-      if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
-        const selectionsHash = hashSelections(e.selections);
-        const idx = mh.selectionsChanged.ourSelectionsUpdates.findIndex(
-          (entry) => entry.selectionsHash === selectionsHash,
-        );
-        if (idx > -1) {
-          mh.selectionsChanged.ourSelectionsUpdates.splice(idx, 1);
-          Logger.trace(
-            `Ignoring selection: ${selectionsHash}. ${mh.selectionsChanged.ourSelectionsUpdates.length} left`,
-          );
-          return;
-        } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
-          Logger.trace(`Ignoring intermediate selection change: ${selectionsHash}`);
-          return;
-        } else if (mh.selectionsChanged.ourSelectionsUpdates.length > 0) {
-          // Some intermediate selection must have slipped in after setting the
-          // 'ignoreIntermediateSelections' to false. Which means we didn't count
-          // for it yet, but since we have selections to be ignored then we probably
-          // wanted this one to be ignored as well.
-          Logger.warn(`Ignoring slipped selection: ${selectionsHash}`);
-          return;
-        }
+      if (
+        e.kind !== vscode.TextEditorSelectionChangeKind.Mouse &&
+        mh.internalSelectionsTracker.maybeIgnoreInternalSelectionChangeEvent(e)
+      ) {
+        return;
       }
 
       // We may receive changes from other panels when, having selections in them containing the same file
@@ -419,14 +395,14 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       const mh = await getAndUpdateModeHandler();
       if (mh) {
         if (compositionState.insertedText) {
-          mh.selectionsChanged.ignoreIntermediateSelections = true;
+          mh.internalSelectionsTracker.startIgnoringIntermediateSelections();
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: '',
             replaceCharCnt: compositionState.composingText.length,
           });
           mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
           mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
-          mh.selectionsChanged.ignoreIntermediateSelections = false;
+          mh.internalSelectionsTracker.stopIgnoringIntermediateSelections();
         }
         const text = compositionState.composingText;
         await mh.handleMultipleKeyEvents(text.split(''));
