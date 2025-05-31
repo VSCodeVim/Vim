@@ -158,7 +158,7 @@ export function prevWordEnd(document: TextDocument, pos: Position, wordType: Wor
       if (currentLine > -1) {
         continue;
       }
-      newCharacter = positions[positions.length - 1];
+      newCharacter = positions.at(-1)!;
     } else {
       newCharacter = positions[index];
     }

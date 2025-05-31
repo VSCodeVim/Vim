@@ -235,7 +235,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   keys = ['<character>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const char = this.keysPressed[this.keysPressed.length - 1];
+    const char = this.keysPressed.at(-1)!;
 
     let text = char;
 
@@ -271,7 +271,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   }
 
   public override toString(): string {
-    return this.keysPressed[this.keysPressed.length - 1];
+    return this.keysPressed.at(-1)!;
   }
 }
 

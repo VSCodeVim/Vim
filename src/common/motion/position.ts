@@ -511,10 +511,7 @@ Position.prototype.advancePositionByText = function (this: Position, text: strin
   if (newlines.length === 0) {
     return new Position(this.line, this.character + text.length);
   } else {
-    return new Position(
-      this.line + newlines.length,
-      text.length - (newlines[newlines.length - 1] + 1),
-    );
+    return new Position(this.line + newlines.length, text.length - (newlines.at(-1)! + 1));
   }
 };
 

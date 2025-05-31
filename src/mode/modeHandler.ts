@@ -513,10 +513,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // is disabled. This makes it possible to map zero without making it impossible
       // to type a count with a zero.
       const preventZeroRemap =
-        key === '0' &&
-        this.vimState.recordedState.actionsRun[
-          this.vimState.recordedState.actionsRun.length - 1
-        ] instanceof CommandNumber;
+        key === '0' && this.vimState.recordedState.actionsRun.at(-1) instanceof CommandNumber;
 
       // Check for remapped keys if:
       // 1. We are not currently performing a non-recursive remapping
@@ -544,10 +541,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           // Remove the <TimeoutFinished> key and get the key before that. If the <TimeoutFinished>
           // key was the last key, then 'key' will be undefined and won't be sent to handle action.
           this.vimState.recordedState.commandList.pop();
-          key =
-            this.vimState.recordedState.commandList[
-              this.vimState.recordedState.commandList.length - 1
-            ];
+          key = this.vimState.recordedState.commandList.at(-1)!;
         }
         if (key !== undefined) {
           handledAsAction = await this.handleKeyAsAnAction(key);
@@ -684,11 +678,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     recordedState.actionsRunPressedKeys.push(...recordedState.actionKeys);
 
     let actionToRecord: BaseAction | undefined = action;
-    if (recordedState.actionsRun.length === 0) {
+    const lastAction = recordedState.actionsRun.at(-1);
+    if (lastAction === undefined) {
       recordedState.actionsRun.push(action);
     } else {
-      const lastAction = recordedState.actionsRun[recordedState.actionsRun.length - 1];
-
       const actionCanBeMergedWithDocumentChange =
         action instanceof CommandInsertInInsertMode ||
         action instanceof CommandBackspaceInInsertMode ||
@@ -1420,7 +1413,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         const combinedSelections: vscode.Selection[] = [];
         sel.forEach((s, i) => {
           if (i > 0) {
-            const previousSelection = combinedSelections[combinedSelections.length - 1];
+            const previousSelection = combinedSelections.at(-1)!;
             const overlap = s.intersection(previousSelection);
             if (overlap) {
               combinedSelections[combinedSelections.length - 1] = s.anchor.isBeforeOrEqual(s.active)
@@ -1498,13 +1491,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
        * Extend this condition if it is the desired behaviour for other actions as well.
        */
       const isLastCursorTracked =
-        this.vimState.recordedState.actionsRun[
-          this.vimState.recordedState.actionsRun.length - 1
-        ] instanceof ActionOverrideCmdD;
+        this.vimState.recordedState.actionsRun.at(-1) instanceof ActionOverrideCmdD;
 
       let cursorToTrack: Cursor;
       if (isLastCursorTracked) {
-        cursorToTrack = this.vimState.cursors[this.vimState.cursors.length - 1];
+        cursorToTrack = this.vimState.cursors.at(-1)!;
       } else {
         cursorToTrack = this.vimState.cursors[0];
       }
@@ -1585,13 +1576,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (this.vimState.currentMode === Mode.Insert || this.vimState.currentMode === Mode.Replace) {
       let virtualKey: string | undefined;
       if (this.vimState.recordedState.bufferedKeys.length > 0) {
-        virtualKey =
-          this.vimState.recordedState.bufferedKeys[
-            this.vimState.recordedState.bufferedKeys.length - 1
-          ];
+        virtualKey = this.vimState.recordedState.bufferedKeys.at(-1);
       } else if (this.vimState.recordedState.waitingForAnotherActionKey) {
-        virtualKey =
-          this.vimState.recordedState.actionKeys[this.vimState.recordedState.actionKeys.length - 1];
+        virtualKey = this.vimState.recordedState.actionKeys.at(-1);
         if (virtualKey === '<C-r>') {
           virtualKey = '"';
         } else if (virtualKey === '<C-k>') {
