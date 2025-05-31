@@ -17,7 +17,6 @@ suite('Basic grep command', () => {
   // if the search panel is open, it will be in normal mode
   // it will also be in normal mode if you run vimgrep from another file
   setup(async () => {
-    // await cleanUpWorkspace();
     await setupWorkspace();
   });
   test('GrepCommand executes correctly', async () => {
@@ -33,23 +32,23 @@ suite('Basic grep command', () => {
     });
     // We open the second file where we know there is no match
     const document1 = await vscode.workspace.openTextDocument(vscode.Uri.file(file1));
-    await vscode.window.showTextDocument(document1);
+    await vscode.window.showTextDocument(document1, { preview: false });
     const document2 = await vscode.workspace.openTextDocument(vscode.Uri.file(file2));
-    await vscode.window.showTextDocument(document2);
+    await vscode.window.showTextDocument(document2, { preview: false });
     const pattern = Pattern.parser({ direction: SearchDirection.Backward });
-    file1 = file1.replace('/tmp/', '');
-    file2 = file2.replace('/tmp/', '');
+    // The vscode's search doesn't work with the paths of the extension test host, so we strip to the file names only
+    file1 = file1.substring(file1.lastIndexOf('/') + 1);
+    file2 = file2.substring(file2.lastIndexOf('/') + 1);
     const command = grep(pattern.tryParse('t*st'), [file1, file2]);
     await command.execute();
-    // await vscode.commands.executeCommand('search.action.focusNextSearchResult');
+    // Despite the fact that we already execute this command in the grep itself, without this focus, there is no active editor
+    // I've tested visually and without this command you are still in the editor in the file with the match, I have no idea why it won't work without this
+    await vscode.commands.executeCommand('search.action.focusNextSearchResult');
     const activeEditor = vscode.window.activeTextEditor;
     const modeHandler = await getAndUpdateModeHandler();
     assert.ok(activeEditor, 'There should be an active editor');
     assert.ok(modeHandler, 'modeHandler should be defined');
-    console.log(`Active editor: ${activeEditor.document.fileName}`);
-    console.log(`Current mode: ${modeHandler.vimState.currentMode}`);
     const docs = vscode.workspace.textDocuments.map((doc) => doc.fileName);
-    console.log(`open documents: ${docs}`);
     // After grep, the active editor should be the first file because the search panel focuses the first match and therefore opens the file
     assert.ok(
       activeEditor.document.fileName.endsWith(file1),
