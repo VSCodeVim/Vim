@@ -32,6 +32,10 @@ export function areSelectionArraysEqual(
 
 /**
  * Returns whether two selections are equal (i.e. have the same anchor and active positions).
+ *
+ * Note that `{@link vscode.Selection.isEqual}` is not used here because it's derived from
+ * `Range.isEqual`, and only checks if the `start` and `end` positions are equal, without
+ * considering `anchor` and `active` (i.e. which end of the range the cursor is on).
  */
 function areSelectionsEqual(selectionA: vscode.Selection, selectionB: vscode.Selection): boolean {
   return (
