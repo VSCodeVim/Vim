@@ -54,8 +54,12 @@ module.exports = {
     '@typescript-eslint/no-implied-eval': 'error',
     '@typescript-eslint/no-loss-of-precision': 'error',
     '@typescript-eslint/no-misused-new': 'error',
-    // ignore the rule to conform to current code
-    '@typescript-eslint/no-misused-promises': 'off',
+    '@typescript-eslint/no-misused-promises': [
+      'error',
+      {
+        checksVoidReturn: false, // TODO
+      },
+    ],
     '@typescript-eslint/no-namespace': 'error',
     '@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
     '@typescript-eslint/parameter-properties': 'error',
@@ -73,8 +77,6 @@ module.exports = {
     '@typescript-eslint/no-unsafe-assignment': 'error',
     '@typescript-eslint/no-unsafe-call': 'error',
     '@typescript-eslint/no-unsafe-declaration-merging': 'error',
-    // ignore the rule to conform to current code
-    '@typescript-eslint/no-unsafe-enum-comparison': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'error',
     '@typescript-eslint/no-unsafe-return': 'error',
     '@typescript-eslint/no-unused-expressions': 'error',
