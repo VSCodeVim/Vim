@@ -268,7 +268,7 @@ export class EvaluationContext {
 
     let store: VariableStore | undefined;
     if (this.localScopes.length > 0 && varExpr.namespace === undefined) {
-      store = this.localScopes[this.localScopes.length - 1];
+      store = this.localScopes.at(-1);
     } else if (varExpr.namespace === 'g' || varExpr.namespace === undefined) {
       store = EvaluationContext.globalVariables;
     } else {
@@ -1174,7 +1174,7 @@ export class EvaluationContext {
           if (result[0] === '') {
             result.shift();
           }
-          if (result && result[result.length - 1] === '') {
+          if (result.at(-1) === '') {
             result.pop();
           }
         }

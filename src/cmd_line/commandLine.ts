@@ -359,11 +359,7 @@ export class SearchCommandLine extends CommandLine {
   }
 
   public static async addSearchStateToHistory(searchState: SearchState) {
-    const prevSearchString =
-      SearchCommandLine.previousSearchStates.length === 0
-        ? undefined
-        : SearchCommandLine.previousSearchStates[SearchCommandLine.previousSearchStates.length - 1]
-            .searchString;
+    const prevSearchString = SearchCommandLine.previousSearchStates.at(-1)?.searchString;
     // Store this search if different than previous
     if (searchState.searchString !== prevSearchString) {
       SearchCommandLine.previousSearchStates.push(searchState);
@@ -467,11 +463,9 @@ export class SearchCommandLine extends CommandLine {
   public async run(vimState: VimState): Promise<void> {
     // Repeat the previous search if no new string is entered
     if (this.text === '') {
-      if (SearchCommandLine.previousSearchStates.length > 0) {
-        this.text =
-          SearchCommandLine.previousSearchStates[
-            SearchCommandLine.previousSearchStates.length - 1
-          ].searchString;
+      const prevSearchString = SearchCommandLine.previousSearchStates.at(-1)?.searchString;
+      if (prevSearchString !== undefined) {
+        this.text = prevSearchString;
       }
     }
     Logger.info(`Searching for ${this.text}`);
@@ -509,10 +503,7 @@ export class SearchCommandLine extends CommandLine {
   public async escape(vimState: VimState): Promise<void> {
     vimState.cursorStopPosition = this.searchState.cursorStartPosition;
 
-    const prevSearchList = SearchCommandLine.previousSearchStates;
-    globalState.searchState = prevSearchList
-      ? prevSearchList[prevSearchList.length - 1]
-      : undefined;
+    globalState.searchState = SearchCommandLine.previousSearchStates.at(-1);
 
     if (vimState.modeData.mode === Mode.SearchInProgressMode) {
       const offset =
