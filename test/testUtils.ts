@@ -219,7 +219,7 @@ export async function replaceContent(
 ): Promise<void> {
   const edit = new vscode.WorkspaceEdit();
   edit.replace(document.uri, TextEditor.getDocumentRange(document), content);
-  const isApplied = vscode.workspace.applyEdit(edit);
+  const isApplied = await vscode.workspace.applyEdit(edit);
 
   if (!isApplied) throw new Error(`Failed to replace content`);
 }
