@@ -26,6 +26,7 @@ interface IGrepCommandArguments {
 // Implements :grep
 // https://vimdoc.sourceforge.net/htmldoc/quickfix.html#:vimgrep
 export class GrepCommand extends ExCommand {
+  // TODO: parse the pattern for flags to notify the user that they are not supported yet
   public static readonly argParser: Parser<GrepCommand> = optWhitespace.then(
     seq(
       Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }),
@@ -55,11 +56,7 @@ export class GrepCommand extends ExCommand {
       isRegex: true,
     });
     await vscode.commands.executeCommand('search.action.focusSearchList');
-    // Only if there's no [j] flag
+    // TODO: Only if there's no [j] flag
     await vscode.commands.executeCommand('search.action.focusNextSearchResult');
-    // TODO: this will always throw an error, since the command returns nothing
-    // if (!grepResults) {
-    //   throw error.VimError.fromCode(error.ErrorCode.PatternNotFound);
-    // }
   }
 }
