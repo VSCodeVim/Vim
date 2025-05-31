@@ -29,14 +29,14 @@ export type InternalSelectionsUpdate = {
 
 /**
  * Class that helps with tracking internal selections updates and controlling / determining whether
- * to treat incoming {@link vscode.TextEditorSelectionChangeEvent}s as internal selections changes
- * that we've already accounted for and can thus ignore, or as external selections updates that
- * should update our internal selections state.
+ * to treat incoming {@link vscode.TextEditorSelectionChangeEvent}s as internal/intermediate
+ * selections changes to ignore, or as external selections updates that should update our internal
+ * selections state.
  *
  * Methods exposed:
  *
- * - {@link maybeIgnoreInternalSelectionChangeEvent} - Determines whether to ignore a given
- * selection change event
+ * - {@link shouldIgnoreAsInternalSelectionChangeEvent} - Determines whether to ignore a given
+ * VSCode selection change event as an internal/intermediate selections update's change event
  *
  * - {@link startIgnoringIntermediateSelections} - Start ignoring selection change events while
  * running an action
@@ -51,13 +51,13 @@ export class InternalSelectionsTracker {
   // #region Determining whether to ignore a selection change event
 
   /**
-   * Determines whether or not to view the given selection change event as being from an internal or
-   * intermediate selections update to now ignore. Removes its associated selections update entry
-   * from our tracking, if found.
+   * Determines whether or not to view the given VSCode selection change event as being from an
+   * internal or intermediate selections update, and thus ignore it. Removes its associated
+   * selections update entry from our tracking, if found.
    *
    * @returns `true` if the event should be ignored, else `false`.
    */
-  public maybeIgnoreInternalSelectionChangeEvent(
+  public shouldIgnoreAsInternalSelectionChangeEvent(
     event: vscode.TextEditorSelectionChangeEvent,
   ): boolean {
     // First remove stale tracked updates that we shouldn't worry about anymore
@@ -95,8 +95,9 @@ export class InternalSelectionsTracker {
   }
 
   /**
-   * Determines whether or not to treat the given selections hash (which wasn't found in our tracked
-   * selections updates to ignore) as an action's intermediate selection to ignore.
+   * Determines whether or not to view a VSCode selection change event (whose selections hash wasn't
+   * found in our tracked selections updates to ignore) as being from an internal action's
+   * intermediate selection, and thus ignore it.
    *
    * If `shouldIgnoreIntermediateSelections` is `true`, the answer is an easy yes.
    *

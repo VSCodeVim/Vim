@@ -285,7 +285,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
       if (
         e.kind !== vscode.TextEditorSelectionChangeKind.Mouse &&
-        mh.internalSelectionsTracker.maybeIgnoreInternalSelectionChangeEvent(e)
+        mh.internalSelectionsTracker.shouldIgnoreAsInternalSelectionChangeEvent(e)
       ) {
         return;
       }
