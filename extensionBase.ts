@@ -110,9 +110,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   Register.loadFromDisk(handleLocal);
   await Promise.all([ExCommandLine.loadHistory(context), SearchCommandLine.loadHistory(context)]);
 
-  if (vscode.window.activeTextEditor) {
-    const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
-    Register.setReadonlyRegister('%', filepathComponents[filepathComponents.length - 1]);
+  const document = vscode.window.activeTextEditor?.document;
+  if (document) {
+    const filepathComponents = document.fileName.split(/\\|\//);
+    Register.setReadonlyRegister('%', filepathComponents.at(-1)!);
   }
 
   // workspace events
@@ -191,10 +192,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         if (modeHandler == null) {
           shouldDelete = true;
         } else {
-          const document = modeHandler.vimState.document;
-          if (!vscode.workspace.textDocuments.includes(document)) {
+          if (!vscode.workspace.textDocuments.includes(modeHandler.vimState.document)) {
             shouldDelete = true;
-            if (closedDocument === document) {
+            if (closedDocument === modeHandler.vimState.document) {
               lastClosedModeHandler = modeHandler;
             }
           }

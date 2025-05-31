@@ -685,7 +685,9 @@ export class CommandShowSearchHistory extends BaseCommand {
 
       if (!nextMatch) {
         throw VimError.fromCode(
-          this.direction > 0 ? ErrorCode.SearchHitBottom : ErrorCode.SearchHitTop,
+          this.direction === SearchDirection.Forward
+            ? ErrorCode.SearchHitBottom
+            : ErrorCode.SearchHitTop,
           searchState.searchString,
         );
       }
