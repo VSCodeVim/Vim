@@ -743,6 +743,12 @@ suite('Vimscript expressions', () => {
       exprTest('str2nr("DEADBEEF", 9)', { error: ErrorCode.InvalidArgument474 });
     });
 
+    suite('stridx', () => {
+      exprTest('stridx("0123456789", "6")', { value: int(6) });
+      exprTest('stridx("0123456789", "456")', { value: int(4) });
+      exprTest('stridx("0123456789", "X")', { value: int(-1) });
+    });
+
     suite('string', () => {
       exprTest('string("")', { value: str('') });
       exprTest('string(123)', { value: str('123') });
