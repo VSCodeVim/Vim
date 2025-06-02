@@ -1293,12 +1293,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (globalState.searchState.nextMatchIndex !== undefined) {
           decorations = getDecorationsForSearchMatchRanges(
             globalState.searchState.getMatchRanges(this.vimState),
+            this.vimState.document,
             globalState.searchState.nextMatchIndex,
           );
         } else {
           // No next match defined, update decorations without a currentMatchIndex
           decorations = getDecorationsForSearchMatchRanges(
             globalState.searchState.getMatchRanges(this.vimState),
+            this.vimState.document,
           );
         }
 
