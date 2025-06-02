@@ -733,6 +733,22 @@ suite('Vimscript expressions', () => {
       exprTest('str2list("á")', { value: list([int(97), int(769)]) });
     });
 
+    suite('str2nr', () => {
+      exprTest('str2nr("123")', { value: int(123) });
+      exprTest('str2nr("1001010110", 2)', { value: int(598) });
+      exprTest('str2nr("123", 8)', { value: int(83) });
+      exprTest('str2nr("123", 10)', { value: int(123) });
+      exprTest('str2nr("DEADBEEF", 16)', { value: int(3735928559) });
+      exprTest('str2nr("DEADBEEF", 10)', { value: int(0) });
+      exprTest('str2nr("DEADBEEF", 9)', { error: ErrorCode.InvalidArgument474 });
+    });
+
+    suite('stridx', () => {
+      exprTest('stridx("0123456789", "6")', { value: int(6) });
+      exprTest('stridx("0123456789", "456")', { value: int(4) });
+      exprTest('stridx("0123456789", "X")', { value: int(-1) });
+    });
+
     suite('string', () => {
       exprTest('string("")', { value: str('') });
       exprTest('string(123)', { value: str('123') });

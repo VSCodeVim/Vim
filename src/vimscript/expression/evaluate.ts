@@ -268,7 +268,7 @@ export class EvaluationContext {
 
     let store: VariableStore | undefined;
     if (this.localScopes.length > 0 && varExpr.namespace === undefined) {
-      store = this.localScopes[this.localScopes.length - 1];
+      store = this.localScopes.at(-1);
     } else if (varExpr.namespace === 'g' || varExpr.namespace === undefined) {
       store = EvaluationContext.globalVariables;
     } else {
@@ -1174,7 +1174,7 @@ export class EvaluationContext {
           if (result[0] === '') {
             result.shift();
           }
-          if (result && result[result.length - 1] === '') {
+          if (result.at(-1) === '') {
             result.pop();
           }
         }
@@ -1193,8 +1193,21 @@ export class EvaluationContext {
         }
         return list(result.map(int));
       }
-      // TODO: str2nr()
-      // TODO: stridx()
+      case 'str2nr': {
+        const [s, _base] = getArgs(1, 2);
+        const base = _base ? toInt(_base) : 10;
+        if (![2, 8, 10, 16].includes(base)) {
+          throw VimError.fromCode(ErrorCode.InvalidArgument474);
+        }
+        // TODO: Skip prefixes like 0x
+        const parsed = Number.parseInt(toString(s!), base);
+        return int(isNaN(parsed) ? 0 : parsed);
+      }
+      case 'stridx': {
+        const [haystack, needle, start] = getArgs(2, 3);
+
+        return int(toString(haystack!).indexOf(toString(needle!), start ? toInt(start) : 0));
+      }
       case 'string': {
         const [x] = getArgs(1);
         return str(displayValue(x!));

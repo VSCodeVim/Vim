@@ -24,8 +24,8 @@ import {
   CommandInsertNewLineAbove,
   CommandInsertNewLineBefore,
   CommandReplaceAtCursorFromNormalMode,
-  DocumentContentChangeAction,
 } from './actions';
+import { DocumentContentChangeAction } from './documentChange';
 import { DefaultDigraphs } from './digraphs';
 
 @RegisterAction
@@ -235,7 +235,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   keys = ['<character>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const char = this.keysPressed[this.keysPressed.length - 1];
+    const char = this.keysPressed.at(-1)!;
 
     let text = char;
 
@@ -271,7 +271,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   }
 
   public override toString(): string {
-    return this.keysPressed[this.keysPressed.length - 1];
+    return this.keysPressed.at(-1)!;
   }
 }
 
@@ -414,7 +414,7 @@ export class InsertCharAbove extends BaseCommand {
     }
 
     const charPos = position.getUp();
-    if (charPos.isLineEnd()) {
+    if (charPos.isLineEnd(vimState.document)) {
       return;
     }
 
@@ -435,7 +435,7 @@ export class InsertCharBelow extends BaseCommand {
     }
 
     const charPos = position.getDown();
-    if (charPos.isLineEnd()) {
+    if (charPos.isLineEnd(vimState.document)) {
       return;
     }
 

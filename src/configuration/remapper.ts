@@ -111,7 +111,7 @@ export class Remapper implements IRemapper {
 
     const userDefinedRemappings = configuration[this.configKey] as Map<string, IKeyRemapping>;
 
-    if (keys[keys.length - 1] === SpecialKeys.TimeoutFinished) {
+    if (keys.at(-1) === SpecialKeys.TimeoutFinished) {
       // Timeout finished. Don't let an ambiguous or potential remap start another timeout again
       keys = keys.slice(0, keys.length - 1);
       allowBufferingKeys = false;
@@ -422,7 +422,7 @@ export class Remapper implements IRemapper {
             // If there was a performing remap that finished waiting for timeout then only the remaining keys
             // that are not part of that remap were typed by the user.
             let specialKey: string | undefined = '';
-            if (remainingKeys[remainingKeys.length - 1] === SpecialKeys.TimeoutFinished) {
+            if (remainingKeys.at(-1) === SpecialKeys.TimeoutFinished) {
               specialKey = remainingKeys.pop();
             }
             const lastRemap = remapState.wasPerformingRemapThatFinishedWaitingForTimeout.after!;

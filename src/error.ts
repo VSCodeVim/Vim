@@ -167,10 +167,10 @@ export const ErrorMessage: IErrorMessage = {
 };
 
 export class VimError extends Error {
-  public readonly code: number;
+  public readonly code: ErrorCode;
   public override readonly message: string;
 
-  private constructor(code: number, message: string) {
+  private constructor(code: ErrorCode, message: string) {
     super();
     this.code = code;
     this.message = message;
