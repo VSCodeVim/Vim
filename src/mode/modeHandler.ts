@@ -33,7 +33,6 @@ import {
   CommandNumber,
   CommandQuitRecordMacro,
   CommandRegister,
-  DocumentContentChangeAction,
 } from './../actions/commands/actions';
 import {
   CommandBackspaceInInsertMode,
@@ -60,6 +59,7 @@ import {
   isStatusBarMode,
   isVisualMode,
 } from './mode';
+import { DocumentContentChangeAction } from '../actions/commands/documentChange';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
