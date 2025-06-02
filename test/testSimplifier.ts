@@ -153,9 +153,8 @@ function tokenizeKeySequence(sequence: string): string[] {
   // no close bracket, probably trying to do a left shift, take literal
   // char sequence
   const rawTokenize = (characters: string): void => {
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < characters.length; i++) {
-      result.push(characters[i]);
+    for (const c of characters) {
+      result.push(c);
     }
   };
 

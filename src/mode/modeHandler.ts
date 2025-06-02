@@ -1698,8 +1698,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   dispose() {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    this.disposables.map((d) => d.dispose());
+    for (const d of this.disposables) {
+      d.dispose();
+    }
   }
 }
 
