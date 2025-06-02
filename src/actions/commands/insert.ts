@@ -24,8 +24,8 @@ import {
   CommandInsertNewLineAbove,
   CommandInsertNewLineBefore,
   CommandReplaceAtCursorFromNormalMode,
-  DocumentContentChangeAction,
 } from './actions';
+import { DocumentContentChangeAction } from './documentChange';
 import { DefaultDigraphs } from './digraphs';
 
 @RegisterAction
