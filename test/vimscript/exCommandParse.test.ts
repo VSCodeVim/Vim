@@ -370,6 +370,16 @@ suite('Ex command parsing', () => {
     );
 
     exParseTest(
+      ':let [a, b, c] = [1, 2, 3]',
+      new LetCommand({
+        operation: '=',
+        variable: { type: 'unpack', names: ['a', 'b', 'c'] },
+        expression: list([int(1), int(2), int(3)]),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
       ':const foo = 5',
       new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true }),
     );

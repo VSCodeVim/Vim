@@ -185,6 +185,8 @@ const nestedExpressionParser: Parser<Expression> = lazy(() => expressionParser)
   .wrap(string('('), string(')'))
   .desc('a nested expression');
 
+export const varNameParser = regexp(/[a-zA-Z0-9_]+/);
+
 export const variableParser: Parser<VariableExpression> = seq(
   alt(
     string('b'),
@@ -198,7 +200,7 @@ export const variableParser: Parser<VariableExpression> = seq(
   )
     .skip(string(':'))
     .fallback(undefined),
-  regexp(/[a-zA-Z][a-zA-Z0-9]*/).desc('a variable'),
+  varNameParser.desc('a variable'),
 ).map(([namespace, name]) => {
   return { type: 'variable', namespace, name };
 });
