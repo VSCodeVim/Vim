@@ -23,7 +23,7 @@ import {
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
 
-function toInt(value: Value): number {
+export function toInt(value: Value): number {
   switch (value.type) {
     case 'number':
       return value.value;
