@@ -380,6 +380,20 @@ suite('Ex command parsing', () => {
     );
 
     exParseTest(
+      ':let x[7] = "foo"',
+      new LetCommand({
+        operation: '=',
+        variable: {
+          type: 'index',
+          variable: { type: 'variable', namespace: undefined, name: 'x' },
+          index: int(7),
+        },
+        expression: str('foo'),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
       ':const foo = 5',
       new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true }),
     );

@@ -8,12 +8,13 @@ import {
   add,
   concat,
   divide,
+  int,
   modulo,
   multiply,
   str,
   subtract,
 } from '../../vimscript/expression/build';
-import { EvaluationContext } from '../../vimscript/expression/evaluate';
+import { EvaluationContext, toInt, toString } from '../../vimscript/expression/evaluate';
 import {
   envVariableParser,
   expressionParser,
@@ -27,7 +28,6 @@ import {
   Expression,
   OptionExpression,
   RegisterExpression,
-  Value,
   VariableExpression,
 } from '../../vimscript/expression/types';
 import { displayValue } from '../../vimscript/expression/displayValue';
@@ -36,6 +36,11 @@ import { ErrorCode, VimError } from '../../error';
 type Unpack = {
   type: 'unpack';
   names: string[];
+};
+type Index = {
+  type: 'index';
+  variable: VariableExpression;
+  index: Expression;
 };
 
 export type LetCommandOperation = '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '.=' | '..=';
@@ -47,7 +52,7 @@ export type LetCommandVariable =
 export type LetCommandArgs =
   | {
       operation: LetCommandOperation;
-      variable: LetCommandVariable | Unpack;
+      variable: LetCommandVariable | Unpack | Index;
       expression: Expression;
       lock: boolean;
     }
@@ -81,8 +86,16 @@ const unpackParser: Parser<Unpack> = sepBy(varNameParser, string(',').trim(optWh
     names,
   }));
 
+const indexParser: Parser<Index> = seq(
+  variableParser,
+  expressionParser.wrap(string('[').then(optWhitespace), optWhitespace.then(string(']'))),
+).map(([variable, index]) => ({
+  type: 'index',
+  variable,
+  index,
+}));
+
 export class LetCommand extends ExCommand {
-  // TODO: Support indexing
   // TODO: Support slicing
   public static readonly argParser = (lock: boolean) =>
     alt<LetCommand>(
@@ -92,7 +105,7 @@ export class LetCommand extends ExCommand {
       // `:let {var} .= {expr}`
       whitespace.then(
         seq(
-          alt<LetCommandVariable | Unpack>(letVarParser, unpackParser),
+          alt<LetCommandVariable | Unpack | Index>(unpackParser, indexParser, letVarParser),
           operationParser.trim(optWhitespace),
           expressionParser,
         ).map(
@@ -141,30 +154,34 @@ export class LetCommand extends ExCommand {
         }
       }
 
-      let value = context.evaluate(this.args.expression);
-      if (variable.type === 'variable') {
+      const value = context.evaluate(this.args.expression);
+      const newValue = (_var: Expression) => {
         if (this.args.operation === '+=') {
-          value = context.evaluate(add(variable, value));
+          return context.evaluate(add(_var, value));
         } else if (this.args.operation === '-=') {
-          value = context.evaluate(subtract(variable, value));
+          return context.evaluate(subtract(_var, value));
         } else if (this.args.operation === '*=') {
-          value = context.evaluate(multiply(variable, value));
+          return context.evaluate(multiply(_var, value));
         } else if (this.args.operation === '/=') {
-          value = context.evaluate(divide(variable, value));
+          return context.evaluate(divide(_var, value));
         } else if (this.args.operation === '%=') {
-          value = context.evaluate(modulo(variable, value));
+          return context.evaluate(modulo(_var, value));
         } else if (this.args.operation === '.=') {
-          value = context.evaluate(concat(variable, value));
+          return context.evaluate(concat(_var, value));
         } else if (this.args.operation === '..=') {
-          value = context.evaluate(concat(variable, value));
+          return context.evaluate(concat(_var, value));
         }
-        context.setVariable(variable, value, this.args.lock);
+        return value;
+      };
+
+      if (variable.type === 'variable') {
+        context.setVariable(variable, newValue(variable), this.args.lock);
       } else if (variable.type === 'register') {
         // TODO
       } else if (variable.type === 'option') {
         // TODO
       } else if (variable.type === 'env_variable') {
-        value = str(env[variable.name] ?? '');
+        // TODO
       } else if (variable.type === 'unpack') {
         // TODO: Support :let [a, b; rest] = ["aval", "bval", 3, 4]
         if (value.type !== 'list') {
@@ -176,13 +193,33 @@ export class LetCommand extends ExCommand {
         if (variable.names.length > value.items.length) {
           throw VimError.fromCode(ErrorCode.MoreTargetsThanListItems);
         }
-        for (let i = 0; i < variable.names.length; i++) {
-          await new LetCommand({
-            operation: this.args.operation,
-            variable: { type: 'variable', namespace: undefined, name: variable.names[i] },
-            expression: value.items[i],
-            lock: this.args.lock,
-          }).execute(vimState);
+        for (const name of variable.names) {
+          const item: VariableExpression = { type: 'variable', namespace: undefined, name };
+          context.setVariable(item, newValue(item), this.args.lock);
+        }
+      } else if (variable.type === 'index') {
+        const varValue = context.evaluate(variable.variable);
+        if (varValue.type === 'list') {
+          const idx = toInt(context.evaluate(variable.index));
+          const newItem = newValue({
+            type: 'index',
+            expression: variable.variable,
+            index: int(idx),
+          });
+          varValue.items[idx] = newItem;
+          context.setVariable(variable.variable, varValue, this.args.lock);
+        } else if (varValue.type === 'dict_val') {
+          const key = toString(context.evaluate(variable.index));
+          const newItem = newValue({
+            type: 'entry',
+            expression: variable.variable,
+            entryName: key,
+          });
+          varValue.items.set(key, newItem);
+          context.setVariable(variable.variable, varValue, this.args.lock);
+        } else {
+          // TODO: Support blobs
+          throw VimError.fromCode(ErrorCode.CanOnlyIndexAListDictionaryOrBlob);
         }
       }
     }
