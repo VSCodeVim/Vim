@@ -727,7 +727,7 @@ export class EvaluationContext {
       }
       case 'assert_notequal': {
         const [expected, actual, msg] = getArgs(2, 3);
-        if (this.evaluateComparison('=~', true, expected!, actual!)) {
+        if (this.evaluateComparison('!=', true, expected!, actual!)) {
           return assertPassed();
         }
         return assertFailed(
@@ -736,7 +736,7 @@ export class EvaluationContext {
       }
       case 'assert_notmatch': {
         const [pattern, actual, msg] = getArgs(2, 3);
-        if (this.evaluateComparison('=~', true, actual!, pattern!)) {
+        if (!this.evaluateComparison('=~', true, actual!, pattern!)) {
           return assertPassed();
         }
         return assertFailed(
