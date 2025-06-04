@@ -26,6 +26,7 @@ import {
   Expression,
   OptionExpression,
   RegisterExpression,
+  Value,
   VariableExpression,
 } from '../../vimscript/expression/types';
 import { displayValue } from '../../vimscript/expression/displayValue';
@@ -175,27 +176,27 @@ export class LetCommand extends ExCommand {
       }
 
       const value = context.evaluate(this.args.expression);
-      const newValue = (_var: Expression) => {
+      const newValue = (_var: Expression, _value: Value) => {
         if (this.args.operation === '+=') {
-          return context.evaluate(add(_var, value));
+          return context.evaluate(add(_var, _value));
         } else if (this.args.operation === '-=') {
-          return context.evaluate(subtract(_var, value));
+          return context.evaluate(subtract(_var, _value));
         } else if (this.args.operation === '*=') {
-          return context.evaluate(multiply(_var, value));
+          return context.evaluate(multiply(_var, _value));
         } else if (this.args.operation === '/=') {
-          return context.evaluate(divide(_var, value));
+          return context.evaluate(divide(_var, _value));
         } else if (this.args.operation === '%=') {
-          return context.evaluate(modulo(_var, value));
+          return context.evaluate(modulo(_var, _value));
         } else if (this.args.operation === '.=') {
-          return context.evaluate(concat(_var, value));
+          return context.evaluate(concat(_var, _value));
         } else if (this.args.operation === '..=') {
-          return context.evaluate(concat(_var, value));
+          return context.evaluate(concat(_var, _value));
         }
-        return value;
+        return _value;
       };
 
       if (variable.type === 'variable') {
-        context.setVariable(variable, newValue(variable), this.args.lock);
+        context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
         // TODO
       } else if (variable.type === 'option') {
@@ -213,28 +214,34 @@ export class LetCommand extends ExCommand {
         if (variable.names.length > value.items.length) {
           throw VimError.fromCode(ErrorCode.MoreTargetsThanListItems);
         }
-        for (const name of variable.names) {
+        for (const [i, name] of variable.names.entries()) {
           const item: VariableExpression = { type: 'variable', namespace: undefined, name };
-          context.setVariable(item, newValue(item), this.args.lock);
+          context.setVariable(item, newValue(item, value.items[i]), this.args.lock);
         }
       } else if (variable.type === 'index') {
         const varValue = context.evaluate(variable.variable);
         if (varValue.type === 'list') {
           const idx = toInt(context.evaluate(variable.index));
-          const newItem = newValue({
-            type: 'index',
-            expression: variable.variable,
-            index: int(idx),
-          });
+          const newItem = newValue(
+            {
+              type: 'index',
+              expression: variable.variable,
+              index: int(idx),
+            },
+            value,
+          );
           varValue.items[idx] = newItem;
           context.setVariable(variable.variable, varValue, this.args.lock);
         } else if (varValue.type === 'dict_val') {
           const key = toString(context.evaluate(variable.index));
-          const newItem = newValue({
-            type: 'entry',
-            expression: variable.variable,
-            entryName: key,
-          });
+          const newItem = newValue(
+            {
+              type: 'entry',
+              expression: variable.variable,
+              entryName: key,
+            },
+            value,
+          );
           varValue.items.set(key, newItem);
           context.setVariable(variable.variable, varValue, this.args.lock);
         } else {
