@@ -19,6 +19,7 @@ import {
   Value,
   VariableExpression,
 } from './types';
+import { Pattern, SearchDirection } from '../pattern';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -620,7 +621,11 @@ export class EvaluationContext {
         case '>':
           return lhs.value > rhs.value;
         case '=~':
-          return false; // TODO
+          const pattern = Pattern.parser({
+            direction: SearchDirection.Forward,
+            delimiter: '/', // TODO: Are these params right?
+          }).tryParse(toString(lhs));
+          return pattern.regex.test(toString(rhs));
       }
     }
   }
@@ -706,25 +711,43 @@ export class EvaluationContext {
         );
       }
       // TODO: assert_inrange()
-      // TODO: assert_match()
+      case 'assert_match': {
+        const [pattern, actual, msg] = getArgs(2, 3);
+        if (this.evaluateComparison('=~', true, actual!, pattern!)) {
+          return assertPassed();
+        }
+        return assertFailed(
+          msg
+            ? toString(msg)
+            : `Pattern '${toString(pattern!)}' does not match '${toString(actual!)}'`,
+        );
+      }
       case 'assert_nobeep': {
         return assertPassed();
       }
       case 'assert_notequal': {
         const [expected, actual, msg] = getArgs(2, 3);
-        if (this.evaluateComparison('!=', true, expected!, actual!)) {
+        if (this.evaluateComparison('=~', true, expected!, actual!)) {
           return assertPassed();
         }
         return assertFailed(
           msg ? toString(msg) : `Expected not equal to ${displayValue(expected!)}`,
         );
       }
-      // TODO: assert_notmatch()
+      case 'assert_notmatch': {
+        const [pattern, actual, msg] = getArgs(2, 3);
+        if (this.evaluateComparison('=~', true, actual!, pattern!)) {
+          return assertPassed();
+        }
+        return assertFailed(
+          msg ? toString(msg) : `Pattern '${toString(pattern!)}' does match '${toString(actual!)}'`,
+        );
+      }
       case 'assert_report': {
         return assertFailed(toString(getArgs(1)[0]!));
       }
       case 'assert_true': {
-        const [actual, msg] = getArgs(2, 3);
+        const [actual, msg] = getArgs(1, 2);
         if (this.evaluateComparison('==', true, bool(true), actual!)) {
           return assertPassed();
         }
