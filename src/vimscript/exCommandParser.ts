@@ -51,7 +51,7 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
-import { LetCommand } from '../cmd_line/commands/let';
+import { LetCommand, UnletCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 import { PwdCommand } from '../cmd_line/commands/pwd';
 
@@ -566,7 +566,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['undoj', 'oin'], undefined],
   [['undol', 'ist'], undefined],
   [['unh', 'ide'], undefined],
-  [['unl', 'et'], undefined],
+  [['unl', 'et'], UnletCommand.argParser],
   [['unlo', 'ckvar'], undefined],
   [['unm', 'ap'], undefined],
   [['unme', 'nu'], undefined],

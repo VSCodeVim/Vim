@@ -1,5 +1,5 @@
 // eslint-disable-next-line id-denylist
-import { alt, optWhitespace, Parser, sepBy, seq, string, whitespace } from 'parsimmon';
+import { alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -279,6 +279,38 @@ export class LetCommand extends ExCommand {
           ++i;
         }
         context.setVariable(variable.variable, varValue, this.args.lock);
+      }
+    }
+  }
+}
+
+export class UnletCommand extends ExCommand {
+  public static readonly argParser = seqMap(
+    string('!').fallback(undefined),
+    whitespace.then(variableParser.sepBy(whitespace)),
+    (bang, variables) => {
+      if (variables.length === 0) {
+        throw VimError.fromCode(ErrorCode.ArgumentRequired);
+      }
+      return new UnletCommand(variables, bang !== undefined);
+    },
+  );
+
+  private variables: VariableExpression[];
+  private bang: boolean;
+  public constructor(variables: VariableExpression[], bang: boolean) {
+    super();
+    this.variables = variables;
+    this.bang = bang;
+  }
+
+  async execute(vimState: VimState): Promise<void> {
+    const ctx = new EvaluationContext();
+    for (const variable of this.variables) {
+      const store = ctx.getVariableStore(variable.namespace);
+      const existed = store?.delete(variable.name);
+      if (!existed && !this.bang) {
+        throw VimError.fromCode(ErrorCode.NoSuchVariable, `"${variable.name}"`);
       }
     }
   }
