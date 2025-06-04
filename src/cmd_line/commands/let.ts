@@ -1,6 +1,5 @@
 // eslint-disable-next-line id-denylist
 import { alt, optWhitespace, Parser, sepBy, seq, string, whitespace } from 'parsimmon';
-import { env } from 'process';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -11,7 +10,6 @@ import {
   int,
   modulo,
   multiply,
-  str,
   subtract,
 } from '../../vimscript/expression/build';
 import { EvaluationContext, toInt, toString } from '../../vimscript/expression/evaluate';
@@ -42,6 +40,12 @@ type Index = {
   variable: VariableExpression;
   index: Expression;
 };
+type Slice = {
+  type: 'slice';
+  variable: VariableExpression;
+  start: Expression | undefined;
+  end: Expression | undefined;
+};
 
 export type LetCommandOperation = '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '.=' | '..=';
 export type LetCommandVariable =
@@ -52,7 +56,7 @@ export type LetCommandVariable =
 export type LetCommandArgs =
   | {
       operation: LetCommandOperation;
-      variable: LetCommandVariable | Unpack | Index;
+      variable: LetCommandVariable | Unpack | Index | Slice;
       expression: Expression;
       lock: boolean;
     }
@@ -95,8 +99,19 @@ const indexParser: Parser<Index> = seq(
   index,
 }));
 
+const sliceParser: Parser<Slice> = seq(
+  variableParser,
+  string('[').then(optWhitespace).then(expressionParser).fallback(undefined),
+  string(':').trim(optWhitespace),
+  expressionParser.fallback(undefined).skip(optWhitespace.then(string(']'))),
+).map(([variable, start, _, end]) => ({
+  type: 'slice',
+  variable,
+  start,
+  end,
+}));
+
 export class LetCommand extends ExCommand {
-  // TODO: Support slicing
   public static readonly argParser = (lock: boolean) =>
     alt<LetCommand>(
       // `:let {var} = {expr}`
@@ -105,7 +120,12 @@ export class LetCommand extends ExCommand {
       // `:let {var} .= {expr}`
       whitespace.then(
         seq(
-          alt<LetCommandVariable | Unpack | Index>(unpackParser, indexParser, letVarParser),
+          alt<LetCommandVariable | Unpack | Index | Slice>(
+            unpackParser,
+            sliceParser,
+            indexParser,
+            letVarParser,
+          ),
           operationParser.trim(optWhitespace),
           expressionParser,
         ).map(
@@ -221,6 +241,37 @@ export class LetCommand extends ExCommand {
           // TODO: Support blobs
           throw VimError.fromCode(ErrorCode.CanOnlyIndexAListDictionaryOrBlob);
         }
+      } else if (variable.type === 'slice') {
+        // TODO: Operations other than `=`?
+        // TODO: Support blobs
+        const varValue = context.evaluate(variable.variable);
+        if (varValue.type !== 'list' || value.type !== 'list') {
+          throw VimError.fromCode(ErrorCode.CanOnlyIndexAListDictionaryOrBlob);
+        }
+        if (value.type !== 'list') {
+          throw VimError.fromCode(ErrorCode.SliceRequiresAListOrBlobValue);
+        }
+        const start = variable.start ? toInt(context.evaluate(variable.start)) : 0;
+        if (start > varValue.items.length - 1) {
+          throw VimError.fromCode(ErrorCode.ListIndexOutOfRange, start.toString());
+        }
+        // NOTE: end is inclusive, unlike in JS
+        const end = variable.end
+          ? toInt(context.evaluate(variable.end))
+          : varValue.items.length - 1;
+        const slots = end - start + 1;
+        if (slots > value.items.length) {
+          throw VimError.fromCode(ErrorCode.ListValueHasNotEnoughItems);
+        } else if (slots < value.items.length) {
+          // TODO: Allow this when going past end of list and end === undefined
+          throw VimError.fromCode(ErrorCode.ListValueHasMoreItemsThanTarget);
+        }
+        let i = start;
+        for (const item of value.items) {
+          varValue.items[i] = item;
+          ++i;
+        }
+        context.setVariable(variable.variable, varValue, this.args.lock);
       }
     }
   }

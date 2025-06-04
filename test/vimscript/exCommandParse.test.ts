@@ -394,6 +394,21 @@ suite('Ex command parsing', () => {
     );
 
     exParseTest(
+      ':let s:arr[start:end] = [1, 2, 3]',
+      new LetCommand({
+        operation: '=',
+        variable: {
+          type: 'slice',
+          variable: { type: 'variable', namespace: 's', name: 'arr' },
+          start: { type: 'variable', namespace: undefined, name: 'start' },
+          end: { type: 'variable', namespace: undefined, name: 'end' },
+        },
+        expression: list([int(1), int(2), int(3)]),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
       ':const foo = 5',
       new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true }),
     );
