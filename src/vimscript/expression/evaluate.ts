@@ -1241,7 +1241,13 @@ export class EvaluationContext {
         const [s] = getArgs(1);
         return int(toString(s!).length);
       }
-      // TODO: strpart()
+      case 'strpart': {
+        const [_src, _start, _len, chars] = getArgs(2, 4);
+        const src = toString(_src!);
+        const start = toInt(_start!);
+        const len = _len ? toInt(_len) : src.length - start;
+        return str(src.substring(start, start + len));
+      }
       // TODO: submatch()
       // TODO: substitute()
       case 'tan': {
