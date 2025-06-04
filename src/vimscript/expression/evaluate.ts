@@ -127,7 +127,7 @@ export class Variable {
   }
 }
 
-type VariableStore = Map<string, Variable>;
+export type VariableStore = Map<string, Variable>;
 
 export class EvaluationContext {
   private static globalVariables: VariableStore = new Map();
@@ -266,14 +266,7 @@ export class EvaluationContext {
       throw VimError.fromCode(ErrorCode.FuncrefVariableNameMustStartWithACapital, varExpr.name);
     }
 
-    let store: VariableStore | undefined;
-    if (this.localScopes.length > 0 && varExpr.namespace === undefined) {
-      store = this.localScopes.at(-1);
-    } else if (varExpr.namespace === 'g' || varExpr.namespace === undefined) {
-      store = EvaluationContext.globalVariables;
-    } else {
-      // TODO
-    }
+    const store = this.getVariableStore(varExpr.namespace);
 
     if (store) {
       const _var = store.get(varExpr.name);
@@ -362,6 +355,16 @@ export class EvaluationContext {
       ErrorCode.UndefinedVariable,
       varExpr.namespace ? `${varExpr.namespace}:${varExpr.name}` : varExpr.name,
     );
+  }
+
+  public getVariableStore(namespace: string | undefined): VariableStore | undefined {
+    if (this.localScopes.length > 0 && namespace === undefined) {
+      return this.localScopes.at(-1);
+    } else if (namespace === 'g' || namespace === undefined) {
+      return EvaluationContext.globalVariables;
+    }
+    // TODO
+    return undefined;
   }
 
   private evaluateIndex(sequence: Value, index: Value): Value {
