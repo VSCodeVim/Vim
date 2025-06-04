@@ -764,6 +764,13 @@ suite('Vimscript expressions', () => {
       exprTest('strlen([1,2,3])', { error: ErrorCode.UsingListAsAString });
     });
 
+    suite('strpart', () => {
+      exprTest('strpart("abcdefg", 3, 2)', { value: str('de') });
+      exprTest('strpart("abcdefg", -2, 4)', { value: str('ab') });
+      exprTest('strpart("abcdefg", 5, 4)', { value: str('fg') });
+      exprTest('strpart("abcdefg", 3)', { value: str('defg') });
+    });
+
     suite('split', () => {
       exprTest('split("  a\t\tb    c  ")', { value: list([str('a'), str('b'), str('c')]) });
       exprTest('split("  a\t\tb    c  ", "", 1)', {
