@@ -623,6 +623,14 @@ export class EvaluationContext {
   }
 
   private evaluateFunctionCall(call: FunctionCallExpression): Value {
+    const assertPassed = () => {
+      return int(0);
+    };
+    const assertFailed = (msg: string) => {
+      // TODO: Include file & line
+      this.errors.push(msg);
+      return int(1);
+    };
     const getArgs = (min: number, max?: number) => {
       if (max === undefined) {
         max = min;
@@ -668,42 +676,56 @@ export class EvaluationContext {
         // eslint-disable-next-line no-bitwise
         return int(toInt(x!) & toInt(y!));
       }
-      // TODO: assert_*()
+      case 'assert_beeps': {
+        return assertFailed('VSCodeVim does not support beeps');
+      }
       case 'assert_equal': {
         const [expected, actual, msg] = getArgs(2, 3);
         if (this.evaluateComparison('==', true, expected!, actual!)) {
-          return int(0);
+          return assertPassed();
         }
-        this.errors.push(
+        return assertFailed(
           msg
             ? toString(msg)
-            : `Expected ${displayValue(expected!)} but got ${displayValue(actual!)}`, // TODO: Include file & line
+            : `Expected ${displayValue(expected!)} but got ${displayValue(actual!)}`,
         );
-        return int(1);
+      }
+      // TODO: assert_equalfile()
+      // TODO: assert_exception()
+      // TODO: assert_fails()
+      case 'assert_false': {
+        const [actual, msg] = getArgs(1, 2);
+        if (this.evaluateComparison('==', true, bool(false), actual!)) {
+          return assertPassed();
+        }
+        return assertFailed(
+          msg ? toString(msg) : `Expected False but got ${displayValue(actual!)}`,
+        );
+      }
+      // TODO: assert_inrange()
+      // TODO: assert_match()
+      case 'assert_nobeep': {
+        return assertPassed();
       }
       case 'assert_notequal': {
         const [expected, actual, msg] = getArgs(2, 3);
         if (this.evaluateComparison('!=', true, expected!, actual!)) {
-          return int(0);
+          return assertPassed();
         }
-        this.errors.push(
-          msg ? toString(msg) : `Expected not equal to ${displayValue(expected!)}`, // TODO: Include file & line
+        return assertFailed(
+          msg ? toString(msg) : `Expected not equal to ${displayValue(expected!)}`,
         );
-        return int(1);
       }
+      // TODO: assert_notmatch()
       case 'assert_report': {
-        this.errors.push(toString(getArgs(1)[0]!));
-        return int(1);
+        return assertFailed(toString(getArgs(1)[0]!));
       }
       case 'assert_true': {
         const [actual, msg] = getArgs(2, 3);
         if (this.evaluateComparison('==', true, bool(true), actual!)) {
-          return int(0);
+          return assertPassed();
         }
-        this.errors.push(
-          msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`, // TODO: Include file & line
-        );
-        return int(1);
+        return assertFailed(msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`);
       }
       // TODO: call()
       case 'ceil': {
