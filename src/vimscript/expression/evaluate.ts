@@ -334,9 +334,9 @@ export class EvaluationContext {
       } else if (varExpr.name === 't_blob') {
         return int(10);
       } else if (varExpr.name === 'numbermax') {
-        return int(Number.MAX_VALUE);
+        return int(Number.MAX_SAFE_INTEGER);
       } else if (varExpr.name === 'numbermin') {
-        return int(Number.MIN_VALUE);
+        return int(Number.MIN_SAFE_INTEGER);
       } else if (varExpr.name === 'numbersize') {
         // NOTE: In VimScript this refers to a 64 bit integer; we have a 64 bit float because JavaScript
         return int(64);
