@@ -710,7 +710,20 @@ export class EvaluationContext {
           msg ? toString(msg) : `Expected False but got ${displayValue(actual!)}`,
         );
       }
-      // TODO: assert_inrange()
+      case 'assert_inrange': {
+        const [lower, upper, actual, msg] = getArgs(3, 4);
+        if (
+          this.evaluateComparison('>=', true, actual!, lower!) &&
+          this.evaluateComparison('<=', true, actual!, upper!)
+        ) {
+          return assertPassed();
+        }
+        return assertFailed(
+          msg
+            ? toString(msg)
+            : `Expected range ${displayValue(lower!)} - ${displayValue(upper!)} but got ${displayValue(actual!)}`,
+        );
+      }
       case 'assert_match': {
         const [pattern, actual, msg] = getArgs(2, 3);
         if (this.evaluateComparison('=~', true, actual!, pattern!)) {
