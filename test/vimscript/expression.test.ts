@@ -673,6 +673,10 @@ suite('Vimscript expressions', () => {
       exprTest('index(["A","C","D","C"], "C", 5)', { value: int(-1) });
     });
 
+    suite('invert', () => {
+      exprTest('invert(123)', { value: int(-124) });
+    });
+
     suite('isnan/isinf', () => {
       exprTest('isnan(2.0 / 3.0)', { value: bool(false) });
       exprTest('isnan(0.0 / 0.0)', { value: bool(true) });
