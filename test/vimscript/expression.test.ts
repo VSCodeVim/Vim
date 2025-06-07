@@ -426,6 +426,11 @@ suite('Vimscript expressions', () => {
       exprTest("'abc' ==? 'Abc'", { value: bool(true) });
     });
 
+    suite.only('Pattern matching', () => {
+      exprTest("'apple' =~ '^a.*e$'", { value: bool(true) });
+      // TODO
+    });
+
     suite('Different types', () => {
       exprTest("4 == '4'", { value: bool(true) });
       exprTest("4 is '4'", { value: bool(false) });
@@ -527,9 +532,30 @@ suite('Vimscript expressions', () => {
   });
 
   suite('Builtin functions', () => {
-    suite('assert_*', () => {
-      exprTest('assert_equal(1, 1)', { value: int(0) });
-      exprTest('assert_equal(1, 2)', { value: int(1) });
+    suite.only('assert_*', () => {
+      const PASS = { value: int(0) };
+      const FAIL = { value: int(1) };
+
+      exprTest('assert_equal(1, 1)', PASS);
+      exprTest('assert_equal(1, 2)', FAIL);
+      exprTest('assert_equal(4, "4")', FAIL);
+
+      exprTest('assert_true(-123)', PASS);
+      exprTest('assert_true(0)', FAIL);
+
+      exprTest('assert_false(-123)', FAIL);
+      exprTest('assert_false(0)', PASS);
+
+      exprTest('assert_inrange(-123, 123, 4)', PASS);
+      exprTest('assert_inrange(-123, 123, -123)', PASS);
+      exprTest('assert_inrange(-123, 123, 123)', PASS);
+      exprTest('assert_inrange(-123, 123, 123.001)', FAIL);
+      exprTest('assert_inrange(-123, 123, -123.001)', FAIL);
+
+      exprTest("assert_match('^f.*o$', 'foo')", PASS);
+      exprTest("assert_match('^f.*o$', 'foobar')", FAIL);
+
+      exprTest('assert_report("whatever")', FAIL);
     });
 
     suite('count', () => {
