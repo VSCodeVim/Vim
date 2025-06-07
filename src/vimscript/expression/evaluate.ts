@@ -14,7 +14,6 @@ import {
   FunctionCallExpression,
   ListValue,
   NumberValue,
-  StringValue,
   UnaryOp,
   Value,
   VariableExpression,
@@ -653,8 +652,8 @@ export class EvaluationContext {
           const pattern = Pattern.parser({
             direction: SearchDirection.Forward,
             delimiter: '/', // TODO: Are these params right?
-          }).tryParse(toString(lhs));
-          return pattern.regex.test(toString(rhs));
+          }).tryParse(toString(rhs));
+          return pattern.regex.test(toString(lhs));
       }
     }
   }
@@ -718,7 +717,10 @@ export class EvaluationContext {
       }
       case 'assert_equal': {
         const [expected, actual, msg] = getArgs(2, 3);
-        if (this.evaluateComparison('==', true, expected!, actual!)) {
+        if (
+          expected!.type === actual!.type &&
+          this.evaluateComparison('==', true, expected!, actual!)
+        ) {
           return assertPassed();
         }
         return assertFailed(
@@ -790,7 +792,7 @@ export class EvaluationContext {
       }
       case 'assert_true': {
         const [actual, msg] = getArgs(1, 2);
-        if (this.evaluateComparison('==', true, bool(true), actual!)) {
+        if (this.evaluateComparison('!=', true, bool(false), actual!)) {
           return assertPassed();
         }
         return assertFailed(msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`);
