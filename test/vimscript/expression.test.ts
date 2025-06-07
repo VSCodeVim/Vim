@@ -426,7 +426,7 @@ suite('Vimscript expressions', () => {
       exprTest("'abc' ==? 'Abc'", { value: bool(true) });
     });
 
-    suite.only('Pattern matching', () => {
+    suite('Pattern matching', () => {
       exprTest("'apple' =~ '^a.*e$'", { value: bool(true) });
       // TODO
     });
@@ -532,7 +532,7 @@ suite('Vimscript expressions', () => {
   });
 
   suite('Builtin functions', () => {
-    suite.only('assert_*', () => {
+    suite('assert_*', () => {
       const PASS = { value: int(0) };
       const FAIL = { value: int(1) };
 
