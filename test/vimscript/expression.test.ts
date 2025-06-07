@@ -111,6 +111,12 @@ suite('Vimscript expressions', () => {
     });
 
     suite('Blobs', () => {
+      exprTest('0z', {
+        expr: {
+          type: 'blob',
+          data: new Uint8Array([]),
+        },
+      });
       exprTest('0zabcd', {
         expr: {
           type: 'blob',
@@ -118,6 +124,12 @@ suite('Vimscript expressions', () => {
         },
       });
       exprTest('0ZABCD', {
+        expr: {
+          type: 'blob',
+          data: new Uint8Array([171, 205]),
+        },
+      });
+      exprTest('0zAB.CD', {
         expr: {
           type: 'blob',
           data: new Uint8Array([171, 205]),
