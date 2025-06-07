@@ -589,12 +589,14 @@ suite('Vimscript expressions', () => {
       exprTest("empty('')", { value: bool(true) });
       exprTest('empty([])', { value: bool(true) });
       exprTest('empty({})', { value: bool(true) });
+      exprTest('empty(0z)', { value: bool(true) });
 
       exprTest('empty(1)', { value: bool(false) });
       exprTest('empty(1.0)', { value: bool(false) });
       exprTest("empty('xyz')", { value: bool(false) });
       exprTest('empty([0])', { value: bool(false) });
       exprTest("empty({'k': 'v'})", { value: bool(false) });
+      exprTest('empty(0z00)', { value: bool(false) });
     });
 
     suite('function', () => {

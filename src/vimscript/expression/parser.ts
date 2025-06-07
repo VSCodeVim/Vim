@@ -38,7 +38,7 @@ import {
 
 // TODO: Support dots between bytes
 const blobParser: Parser<BlobValue> = regexp(/0[z]/i).then(
-  regexp(/[0-1a-z]+/i).map<BlobValue>((hexData) => {
+  regexp(/[0-1a-z]*/i).map<BlobValue>((hexData) => {
     if (hexData.length % 2 !== 0) {
       throw VimError.fromCode(ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters);
     }

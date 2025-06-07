@@ -878,8 +878,8 @@ export class EvaluationContext {
             return bool(x.items.length === 0);
           case 'dict_val':
             return bool(x.items.size === 0);
-          // TODO:
-          // case 'blob':
+          case 'blob':
+            return bool(x.data.byteLength === 0);
           default:
             return bool(false);
         }
