@@ -1011,7 +1011,13 @@ export class EvaluationContext {
       // TODO: indexof()
       // TODO: input()/inputlist()
       // TODO: insert()
-      // TODO: invert()
+      case 'invert': {
+        const [x] = getArgs(1);
+        // eslint-disable-next-line no-bitwise
+        return int(~toInt(x!));
+      }
+      // TODO: isabsolutepath()
+      // TODO: isdirectory()
       case 'isinf': {
         const [x] = getArgs(1);
         const _x = toFloat(x!);
