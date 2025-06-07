@@ -426,12 +426,19 @@ suite('Vimscript expressions', () => {
       exprTest("'abc' ==? 'Abc'", { value: bool(true) });
     });
 
-    suite('Misc', () => {
+    suite('Different types', () => {
       exprTest("4 == '4'", { value: bool(true) });
       exprTest("4 is '4'", { value: bool(false) });
       exprTest('0 is []', { value: bool(false) });
       exprTest('0 is {}', { value: bool(false) });
       exprTest('[4] == ["4"]', { value: bool(false) });
+      exprTest('3.2 > 3', { value: bool(true) });
+      exprTest('5 == [5]', { error: ErrorCode.CanOnlyCompareListWithList });
+      exprTest('[] == {}', { error: ErrorCode.CanOnlyCompareListWithList });
+      exprTest('{} == []', { error: ErrorCode.CanOnlyCompareListWithList });
+      exprTest('{} == 10', { error: ErrorCode.CanOnlyCompareDictionaryWithDictionary });
+      exprTest('0 == 0z00', { error: ErrorCode.CanOnlyCompareBlobWithBlob });
+      exprTest('2 == function("abs")', { value: bool(false) });
     });
   });
 
