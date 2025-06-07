@@ -71,7 +71,7 @@ export abstract class CommandLine {
    */
   public abstract ctrlF(vimState: VimState): Promise<void>;
 
-  public async historyBack(): Promise<void> {
+  public historyBack(): void {
     if (this.historyIndex === 0) {
       return;
     }
@@ -88,7 +88,7 @@ export abstract class CommandLine {
     this.cursorIndex = this.text.length;
   }
 
-  public async historyForward(): Promise<void> {
+  public historyForward(): void {
     if (this.historyIndex === undefined) {
       return;
     }
@@ -134,28 +134,28 @@ export abstract class CommandLine {
   /**
    * Called when `<Home>` is pressed
    */
-  public async home(): Promise<void> {
+  public home(): void {
     this.cursorIndex = 0;
   }
 
   /**
    * Called when `<End>` is pressed
    */
-  public async end(): Promise<void> {
+  public end(): void {
     this.cursorIndex = this.text.length;
   }
 
   /**
    * Called when `<C-Left>` is pressed
    */
-  public async wordLeft(): Promise<void> {
+  public wordLeft(): void {
     this.cursorIndex = getWordLeftInText(this.text, this.cursorIndex, WordType.Big) ?? 0;
   }
 
   /**
    * Called when `<C-Right>` is pressed
    */
-  public async wordRight(): Promise<void> {
+  public wordRight(): void {
     this.cursorIndex =
       getWordRightInText(this.text, this.cursorIndex, WordType.Big) ?? this.text.length;
   }
@@ -163,7 +163,7 @@ export abstract class CommandLine {
   /**
    * Called when `<C-BS>` is pressed
    */
-  public async deleteWord(): Promise<void> {
+  public deleteWord(): void {
     const wordStart = getWordLeftInText(this.text, this.cursorIndex, WordType.Normal);
     if (wordStart !== undefined) {
       this.text = this.text.substring(0, wordStart).concat(this.text.slice(this.cursorIndex));
@@ -174,12 +174,12 @@ export abstract class CommandLine {
   /**
    * Called when `<C-BS>` is pressed
    */
-  public async deleteToBeginning(): Promise<void> {
+  public deleteToBeginning(): void {
     this.text = this.text.slice(this.cursorIndex);
     this.cursorIndex = 0;
   }
 
-  public async typeCharacter(char: string): Promise<void> {
+  public typeCharacter(char: string): void {
     const modifiedString = this.text.split('');
     modifiedString.splice(this.cursorIndex, 0, char);
     this.text = modifiedString.join('');
