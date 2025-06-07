@@ -693,10 +693,16 @@ export class EvaluationContext {
         return float(Math.acos(toFloat(x!)));
       }
       case 'add': {
-        const [l, expr] = getArgs(2);
-        // TODO: should also work with blob
+        const [l, item] = getArgs(2);
+        if (l!.type === 'blob') {
+          const newBytes = new Uint8Array(l!.data.byteLength + 1);
+          newBytes.set(new Uint8Array(l!.data));
+          newBytes[newBytes.length - 1] = toInt(item!);
+          l!.data = newBytes.buffer;
+          return blob(newBytes);
+        }
         const lst = toList(l!);
-        lst.items.push(expr!);
+        lst.items.push(item!);
         return lst;
       }
       case 'asin': {
@@ -1013,7 +1019,18 @@ export class EvaluationContext {
       case 'insert': {
         const [l, item, _idx] = getArgs(2, 3);
         const idx = _idx ? toInt(_idx) : 0;
-        // TODO: should also work with blob
+        if (l!.type === 'blob') {
+          if (idx > l!.data.byteLength) {
+            throw VimError.fromCode(ErrorCode.InvalidArgument475, idx.toString());
+          }
+          const bytes = new Uint8Array(l!.data);
+          const newBytes = new Uint8Array(bytes.length + 1);
+          newBytes.set(bytes.subarray(0, idx), 0);
+          newBytes[idx] = toInt(item!);
+          newBytes.set(bytes.subarray(idx), idx + 1);
+          l!.data = newBytes.buffer;
+          return blob(newBytes);
+        }
         const lst = toList(l!);
         if (idx > lst.items.length) {
           throw VimError.fromCode(ErrorCode.ListIndexOutOfRange, idx.toString());

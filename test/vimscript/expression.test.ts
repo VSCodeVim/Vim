@@ -570,9 +570,11 @@ suite('Vimscript expressions', () => {
       exprTest('assert_report("whatever")', FAIL);
     });
 
-    suite('count', () => {
+    suite('add', () => {
       exprTest('add([1,2,3], 4)', { display: '[1, 2, 3, 4]' });
       exprTest('add(add(add([], 1), 2), 3)', { display: '[1, 2, 3]' });
+
+      exprTest('add(0zABCD, 0xEF)', { display: '0zABCDEF' });
     });
 
     suite('count', () => {
@@ -677,6 +679,9 @@ suite('Vimscript expressions', () => {
       exprTest('insert([1,2,3], 4)', { display: '[4, 1, 2, 3]' });
       exprTest('insert([1,2,3], 4, 2)', { display: '[1, 2, 4, 3]' });
       exprTest('insert(insert(insert([], 1), 2), 3)', { display: '[3, 2, 1]' });
+
+      exprTest('insert(0zABCD, 0xEF)', { display: '0zEFABCD' });
+      exprTest('insert(0zABCD, 0xEF, 1)', { display: '0zABEFCD' });
     });
 
     suite('invert', () => {
