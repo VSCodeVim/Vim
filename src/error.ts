@@ -52,6 +52,7 @@ export enum ErrorCode {
   CanOnlyIndexAListDictionaryOrBlob = 689,
   CanOnlyCompareListWithList = 691,
   InvalidOperationForList = 692,
+  InvalidOperationForFuncrefs = 694,
   CannotIndexAFuncref = 695,
   UnknownFunction_funcref = 700,
   InvalidTypeForLen = 701,
@@ -87,6 +88,8 @@ export enum ErrorCode {
   SecondArgumentOfFunction = 923,
   BlobLiteralShouldHaveAnEvenNumberOfHexCharacters = 973,
   UsingABlobAsANumber = 974,
+  CanOnlyCompareBlobWithBlob = 977,
+  InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
   CannotLockARegister = 996,
 }
@@ -141,6 +144,7 @@ export const ErrorMessage: IErrorMessage = {
   689: 'Can only index a List, Dictionary or Blob',
   691: 'Can only compare List with List',
   692: 'Invalid operation for List',
+  694: 'Invalid operation for Funcrefs',
   695: 'Cannot index a Funcref',
   700: 'Unknown function',
   701: 'Invalid type for len()',
@@ -176,6 +180,8 @@ export const ErrorMessage: IErrorMessage = {
   923: 'Second argument of function() must be a list or a dict',
   973: 'Blob literal should have an even number of hex characters',
   974: 'Using a Blob as a Number',
+  977: 'Can only compare Blob with Blob',
+  978: 'Invalid operation for Blob',
   995: 'Cannot modify existing variable',
   996: 'Cannot lock a register',
 };

@@ -247,12 +247,14 @@ export class EvaluationContext {
           toInt(this.evaluate(expression.if)) !== 0 ? expression.then : expression.else,
         );
       case 'comparison':
+        const _lhs = this.evaluate(expression.lhs);
+        const _rhs = this.evaluate(expression.rhs);
         return bool(
           this.evaluateComparison(
             expression.operator,
             expression.matchCase ?? configuration.ignorecase,
-            expression.lhs,
-            expression.rhs,
+            _lhs,
+            _rhs,
           ),
         );
       default: {
@@ -511,81 +513,79 @@ export class EvaluationContext {
   private evaluateComparison(
     operator: ComparisonOp,
     matchCase: boolean,
-    lhsExpr: Expression,
-    rhsExpr: Expression,
+    lhs: Value,
+    rhs: Value,
   ): boolean {
     switch (operator) {
       case '==':
-        return this.evaluateBasicComparison('==', matchCase, lhsExpr, rhsExpr);
+        return this.evaluateBasicComparison('==', matchCase, lhs, rhs);
       case '!=':
-        return !this.evaluateBasicComparison('==', matchCase, lhsExpr, rhsExpr);
+        return !this.evaluateBasicComparison('==', matchCase, lhs, rhs);
       case '>':
-        return this.evaluateBasicComparison('>', matchCase, lhsExpr, rhsExpr);
+        return this.evaluateBasicComparison('>', matchCase, lhs, rhs);
       case '>=':
         return (
-          this.evaluateBasicComparison('>', matchCase, lhsExpr, rhsExpr) ||
-          this.evaluateBasicComparison('==', matchCase, lhsExpr, rhsExpr)
+          this.evaluateBasicComparison('>', matchCase, lhs, rhs) ||
+          this.evaluateBasicComparison('==', matchCase, lhs, rhs)
         );
       case '<':
-        return this.evaluateBasicComparison('>', matchCase, rhsExpr, lhsExpr);
+        return this.evaluateBasicComparison('>', matchCase, rhs, lhs);
       case '<=':
-        return !this.evaluateBasicComparison('>', matchCase, lhsExpr, rhsExpr);
+        return !this.evaluateBasicComparison('>', matchCase, lhs, rhs);
       case '=~':
-        return this.evaluateBasicComparison('=~', matchCase, lhsExpr, rhsExpr);
+        return this.evaluateBasicComparison('=~', matchCase, lhs, rhs);
       case '!~':
-        return !this.evaluateBasicComparison('=~', matchCase, lhsExpr, rhsExpr);
+        return !this.evaluateBasicComparison('=~', matchCase, lhs, rhs);
       case 'is':
-        return this.evaluateBasicComparison('is', matchCase, lhsExpr, rhsExpr);
+        return this.evaluateBasicComparison('is', matchCase, lhs, rhs);
       case 'isnot':
-        return !this.evaluateBasicComparison('is', matchCase, lhsExpr, rhsExpr);
+        return !this.evaluateBasicComparison('is', matchCase, lhs, rhs);
     }
   }
 
   private evaluateBasicComparison(
     operator: '==' | '>' | '=~' | 'is',
     matchCase: boolean,
-    lhsExpr: Expression,
-    rhsExpr: Expression,
+    lhs: Value,
+    rhs: Value,
     topLevel: boolean = true,
   ): boolean {
-    if (operator === 'is' && lhsExpr.type !== rhsExpr.type) {
+    if (operator === 'is' && lhs.type !== rhs.type) {
       return false;
     }
 
-    if (lhsExpr.type === 'list') {
-      if (rhsExpr.type === 'list') {
+    if (lhs.type === 'list') {
+      if (rhs.type === 'list') {
         switch (operator) {
           case '==':
+            const rhsItems = rhs.items;
             return (
-              lhsExpr.items.length === rhsExpr.items.length &&
-              lhsExpr.items.every((left, idx) =>
-                this.evaluateBasicComparison('==', matchCase, left, rhsExpr.items[idx], false),
+              lhs.items.length === rhsItems.length &&
+              lhs.items.every((left, idx) =>
+                this.evaluateBasicComparison('==', matchCase, left, rhsItems[idx], false),
               )
             );
           case 'is':
-            return lhsExpr.items === rhsExpr.items;
+            return lhs.items === rhs.items;
           default:
             throw VimError.fromCode(ErrorCode.InvalidOperationForList);
         }
       } else {
         throw VimError.fromCode(ErrorCode.CanOnlyCompareListWithList);
       }
-    } else if (rhsExpr.type === 'list') {
+    } else if (rhs.type === 'list') {
       throw VimError.fromCode(ErrorCode.CanOnlyCompareListWithList);
-    } else if (lhsExpr.type === 'dictionary') {
-      if (rhsExpr.type === 'dictionary') {
-        const [lhs, rhs] = [this.evaluate(lhsExpr), this.evaluate(rhsExpr)] as [
-          DictionaryValue,
-          DictionaryValue,
-        ];
+    } else if (lhs.type === 'dict_val') {
+      if (rhs.type === 'dict_val') {
         switch (operator) {
           case '==':
+            const rhsItems = rhs.items;
             return (
-              lhs.items.size === rhs.items.size &&
+              lhs.items.size === rhsItems.size &&
               [...lhs.items.entries()].every(
                 ([key, value]) =>
-                  rhs.items.has(key) &&
-                  this.evaluateBasicComparison('==', matchCase, value, rhs.items.get(key)!, false),
+                  rhsItems.has(key) &&
+                  this.evaluateBasicComparison('==', matchCase, value, rhsItems.get(key)!, false),
               )
             );
           case 'is':
@@ -596,14 +596,43 @@ export class EvaluationContext {
       } else {
         throw VimError.fromCode(ErrorCode.CanOnlyCompareDictionaryWithDictionary);
       }
-    } else if (rhsExpr.type === 'dictionary') {
+    } else if (rhs.type === 'dict_val') {
       throw VimError.fromCode(ErrorCode.CanOnlyCompareDictionaryWithDictionary);
+    } else if (lhs.type === 'funcref') {
+      if (rhs.type === 'funcref') {
+        switch (operator) {
+          case '==':
+            return lhs.name === rhs.name && lhs.dict === rhs.dict;
+          case 'is':
+            return lhs === rhs;
+          default:
+            throw VimError.fromCode(ErrorCode.InvalidOperationForFuncrefs);
+        }
+      } else {
+        return false;
+      }
+    } else if (rhs.type === 'funcref') {
+      return false;
+    } else if (lhs.type === 'blob') {
+      if (rhs.type === 'blob') {
+        switch (operator) {
+          case '==':
+            const [_lhs, _rhs] = [new Uint8Array(lhs.data), new Uint8Array(rhs.data)];
+            return _lhs.length === _rhs.length && _lhs.every((byte, idx) => byte === _rhs[idx]);
+          case 'is':
+            return lhs.data === rhs.data;
+          default:
+            throw VimError.fromCode(ErrorCode.InvalidOperationForBlob);
+        }
+      } else {
+        throw VimError.fromCode(ErrorCode.CanOnlyCompareBlobWithBlob);
+      }
+    } else if (rhs.type === 'blob') {
+      throw VimError.fromCode(ErrorCode.CanOnlyCompareBlobWithBlob);
     } else {
-      let [lhs, rhs] = [this.evaluate(lhsExpr), this.evaluate(rhsExpr)] as [
-        NumberValue | StringValue,
-        NumberValue | StringValue,
-      ];
-      if (lhs.type === 'number' || rhs.type === 'number') {
+      if (lhs.type === 'float' || rhs.type === 'float') {
+        [lhs, rhs] = [float(toFloat(lhs)), float(toFloat(rhs))];
+      } else if (lhs.type === 'number' || rhs.type === 'number') {
         if (topLevel) {
           // Strings are automatically coerced to numbers, except within a list/dict
           // i.e. 4 == "4" but [4] != ["4"]
