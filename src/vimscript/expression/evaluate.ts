@@ -4,7 +4,7 @@ import { configuration } from '../../configuration/configuration';
 import { ErrorCode, VimError } from '../../error';
 import { globalState } from '../../state/globalState';
 import { bool, float, funcref, listExpr, int, str, list, funcCall, blob } from './build';
-import { expressionParser, numberParser } from './parser';
+import { expressionParser, floatParser, numberParser } from './parser';
 import {
   BinaryOp,
   ComparisonOp,
@@ -1276,7 +1276,12 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return float(Math.sqrt(toFloat(x!)));
       }
-      // TODO: str2float()
+      case 'str2float': {
+        // TODO: There are differences. See `:help str2float`
+        const [s, quoted] = getArgs(1, 2);
+        const result = floatParser.parse(toString(s!));
+        return result.status === true ? result.value : float(0);
+      }
       case 'str2list': {
         const [s, _ignored] = getArgs(1, 2);
         const result: number[] = [];

@@ -71,7 +71,7 @@ const decimalOrOctalNumberParser: Parser<NumberValue> = regexp(/\d+/).map((x) =>
   return int(Number.parseInt(x, base));
 });
 
-const floatParser: Parser<FloatValue> = seq(
+export const floatParser: Parser<FloatValue> = seq(
   regexp(/\d+\.\d+/).map((x) => Number.parseFloat(x)),
   alt(string('e'), string('E'))
     .then(
