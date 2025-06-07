@@ -831,7 +831,7 @@ export class EvaluationContext {
             throw VimError.fromCode(ErrorCode.InvalidArgument474);
           }
           if (toInt(start) >= comp!.items.length) {
-            throw VimError.fromCode(ErrorCode.ListIndexOutOfRange);
+            throw VimError.fromCode(ErrorCode.ListIndexOutOfRange, toInt(start).toString());
           }
           while (toInt(start) < 0) {
             start = int(toInt(start) + comp!.items.length);
@@ -1010,7 +1010,17 @@ export class EvaluationContext {
       }
       // TODO: indexof()
       // TODO: input()/inputlist()
-      // TODO: insert()
+      case 'insert': {
+        const [l, item, _idx] = getArgs(2, 3);
+        const idx = _idx ? toInt(_idx) : 0;
+        // TODO: should also work with blob
+        const lst = toList(l!);
+        if (idx > lst.items.length) {
+          throw VimError.fromCode(ErrorCode.ListIndexOutOfRange, idx.toString());
+        }
+        lst.items.splice(idx, 0, item!);
+        return lst;
+      }
       case 'invert': {
         const [x] = getArgs(1);
         // eslint-disable-next-line no-bitwise

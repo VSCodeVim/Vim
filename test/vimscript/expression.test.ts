@@ -673,6 +673,12 @@ suite('Vimscript expressions', () => {
       exprTest('index(["A","C","D","C"], "C", 5)', { value: int(-1) });
     });
 
+    suite('insert', () => {
+      exprTest('insert([1,2,3], 4)', { display: '[4, 1, 2, 3]' });
+      exprTest('insert([1,2,3], 4, 2)', { display: '[1, 2, 4, 3]' });
+      exprTest('insert(insert(insert([], 1), 2), 3)', { display: '[3, 2, 1]' });
+    });
+
     suite('invert', () => {
       exprTest('invert(123)', { value: int(-124) });
     });
