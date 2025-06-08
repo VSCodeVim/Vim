@@ -3,7 +3,18 @@ import { displayValue } from './displayValue';
 import { configuration } from '../../configuration/configuration';
 import { ErrorCode, VimError } from '../../error';
 import { globalState } from '../../state/globalState';
-import { bool, float, funcref, listExpr, int, str, list, funcCall, blob } from './build';
+import {
+  bool,
+  float,
+  funcref,
+  int,
+  str,
+  list,
+  funcCall,
+  blob,
+  dictionary,
+  funcrefCall,
+} from './build';
 import { expressionParser, floatParser, numberParser } from './parser';
 import {
   BinaryOp,
@@ -160,10 +171,7 @@ export class EvaluationContext {
             items.set(keyStr, this.evaluate(val));
           }
         }
-        return {
-          type: 'dict_val',
-          items,
-        };
+        return dictionary(items);
       }
       case 'variable':
         return this.evaluateVariable(expression);
@@ -478,7 +486,7 @@ export class EvaluationContext {
     switch (operator) {
       case '+':
         if (lhs.type === 'list' && rhs.type === 'list') {
-          return listExpr(lhs.items.concat(rhs.items)) as ListValue;
+          return list(lhs.items.concat(rhs.items));
         } else {
           return arithmetic((x, y) => x + y);
         }
@@ -814,10 +822,7 @@ export class EvaluationContext {
           case 'list':
             return list([...x.items]);
           case 'dict_val':
-            return {
-              type: 'dict_val',
-              items: new Map(x.items),
-            };
+            return dictionary(new Map(x.items));
         }
         return x!;
       }
@@ -1108,11 +1113,7 @@ export class EvaluationContext {
               seq.items.map((val, idx) => {
                 switch (fn?.type) {
                   case 'funcref':
-                    return this.evaluate({
-                      type: 'funcrefCall',
-                      expression: fn,
-                      args: [int(idx), val],
-                    });
+                    return this.evaluate(funcrefCall(fn, [int(idx), val]));
                   default:
                     this.localScopes.push(
                       new Map([
@@ -1274,14 +1275,7 @@ export class EvaluationContext {
               throw Error('compare() with function name is not yet implemented');
             }
           } else if (func.type === 'funcref') {
-            compare = (x, y) =>
-              toInt(
-                this.evaluate({
-                  type: 'funcrefCall',
-                  expression: func,
-                  args: [x, y],
-                }),
-              );
+            compare = (x, y) => toInt(this.evaluate(funcrefCall(func, [x, y])));
           } else {
             throw VimError.fromCode(ErrorCode.InvalidArgument474);
           }
