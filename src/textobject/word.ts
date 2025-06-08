@@ -8,10 +8,12 @@ export enum WordType {
   Big,
   CamelCase,
   FileName,
+  TagName,
 }
 
 const nonBigWordCharRegex = makeWordRegex('');
 const nonFileNameRegex = makeWordRegex('"\'`;<>{}[]()');
+const nonTagNameRegex = makeWordRegex('</>');
 
 function regexForWordType(wordType: WordType): RegExp {
   switch (wordType) {
@@ -23,6 +25,8 @@ function regexForWordType(wordType: WordType): RegExp {
       return makeCamelCaseWordRegex(configuration.iskeyword);
     case WordType.FileName:
       return nonFileNameRegex;
+    case WordType.TagName:
+      return nonTagNameRegex;
   }
 }
 
@@ -154,7 +158,7 @@ export function prevWordEnd(document: TextDocument, pos: Position, wordType: Wor
       if (currentLine > -1) {
         continue;
       }
-      newCharacter = positions[positions.length - 1];
+      newCharacter = positions.at(-1)!;
     } else {
       newCharacter = positions[index];
     }

@@ -111,6 +111,12 @@ suite('Vimscript expressions', () => {
     });
 
     suite('Blobs', () => {
+      exprTest('0z', {
+        expr: {
+          type: 'blob',
+          data: new Uint8Array([]),
+        },
+      });
       exprTest('0zabcd', {
         expr: {
           type: 'blob',
@@ -118,6 +124,12 @@ suite('Vimscript expressions', () => {
         },
       });
       exprTest('0ZABCD', {
+        expr: {
+          type: 'blob',
+          data: new Uint8Array([171, 205]),
+        },
+      });
+      exprTest('0zAB.CD', {
         expr: {
           type: 'blob',
           data: new Uint8Array([171, 205]),
@@ -426,12 +438,24 @@ suite('Vimscript expressions', () => {
       exprTest("'abc' ==? 'Abc'", { value: bool(true) });
     });
 
-    suite('Misc', () => {
+    suite('Pattern matching', () => {
+      exprTest("'apple' =~ '^a.*e$'", { value: bool(true) });
+      // TODO
+    });
+
+    suite('Different types', () => {
       exprTest("4 == '4'", { value: bool(true) });
       exprTest("4 is '4'", { value: bool(false) });
       exprTest('0 is []', { value: bool(false) });
       exprTest('0 is {}', { value: bool(false) });
       exprTest('[4] == ["4"]', { value: bool(false) });
+      exprTest('3.2 > 3', { value: bool(true) });
+      exprTest('5 == [5]', { error: ErrorCode.CanOnlyCompareListWithList });
+      exprTest('[] == {}', { error: ErrorCode.CanOnlyCompareListWithList });
+      exprTest('{} == []', { error: ErrorCode.CanOnlyCompareListWithList });
+      exprTest('{} == 10', { error: ErrorCode.CanOnlyCompareDictionaryWithDictionary });
+      exprTest('0 == 0z00', { error: ErrorCode.CanOnlyCompareBlobWithBlob });
+      exprTest('2 == function("abs")', { value: bool(false) });
     });
   });
 
@@ -521,13 +545,36 @@ suite('Vimscript expressions', () => {
 
   suite('Builtin functions', () => {
     suite('assert_*', () => {
-      exprTest('assert_equal(1, 1)', { value: int(0) });
-      exprTest('assert_equal(1, 2)', { value: int(1) });
+      const PASS = { value: int(0) };
+      const FAIL = { value: int(1) };
+
+      exprTest('assert_equal(1, 1)', PASS);
+      exprTest('assert_equal(1, 2)', FAIL);
+      exprTest('assert_equal(4, "4")', FAIL);
+
+      exprTest('assert_true(-123)', PASS);
+      exprTest('assert_true(0)', FAIL);
+
+      exprTest('assert_false(-123)', FAIL);
+      exprTest('assert_false(0)', PASS);
+
+      exprTest('assert_inrange(-123, 123, 4)', PASS);
+      exprTest('assert_inrange(-123, 123, -123)', PASS);
+      exprTest('assert_inrange(-123, 123, 123)', PASS);
+      exprTest('assert_inrange(-123, 123, 123.001)', FAIL);
+      exprTest('assert_inrange(-123, 123, -123.001)', FAIL);
+
+      exprTest("assert_match('^f.*o$', 'foo')", PASS);
+      exprTest("assert_match('^f.*o$', 'foobar')", FAIL);
+
+      exprTest('assert_report("whatever")', FAIL);
     });
 
-    suite('count', () => {
+    suite('add', () => {
       exprTest('add([1,2,3], 4)', { display: '[1, 2, 3, 4]' });
       exprTest('add(add(add([], 1), 2), 3)', { display: '[1, 2, 3]' });
+
+      exprTest('add(0zABCD, 0xEF)', { display: '0zABCDEF' });
     });
 
     suite('count', () => {
@@ -556,12 +603,14 @@ suite('Vimscript expressions', () => {
       exprTest("empty('')", { value: bool(true) });
       exprTest('empty([])', { value: bool(true) });
       exprTest('empty({})', { value: bool(true) });
+      exprTest('empty(0z)', { value: bool(true) });
 
       exprTest('empty(1)', { value: bool(false) });
       exprTest('empty(1.0)', { value: bool(false) });
       exprTest("empty('xyz')", { value: bool(false) });
       exprTest('empty([0])', { value: bool(false) });
       exprTest("empty({'k': 'v'})", { value: bool(false) });
+      exprTest('empty(0z00)', { value: bool(false) });
     });
 
     suite('function', () => {
@@ -624,6 +673,19 @@ suite('Vimscript expressions', () => {
       exprTest('index(["A","C","D","C"], "C", 2)', { value: int(3) });
       exprTest('index(["A","C","D","C"], "C", -2)', { value: int(3) });
       exprTest('index(["A","C","D","C"], "C", 5)', { value: int(-1) });
+    });
+
+    suite('insert', () => {
+      exprTest('insert([1,2,3], 4)', { display: '[4, 1, 2, 3]' });
+      exprTest('insert([1,2,3], 4, 2)', { display: '[1, 2, 4, 3]' });
+      exprTest('insert(insert(insert([], 1), 2), 3)', { display: '[3, 2, 1]' });
+
+      exprTest('insert(0zABCD, 0xEF)', { display: '0zEFABCD' });
+      exprTest('insert(0zABCD, 0xEF, 1)', { display: '0zABEFCD' });
+    });
+
+    suite('invert', () => {
+      exprTest('invert(123)', { value: int(-124) });
     });
 
     suite('isnan/isinf', () => {
@@ -733,6 +795,22 @@ suite('Vimscript expressions', () => {
       exprTest('str2list("á")', { value: list([int(97), int(769)]) });
     });
 
+    suite('str2nr', () => {
+      exprTest('str2nr("123")', { value: int(123) });
+      exprTest('str2nr("1001010110", 2)', { value: int(598) });
+      exprTest('str2nr("123", 8)', { value: int(83) });
+      exprTest('str2nr("123", 10)', { value: int(123) });
+      exprTest('str2nr("DEADBEEF", 16)', { value: int(3735928559) });
+      exprTest('str2nr("DEADBEEF", 10)', { value: int(0) });
+      exprTest('str2nr("DEADBEEF", 9)', { error: ErrorCode.InvalidArgument474 });
+    });
+
+    suite('stridx', () => {
+      exprTest('stridx("0123456789", "6")', { value: int(6) });
+      exprTest('stridx("0123456789", "456")', { value: int(4) });
+      exprTest('stridx("0123456789", "X")', { value: int(-1) });
+    });
+
     suite('string', () => {
       exprTest('string("")', { value: str('') });
       exprTest('string(123)', { value: str('123') });
@@ -746,6 +824,13 @@ suite('Vimscript expressions', () => {
       exprTest('strlen("654321")', { value: int(6) });
       exprTest('strlen(654321)', { value: int(6) });
       exprTest('strlen([1,2,3])', { error: ErrorCode.UsingListAsAString });
+    });
+
+    suite('strpart', () => {
+      exprTest('strpart("abcdefg", 3, 2)', { value: str('de') });
+      exprTest('strpart("abcdefg", -2, 4)', { value: str('ab') });
+      exprTest('strpart("abcdefg", 5, 4)', { value: str('fg') });
+      exprTest('strpart("abcdefg", 3)', { value: str('defg') });
     });
 
     suite('split', () => {

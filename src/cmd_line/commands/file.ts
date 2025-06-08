@@ -16,6 +16,7 @@ import {
   fileOptParser,
 } from '../../vimscript/parserUtils';
 import { optWhitespace, regexp, seq } from 'parsimmon';
+import { Position } from 'vscode';
 
 export enum FilePosition {
   NewWindowVerticalSplit,
@@ -233,20 +234,20 @@ export class FileCommand extends ExCommand {
     }
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    const editor = await vscode.window.showTextDocument(doc);
 
     const lineNumber =
       args.cmd?.type === 'line_number'
         ? args.cmd.line
         : args.cmd?.type === 'last_line'
-          ? vscode.window.activeTextEditor!.document.lineCount - 1
+          ? doc.lineCount - 1
           : undefined;
+    const options: vscode.TextDocumentShowOptions = {};
     if (lineNumber !== undefined && lineNumber >= 0) {
-      const pos = new vscode.Position(lineNumber, 0);
-      editor.selection = new vscode.Selection(pos, pos);
-      const range = new vscode.Range(pos, pos);
-      editor.revealRange(range);
+      const pos = new Position(lineNumber, 0);
+      options.selection = new vscode.Range(pos, pos);
     }
+    await vscode.window.showTextDocument(doc, options);
+
     await hidePreviousEditor();
   }
 }

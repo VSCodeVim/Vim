@@ -36,18 +36,22 @@ import {
   VariableExpression,
 } from './types';
 
-// TODO: Support dots between bytes
 const blobParser: Parser<BlobValue> = regexp(/0[z]/i).then(
-  regexp(/[0-1a-z]+/i).map<BlobValue>((hexData) => {
-    if (hexData.length % 2 !== 0) {
-      throw VimError.fromCode(ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters);
-    }
-    const data = new Uint8Array(new ArrayBuffer(hexData.length / 2));
-    for (let i = 0; i < hexData.length; i += 2) {
-      data[i / 2] = Number.parseInt(hexData.substring(i, i + 2), 16);
-    }
-    return blob(data);
-  }),
+  regexp(/[0-1a-f]{1,2}/i)
+    .sepBy(string('.').fallback(undefined))
+    .map<BlobValue>((bytes) => {
+      const lastByte = bytes.at(-1);
+      if (lastByte && lastByte.length !== 2) {
+        throw VimError.fromCode(ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters);
+      }
+      const data = new Uint8Array(new ArrayBuffer(bytes.length));
+      let i = 0;
+      for (const byte of bytes) {
+        data[i] = Number.parseInt(byte, 16);
+        ++i;
+      }
+      return blob(data);
+    }),
 );
 
 const binaryNumberParser: Parser<NumberValue> = regexp(/0[b]/i).then(
@@ -67,7 +71,7 @@ const decimalOrOctalNumberParser: Parser<NumberValue> = regexp(/\d+/).map((x) =>
   return int(Number.parseInt(x, base));
 });
 
-const floatParser: Parser<FloatValue> = seq(
+export const floatParser: Parser<FloatValue> = seq(
   regexp(/\d+\.\d+/).map((x) => Number.parseFloat(x)),
   alt(string('e'), string('E'))
     .then(
@@ -185,6 +189,8 @@ const nestedExpressionParser: Parser<Expression> = lazy(() => expressionParser)
   .wrap(string('('), string(')'))
   .desc('a nested expression');
 
+export const varNameParser = regexp(/[a-zA-Z0-9_]+/);
+
 export const variableParser: Parser<VariableExpression> = seq(
   alt(
     string('b'),
@@ -198,7 +204,7 @@ export const variableParser: Parser<VariableExpression> = seq(
   )
     .skip(string(':'))
     .fallback(undefined),
-  regexp(/[a-zA-Z][a-zA-Z0-9]*/).desc('a variable'),
+  varNameParser.desc('a variable'),
 ).map(([namespace, name]) => {
   return { type: 'variable', namespace, name };
 });

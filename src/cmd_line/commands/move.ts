@@ -60,14 +60,11 @@ export class MoveCommand extends ExCommand {
     let cursorPosition: Position;
     if (dest > sourceEnd) {
       // make the cursor position at the beginning of the endline.
-      cursorPosition = new Position(
-        Math.max(dest, 0),
-        lines[lines.length - 1].match(/\S/)?.index ?? 0,
-      );
+      cursorPosition = new Position(Math.max(dest, 0), lines.at(-1)!.match(/\S/)?.index ?? 0);
     } else {
       cursorPosition = new Position(
         Math.max(dest + lines.length, 0),
-        lines[lines.length - 1].match(/\S/)?.index ?? 0,
+        lines.at(-1)!.match(/\S/)?.index ?? 0,
       );
     }
     // delete

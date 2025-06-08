@@ -184,6 +184,10 @@ export class TextEditor {
     return document.lineAt(line).range.end;
   }
 
+  static getDocumentRange(document: vscode.TextDocument): vscode.Range {
+    return new vscode.Range(TextEditor.getDocumentBegin(), TextEditor.getDocumentEnd(document));
+  }
+
   /**
    * @returns the Position of the first character on the given line which is not whitespace.
    * If it's all whitespace, will return the Position of the EOL character.
@@ -258,7 +262,7 @@ export class TextEditor {
         word,
       };
 
-      if (wordEnd.getRight().isLineEnd()) {
+      if (wordEnd.getRight().isLineEnd(document)) {
         return;
       }
       start = start.nextWordStart(document);

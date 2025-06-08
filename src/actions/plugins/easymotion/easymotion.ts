@@ -408,7 +408,7 @@ export class EasyMotion implements IEasyMotion {
       const offsetPrevDimPos = prevDimPos.withColumn(prevDimPos.character + prevKeystroke.length);
 
       // Don't create any more dimming ranges when the last marker is at document end
-      if (!offsetPrevDimPos.isEqual(TextEditor.getDocumentEnd(editor.document))) {
+      if (!offsetPrevDimPos.isAtDocumentEnd(editor.document)) {
         dimmingZones.push({
           range: new vscode.Range(
             offsetPrevDimPos,
