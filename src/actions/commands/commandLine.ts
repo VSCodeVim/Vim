@@ -414,7 +414,7 @@ class CommandAdvanceCurrentMatch extends CommandLineAction {
           ? SearchDirection.Backward
           : undefined;
     if (commandLine instanceof SearchCommandLine && direction !== undefined) {
-      void commandLine.advanceCurrentMatch(vimState, direction);
+      commandLine.advanceCurrentMatch(vimState, direction);
     }
   }
 }

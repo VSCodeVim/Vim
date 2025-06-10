@@ -424,7 +424,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (cmd) {
         await new ExCommandLine(cmd, mh.vimState.currentMode).run(mh.vimState);
       }
-      void mh.updateView();
+      mh.updateView();
     }
   });
 
@@ -455,7 +455,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
               command.command.slice(1, command.command.length),
               mh.vimState.currentMode,
             ).run(mh.vimState);
-            void mh.updateView();
+            mh.updateView();
           } else {
             await vscode.commands.executeCommand(command.command, command.args);
           }

@@ -525,7 +525,7 @@ export class SearchCommandLine extends CommandLine {
   /**
    * Called when <C-g> or <C-t> is pressed during SearchInProgress mode
    */
-  public async advanceCurrentMatch(vimState: VimState, direction: SearchDirection): Promise<void> {
+  public advanceCurrentMatch(vimState: VimState, direction: SearchDirection): void {
     // <C-g> always moves forward in the document, and <C-t> always moves back, regardless of search direction.
     // To compensate, multiply the desired direction by the searchState's direction, so that
     // effectiveDirection == direction * (searchState.direction)^2 == direction.
