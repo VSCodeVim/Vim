@@ -31,6 +31,7 @@ import {
 } from '../../vimscript/expression/types';
 import { displayValue } from '../../vimscript/expression/displayValue';
 import { ErrorCode, VimError } from '../../error';
+import { bangParser } from '../../vimscript/parserUtils';
 
 type Unpack = {
   type: 'unpack';
@@ -286,13 +287,13 @@ export class LetCommand extends ExCommand {
 
 export class UnletCommand extends ExCommand {
   public static readonly argParser = seqMap(
-    string('!').fallback(undefined),
+    bangParser,
     whitespace.then(variableParser.sepBy(whitespace)),
     (bang, variables) => {
       if (variables.length === 0) {
         throw VimError.fromCode(ErrorCode.ArgumentRequired);
       }
-      return new UnletCommand(variables, bang !== undefined);
+      return new UnletCommand(variables, bang);
     },
   );
 
