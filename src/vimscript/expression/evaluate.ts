@@ -30,6 +30,7 @@ import {
   VariableExpression,
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
+import { SearchState } from '../../state/searchState';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -254,14 +255,12 @@ export class EvaluationContext {
           toInt(this.evaluate(expression.if)) !== 0 ? expression.then : expression.else,
         );
       case 'comparison':
-        const _lhs = this.evaluate(expression.lhs);
-        const _rhs = this.evaluate(expression.rhs);
         return bool(
           this.evaluateComparison(
             expression.operator,
             expression.matchCase ?? configuration.ignorecase,
-            _lhs,
-            _rhs,
+            this.evaluate(expression.lhs),
+            this.evaluate(expression.rhs),
           ),
         );
       default: {
@@ -318,7 +317,6 @@ export class EvaluationContext {
       // TODO: v:count, v:count1, v:prevcount
       // TODO: v:operator
       // TODO: v:register
-      // TODO: v:searchforward
       // TODO: v:statusmsg, v:warningmsg, v:errmsg
       if (varExpr.name === 'true') {
         return bool(true);
@@ -351,6 +349,8 @@ export class EvaluationContext {
         return int(64);
       } else if (varExpr.name === 'errors') {
         return list(this.errors.map(str));
+      } else if (varExpr.name === 'searchforward') {
+        return int(globalState.searchState?.direction === SearchDirection.Backward ? 0 : 1);
       }
 
       // HACK: for things like v:key & v:val
