@@ -297,6 +297,8 @@ class Configuration implements IConfiguration {
     defaultIM: '',
     obtainIMCmd: '',
     switchIMCmd: '',
+    insertIMCmd: '',
+    normalIMCmd: '',
   };
 
   timeout = 1000;

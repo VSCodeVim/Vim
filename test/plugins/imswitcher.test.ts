@@ -36,6 +36,8 @@ suite('Input method plugin', () => {
           defaultIM: 'default',
           obtainIMCmd: 'im-select',
           switchIMCmd: 'im-select {im}',
+          insertIMCmd: 'im-select',
+          normalIMCmd: 'im-select',
         },
       },
     });

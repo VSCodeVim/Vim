@@ -1114,6 +1114,18 @@
           "default": "/path/to/im-select",
           "scope": "machine"
         },
+        "vim.autoSwitchInputMethod.insertIMCmd": {
+          "type": "string",
+          "description": "The shell command to insert mode.",
+          "default": "/path/to/im-select",
+          "scope": "machine"
+        },
+        "vim.autoSwitchInputMethod.normalIMCmd": {
+          "type": "string",
+          "description": "The shell command to normal mode",
+          "default": "/path/to/im-select",
+          "scope": "machine"
+        },
         "vim.whichwrap": {
           "type": "string",
           "description": "Comma-separated list of motion keys that should wrap to next/previous line.",

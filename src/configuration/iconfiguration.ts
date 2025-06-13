@@ -31,6 +31,8 @@ export interface IAutoSwitchInputMethod {
   defaultIM: string;
   switchIMCmd: string;
   obtainIMCmd: string;
+  insertIMCmd: string;
+  normalIMCmd: string;
 }
 
 export interface IHighlightedYankConfiguration {

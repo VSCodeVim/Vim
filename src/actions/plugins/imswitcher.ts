@@ -2,6 +2,7 @@ import { Logger } from '../../util/logger';
 import { Mode } from '../../mode/mode';
 import { configuration } from '../../configuration/configuration';
 import { exec } from 'child_process';
+import { window } from 'vscode';
 
 /**
  * This function executes a shell command and returns the standard output as a string.
@@ -40,7 +41,12 @@ export class InputMethodSwitcher {
     await this.switchToDefaultIM();
     // when you exit from insert-like mode, save origin input method and set it to default
     // const isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
-    // const isNewModeInsertLike = this.isInsertLikeMode(newMode);
+    const isNewModeInsertLike = this.isInsertLikeMode(newMode);
+    if (isNewModeInsertLike) {
+      await this.execute(configuration.autoSwitchInputMethod.insertIMCmd);
+    } else {
+      await this.execute(configuration.autoSwitchInputMethod.normalIMCmd);
+    }
     // if (isPrevModeInsertLike !== isNewModeInsertLike) {
     //   if (isNewModeInsertLike) {
     //     await this.resumeIM();

@@ -58,6 +58,8 @@ export class Configuration implements IConfiguration {
     defaultIM: '',
     switchIMCmd: '',
     obtainIMCmd: '',
+    insertIMCmd: '',
+    normalIMCmd: '',
   };
   timeout = 1000;
   maxmapdepth = 1000;
