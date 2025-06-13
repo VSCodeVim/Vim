@@ -39,20 +39,17 @@ export class InputMethodSwitcher {
     }
     // await this.switchToDefaultIM();
     // when you exit from insert-like mode, save origin input method and set it to default
-    // const isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
+    const isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
     const isNewModeInsertLike = this.isInsertLikeMode(newMode);
-    if (isNewModeInsertLike) {
-      await this.execute(configuration.autoSwitchInputMethod.insertIMCmd);
-    } else {
-      await this.execute(configuration.autoSwitchInputMethod.normalIMCmd);
+    if (isPrevModeInsertLike !== isNewModeInsertLike) {
+      if (isNewModeInsertLike) {
+        // await this.resumeIM();
+        await this.execute(configuration.autoSwitchInputMethod.insertIMCmd);
+      } else {
+        // await this.switchToDefaultIM();
+        await this.execute(configuration.autoSwitchInputMethod.normalIMCmd);
+      }
     }
-    // if (isPrevModeInsertLike !== isNewModeInsertLike) {
-    //   if (isNewModeInsertLike) {
-    //     await this.resumeIM();
-    //   } else {
-    //     await this.switchToDefaultIM();
-    //   }
-    // }
   }
 
   // save origin input method and set input method to default
