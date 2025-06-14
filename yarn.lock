@@ -3306,9 +3306,9 @@ linkify-it@^3.0.1:
     uc.micro "^1.0.1"
 
 lint-staged@^16.0.0:
-  version "16.1.0"
-  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-16.1.0.tgz#06807ef3dbbade9e4e3416897aac0ac5b99a2377"
-  integrity sha512-HkpQh69XHxgCjObjejBT3s2ILwNjFx8M3nw+tJ/ssBauDlIpkx2RpqWSi1fBgkXLSSXnbR3iEq1NkVtpvV+FLQ==
+  version "16.1.1"
+  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-16.1.1.tgz#e2321462e2df87b37ebeb2661887c911508a1d97"
+  integrity sha512-kVZvRAHw9WuufENnwuZLiB1X/8B8YpGszzjMET0bP+uJSjjB7KXeaX2ckYRtQyHfeQdCWMc6tRK34t4geHL9sg==
   dependencies:
     chalk "^5.4.1"
     commander "^14.0.0"
