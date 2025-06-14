@@ -595,6 +595,11 @@ suite('Vimscript expressions', () => {
       exprTest('count(#{a:3,b:2,c:3}, 3)', { value: int(2) });
       exprTest('count(#{apple:"apple",b:"banana",c:"APPLE"}, "apple")', { value: int(1) });
       exprTest('count(#{apple:"apple",b:"banana",c:"APPLE"}, "apple", v:true)', { value: int(2) });
+
+      exprTest('count("abcababaB", "ab")', { value: int(3) });
+      exprTest('count("abcababaB", "ab", v:true)', { value: int(4) });
+      exprTest('count("aaaaaaaaa", "aa")', { value: int(4) });
+      exprTest('count("abc", "")', { value: int(0) });
     });
 
     suite('empty', () => {
