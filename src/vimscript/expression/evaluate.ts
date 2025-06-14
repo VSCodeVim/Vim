@@ -31,6 +31,7 @@ import {
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
 import { SearchState } from '../../state/searchState';
+import { escapeRegExp } from 'lodash';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -850,7 +851,13 @@ export class EvaluationContext {
         }
         let count = 0;
         switch (comp!.type) {
-          // TODO: case 'string':
+          case 'string':
+            const s = toString(expr!);
+            if (s) {
+              const regex = new RegExp(escapeRegExp(s), matchCase ? 'g' : 'ig');
+              count = [...comp!.value.matchAll(regex)].length;
+            }
+            break;
           case 'list':
             const startIdx = start ? toInt(start) : 0;
             for (let i = startIdx; i < comp!.items.length; i++) {
