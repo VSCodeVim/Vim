@@ -924,8 +924,41 @@ export class EvaluationContext {
         return float(Math.exp(toFloat(x!)));
       }
       // TODO: extend/extendnew()
-      // TODO: filter/filternew()
-      // TODO: flatten()
+      // TODO: filter
+      case 'flatten':
+      case 'flattennew': {
+        const [l, _depth] = getArgs(1, 2);
+        if (l!.type !== 'list') {
+          throw VimError.fromCode(ErrorCode.ArgumentOfSortMustBeAList); // TODO: Correct error message
+        }
+        const depth = _depth ? toInt(_depth) : 99999999;
+        if (depth < 0) {
+          throw VimError.fromCode(ErrorCode.MaxDepthMustBeANonNegativeNumber);
+        }
+        let newItems: Value[] = [...l!.items];
+        for (let i = 0; i < depth; ++i) {
+          const temp: Value[] = [];
+          let foundList = false;
+          for (const item of newItems) {
+            if (item.type === 'list') {
+              foundList = true;
+              for (const _item of item.items) {
+                temp.push(_item);
+              }
+            } else {
+              temp.push(item);
+            }
+          }
+          if (!foundList) {
+            break;
+          }
+          newItems = temp;
+        }
+        if (call.func === 'flatten') {
+          l!.items = newItems;
+        }
+        return list(newItems);
+      }
       case 'float2nr': {
         const [x] = getArgs(1);
         return int(toFloat(x!));
