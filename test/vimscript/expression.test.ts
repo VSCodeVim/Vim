@@ -707,6 +707,10 @@ suite('Vimscript expressions', () => {
       exprTest('join([1,2,3], ",")', { value: str('1,2,3') });
     });
 
+    suite('json_encode', () => {
+      exprTest('json_encode([1, 2.3, #{a: 1, b: 2}])', { value: str('[1,2.3,{"a":1,"b":2}]') }); // TODO: Fix whitespace
+    });
+
     suite('len', () => {
       exprTest('len(12345)', { value: int(5) });
       exprTest('len(012345)', { value: int(4) });

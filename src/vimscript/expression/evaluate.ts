@@ -1079,7 +1079,33 @@ export class EvaluationContext {
             .join(sep ? toString(sep) : ''),
         );
       }
-      // TODO: json_encode()/json_decode()
+      // TODO: json_decode()
+      case 'json_encode': {
+        const toJSObj = (x: Value): unknown => {
+          switch (x.type) {
+            case 'number':
+              return x.value;
+            case 'string':
+              return x.value;
+            case 'list':
+              return x.items.map(toJSObj);
+            case 'dict_val':
+              const d: Record<string, unknown> = {};
+              for (const [key, val] of x.items) {
+                d[key] = toJSObj(val);
+              }
+              return d;
+            case 'blob':
+              return Array.from(new Uint8Array(x.data));
+            case 'float':
+              return x.value;
+            case 'funcref':
+              throw VimError.fromCode(ErrorCode.InvalidArgument474);
+          }
+        };
+        const [expr] = getArgs(1);
+        return str(JSON.stringify(toJSObj(this.evaluate(expr!)), null, 0)); // TODO: Fix whitespace
+      }
       case 'keys': {
         const [d] = getArgs(1);
         return list([...toDict(d!).items.keys()].map(str));
