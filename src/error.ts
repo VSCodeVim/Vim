@@ -92,6 +92,7 @@ export enum ErrorCode {
   InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
   CannotLockARegister = 996,
+  ListRequiredForArgument = 1211,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -184,6 +185,7 @@ export const ErrorMessage: IErrorMessage = {
   978: 'Invalid operation for Blob',
   995: 'Cannot modify existing variable',
   996: 'Cannot lock a register',
+  1211: 'List required for argument {IDX}',
 };
 
 export class VimError extends Error {
@@ -207,6 +209,9 @@ export class VimError extends Error {
           extraValue = ` for ${extraValue}`;
         } else if (code === ErrorCode.CantFindFileInPath) {
           message = message.replace('{FILE_NAME}', extraValue);
+          extraValue = '';
+        } else if (code === ErrorCode.ListRequiredForArgument) {
+          message = message.replace('{IDX}', extraValue);
           extraValue = '';
         } else {
           extraValue = `: ${extraValue}`;
