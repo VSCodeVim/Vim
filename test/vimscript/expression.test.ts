@@ -13,6 +13,7 @@ import {
   float,
   bool,
   list,
+  dictionary,
 } from '../../src/vimscript/expression/build';
 import { EvaluationContext } from '../../src/vimscript/expression/evaluate';
 import { expressionParser } from '../../src/vimscript/expression/parser';
@@ -705,6 +706,21 @@ suite('Vimscript expressions', () => {
     suite('join', () => {
       exprTest('join([1,2,3])', { value: str('123') });
       exprTest('join([1,2,3], ",")', { value: str('1,2,3') });
+    });
+
+    suite('json_decode', () => {
+      exprTest(`json_decode('[1, 2.3, {"a": "apple", "b": [{}]}]')`, {
+        value: list([
+          int(1),
+          float(2.3),
+          dictionary(
+            new Map<string, Value>([
+              ['a', str('apple')],
+              ['b', list([dictionary(new Map())])],
+            ]),
+          ),
+        ]),
+      });
     });
 
     suite('json_encode', () => {

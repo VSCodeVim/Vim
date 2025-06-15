@@ -31,7 +31,7 @@ import {
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
 import { SearchState } from '../../state/searchState';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp, isInteger } from 'lodash';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -1079,7 +1079,32 @@ export class EvaluationContext {
             .join(sep ? toString(sep) : ''),
         );
       }
-      // TODO: json_decode()
+      case 'json_decode': {
+        const fromJSObj = (x: any): Value => {
+          if (Array.isArray(x)) {
+            return list(x.map(fromJSObj));
+          } else if (typeof x === 'number') {
+            if (isInteger(x)) {
+              return int(x);
+            } else {
+              return float(x);
+            }
+          } else if (typeof x === 'string') {
+            return str(x);
+          } else {
+            const items: Map<string, Value> = new Map();
+            for (const key in x) {
+              if (Object.hasOwnProperty.call(x, key)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                items.set(key, fromJSObj(x[key]));
+              }
+            }
+            return dictionary(items);
+          }
+        };
+        const [expr] = getArgs(1);
+        return fromJSObj(JSON.parse(toString(expr!)));
+      }
       case 'json_encode': {
         const toJSObj = (x: Value): unknown => {
           switch (x.type) {
