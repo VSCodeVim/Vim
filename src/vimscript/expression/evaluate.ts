@@ -923,8 +923,8 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return float(Math.exp(toFloat(x!)));
       }
-      // TODO: extend()
-      // TODO: filter()
+      // TODO: extend/extendnew()
+      // TODO: filter/filternew()
       // TODO: flatten()
       case 'float2nr': {
         const [x] = getArgs(1);
@@ -1176,28 +1176,31 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return float(Math.log10(toFloat(x!)));
       }
-      case 'map': {
+      case 'map':
+      case 'mapnew': {
         const [seq, fn] = getArgs(2);
         switch (seq?.type) {
           case 'list':
-            return list(
-              seq.items.map((val, idx) => {
-                switch (fn?.type) {
-                  case 'funcref':
-                    return this.evaluate(funcrefCall(fn, [int(idx), val]));
-                  default:
-                    this.localScopes.push(
-                      new Map([
-                        ['v:key', new Variable(int(idx))],
-                        ['v:val', new Variable(val)],
-                      ]),
-                    );
-                    const retval = this.evaluate(expressionParser.tryParse(toString(fn!)));
-                    this.localScopes.pop();
-                    return retval;
-                }
-              }),
-            );
+            const newItems = seq.items.map((val, idx) => {
+              switch (fn?.type) {
+                case 'funcref':
+                  return this.evaluate(funcrefCall(fn, [int(idx), val]));
+                default:
+                  this.localScopes.push(
+                    new Map([
+                      ['v:key', new Variable(int(idx))],
+                      ['v:val', new Variable(val)],
+                    ]),
+                  );
+                  const retval = this.evaluate(expressionParser.tryParse(toString(fn!)));
+                  this.localScopes.pop();
+                  return retval;
+              }
+            });
+            if (call.func === 'map') {
+              seq.items = newItems;
+            }
+            return list(newItems);
           case 'dict_val':
           // TODO
           // case 'blob':
