@@ -578,6 +578,11 @@ suite('Vimscript expressions', () => {
       exprTest('add(0zABCD, 0xEF)', { display: '0zABCDEF' });
     });
 
+    suite('call', () => {
+      exprTest('call("abs", [-1])', { value: float(1) });
+      exprTest('call(function("abs"), [-1])', { value: float(1) });
+    });
+
     suite('count', () => {
       exprTest('count([1,2,3,2,3,2,1], 2)', { value: int(3) });
       exprTest('count(["apple", "banana", "Apple", "carrot", "APPLE"], "Apple")', {

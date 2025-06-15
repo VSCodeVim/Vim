@@ -22,6 +22,7 @@ import {
   DictionaryValue,
   Expression,
   FloatValue,
+  FuncRefValue,
   FunctionCallExpression,
   ListValue,
   NumberValue,
@@ -30,7 +31,6 @@ import {
   VariableExpression,
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
-import { SearchState } from '../../state/searchState';
 import { escapeRegExp, isInteger } from 'lodash';
 
 // ID of next lambda; incremented each time one is created
@@ -812,7 +812,19 @@ export class EvaluationContext {
         }
         return assertFailed(msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`);
       }
-      // TODO: call()
+      case 'call': {
+        const [_func, arglist, dict] = getArgs(2, 3);
+        if (arglist!.type !== 'list') {
+          throw VimError.fromCode(ErrorCode.ListRequiredForArgument, '2');
+        }
+        const func: FuncRefValue = (() => {
+          if (_func?.type === 'funcref') {
+            return _func;
+          }
+          return funcref(toString(_func!), list([]), dict ? toDict(dict) : undefined);
+        })();
+        return this.evaluate(funcrefCall(func, arglist!.items));
+      }
       case 'ceil': {
         const [x] = getArgs(1);
         return float(Math.ceil(toFloat(x!)));
@@ -959,6 +971,7 @@ export class EvaluationContext {
         const [x, y] = getArgs(2);
         return float(toFloat(x!) % toFloat(y!));
       }
+      // TODO: funcref()
       case 'get': {
         const [_haystack, _idx, _default] = getArgs(2, 3);
         const haystack = this.evaluate(_haystack!);
