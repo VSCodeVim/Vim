@@ -641,6 +641,15 @@ suite('Vimscript expressions', () => {
       exprTest("function('or', [1])(64)", { value: int(65) });
     });
 
+    suite('flatten', () => {
+      exprTest('flatten([1, [2, [3, 4]], 5])', { display: '[1, 2, 3, 4, 5]' });
+      exprTest('flatten([1, [2, [3, 4]], 5], 1)', { display: '[1, 2, [3, 4], 5]' });
+      exprTest('flatten([1, [2, [3, 4]], 5], 0)', { display: '[1, [2, [3, 4]], 5]' });
+
+      exprTest('flatten({})', { error: ErrorCode.ArgumentOfSortMustBeAList });
+      exprTest('flatten([], -2)', { error: ErrorCode.MaxDepthMustBeANonNegativeNumber });
+    });
+
     suite('float2nr', () => {
       exprTest('float2nr(123)', { value: int(123) });
       exprTest('float2nr(40.0)', { value: int(40) });
