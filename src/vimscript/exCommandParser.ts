@@ -54,6 +54,7 @@ import { nameAbbrevParser } from './parserUtils';
 import { LetCommand, UnletCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 import { PwdCommand } from '../cmd_line/commands/pwd';
+import { HelpCommand } from '../cmd_line/commands/help';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -253,7 +254,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['grepa', 'dd'], undefined],
   [['gu', 'i'], undefined],
   [['gv', 'im'], undefined],
-  [['h', 'elp'], undefined],
+  [['h', 'elp'], succeed(new HelpCommand())],
   [['ha', 'rdcopy'], undefined],
   [['helpc', 'lose'], undefined],
   [['helpg', 'rep'], undefined],
