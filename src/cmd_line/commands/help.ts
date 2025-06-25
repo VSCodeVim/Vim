@@ -10,7 +10,6 @@ export class HelpCommand extends ExCommand {
 
     panel.webview.html = `
 <html>
-
 <body>
   <pre>
             VsCodeVim - Main Help
@@ -94,7 +93,6 @@ export class HelpCommand extends ExCommand {
       For more help, see the <a href="https://github.com/VSCodeVim/Vim" target="_blank">project repository</a> or the <a href="https://vimhelp.org/" target="_blank">official Vim guide</a>.
       </pre>
 </body>
-
 </html>
     `;
   }
