@@ -1,14 +1,7 @@
-import { ExCommand } from '../../vimscript/exCommand';
-import { VimState } from '../../state/vimState';
-import { window, ViewColumn } from 'vscode';
-
-export class HelpCommand extends ExCommand {
-  async execute(_vimState: VimState): Promise<void> {
-    const panel = window.createWebviewPanel('vimHelp', 'Help Vim', ViewColumn.Active, {
-      enableScripts: false,
-    });
-
-    panel.webview.html = `
+<!--
+  NOTE: This file is for debugging and previewing the help content in a web browser only.
+  To make changes effective in VS Code, copy the relevant content to help.ts.
+-->
 <html>
 
 <body>
@@ -96,6 +89,3 @@ export class HelpCommand extends ExCommand {
 </body>
 
 </html>
-    `;
-  }
-}
