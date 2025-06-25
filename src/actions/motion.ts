@@ -1901,7 +1901,6 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     firstIteration: boolean,
     lastIteration: boolean,
   ): Promise<IMovement> {
-    console.log("MoveInsideCharacter's execAction initiated");
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
     const [selStart, selEnd] = sorted(vimState.cursorStartPosition, position);
 
