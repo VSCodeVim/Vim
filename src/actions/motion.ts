@@ -1901,6 +1901,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     firstIteration: boolean,
     lastIteration: boolean,
   ): Promise<IMovement> {
+    console.log("MoveInsideCharacter's execAction initiated");
     const closingChar = PairMatcher.pairings[this.charToMatch].match;
     const [selStart, selEnd] = sorted(vimState.cursorStartPosition, position);
 
@@ -1966,6 +1967,21 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
 
     if (lastIteration && !isVisualMode(vimState.currentMode) && selStart.isBefore(openPos)) {
       vimState.recordedState.operatorPositionDiff = openPos.subtract(selStart);
+    }
+
+    // Adjust for VisualLine mode: exclude the line containing the closing brace
+    // moves the cursor back to just within the brackets, accurately mirroring what
+    // Vim does for Vi{ Vi( Vi[ etc.
+    if (
+      !this.includeSurrounding &&
+      vimState.currentMode === Mode.VisualLine &&
+      closePos.line > openPos.line
+    ) {
+      const adjustedLine = closePos.line - 1;
+      if (adjustedLine >= 0) {
+        const lineText = vimState.document.lineAt(adjustedLine).text;
+        closePos = new Position(adjustedLine, lineText.length);
+      }
     }
 
     // TODO: setting the cursor manually like this shouldn't be necessary (probably a Cursor, not Position, should be passed to `exec`)
