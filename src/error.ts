@@ -19,6 +19,15 @@ export enum ErrorCode {
   TooManyArgs = 118,
   NotEnoughArgs = 119,
   UndefinedVariable = 121,
+  CommandAlreadyExists = 174,
+  NoAttributeSpecified = 175,
+  InvalidNumberOfArguments = 176,
+  CountCannotBeSpecifiedTwice = 177,
+  InvalidDefaultValueForCount = 178,
+  ArgumentRequiredForAttribute = 179,
+  InvalidAttributeValue = 180,
+  InvalidAttribute = 181,
+  UserDefinedCommandsMustStartWithAnUppercaseLetter = 183,
   ErrorWritingToFile = 208,
   FileNoLongerAvailable = 211,
   RecursiveMapping = 223,
@@ -177,6 +186,42 @@ export class VimError extends Error {
   }
   static UndefinedVariable(name: string): VimError {
     return new VimError(ErrorCode.UndefinedVariable, `Undefined variable: ${name}`);
+  }
+  static CommandAlreadyExists(): VimError {
+    return new VimError(
+      ErrorCode.CommandAlreadyExists,
+      'Command already exists: add ! to replace it',
+    );
+  }
+  static NoAttributeSpecified(): VimError {
+    return new VimError(ErrorCode.NoAttributeSpecified, 'No attribute specified');
+  }
+  static InvalidNumberOfArguments(): VimError {
+    return new VimError(ErrorCode.InvalidNumberOfArguments, 'Invalid number of arguments');
+  }
+  static CountCannotBeSpecifiedTwice(): VimError {
+    return new VimError(ErrorCode.CountCannotBeSpecifiedTwice, 'Count cannot be specified twice');
+  }
+  static InvalidDefaultValueForCount(): VimError {
+    return new VimError(ErrorCode.InvalidDefaultValueForCount, 'Invalid default value for count');
+  }
+  static ArgumentRequiredForAttribute(attribute: 'addr' | 'complete'): VimError {
+    return new VimError(
+      ErrorCode.ArgumentRequiredForAttribute,
+      `Argument required for -${attribute}`,
+    );
+  }
+  static InvalidAttributeValue(type: 'complete' | 'address type', value: string): VimError {
+    return new VimError(ErrorCode.InvalidAttributeValue, `Invalid ${type} value: ${value}`);
+  }
+  static InvalidAttribute(attribute: string): VimError {
+    return new VimError(ErrorCode.InvalidAttribute, `Invalid attribute: ${attribute}`);
+  }
+  static UserDefinedCommandsMustStartWithAnUppercaseLetter(): VimError {
+    return new VimError(
+      ErrorCode.UserDefinedCommandsMustStartWithAnUppercaseLetter,
+      'User defined commands must start with an uppercase letter',
+    );
   }
   static ErrorWritingToFile(): VimError {
     return new VimError(ErrorCode.ErrorWritingToFile, 'Error writing to file');

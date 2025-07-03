@@ -35,6 +35,17 @@ class GlobalState {
    * Used internally for nohl.
    */
   public hl = true;
+
+  /**
+   * Commands created by the user via :com[mand]
+   */
+  public userFunctions: Map<
+    string,
+    {
+      replacement: string;
+      // TODO: Attributes
+    }
+  > = new Map();
 }
 
 export const globalState = new GlobalState();

@@ -44,6 +44,7 @@ import { EvalCommand } from '../../src/cmd_line/commands/eval';
 import { EchoCommand } from '../../src/cmd_line/commands/echo';
 import { Expression } from '../../src/vimscript/expression/types';
 import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
+import { CommandCommand } from '../../src/cmd_line/commands/command';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -208,6 +209,80 @@ suite('Ex command parsing', () => {
     exParseTest(':clo!', new CloseCommand(true));
     exParseTest(':close', new CloseCommand(false));
     exParseTest(':close!', new CloseCommand(true));
+  });
+
+  suite.only(':com[mand]', () => {
+    // TODO: :command
+    // TODO: :command {cmd}
+
+    exParseTest(
+      'command SaveQuit wq',
+      new CommandCommand({
+        attributes: [],
+        bang: false,
+        name: 'SaveQuit',
+        replacement: 'wq',
+      }),
+    );
+    exParseTest(
+      'command! SayHello echo "Hello"',
+      new CommandCommand({
+        attributes: [],
+        bang: true,
+        name: 'SayHello',
+        replacement: 'echo "Hello"',
+      }),
+    );
+    exParseTest(
+      'command -nargs=1 Error echoerr <args>',
+      new CommandCommand({
+        attributes: [{ type: 'nargs', value: '1' }],
+        bang: false,
+        name: 'Error',
+        replacement: 'echoerr <args>',
+      }),
+    );
+    exParseTest(
+      'command -nargs=1 Error echoerr <args>',
+      new CommandCommand({
+        attributes: [{ type: 'nargs', value: '1' }],
+        bang: false,
+        name: 'Error',
+        replacement: 'echoerr <args>',
+      }),
+    );
+    exParseTest(
+      'command! -nargs=1 -bang -complete=file Ren f <args>|w<bang>',
+      new CommandCommand({
+        attributes: [
+          { type: 'nargs', value: '1' },
+          { type: 'bang' },
+          { type: 'complete', value: 'file' },
+        ],
+        bang: true,
+        name: 'Ren',
+        replacement: 'f <args>|w<bang>',
+      }),
+    );
+
+    exParseFails(
+      'command savequit wq',
+      VimError.UserDefinedCommandsMustStartWithAnUppercaseLetter(),
+    );
+    exParseFails('command -nargs MyFunc d', VimError.InvalidNumberOfArguments());
+    exParseFails('command -nargs=X MyFunc d', VimError.InvalidNumberOfArguments());
+    exParseFails('command -count=X MyFunc d', VimError.InvalidDefaultValueForCount());
+    exParseFails('command -complete=X MyFunc d', VimError.InvalidAttributeValue('complete', 'X')); // TODO: Should really be 'X MyFunc d'
+    exParseFails('command -complete MyFunc d', VimError.ArgumentRequiredForAttribute('complete'));
+    exParseFails('command -addr=X MyFunc d', VimError.InvalidAttributeValue('address type', 'X'));
+    exParseFails('command -addr MyFunc d', VimError.ArgumentRequiredForAttribute('addr'));
+    exParseFails('command -count -count=2 MyFunc d', VimError.CountCannotBeSpecifiedTwice());
+    exParseFails('command -count=2 -count=2 MyFunc d', VimError.CountCannotBeSpecifiedTwice());
+    exParseFails('command -range=2 -count=2 MyFunc d', VimError.CountCannotBeSpecifiedTwice());
+    exParseFails('command - MyFunc d', VimError.NoAttributeSpecified());
+    exParseFails('command -blah MyFunc d', VimError.InvalidAttribute('-blah'));
+    exParseFails('command -blah= MyFunc d', VimError.InvalidAttribute('-blah='));
+    exParseFails('command -blah=1 MyFunc d', VimError.InvalidAttribute('-blah=1'));
   });
 
   suite(':co[py]', () => {
