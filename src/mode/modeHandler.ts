@@ -731,6 +731,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       );
     }
 
+    await Promise.allSettled(recordedState.promises);
+    recordedState.promises = [];
+
     return true;
   }
 

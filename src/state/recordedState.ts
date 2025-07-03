@@ -180,6 +180,11 @@ export class RecordedState {
   public transformer = new Transformer();
 
   /**
+   * These promises will be `await`ed before proceeding to the next action.
+   */
+  public promises: Array<Thenable<void>> = [];
+
+  /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
   public get operator(): IBaseOperator | undefined {
