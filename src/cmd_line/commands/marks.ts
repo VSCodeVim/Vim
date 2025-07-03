@@ -95,7 +95,7 @@ export class DeleteMarksCommand extends ExCommand {
     this.args = args;
   }
 
-  private static resolveMarkList(vimState: VimState, args: DeleteMarksArgs) {
+  private static resolveMarkList(args: DeleteMarksArgs) {
     const asciiRange = (start: string, end: string) => {
       if (start > end) {
         throw VimError.fromCode(ErrorCode.InvalidArgument474);
@@ -131,7 +131,11 @@ export class DeleteMarksCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const marks = DeleteMarksCommand.resolveMarkList(vimState, this.args);
+    const marks = DeleteMarksCommand.resolveMarkList(this.args);
+    const bad = marks.find((m) => m === '-');
+    if (bad !== undefined) {
+      throw VimError.fromCode(ErrorCode.InvalidArgument474, bad);
+    }
     vimState.historyTracker.removeMarks(marks);
   }
 }
