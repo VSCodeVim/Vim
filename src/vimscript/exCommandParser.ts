@@ -54,6 +54,7 @@ import { nameAbbrevParser } from './parserUtils';
 import { LetCommand, UnletCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 import { PwdCommand } from '../cmd_line/commands/pwd';
+import { CommandCommand } from '../cmd_line/commands/command';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -170,7 +171,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['co', 'py'], CopyCommand.argParser],
   [['col', 'der'], undefined],
   [['colo', 'rscheme'], undefined],
-  [['com', 'mand'], undefined],
+  [['com', 'mand'], CommandCommand.argParser],
   [['comc', 'lear'], undefined],
   [['comp', 'iler'], undefined],
   [['con', 'tinue'], undefined],

@@ -29,6 +29,7 @@ import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 import { GrepCommand } from '../../src/cmd_line/commands/grep';
+import { CommandCommand } from '../../src/cmd_line/commands/command';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -187,6 +188,20 @@ suite('Ex command parsing', () => {
     exParseTest(':clo!', new CloseCommand(true));
     exParseTest(':close', new CloseCommand(false));
     exParseTest(':close!', new CloseCommand(true));
+  });
+
+  suite.only(':com[mand]', () => {
+    exParseTest(
+      'command MyFunc wq',
+      new CommandCommand({
+        attributes: [],
+        bang: false,
+        name: 'MyFunc',
+        replacement: 'wq',
+      }),
+    );
+
+    // TODO
   });
 
   suite(':co[py]', () => {
