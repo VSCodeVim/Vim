@@ -29,6 +29,7 @@ import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 import { GrepCommand } from '../../src/cmd_line/commands/grep';
+import { MapCommand } from '../../src/cmd_line/commands/map';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -414,6 +415,37 @@ suite('Ex command parsing', () => {
     );
 
     // TODO
+  });
+
+  suite(':map', () => {
+    // TODO: exParseTest(':map', new MapCommand({kind: 'map', mode: ''}));
+    // TODO: exParseTest(':map abc', new MapCommand({kind: 'map', mode: '', lhs: 'abc'}));
+    exParseTest(
+      ':map J 5j',
+      new MapCommand({ kind: 'map', mode: '', lhs: 'J', rhs: '5j', options: {} }),
+    );
+    exParseTest(
+      ':nnoremap gsf :vscode git.stage<CR>',
+      new MapCommand({
+        kind: 'noremap',
+        mode: 'n',
+        lhs: 'gsf',
+        rhs: ':vscode git.stage<CR>',
+        options: {},
+      }),
+    );
+    exParseTest(':iunmap <C-w>', new MapCommand({ kind: 'unmap', mode: 'i', lhs: '<C-w>' }));
+    exParseTest(':cmapclear', new MapCommand({ kind: 'mapclear', mode: 'c' }));
+    exParseTest(
+      ':map <buffer> <unique> ,w /[.,;]<CR>',
+      new MapCommand({
+        kind: 'map',
+        mode: '',
+        lhs: ',w',
+        rhs: '/[.,;]<CR>',
+        options: { buffer: true, unique: true },
+      }),
+    );
   });
 
   suite(':marks', () => {
