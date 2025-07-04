@@ -135,6 +135,7 @@ export class WriteCommand extends ExCommand {
   }
 
   private async save(vimState: VimState): Promise<void> {
+    await vscode.window.showTextDocument(vimState.document, { preview: false });
     await this.background(
       vimState.document.save().then((success) => {
         if (success) {
