@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest } from '../testSimplifier';
+import { newTest, newTestOnly } from '../testSimplifier';
 import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
@@ -584,5 +584,27 @@ suite('Mode Visual Line', () => {
         endMode: Mode.Insert,
       });
     }
+  });
+
+  suite('Vi{ should not select the ending brace, if it is on a new line.', () => {
+    test('Vi{ selection content test', async () => {
+      // Insert the full block using insert mode simulation
+      await modeHandler.handleMultipleKeyEvents('i{\nsome text on new line\n}'.split(''));
+
+      // Back to normal mode
+      await modeHandler.handleKeyEvent('<Esc>');
+
+      // Move cursor to start of "some text..."
+      await modeHandler.handleMultipleKeyEvents(['g', 'g', 'j', 'l', 'l', 'l', 'l']);
+
+      // Simulate Vi{
+      await modeHandler.handleMultipleKeyEvents(['V', 'i', '{']);
+
+      const doc = modeHandler.vimState.editor.document;
+      const sel = modeHandler.vimState.editor.selection;
+      const selectedText = doc.getText(sel);
+
+      assert.strictEqual(selectedText, '  some text on new line');
+    });
   });
 });
