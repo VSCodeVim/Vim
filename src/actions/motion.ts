@@ -2125,7 +2125,7 @@ export class MoveAroundSquareBracket extends MoveInsideCharacter {
 export abstract class MoveQuoteMatch extends BaseMovement {
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
   protected readonly anyQuote: boolean = false;
-  protected abstract readonly charToMatch: '"' | "'" | '`';
+  protected abstract readonly charToMatch: '"' | "'" | '`' | '$';
   protected includeQuotes = false;
   override isJump = true;
   readonly which: WhichQuotes = 'current';
@@ -2265,6 +2265,20 @@ class MoveInsideSingleQuotes extends MoveQuoteMatch {
   keys = ['i', "'"];
   readonly charToMatch = "'";
   override includeQuotes = false;
+}
+
+@RegisterAction
+export class MoveInsideDollarSign extends MoveQuoteMatch {
+  keys = ['i', '$'];
+  readonly charToMatch = '$';
+  override includeQuotes = false;
+}
+
+@RegisterAction
+export class MoveAroundDollarSign extends MoveQuoteMatch {
+  keys = ['a', '$'];
+  readonly charToMatch = '$';
+  override includeQuotes = true;
 }
 
 @RegisterAction
