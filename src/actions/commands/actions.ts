@@ -939,6 +939,20 @@ class GoToDefinition extends BaseCommand {
     }
   }
 }
+@RegisterAction
+class GoToImplementation extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['g', 'I'];
+  override isJump = true;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await vscode.commands.executeCommand('editor.action.goToImplementation');
+
+    if (vimState.editor === vscode.window.activeTextEditor) {
+      vimState.cursorStopPosition = vimState.editor.selection.start;
+    }
+  }
+}
 
 @RegisterAction
 class CommandOpenLink extends BaseCommand {
@@ -1006,17 +1020,6 @@ export class CommandInsertAtFirstCharacter extends BaseCommand {
     await vimState.setCurrentMode(Mode.Insert);
     vimState.cursorStopPosition = vimState.cursorStartPosition =
       TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line);
-  }
-}
-
-@RegisterAction
-export class CommandInsertAtLineBegin extends BaseCommand {
-  modes = [Mode.Normal];
-  keys = ['g', 'I'];
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = vimState.cursorStartPosition = position.getLineBegin();
   }
 }
 
