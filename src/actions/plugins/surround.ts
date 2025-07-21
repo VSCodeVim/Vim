@@ -6,6 +6,7 @@ import {
   SelectWord,
   TextObject,
 } from '../../textobject/textobject';
+import { WordType } from '../../textobject/word';
 import { isIMovement } from '../baseMotion';
 import {
   MoveAroundBacktick,
@@ -585,11 +586,11 @@ class SurroundHelper {
       // start -> <foo>bar</foo> <-- stop
       const openTagNameStart = rangeStart.getRight();
       const openTagNameEnd = openTagNameStart
-        .nextWordEnd(vimState.document, { inclusive: true })
+        .nextWordEnd(vimState.document, { wordType: WordType.TagName, inclusive: true })
         .getRight();
       const closeTagNameStart = rangeEnd
         .getLeft(2)
-        .prevWordStart(vimState.document, { inclusive: true });
+        .prevWordStart(vimState.document, { wordType: WordType.TagName, inclusive: true });
       const closeTagNameEnd = rangeEnd.getLeft();
       vimState.cursorStartPosition = position; // some textobj (MoveInsideCharacter) expect this
       vimState.cursorStopPosition = position;

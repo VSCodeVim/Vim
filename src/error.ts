@@ -16,6 +16,7 @@ export enum ErrorCode {
   NoWriteSinceLastChange = 37,
   MultipleMatches = 93,
   NoMatchingBuffer = 94,
+  NoSuchVariable = 108,
   MissingQuote = 114,
   UnknownFunction_call = 117,
   TooManyArgs = 118,
@@ -46,13 +47,20 @@ export enum ErrorCode {
   ChangeListIsEmpty = 664,
   ListIndexOutOfRange = 684,
   ArgumentOfSortMustBeAList = 686,
+  LessTargetsThanListItems = 687,
+  MoreTargetsThanListItems = 688,
+  CanOnlyIndexAListDictionaryOrBlob = 689,
   CanOnlyCompareListWithList = 691,
   InvalidOperationForList = 692,
+  InvalidOperationForFuncrefs = 694,
   CannotIndexAFuncref = 695,
   UnknownFunction_funcref = 700,
   InvalidTypeForLen = 701,
   UsingAFuncrefAsANumber = 703,
   FuncrefVariableNameMustStartWithACapital = 704,
+  SliceRequiresAListOrBlobValue = 709,
+  ListValueHasMoreItemsThanTarget = 710,
+  ListValueHasNotEnoughItems = 711,
   ArgumentOfMaxMustBeAListOrDictionary = 712, // TODO: This should be different for min(), count()
   ListRequired = 714,
   DictionaryRequired = 715,
@@ -76,12 +84,16 @@ export enum ErrorCode {
   NumberOrFloatRequired = 808,
   ArgumentOfMapMustBeAListDictionaryOrBlob = 896,
   ListOrBlobRequired = 897,
+  MaxDepthMustBeANonNegativeNumber = 900,
   ExpectedADict = 922,
   SecondArgumentOfFunction = 923,
   BlobLiteralShouldHaveAnEvenNumberOfHexCharacters = 973,
   UsingABlobAsANumber = 974,
+  CanOnlyCompareBlobWithBlob = 977,
+  InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
   CannotLockARegister = 996,
+  ListRequiredForArgument = 1211,
 }
 
 export const ErrorMessage: IErrorMessage = {
@@ -98,6 +110,7 @@ export const ErrorMessage: IErrorMessage = {
   37: 'No write since last change (add ! to override)',
   93: 'More than one match',
   94: 'No matching buffer',
+  108: 'No such variable',
   114: 'Missing quote',
   117: 'Unknown function',
   118: 'Too many arguments for function',
@@ -128,13 +141,20 @@ export const ErrorMessage: IErrorMessage = {
   664: 'changelist is empty',
   684: 'list index out of range',
   686: 'Argument of sort() must be a List',
+  687: 'Less targets than List items',
+  688: 'More targets than List items',
+  689: 'Can only index a List, Dictionary or Blob',
   691: 'Can only compare List with List',
   692: 'Invalid operation for List',
+  694: 'Invalid operation for Funcrefs',
   695: 'Cannot index a Funcref',
   700: 'Unknown function',
   701: 'Invalid type for len()',
   703: 'Using a Funcref as a Number',
   704: 'Funcref variable name must start with a capital',
+  709: '[:] requires a List or Blob value',
+  710: 'List value has more items than target',
+  711: 'List value has not enough items',
   712: 'Argument of max() must be a List or Dictionary',
   714: 'List required',
   715: 'Dictionary required',
@@ -158,19 +178,23 @@ export const ErrorMessage: IErrorMessage = {
   808: 'Number or Float required',
   896: 'Argument of map() must be a List, Dictionary or Blob',
   897: 'List or Blob required',
+  900: 'maxdepth must be a non-negative number',
   922: 'expected a dict',
   923: 'Second argument of function() must be a list or a dict',
   973: 'Blob literal should have an even number of hex characters',
   974: 'Using a Blob as a Number',
+  977: 'Can only compare Blob with Blob',
+  978: 'Invalid operation for Blob',
   995: 'Cannot modify existing variable',
   996: 'Cannot lock a register',
+  1211: 'List required for argument {IDX}',
 };
 
 export class VimError extends Error {
-  public readonly code: number;
+  public readonly code: ErrorCode;
   public override readonly message: string;
 
-  private constructor(code: number, message: string) {
+  private constructor(code: ErrorCode, message: string) {
     super();
     this.code = code;
     this.message = message;
@@ -187,6 +211,9 @@ export class VimError extends Error {
           extraValue = ` for ${extraValue}`;
         } else if (code === ErrorCode.CantFindFileInPath) {
           message = message.replace('{FILE_NAME}', extraValue);
+          extraValue = '';
+        } else if (code === ErrorCode.ListRequiredForArgument) {
+          message = message.replace('{IDX}', extraValue);
           extraValue = '';
         } else {
           extraValue = `: ${extraValue}`;

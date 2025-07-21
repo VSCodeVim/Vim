@@ -28,6 +28,7 @@ import { add, int, str, variable, funcCall, list } from '../../src/vimscript/exp
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
+import { GrepCommand } from '../../src/cmd_line/commands/grep';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -369,6 +370,45 @@ suite('Ex command parsing', () => {
     );
 
     exParseTest(
+      ':let [a, b, c] = [1, 2, 3]',
+      new LetCommand({
+        operation: '=',
+        variable: { type: 'unpack', names: ['a', 'b', 'c'] },
+        expression: list([int(1), int(2), int(3)]),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':let x[7] = "foo"',
+      new LetCommand({
+        operation: '=',
+        variable: {
+          type: 'index',
+          variable: { type: 'variable', namespace: undefined, name: 'x' },
+          index: int(7),
+        },
+        expression: str('foo'),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':let s:arr[start:end] = [1, 2, 3]',
+      new LetCommand({
+        operation: '=',
+        variable: {
+          type: 'slice',
+          variable: { type: 'variable', namespace: 's', name: 'arr' },
+          start: { type: 'variable', namespace: undefined, name: 'start' },
+          end: { type: 'variable', namespace: undefined, name: 'end' },
+        },
+        expression: list([int(1), int(2), int(3)]),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
       ':const foo = 5',
       new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true }),
     );
@@ -683,6 +723,28 @@ suite('Ex command parsing', () => {
     exParseTest(':tabonly!5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
     exParseTest(':tabonly 5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
     exParseTest(':tabonly! 5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
+  });
+
+  suite(':vim[grep]', () => {
+    exParseTest(
+      ':vimgrep t*st foo.txt',
+      new GrepCommand({
+        // It expects pattern.closed to be false (check Pattern.parser), so unless there's a delimiter in the pattern, it will fail the test
+        pattern: Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }).tryParse(
+          't*st ',
+        ),
+        files: ['foo.txt'],
+      }),
+    );
+    exParseTest(
+      ':vimgrep t*st foo.txt bar.txt baz.txt',
+      new GrepCommand({
+        pattern: Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }).tryParse(
+          't*st ',
+        ),
+        files: ['foo.txt', 'bar.txt', 'baz.txt'],
+      }),
+    );
   });
 
   suite(':y[ank]', () => {

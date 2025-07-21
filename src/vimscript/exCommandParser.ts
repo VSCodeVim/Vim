@@ -13,6 +13,7 @@ import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
 import { EchoCommand } from '../cmd_line/commands/echo';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
+import { GrepCommand } from '../cmd_line/commands/grep';
 import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
 import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/leftRightCenter';
@@ -50,7 +51,7 @@ import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
-import { LetCommand } from '../cmd_line/commands/let';
+import { LetCommand, UnletCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 import { PwdCommand } from '../cmd_line/commands/pwd';
 
@@ -248,7 +249,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['fu', 'nction'], undefined],
   [['g', 'lobal'], undefined],
   [['go', 'to'], GotoCommand.argParser],
-  [['gr', 'ep'], undefined],
+  [['gr', 'ep'], GrepCommand.argParser],
   [['grepa', 'dd'], undefined],
   [['gu', 'i'], undefined],
   [['gv', 'im'], undefined],
@@ -565,7 +566,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['undoj', 'oin'], undefined],
   [['undol', 'ist'], undefined],
   [['unh', 'ide'], undefined],
-  [['unl', 'et'], undefined],
+  [['unl', 'et'], UnletCommand.argParser],
   [['unlo', 'ckvar'], undefined],
   [['unm', 'ap'], undefined],
   [['unme', 'nu'], undefined],
@@ -577,7 +578,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['vert', 'ical'], undefined],
   [['vi', 'sual'], undefined],
   [['vie', 'w'], undefined],
-  [['vim', 'grep'], undefined],
+  [['vim', 'grep'], GrepCommand.argParser],
   [['vimgrepa', 'dd'], undefined],
   [['viu', 'sage'], undefined],
   [['vm', 'ap'], undefined],
@@ -686,11 +687,16 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
         );
       }
       const result = seq(parseArgs, optWhitespace.then(all)).parse(args);
-      if (result.status === false || result.value[1]) {
-        // TODO: All possible parsing errors are lumped into "trailing characters", which is wrong
+      if (result.status === false) {
+        if (result.index.offset === args.length) {
+          throw VimError.fromCode(ErrorCode.ArgumentRequired);
+        }
+        throw VimError.fromCode(ErrorCode.InvalidArgument474);
+      }
+      if (result.value[1]) {
         // TODO: Implement `:help :bar`
         // TODO: Implement `:help :comment`
-        throw VimError.fromCode(ErrorCode.TrailingCharacters);
+        throw VimError.fromCode(ErrorCode.TrailingCharacters, result.value[1]);
       }
       return { lineRange, command: result.value[0] };
     });

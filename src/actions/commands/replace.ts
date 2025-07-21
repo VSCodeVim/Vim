@@ -118,7 +118,7 @@ class ReplaceInReplaceMode extends BaseCommand {
     const replaceRange = new Range(position, position.getRight());
 
     let before = vimState.document.getText(replaceRange);
-    if (!position.isLineEnd() && !isNewLineOrTab) {
+    if (!position.isLineEnd(vimState.document) && !isNewLineOrTab) {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: char,

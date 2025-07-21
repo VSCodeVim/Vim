@@ -1,5 +1,17 @@
 # Change Log
 
+## [v1.30.1](https://github.com/vscodevim/vim/tree/v1.30.1) (2025-05-28)
+
+### Added
+
+- Added a few character classes to Vim regexes ([@J-Fields](https://github.com/@J-Fields)).
+
+### Fixed
+
+- Fixed an issue where the cursor would jump away after some VS Code navigation commands ([@alythobani](https://github.com/@alythobani)).
+- Fixed surround with tags containing non-word characters ([@robertmoura](https://github.com/@robertmoura)).
+- Fixed a performance issue when typing `(` or similar in large files ([@J-Fields](https://github.com/@J-Fields)).
+
 ## [v1.30.0](https://github.com/vscodevim/vim/tree/v1.30.0) (2025-05-22)
 
 ### Added
