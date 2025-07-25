@@ -16,6 +16,7 @@ import {
   DictionaryValue,
   Value,
   BlobValue,
+  FuncrefCallExpression,
 } from './types';
 
 export function int(value: number): NumberValue {
@@ -46,6 +47,13 @@ export function str(value: string): StringValue {
 export function list(items: Value[]): ListValue {
   return {
     type: 'list',
+    items,
+  };
+}
+
+export function dictionary(items: Map<string, Value>): DictionaryValue {
+  return {
+    type: 'dict_val',
     items,
   };
 }
@@ -142,6 +150,14 @@ export function funcCall(func: string, args: Expression[]): FunctionCallExpressi
   return {
     type: 'function_call',
     func,
+    args,
+  };
+}
+
+export function funcrefCall(expression: Expression, args: Expression[]): FuncrefCallExpression {
+  return {
+    type: 'funcrefCall',
+    expression,
     args,
   };
 }

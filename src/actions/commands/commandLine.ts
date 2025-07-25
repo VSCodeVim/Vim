@@ -216,7 +216,7 @@ class CommandlineHome extends CommandLineAction {
   keys = [['<Home>'], ['<C-b>']];
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.home();
+    commandLine.home();
   }
 }
 
@@ -225,7 +225,7 @@ class CommandLineEnd extends CommandLineAction {
   keys = [['<End>'], ['<C-e>']];
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.end();
+    commandLine.end();
   }
 }
 
@@ -234,7 +234,7 @@ class CommandLineDeleteWord extends CommandLineAction {
   keys = [['<C-w>'], ['<C-BS>']];
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.deleteWord();
+    commandLine.deleteWord();
   }
 }
 
@@ -243,7 +243,7 @@ class CommandLineDeleteToBeginning extends CommandLineAction {
   keys = ['<C-u>'];
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.deleteToBeginning();
+    commandLine.deleteToBeginning();
   }
 }
 
@@ -252,7 +252,7 @@ class CommandLineWordLeft extends CommandLineAction {
   keys = ['<C-left>'];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.wordLeft();
+    commandLine.wordLeft();
   }
 }
 
@@ -261,7 +261,7 @@ class CommandLineWordRight extends CommandLineAction {
   keys = ['<C-right>'];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.wordRight();
+    commandLine.wordRight();
   }
 }
 
@@ -270,7 +270,7 @@ class CommandLineHistoryBack extends CommandLineAction {
   keys = [['<up>'], ['<C-p>']];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.historyBack();
+    commandLine.historyBack();
   }
 }
 
@@ -279,7 +279,7 @@ class CommandLineHistoryForward extends CommandLineAction {
   keys = [['<down>'], ['<C-n>']];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    await commandLine.historyForward();
+    commandLine.historyForward();
   }
 }
 
@@ -414,7 +414,7 @@ class CommandAdvanceCurrentMatch extends CommandLineAction {
           ? SearchDirection.Backward
           : undefined;
     if (commandLine instanceof SearchCommandLine && direction !== undefined) {
-      void commandLine.advanceCurrentMatch(vimState, direction);
+      commandLine.advanceCurrentMatch(vimState, direction);
     }
   }
 }
@@ -424,6 +424,6 @@ class CommandLineType extends CommandLineAction {
   keys = [['<character>']];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    void commandLine.typeCharacter(this.keysPressed[0]);
+    commandLine.typeCharacter(this.keysPressed[0]);
   }
 }

@@ -110,9 +110,10 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   Register.loadFromDisk(handleLocal);
   await Promise.all([ExCommandLine.loadHistory(context), SearchCommandLine.loadHistory(context)]);
 
-  if (vscode.window.activeTextEditor) {
-    const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
-    Register.setReadonlyRegister('%', filepathComponents[filepathComponents.length - 1]);
+  const document = vscode.window.activeTextEditor?.document;
+  if (document) {
+    const filepathComponents = document.fileName.split(/\\|\//);
+    Register.setReadonlyRegister('%', filepathComponents.at(-1)!);
   }
 
   // workspace events
@@ -191,10 +192,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         if (modeHandler == null) {
           shouldDelete = true;
         } else {
-          const document = modeHandler.vimState.document;
-          if (!vscode.workspace.textDocuments.includes(document)) {
+          if (!vscode.workspace.textDocuments.includes(modeHandler.vimState.document)) {
             shouldDelete = true;
-            if (closedDocument === document) {
+            if (closedDocument === modeHandler.vimState.document) {
               lastClosedModeHandler = modeHandler;
             }
           }
@@ -283,31 +283,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
-        const selectionsHash = e.selections.reduce(
-          (hash, s) =>
-            hash +
-            `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
-          '',
-        );
-        const idx = mh.selectionsChanged.ourSelections.indexOf(selectionsHash);
-        if (idx > -1) {
-          mh.selectionsChanged.ourSelections.splice(idx, 1);
-          Logger.trace(
-            `Ignoring selection: ${selectionsHash}. ${mh.selectionsChanged.ourSelections.length} left`,
-          );
-          return;
-        } else if (mh.selectionsChanged.ignoreIntermediateSelections) {
-          Logger.trace(`Ignoring intermediate selection change: ${selectionsHash}`);
-          return;
-        } else if (mh.selectionsChanged.ourSelections.length > 0) {
-          // Some intermediate selection must have slipped in after setting the
-          // 'ignoreIntermediateSelections' to false. Which means we didn't count
-          // for it yet, but since we have selections to be ignored then we probably
-          // wanted this one to be ignored as well.
-          Logger.warn(`Ignoring slipped selection: ${selectionsHash}`);
-          return;
-        }
+      if (
+        e.kind !== vscode.TextEditorSelectionChangeKind.Mouse &&
+        mh.internalSelectionsTracker.shouldIgnoreAsInternalSelectionChangeEvent(e)
+      ) {
+        return;
       }
 
       // We may receive changes from other panels when, having selections in them containing the same file
@@ -415,14 +395,14 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       const mh = await getAndUpdateModeHandler();
       if (mh) {
         if (compositionState.insertedText) {
-          mh.selectionsChanged.ignoreIntermediateSelections = true;
+          mh.internalSelectionsTracker.startIgnoringIntermediateSelections();
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: '',
             replaceCharCnt: compositionState.composingText.length,
           });
           mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
           mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
-          mh.selectionsChanged.ignoreIntermediateSelections = false;
+          mh.internalSelectionsTracker.stopIgnoringIntermediateSelections();
         }
         const text = compositionState.composingText;
         await mh.handleMultipleKeyEvents(text.split(''));
@@ -444,7 +424,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (cmd) {
         await new ExCommandLine(cmd, mh.vimState.currentMode).run(mh.vimState);
       }
-      void mh.updateView();
+      mh.updateView();
     }
   });
 
@@ -475,7 +455,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
               command.command.slice(1, command.command.length),
               mh.vimState.currentMode,
             ).run(mh.vimState);
-            void mh.updateView();
+            mh.updateView();
           } else {
             await vscode.commands.executeCommand(command.command, command.args);
           }
