@@ -5,6 +5,7 @@ import * as srcConfiguration from '../src/configuration/configuration';
 import * as testConfiguration from './testConfiguration';
 
 import * as packagejson from '../package.json';
+import { IConfiguration } from 'src/configuration/iconfiguration';
 
 suite('package.json', () => {
   test('all keys have handlers', async () => {
@@ -29,22 +30,25 @@ suite('package.json', () => {
     assert.notStrictEqual(keys.length, 0);
     assert.ok(keys.every((key) => key.startsWith('vim.')));
 
-    // configuration
-    const srcHandlers = Object.keys(srcConfiguration.configuration);
-    const srcUnhandled = keys.filter((key) => {
+    const isUnhandled = (configuration: IConfiguration, key: string): boolean => {
       const keyFirstSegment = key.split('.')[1]; // Extract the first segment without the `vim.` prefix from `key`, e.g. get `foo` from 'vim.foo.bar.baz'.
-      const propertyExists = srcHandlers.includes(keyFirstSegment);
+
+      const handlers = Object.keys(configuration);
+      const propertyExists = handlers.includes(keyFirstSegment);
       if (propertyExists) {
         return false;
       }
 
       // If the property doesn't exist, check the possibility that the field is implemented as a get proxy by calling it.
-      if (srcConfiguration.configuration[keyFirstSegment]) {
+      if (configuration[keyFirstSegment]) {
         return false;
       }
 
       return true;
-    });
+    };
+
+    // configuration
+    const srcUnhandled = keys.filter(isUnhandled.bind(null, srcConfiguration.configuration));
     assert.strictEqual(
       srcUnhandled.length,
       0,
@@ -53,21 +57,7 @@ suite('package.json', () => {
 
     // test configuration
     const testConfigurationInstance = new testConfiguration.Configuration();
-    const testHandlers = Object.keys(testConfigurationInstance);
-    const testUnhandled = keys.filter((key) => {
-      const keyFirstSegment = key.split('.')[1]; // Extract the first segment without the `vim.` prefix from `key`, e.g. get `foo` from 'vim.foo.bar.baz'.
-      const propertyExists = testHandlers.includes(keyFirstSegment);
-      if (propertyExists) {
-        return false;
-      }
-
-      // If the property doesn't exist, check the possibility that the field is implemented as a get proxy by calling it.
-      if (testConfigurationInstance[keyFirstSegment]) {
-        return false;
-      }
-
-      return true;
-    });
+    const testUnhandled = keys.filter(isUnhandled.bind(null, testConfigurationInstance));
     assert.strictEqual(
       testUnhandled.length,
       0,
