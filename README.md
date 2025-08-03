@@ -89,12 +89,6 @@ defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool fa
 defaults write -app Cursor ApplePressAndHoldEnabled -bool false
 ```
 
-If that does not work for Cursor, try using the domain of the app:
-
-```sh
-defaults write "$(osascript -e 'id of app "Cursor"')" ApplePressAndHoldEnabled -bool false
-```
-
 #### If necessary, reset global default
 
 ```sh
