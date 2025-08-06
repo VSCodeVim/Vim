@@ -2,7 +2,6 @@ import { Parser, all, optWhitespace } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { FileCommand } from './file';
-import { ResizeCommand } from './resize';
 import * as vscode from 'vscode';
 
 export interface IVerticalCommandArguments {
