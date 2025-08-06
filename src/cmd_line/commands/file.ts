@@ -132,6 +132,15 @@ export class FileCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     const args = getLegacyArgs(this.arguments);
 
+    // Apply vertical modifier if set
+    if (vimState.isVerticalSplitModifier) {
+      if (args.position === FilePosition.NewWindowHorizontalSplit) {
+        args.position = FilePosition.NewWindowVerticalSplit;
+      }
+      // Reset the flag after consuming it
+      vimState.isVerticalSplitModifier = false;
+    }
+
     if (args.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
       return;
