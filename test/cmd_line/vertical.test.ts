@@ -29,36 +29,59 @@ suite('Vertical command', () => {
     assert.ok(finalEditorCount > initialEditorCount, 'Vertical split should create a new editor');
   });
 
-  test('vertical modifier flag is set and consumed', async () => {
-    // Check that the flag starts as false
-    assert.strictEqual(
-      modeHandler.vimState.isVerticalSplitModifier,
-      false,
-      'Vertical modifier flag should start as false',
-    );
+  test('vertical without command shows error', async () => {
+    // Mock vscode.window.showErrorMessage to capture the error call
+    const originalShowErrorMessage = vscode.window.showErrorMessage;
+    let errorMessage: string | undefined;
+    vscode.window.showErrorMessage = async (message: string) => {
+      errorMessage = message;
+      return undefined;
+    };
 
-    // Execute just ":vertical" (without any following command)
-    await modeHandler.handleMultipleKeyEvents(':vertical\n'.split(''));
+    try {
+      // Execute just ":vertical" (without any following command)
+      await modeHandler.handleMultipleKeyEvents(':vertical\n'.split(''));
 
-    // The flag should be set after :vertical command
-    assert.strictEqual(
-      modeHandler.vimState.isVerticalSplitModifier,
-      true,
-      'Vertical modifier flag should be set after :vertical command',
-    );
+      // Wait a bit for the command to complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Execute a split command
-    await modeHandler.handleMultipleKeyEvents(':split\n'.split(''));
+      // Check that an error message was shown
+      assert.strictEqual(
+        errorMessage,
+        'E471: Argument required',
+        'Vertical without argument should show error message',
+      );
+    } finally {
+      // Restore original function
+      vscode.window.showErrorMessage = originalShowErrorMessage;
+    }
+  });
 
-    // Wait a bit for the command to complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
+  test('vertical with unsupported command shows error', async () => {
+    // Mock vscode.window.showErrorMessage to capture the error call
+    const originalShowErrorMessage = vscode.window.showErrorMessage;
+    let errorMessage: string | undefined;
+    vscode.window.showErrorMessage = async (message: string) => {
+      errorMessage = message;
+      return undefined;
+    };
 
-    // The flag should be reset after the split command consumes it
-    assert.strictEqual(
-      modeHandler.vimState.isVerticalSplitModifier,
-      false,
-      'Vertical modifier flag should be reset after split command',
-    );
+    try {
+      // Execute ":vertical help" (unsupported command)
+      await modeHandler.handleMultipleKeyEvents(':vertical help\n'.split(''));
+
+      // Wait a bit for the command to complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Check that an error message was shown
+      assert.ok(
+        errorMessage?.includes('is not supported'),
+        `Expected unsupported command error, got: ${errorMessage}`,
+      );
+    } finally {
+      // Restore original function
+      vscode.window.showErrorMessage = originalShowErrorMessage;
+    }
   });
 
   test('vertical new creates vertical split with new file', async () => {

@@ -26,7 +26,6 @@ export interface IVerticalCommandArguments {
  * :vertical new filename       - Create vertical split with new file named filename
  * :vertical resize +5          - Increase current window width by 5 columns
  * :vertical resize -3          - Decrease current window width by 3 columns
- * :vertical resize 80          - Set current window width to approximately 80 columns
  * :vertical resize             - Toggle window width maximization
  *
  * Note: For other commands (like help), :vertical sets a modifier flag that
@@ -53,8 +52,8 @@ export class VerticalCommand extends ExCommand {
     const command = this.arguments.command.trim();
 
     if (!command) {
-      // If no command is provided, just set the flag (though this is uncommon)
-      vimState.isVerticalSplitModifier = true;
+      // :vertical without a command is not meaningful
+      vscode.window.showErrorMessage('E471: Argument required');
       return;
     }
 
@@ -123,16 +122,22 @@ export class VerticalCommand extends ExCommand {
 
       // Execute width resize commands
       if (absoluteValue !== undefined) {
-        // For absolute values, use evenEditorWidths as approximation
-        await vscode.commands.executeCommand('workbench.action.evenEditorWidths');
+        // VSCode doesn't support setting absolute window widths
+        vscode.window.showInformationMessage(
+          `VSCode doesn't support setting exact column widths. Use relative resize (+/-) instead.`,
+        );
+        return;
       } else if (direction && value !== undefined) {
         const resizeCommand =
           direction === '+'
             ? 'workbench.action.increaseViewWidth'
             : 'workbench.action.decreaseViewWidth';
 
-        // Execute the command multiple times based on the value
-        for (let i = 0; i < value; i++) {
+        // Use runCommands for better performance with multiple executions
+        if (value > 1) {
+          const commands = Array(value).fill(resizeCommand);
+          await vscode.commands.executeCommand('runCommands', { commands });
+        } else {
           await vscode.commands.executeCommand(resizeCommand);
         }
       }
@@ -140,8 +145,9 @@ export class VerticalCommand extends ExCommand {
       return;
     }
 
-    // For other commands, set the flag and let them handle it
-    // (This is a fallback for commands we don't explicitly handle)
-    vimState.isVerticalSplitModifier = true;
+    // For other commands that we don't explicitly support
+    vscode.window.showErrorMessage(
+      `VSCode Vim: :vertical ${command} is not supported. Use :vertical split, :vertical new, or :vertical resize instead.`,
+    );
   }
 }

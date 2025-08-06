@@ -118,12 +118,6 @@ export class VimState implements vscode.Disposable {
   public actionCount = 0;
 
   /**
-   * Flag set by the :vertical command to indicate the next split-related command
-   * should be executed in vertical mode instead of horizontal.
-   */
-  public isVerticalSplitModifier = false;
-
-  /**
    * Every time we invoke a VSCode command which might trigger a view update.
    * We should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
    * This array is used to cache every VSCode view updating event and they will be triggered once we run the inhouse `viewUpdate`.
