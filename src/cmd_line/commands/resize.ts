@@ -76,5 +76,9 @@ export class ResizeCommand extends ExCommand {
     }
 
     // TODO: Default behavior (no arguments) - toggle panel to maximize editor height
+    StatusBar.setText(
+      vimState,
+      'resize does not currently support running without parameters. Please use :resize +N or :resize -N to adjust the height.',
+    );
   }
 }
