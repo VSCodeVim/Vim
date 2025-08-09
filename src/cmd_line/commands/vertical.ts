@@ -3,6 +3,8 @@ import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { FileCommand } from './file';
 import * as vscode from 'vscode';
+import { StatusBar } from '../../statusBar';
+import { VimError, ErrorCode } from '../../error';
 
 export interface IVerticalCommandArguments {
   /** The command following :vertical (e.g., "split", "new filename", "resize +5") */
@@ -26,7 +28,6 @@ export interface IVerticalCommandArguments {
  * :vertical new filename       - Create vertical split with new file named filename
  * :vertical resize +5          - Increase current window width by 5 columns
  * :vertical resize -3          - Decrease current window width by 3 columns
- * :vertical resize             - Toggle window width maximization
  *
  * Note: For other commands (like help), :vertical sets a modifier flag that
  * compatible commands can check, but many commands are not yet implemented
@@ -44,16 +45,12 @@ export class VerticalCommand extends ExCommand {
     this.arguments = args;
   }
 
-  public override neovimCapable(): boolean {
-    return true;
-  }
-
   async execute(vimState: VimState): Promise<void> {
     const command = this.arguments.command.trim();
 
     if (!command) {
       // :vertical without a command is not meaningful
-      vscode.window.showErrorMessage('E471: Argument required');
+      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.ArgumentRequired));
       return;
     }
 
@@ -118,16 +115,28 @@ export class VerticalCommand extends ExCommand {
         } else {
           absoluteValue = parseInt(num, 10);
         }
+      } else {
+        // Invalid argument (e.g., non-numeric or unexpected chars)
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(ErrorCode.InvalidArgument474, resizeArgs),
+        );
+        return;
       }
 
       // Execute width resize commands
       if (absoluteValue !== undefined) {
         // VSCode doesn't support setting absolute window widths
-        vscode.window.showInformationMessage(
+        StatusBar.setText(
+          vimState,
           `VSCode doesn't support setting exact column widths. Use relative resize (+/-) instead.`,
         );
         return;
       } else if (direction && value !== undefined) {
+        // A value of 0 should be a no-op
+        if (value === 0) {
+          return;
+        }
         const resizeCommand =
           direction === '+'
             ? 'workbench.action.increaseViewWidth'
@@ -146,8 +155,9 @@ export class VerticalCommand extends ExCommand {
     }
 
     // For other commands that we don't explicitly support
-    vscode.window.showErrorMessage(
-      `VSCode Vim: :vertical ${command} is not supported. Use :vertical split, :vertical new, or :vertical resize instead.`,
+    StatusBar.displayError(
+      vimState,
+      VimError.fromCode(ErrorCode.NotAnEditorCommand, `vertical ${command}`),
     );
   }
 }

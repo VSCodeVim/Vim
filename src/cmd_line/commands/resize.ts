@@ -2,6 +2,7 @@ import { Parser, optWhitespace, seq, regexp, alt } from 'parsimmon';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { StatusBar } from '../../statusBar';
 
 export interface IResizeCommandArguments {
   direction?: '+' | '-';
@@ -40,17 +41,14 @@ export class ResizeCommand extends ExCommand {
     this.arguments = args;
   }
 
-  public override neovimCapable(): boolean {
-    return true;
-  }
-
-  async execute(): Promise<void> {
+  async execute(vimState: VimState): Promise<void> {
     const { direction, value, absoluteValue } = this.arguments;
 
     // Handle absolute resize
     if (absoluteValue !== undefined) {
       // VSCode doesn't support setting absolute window heights
-      vscode.window.showInformationMessage(
+      StatusBar.setText(
+        vimState,
         `VSCode doesn't support setting exact row heights. Use relative resize (+/-) instead.`,
       );
       return;
@@ -58,6 +56,10 @@ export class ResizeCommand extends ExCommand {
 
     // Handle relative resize
     if (direction && value !== undefined) {
+      // A value of 0 should be a no-op
+      if (value === 0) {
+        return;
+      }
       const command =
         direction === '+'
           ? 'workbench.action.increaseViewHeight'
