@@ -19,36 +19,25 @@ suite('Vertical command', () => {
   teardown(cleanUpWorkspace);
 
   test('vertical without command shows argument required error', async () => {
-    try {
-      await new ExCommandLine('vertical', modeHandler.vimState.currentMode).run(
-        modeHandler.vimState,
-      );
-      assert.fail('Should have thrown an error');
-    } catch (e) {
-      assert.strictEqual(e, VimError.fromCode(ErrorCode.ArgumentRequired));
-    }
+    await new ExCommandLine('vertical', modeHandler.vimState.currentMode).run(modeHandler.vimState);
+    const statusText = StatusBar.getText();
+    assert.ok(statusText.includes('Argument required'));
   });
 
   test('vertical with whitespace only shows argument required error', async () => {
-    try {
-      await new ExCommandLine('vertical   ', modeHandler.vimState.currentMode).run(
-        modeHandler.vimState,
-      );
-      assert.fail('Should have thrown an error');
-    } catch (e) {
-      assert.strictEqual(e, VimError.fromCode(ErrorCode.ArgumentRequired));
-    }
+    await new ExCommandLine('vertical   ', modeHandler.vimState.currentMode).run(
+      modeHandler.vimState,
+    );
+    const statusText = StatusBar.getText();
+    assert.ok(statusText.includes('Argument required'));
   });
 
   test('vertical with unsupported command shows error', async () => {
-    try {
-      await new ExCommandLine('vertical help', modeHandler.vimState.currentMode).run(
-        modeHandler.vimState,
-      );
-      assert.fail('Should have thrown an error');
-    } catch (e) {
-      assert.strictEqual(e, VimError.fromCode(ErrorCode.NotAnEditorCommand, 'vertical help'));
-    }
+    await new ExCommandLine('vertical help', modeHandler.vimState.currentMode).run(
+      modeHandler.vimState,
+    );
+    const statusText = StatusBar.getText();
+    assert.ok(statusText.includes('Not an editor command: vertical help'));
   });
 
   // Test vertical split commands
@@ -258,35 +247,26 @@ suite('Vertical command', () => {
   });
 
   test('vertical resize with invalid argument shows error', async () => {
-    try {
-      await new ExCommandLine('vertical resize abc', modeHandler.vimState.currentMode).run(
-        modeHandler.vimState,
-      );
-      assert.fail('Should have thrown an error for invalid argument');
-    } catch (e) {
-      assert.strictEqual(e, VimError.fromCode(ErrorCode.InvalidArgument474, 'abc'));
-    }
+    await new ExCommandLine('vertical resize abc', modeHandler.vimState.currentMode).run(
+      modeHandler.vimState,
+    );
+    const statusText = StatusBar.getText();
+    assert.ok(statusText.includes('Invalid argument: abc'));
   });
 
   test('vertical resize with invalid format shows error', async () => {
-    try {
-      await new ExCommandLine('vertical resize +abc', modeHandler.vimState.currentMode).run(
-        modeHandler.vimState,
-      );
-      assert.fail('Should have thrown an error for invalid format');
-    } catch (e) {
-      assert.strictEqual(e, VimError.fromCode(ErrorCode.InvalidArgument474, '+abc'));
-    }
+    await new ExCommandLine('vertical resize +abc', modeHandler.vimState.currentMode).run(
+      modeHandler.vimState,
+    );
+    const statusText = StatusBar.getText();
+    assert.ok(statusText.includes('Invalid argument: +abc'));
   });
 
   test('vertical resize with mixed format shows error', async () => {
-    try {
-      await new ExCommandLine('vertical resize 5+', modeHandler.vimState.currentMode).run(
-        modeHandler.vimState,
-      );
-      assert.fail('Should have thrown an error for mixed format');
-    } catch (e) {
-      assert.strictEqual(e, VimError.fromCode(ErrorCode.InvalidArgument474, '5+'));
-    }
+    await new ExCommandLine('vertical resize 5+', modeHandler.vimState.currentMode).run(
+      modeHandler.vimState,
+    );
+    const statusText = StatusBar.getText();
+    assert.ok(statusText.includes('Invalid argument: 5+'));
   });
 });
