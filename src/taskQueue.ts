@@ -19,4 +19,4 @@ class TaskQueue {
   }
 }
 
-export let taskQueue = new TaskQueue();
+export const taskQueue = new TaskQueue();

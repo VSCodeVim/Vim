@@ -2,7 +2,7 @@ import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { RegisterAction, BaseCommand } from '../base';
+import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
 class ExitReplaceMode extends BaseCommand {
@@ -27,7 +27,7 @@ class ExitReplaceMode extends BaseCommand {
         .repeat(timesToRepeat - 1);
       vimState.recordedState.transformer.replace(
         new Range(position, position.getRight(newText.length)),
-        newText
+        newText,
       );
     } else {
       vimState.cursorStopPosition = vimState.cursorStopPosition.getLeft();
@@ -92,6 +92,16 @@ class BackspaceInReplaceMode extends BaseCommand {
 }
 
 @RegisterAction
+class DeleteInReplaceMode extends BaseCommand {
+  modes = [Mode.Replace];
+  keys = ['<Del>'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.recordedState.transformer.vscodeCommand('deleteRight');
+  }
+}
+
+@RegisterAction
 class ReplaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
   keys = ['<character>'];
@@ -108,7 +118,7 @@ class ReplaceInReplaceMode extends BaseCommand {
     const replaceRange = new Range(position, position.getRight());
 
     let before = vimState.document.getText(replaceRange);
-    if (!position.isLineEnd() && !isNewLineOrTab) {
+    if (!position.isLineEnd(vimState.document) && !isNewLineOrTab) {
       vimState.recordedState.transformer.addTransformation({
         type: 'replaceText',
         text: char,

@@ -1,23 +1,23 @@
-import { CommandLineHistory, HistoryFile, SearchHistory } from '../history/historyFile';
-import { Mode } from './../mode/mode';
-import { Logger } from '../util/logger';
-import { StatusBar } from '../statusBar';
-import { VimError, ErrorCode } from '../error';
-import { VimState } from '../state/vimState';
-import { configuration } from '../configuration/configuration';
-import { Register } from '../register/register';
-import { RecordedState } from '../state/recordedState';
 import { Parser } from 'parsimmon';
-import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState';
-import { getWordLeftInText, getWordRightInText, WordType } from '../textobject/word';
-import { SearchDirection } from '../vimscript/pattern';
-import { reportSearch, escapeCSSIcons } from '../util/statusBarTextUtils';
-import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
-import { Position, ExtensionContext, window } from 'vscode';
+import { ExtensionContext, Position, window } from 'vscode';
+import { configuration } from '../configuration/configuration';
+import { ErrorCode, VimError } from '../error';
+import { CommandLineHistory, HistoryFile, SearchHistory } from '../history/historyFile';
+import { Register } from '../register/register';
 import { globalState } from '../state/globalState';
+import { RecordedState } from '../state/recordedState';
+import { IndexedPosition, IndexedRange, SearchState } from '../state/searchState';
+import { VimState } from '../state/vimState';
+import { StatusBar } from '../statusBar';
+import { WordType, getWordLeftInText, getWordRightInText } from '../textobject/word';
+import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
+import { Logger } from '../util/logger';
+import { escapeCSSIcons, reportSearch } from '../util/statusBarTextUtils';
 import { scrollView } from '../util/util';
 import { ExCommand } from '../vimscript/exCommand';
 import { LineRange } from '../vimscript/lineRange';
+import { SearchDirection } from '../vimscript/pattern';
+import { Mode } from './../mode/mode';
 import { RegisterCommand } from './commands/register';
 import { SubstituteCommand } from './commands/substitute';
 
@@ -71,7 +71,7 @@ export abstract class CommandLine {
    */
   public abstract ctrlF(vimState: VimState): Promise<void>;
 
-  public async historyBack(): Promise<void> {
+  public historyBack(): void {
     if (this.historyIndex === 0) {
       return;
     }
@@ -88,7 +88,7 @@ export abstract class CommandLine {
     this.cursorIndex = this.text.length;
   }
 
-  public async historyForward(): Promise<void> {
+  public historyForward(): void {
     if (this.historyIndex === undefined) {
       return;
     }
@@ -134,28 +134,28 @@ export abstract class CommandLine {
   /**
    * Called when `<Home>` is pressed
    */
-  public async home(): Promise<void> {
+  public home(): void {
     this.cursorIndex = 0;
   }
 
   /**
    * Called when `<End>` is pressed
    */
-  public async end(): Promise<void> {
+  public end(): void {
     this.cursorIndex = this.text.length;
   }
 
   /**
    * Called when `<C-Left>` is pressed
    */
-  public async wordLeft(): Promise<void> {
+  public wordLeft(): void {
     this.cursorIndex = getWordLeftInText(this.text, this.cursorIndex, WordType.Big) ?? 0;
   }
 
   /**
    * Called when `<C-Right>` is pressed
    */
-  public async wordRight(): Promise<void> {
+  public wordRight(): void {
     this.cursorIndex =
       getWordRightInText(this.text, this.cursorIndex, WordType.Big) ?? this.text.length;
   }
@@ -163,7 +163,7 @@ export abstract class CommandLine {
   /**
    * Called when `<C-BS>` is pressed
    */
-  public async deleteWord(): Promise<void> {
+  public deleteWord(): void {
     const wordStart = getWordLeftInText(this.text, this.cursorIndex, WordType.Normal);
     if (wordStart !== undefined) {
       this.text = this.text.substring(0, wordStart).concat(this.text.slice(this.cursorIndex));
@@ -174,12 +174,12 @@ export abstract class CommandLine {
   /**
    * Called when `<C-BS>` is pressed
    */
-  public async deleteToBeginning(): Promise<void> {
+  public deleteToBeginning(): void {
     this.text = this.text.slice(this.cursorIndex);
     this.cursorIndex = 0;
   }
 
-  public async typeCharacter(char: string): Promise<void> {
+  public typeCharacter(char: string): void {
     const modifiedString = this.text.split('');
     modifiedString.splice(this.cursorIndex, 0, char);
     this.text = modifiedString.join('');
@@ -217,8 +217,8 @@ export class ExCommandLine extends CommandLine {
   public display(cursorChar: string): string {
     return escapeCSSIcons(
       `:${this.text.substring(0, this.cursorIndex)}${cursorChar}${this.text.substring(
-        this.cursorIndex
-      )}`
+        this.cursorIndex,
+      )}`,
     );
   }
 
@@ -256,7 +256,7 @@ export class ExCommandLine extends CommandLine {
 
   public async run(vimState: VimState): Promise<void> {
     Logger.info(`Executing :${this.text}`);
-    ExCommandLine.history.add(this.text);
+    void ExCommandLine.history.add(this.text);
     this.historyIndex = ExCommandLine.history.get().length;
 
     if (!(this.command instanceof RegisterCommand)) {
@@ -309,12 +309,12 @@ export class ExCommandLine extends CommandLine {
   public async escape(vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Normal);
     if (this.text.length > 0) {
-      ExCommandLine.history.add(this.text);
+      void ExCommandLine.history.add(this.text);
     }
   }
 
   public async ctrlF(vimState: VimState): Promise<void> {
-    ExCommandLine.onSearch(vimState);
+    void ExCommandLine.onSearch(vimState);
   }
 }
 
@@ -353,17 +353,13 @@ export class SearchCommandLine extends CommandLine {
       .get()
       .forEach((val) =>
         SearchCommandLine.previousSearchStates.push(
-          new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined)
-        )
+          new SearchState(SearchDirection.Forward, new Position(0, 0), val, undefined),
+        ),
       );
   }
 
   public static async addSearchStateToHistory(searchState: SearchState) {
-    const prevSearchString =
-      SearchCommandLine.previousSearchStates.length === 0
-        ? undefined
-        : SearchCommandLine.previousSearchStates[SearchCommandLine.previousSearchStates.length - 1]
-            .searchString;
+    const prevSearchString = SearchCommandLine.previousSearchStates.at(-1)?.searchString;
     // Store this search if different than previous
     if (searchState.searchString !== prevSearchString) {
       SearchCommandLine.previousSearchStates.push(searchState);
@@ -397,8 +393,8 @@ export class SearchCommandLine extends CommandLine {
     return escapeCSSIcons(
       `${this.searchState.direction === SearchDirection.Forward ? '/' : '?'}${this.text.substring(
         0,
-        this.cursorIndex
-      )}${cursorChar}${this.text.substring(this.cursorIndex)}`
+        this.cursorIndex,
+      )}${cursorChar}${this.text.substring(this.cursorIndex)}`,
     );
   }
 
@@ -436,7 +432,7 @@ export class SearchCommandLine extends CommandLine {
       vimState,
       vimState.cursorStopPosition,
       SearchDirection.Forward,
-      this.getCurrentMatchRelativeIndex(vimState)
+      this.getCurrentMatchRelativeIndex(vimState),
     );
   }
 
@@ -450,34 +446,33 @@ export class SearchCommandLine extends CommandLine {
       vimState,
       vimState.cursorStopPosition,
       SearchDirection.Forward,
-      this.getCurrentMatchRelativeIndex(vimState)
+      this.getCurrentMatchRelativeIndex(vimState),
     );
   }
 
   public getDecorations(vimState: VimState): SearchDecorations | undefined {
     return getDecorationsForSearchMatchRanges(
       this.searchState.getMatchRanges(vimState),
+      vimState.document,
       configuration.incsearch && vimState.currentMode === Mode.SearchInProgressMode
         ? this.getCurrentMatchRange(vimState)?.index
-        : undefined
+        : undefined,
     );
   }
 
   public async run(vimState: VimState): Promise<void> {
     // Repeat the previous search if no new string is entered
     if (this.text === '') {
-      if (SearchCommandLine.previousSearchStates.length > 0) {
-        this.text =
-          SearchCommandLine.previousSearchStates[
-            SearchCommandLine.previousSearchStates.length - 1
-          ].searchString;
+      const prevSearchString = SearchCommandLine.previousSearchStates.at(-1)?.searchString;
+      if (prevSearchString !== undefined) {
+        this.text = prevSearchString;
       }
     }
     Logger.info(`Searching for ${this.text}`);
 
     this.cursorIndex = 0;
     Register.setReadonlyRegister('/', this.text);
-    SearchCommandLine.addSearchStateToHistory(this.searchState);
+    void SearchCommandLine.addSearchStateToHistory(this.searchState);
     globalState.hl = true;
 
     if (this.searchState.getMatchRanges(vimState).length === 0) {
@@ -494,8 +489,8 @@ export class SearchCommandLine extends CommandLine {
           this.searchState.direction === SearchDirection.Backward
             ? ErrorCode.SearchHitTop
             : ErrorCode.SearchHitBottom,
-          this.text
-        )
+          this.text,
+        ),
       );
       return;
     }
@@ -508,10 +503,7 @@ export class SearchCommandLine extends CommandLine {
   public async escape(vimState: VimState): Promise<void> {
     vimState.cursorStopPosition = this.searchState.cursorStartPosition;
 
-    const prevSearchList = SearchCommandLine.previousSearchStates;
-    globalState.searchState = prevSearchList
-      ? prevSearchList[prevSearchList.length - 1]
-      : undefined;
+    globalState.searchState = SearchCommandLine.previousSearchStates.at(-1);
 
     if (vimState.modeData.mode === Mode.SearchInProgressMode) {
       const offset =
@@ -522,7 +514,7 @@ export class SearchCommandLine extends CommandLine {
 
     await vimState.setCurrentMode(this.previousMode);
     if (this.text.length > 0) {
-      SearchCommandLine.addSearchStateToHistory(this.searchState);
+      void SearchCommandLine.addSearchStateToHistory(this.searchState);
     }
   }
 
@@ -533,7 +525,7 @@ export class SearchCommandLine extends CommandLine {
   /**
    * Called when <C-g> or <C-t> is pressed during SearchInProgress mode
    */
-  public async advanceCurrentMatch(vimState: VimState, direction: SearchDirection): Promise<void> {
+  public advanceCurrentMatch(vimState: VimState, direction: SearchDirection): void {
     // <C-g> always moves forward in the document, and <C-t> always moves back, regardless of search direction.
     // To compensate, multiply the desired direction by the searchState's direction, so that
     // effectiveDirection == direction * (searchState.direction)^2 == direction.

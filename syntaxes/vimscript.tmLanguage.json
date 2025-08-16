@@ -1,12 +1,16 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "vimrc",
-  "fileTypes": [".vimrc"],
-  "scopeName": "source.vimrc",
+  "name": "Vimscript",
+  "fileTypes": [".vim", ".vimrc"],
+  "scopeName": "source.vimscript",
   "patterns": [
     {
       "name": "comment.line",
       "match": "(^| |\t)\".*$"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^( |\t)*(let|const|eval|call)"
     },
     {
       "name": "entity.name.function",
@@ -23,6 +27,10 @@
     {
       "name": "entity.name.function",
       "match": "^( |\t)*set"
+    },
+    {
+      "name": "constant.numeric",
+      "match": "\\d+(\\.\\d+)?"
     },
     {
       "name": "constant",

@@ -1,11 +1,12 @@
 import { Position, Selection } from 'vscode';
 
+// eslint-disable-next-line id-denylist
 import { optWhitespace, Parser, seq, string } from 'parsimmon';
+import { PositionDiff } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { Address, LineRange } from '../../vimscript/lineRange';
 import { numberParser } from '../../vimscript/parserUtils';
-import { PositionDiff } from '../../common/motion/position';
 
 export type ShiftDirection = '>' | '<';
 export type ShiftArgs = {
@@ -25,8 +26,8 @@ export class ShiftCommand extends ExCommand {
             .map((shifts) => shifts.length + 1)
             .skip(optWhitespace),
           // `:> 2` indents 2 lines
-          numberParser.fallback(undefined)
-        )
+          numberParser.fallback(undefined),
+        ),
       )
       .map(([depth, numLines]) => new ShiftCommand({ dir, depth, numLines }));
 
@@ -37,7 +38,7 @@ export class ShiftCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    await this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   public override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {

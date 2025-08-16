@@ -1,4 +1,4 @@
-import assert = require('assert');
+import { strict as assert } from 'assert';
 import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
 import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
@@ -9,7 +9,8 @@ import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
 import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
-import { DeleteMarksCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
+import { LetCommand } from '../../src/cmd_line/commands/let';
+import { DeleteMarksCommand, MarksCommand, MarkCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
@@ -23,9 +24,11 @@ import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
+import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
+import { GrepCommand } from '../../src/cmd_line/commands/grep';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -85,25 +88,25 @@ suite('Ex command parsing', () => {
     exParseTest(':bd abc.txt', new BufferDeleteCommand({ bang: false, buffers: ['abc.txt'] }));
     exParseTest(
       ':bd abc.txt 5 blah.cc',
-      new BufferDeleteCommand({ bang: false, buffers: ['abc.txt', 5, 'blah.cc'] })
+      new BufferDeleteCommand({ bang: false, buffers: ['abc.txt', 5, 'blah.cc'] }),
     );
     exParseTest(':bd!', new BufferDeleteCommand({ bang: true, buffers: [] }));
     exParseTest(':bd! 2 5 3', new BufferDeleteCommand({ bang: true, buffers: [2, 5, 3] }));
     exParseTest(':bd! abc.txt', new BufferDeleteCommand({ bang: true, buffers: ['abc.txt'] }));
     exParseTest(
       ':bd! abc.txt 5 blah.cc',
-      new BufferDeleteCommand({ bang: true, buffers: ['abc.txt', 5, 'blah.cc'] })
+      new BufferDeleteCommand({ bang: true, buffers: ['abc.txt', 5, 'blah.cc'] }),
     );
   });
 
   suite(':bn[ext]', () => {
     exParseTest(
       ':bn',
-      new TabCommand({ type: TabCommandType.Next, bang: false, cmd: undefined, count: undefined })
+      new TabCommand({ type: TabCommandType.Next, bang: false, cmd: undefined, count: undefined }),
     );
     exParseTest(
       ':bn!',
-      new TabCommand({ type: TabCommandType.Next, bang: true, cmd: undefined, count: undefined })
+      new TabCommand({ type: TabCommandType.Next, bang: true, cmd: undefined, count: undefined }),
     );
     exParseTest(
       ':bn 5',
@@ -112,7 +115,7 @@ suite('Ex command parsing', () => {
         bang: false,
         cmd: undefined,
         count: 5,
-      })
+      }),
     );
     exParseTest(
       ':bn! 5',
@@ -121,7 +124,7 @@ suite('Ex command parsing', () => {
         bang: true,
         cmd: undefined,
         count: 5,
-      })
+      }),
     );
     exParseTest(
       ':bn +20 5',
@@ -130,7 +133,7 @@ suite('Ex command parsing', () => {
         bang: false,
         cmd: { type: 'line_number', line: 20 },
         count: 5,
-      })
+      }),
     );
     exParseTest(
       ':bn! +20 5',
@@ -139,7 +142,43 @@ suite('Ex command parsing', () => {
         bang: true,
         cmd: { type: 'line_number', line: 20 },
         count: 5,
-      })
+      }),
+    );
+  });
+
+  suite(':b[uffer]', () => {
+    exParseTest(':b', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':b 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(':b5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':b +20 5',
+      new TabCommand({ type: TabCommandType.Edit, cmd: { type: 'line_number', line: 20 }, buf: 5 }),
+    );
+    exParseTest(
+      ':b bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':b +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
+    );
+    exParseTest(':buffer', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 0 }));
+    exParseTest(':buffer 5', new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 5 }));
+    exParseTest(
+      ':buffer bufname',
+      new TabCommand({ type: TabCommandType.Edit, cmd: undefined, buf: 'bufname' }),
+    );
+    exParseTest(
+      ':buffer +20 bufname',
+      new TabCommand({
+        type: TabCommandType.Edit,
+        cmd: { type: 'line_number', line: 20 },
+        buf: 'bufname',
+      }),
     );
   });
 
@@ -180,7 +219,7 @@ suite('Ex command parsing', () => {
       new DeleteMarksCommand([
         { start: 'A', end: 'K' },
         { start: '2', end: '4' },
-      ])
+      ]),
     );
 
     exParseFails(':delm'); // TODO: Should throw `E471: Argument required`
@@ -194,21 +233,15 @@ suite('Ex command parsing', () => {
   });
 
   suite(':dig[raphs]', () => {
-    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraphs: [] }));
-    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraphs: [] }));
+    exParseTest(':dig', new DigraphsCommand({ bang: false, newDigraph: undefined }));
+    exParseTest(':dig!', new DigraphsCommand({ bang: true, newDigraph: undefined }));
+    exParseTest(':dig e: 235', new DigraphsCommand({ bang: false, newDigraph: ['e', ':', [235]] }));
     exParseTest(
-      ':dig e: 235',
-      new DigraphsCommand({ bang: false, newDigraphs: [['e', ':', 235]] })
-    );
-    exParseTest(
-      ':dig e: 235 a: 238',
+      ':dig R! 55357 56960',
       new DigraphsCommand({
         bang: false,
-        newDigraphs: [
-          ['e', ':', 235],
-          ['a', ':', 238],
-        ],
-      })
+        newDigraph: ['R', '!', [55357, 56960]],
+      }),
     );
 
     exParseFails(':dig e:');
@@ -217,29 +250,29 @@ suite('Ex command parsing', () => {
   suite(':e[dit]', () => {
     exParseTest(
       ':edit',
-      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: undefined })
+      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: undefined }),
     );
     exParseTest(
       ':edit!',
-      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: undefined })
+      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: undefined }),
     );
 
     exParseTest(
       ':edit abc.txt',
-      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: 'abc.txt' })
+      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: 'abc.txt' }),
     );
     exParseTest(
       ':edit! abc.txt',
-      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: 'abc.txt' })
+      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: 'abc.txt' }),
     );
 
     exParseTest(
       ':edit abc\\ 1.txt',
-      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: 'abc 1.txt' })
+      new FileCommand({ name: 'edit', bang: false, opt: [], cmd: undefined, file: 'abc 1.txt' }),
     );
     exParseTest(
       ':edit! abc\\ 1.txt',
-      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: 'abc 1.txt' })
+      new FileCommand({ name: 'edit', bang: true, opt: [], cmd: undefined, file: 'abc 1.txt' }),
     );
 
     // TODO: Test with [++opt]
@@ -293,6 +326,93 @@ suite('Ex command parsing', () => {
   });
 
   suite(':let', () => {
+    exParseTest(':let', new LetCommand({ operation: 'print', variables: [] }));
+    exParseTest(
+      ':let foo bar',
+      new LetCommand({ operation: 'print', variables: [variable('foo'), variable('bar')] }),
+    );
+
+    exParseTest(
+      ':let foo = 5',
+      new LetCommand({
+        operation: '=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ':let foo += 5',
+      new LetCommand({
+        operation: '+=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ':let foo -= 5',
+      new LetCommand({
+        operation: '-=',
+        variable: variable('foo'),
+        expression: int(5),
+        lock: false,
+      }),
+    );
+    exParseTest(
+      ":let foo .= 'bar'",
+      new LetCommand({
+        operation: '.=',
+        variable: variable('foo'),
+        expression: str('bar'),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':let [a, b, c] = [1, 2, 3]',
+      new LetCommand({
+        operation: '=',
+        variable: { type: 'unpack', names: ['a', 'b', 'c'] },
+        expression: list([int(1), int(2), int(3)]),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':let x[7] = "foo"',
+      new LetCommand({
+        operation: '=',
+        variable: {
+          type: 'index',
+          variable: { type: 'variable', namespace: undefined, name: 'x' },
+          index: int(7),
+        },
+        expression: str('foo'),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':let s:arr[start:end] = [1, 2, 3]',
+      new LetCommand({
+        operation: '=',
+        variable: {
+          type: 'slice',
+          variable: { type: 'variable', namespace: 's', name: 'arr' },
+          start: { type: 'variable', namespace: undefined, name: 'start' },
+          end: { type: 'variable', namespace: undefined, name: 'end' },
+        },
+        expression: list([int(1), int(2), int(3)]),
+        lock: false,
+      }),
+    );
+
+    exParseTest(
+      ':const foo = 5',
+      new LetCommand({ operation: '=', variable: variable('foo'), expression: int(5), lock: true }),
+    );
+
     // TODO
   });
 
@@ -300,6 +420,11 @@ suite('Ex command parsing', () => {
     exParseTest(':marks', new MarksCommand([]));
     exParseTest(':marks aB', new MarksCommand(['a', 'B']));
     exParseTest(':marks 0 1', new MarksCommand(['0', '1']));
+  });
+
+  suite(':mark', () => {
+    exParseTest(':mark a', new MarkCommand('a'));
+    exParseTest(':mark `', new MarkCommand('`'));
   });
 
   suite(':p[rint]', () => {
@@ -319,6 +444,18 @@ suite('Ex command parsing', () => {
     // No space, alpha register
     exParseFails(':putx');
     exParseTest(':put!x', new PutExCommand({ bang: true, register: 'x' }));
+
+    // Expression register
+    exParseTest(':put=', new PutExCommand({ bang: false, register: '=' }));
+    exParseTest(':put=5+2', new PutExCommand({ bang: false, fromExpression: add(int(5), int(2)) }));
+    exParseTest(
+      ':put = range(4)',
+      new PutExCommand({ bang: false, fromExpression: funcCall('range', [int(4)]) }),
+    );
+    exParseTest(
+      ':put!=[1,2,3]',
+      new PutExCommand({ bang: true, fromExpression: list([int(1), int(2), int(3)]) }),
+    );
   });
 
   suite(':q[uit] and :qa[ll]', () => {
@@ -334,7 +471,7 @@ suite('Ex command parsing', () => {
     exParseTest(':r !ls', new ReadCommand({ opt: [], cmd: 'ls' }));
     exParseTest(
       ':r ++enc=foo abc.txt',
-      new ReadCommand({ opt: [['enc', 'foo']], file: 'abc.txt' })
+      new ReadCommand({ opt: [['enc', 'foo']], file: 'abc.txt' }),
     );
     exParseTest(':r ++enc=foo !ls', new ReadCommand({ opt: [['enc', 'foo']], cmd: 'ls' }));
   });
@@ -389,60 +526,60 @@ suite('Ex command parsing', () => {
   suite(':sor[t]', () => {
     exParseTest(
       ':sort',
-      new SortCommand({ reverse: false, ignoreCase: false, unique: false, numeric: false })
+      new SortCommand({ reverse: false, ignoreCase: false, unique: false, numeric: false }),
     );
     exParseTest(
       ':sort i',
-      new SortCommand({ reverse: false, ignoreCase: true, unique: false, numeric: false })
+      new SortCommand({ reverse: false, ignoreCase: true, unique: false, numeric: false }),
     );
     exParseTest(
       ':sort u',
-      new SortCommand({ reverse: false, ignoreCase: false, unique: true, numeric: false })
+      new SortCommand({ reverse: false, ignoreCase: false, unique: true, numeric: false }),
     );
     exParseTest(
       ':sort iu',
-      new SortCommand({ reverse: false, ignoreCase: true, unique: true, numeric: false })
+      new SortCommand({ reverse: false, ignoreCase: true, unique: true, numeric: false }),
     );
     exParseTest(
       ':sort ui',
-      new SortCommand({ reverse: false, ignoreCase: true, unique: true, numeric: false })
+      new SortCommand({ reverse: false, ignoreCase: true, unique: true, numeric: false }),
     );
     exParseTest(
       ':sort n',
-      new SortCommand({ reverse: false, ignoreCase: false, unique: false, numeric: true })
+      new SortCommand({ reverse: false, ignoreCase: false, unique: false, numeric: true }),
     );
     exParseTest(
       ':sort nu',
-      new SortCommand({ reverse: false, ignoreCase: false, unique: true, numeric: true })
+      new SortCommand({ reverse: false, ignoreCase: false, unique: true, numeric: true }),
     );
 
     exParseTest(
       ':sort!',
-      new SortCommand({ reverse: true, ignoreCase: false, unique: false, numeric: false })
+      new SortCommand({ reverse: true, ignoreCase: false, unique: false, numeric: false }),
     );
     exParseTest(
       ':sort! i',
-      new SortCommand({ reverse: true, ignoreCase: true, unique: false, numeric: false })
+      new SortCommand({ reverse: true, ignoreCase: true, unique: false, numeric: false }),
     );
     exParseTest(
       ':sort! u',
-      new SortCommand({ reverse: true, ignoreCase: false, unique: true, numeric: false })
+      new SortCommand({ reverse: true, ignoreCase: false, unique: true, numeric: false }),
     );
     exParseTest(
       ':sort! iu',
-      new SortCommand({ reverse: true, ignoreCase: true, unique: true, numeric: false })
+      new SortCommand({ reverse: true, ignoreCase: true, unique: true, numeric: false }),
     );
     exParseTest(
       ':sort! ui',
-      new SortCommand({ reverse: true, ignoreCase: true, unique: true, numeric: false })
+      new SortCommand({ reverse: true, ignoreCase: true, unique: true, numeric: false }),
     );
     exParseTest(
       ':sort! n',
-      new SortCommand({ reverse: true, ignoreCase: false, unique: false, numeric: true })
+      new SortCommand({ reverse: true, ignoreCase: false, unique: false, numeric: true }),
     );
     exParseTest(
       ':sort! nu',
-      new SortCommand({ reverse: true, ignoreCase: false, unique: true, numeric: true })
+      new SortCommand({ reverse: true, ignoreCase: false, unique: true, numeric: true }),
     );
 
     // TODO
@@ -458,7 +595,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
-      })
+      }),
     );
     exParseTest(
       ':s/a/b/g 3',
@@ -467,7 +604,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: 3,
-      })
+      }),
     );
     exParseTest(
       ':s/a/b/g3',
@@ -476,7 +613,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: 3,
-      })
+      }),
     );
     exParseTest(
       ':s/a/b/3',
@@ -485,7 +622,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: 3,
-      })
+      }),
     );
     // Can use weird delimiter
     exParseTest(
@@ -495,7 +632,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: { replaceAll: true },
         count: undefined,
-      })
+      }),
     );
     // Can escape delimiter
     exParseTest(
@@ -505,7 +642,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
-      })
+      }),
     );
     // Can use pattern escapes
     exParseTest(
@@ -515,7 +652,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: 'b' }]),
         flags: {},
         count: undefined,
-      })
+      }),
     );
     // Can escape replacement
     exParseTest(
@@ -525,7 +662,7 @@ suite('Ex command parsing', () => {
         replace: new ReplaceString([{ type: 'string', value: '\b' }]),
         flags: {},
         count: undefined,
-      })
+      }),
     );
 
     // TODO
@@ -534,31 +671,31 @@ suite('Ex command parsing', () => {
   suite(':tabm[ove]', () => {
     exParseTest(
       ':tabm',
-      new TabCommand({ type: TabCommandType.Move, count: undefined, direction: undefined })
+      new TabCommand({ type: TabCommandType.Move, count: undefined, direction: undefined }),
     );
     exParseTest(
       ':tabm 0',
-      new TabCommand({ type: TabCommandType.Move, count: 0, direction: undefined })
+      new TabCommand({ type: TabCommandType.Move, count: 0, direction: undefined }),
     );
     exParseTest(
       ':tabm 10',
-      new TabCommand({ type: TabCommandType.Move, count: 10, direction: undefined })
+      new TabCommand({ type: TabCommandType.Move, count: 10, direction: undefined }),
     );
     exParseTest(
       ':tabm +',
-      new TabCommand({ type: TabCommandType.Move, count: undefined, direction: 'right' })
+      new TabCommand({ type: TabCommandType.Move, count: undefined, direction: 'right' }),
     );
     exParseTest(
       ':tabm +10',
-      new TabCommand({ type: TabCommandType.Move, count: 10, direction: 'right' })
+      new TabCommand({ type: TabCommandType.Move, count: 10, direction: 'right' }),
     );
     exParseTest(
       ':tabm -',
-      new TabCommand({ type: TabCommandType.Move, count: undefined, direction: 'left' })
+      new TabCommand({ type: TabCommandType.Move, count: undefined, direction: 'left' }),
     );
     exParseTest(
       ':tabm -10',
-      new TabCommand({ type: TabCommandType.Move, count: 10, direction: 'left' })
+      new TabCommand({ type: TabCommandType.Move, count: 10, direction: 'left' }),
     );
 
     // TODO: these should throw E474; not clear that's the parser's job though
@@ -576,16 +713,38 @@ suite('Ex command parsing', () => {
   suite(':tabo[nly]', () => {
     exParseTest(
       ':tabonly',
-      new TabCommand({ type: TabCommandType.Only, bang: false, count: undefined })
+      new TabCommand({ type: TabCommandType.Only, bang: false, count: undefined }),
     );
     exParseTest(
       ':tabonly!',
-      new TabCommand({ type: TabCommandType.Only, bang: true, count: undefined })
+      new TabCommand({ type: TabCommandType.Only, bang: true, count: undefined }),
     );
     exParseTest(':tabonly5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
     exParseTest(':tabonly!5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
     exParseTest(':tabonly 5', new TabCommand({ type: TabCommandType.Only, bang: false, count: 5 }));
     exParseTest(':tabonly! 5', new TabCommand({ type: TabCommandType.Only, bang: true, count: 5 }));
+  });
+
+  suite(':vim[grep]', () => {
+    exParseTest(
+      ':vimgrep t*st foo.txt',
+      new GrepCommand({
+        // It expects pattern.closed to be false (check Pattern.parser), so unless there's a delimiter in the pattern, it will fail the test
+        pattern: Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }).tryParse(
+          't*st ',
+        ),
+        files: ['foo.txt'],
+      }),
+    );
+    exParseTest(
+      ':vimgrep t*st foo.txt bar.txt baz.txt',
+      new GrepCommand({
+        pattern: Pattern.parser({ direction: SearchDirection.Backward, delimiter: ' ' }).tryParse(
+          't*st ',
+        ),
+        files: ['foo.txt', 'bar.txt', 'baz.txt'],
+      }),
+    );
   });
 
   suite(':y[ank]', () => {
@@ -601,11 +760,11 @@ suite('Ex command parsing', () => {
 
     exParseTest(
       ':w ++bin',
-      new WriteCommand({ bang: false, opt: [['bin', undefined]], bgWrite: true })
+      new WriteCommand({ bang: false, opt: [['bin', undefined]], bgWrite: true }),
     );
     exParseTest(
       ':w ++enc=foo',
-      new WriteCommand({ bang: false, opt: [['enc', 'foo']], bgWrite: true })
+      new WriteCommand({ bang: false, opt: [['enc', 'foo']], bgWrite: true }),
     );
     exParseTest(
       ':w ++bin ++enc=foo',
@@ -616,12 +775,12 @@ suite('Ex command parsing', () => {
           ['enc', 'foo'],
         ],
         bgWrite: true,
-      })
+      }),
     );
 
     exParseTest(
       ':w ++enc=foo blah.txt',
-      new WriteCommand({ bang: false, opt: [['enc', 'foo']], file: 'blah.txt', bgWrite: true })
+      new WriteCommand({ bang: false, opt: [['enc', 'foo']], file: 'blah.txt', bgWrite: true }),
     );
 
     exParseTest(':w !foo', new WriteCommand({ bang: false, opt: [], cmd: 'foo', bgWrite: true }));

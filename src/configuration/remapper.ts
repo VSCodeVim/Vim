@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
-import { IKeyRemapping } from './iconfiguration';
-import { Logger } from '../util/logger';
-import { ModeHandler } from '../mode/modeHandler';
-import { Mode } from '../mode/mode';
 import { configuration } from '../configuration/configuration';
+import { ErrorCode, ForceStopRemappingError, VimError } from '../error';
+import { Mode } from '../mode/mode';
+import { ModeHandler } from '../mode/modeHandler';
 import { StatusBar } from '../statusBar';
-import { VimError, ErrorCode, ForceStopRemappingError } from '../error';
+import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
 import { exCommandParser } from '../vimscript/exCommandParser';
+import { IKeyRemapping } from './iconfiguration';
 
 interface IRemapper {
   /**
@@ -111,7 +111,7 @@ export class Remapper implements IRemapper {
 
     const userDefinedRemappings = configuration[this.configKey] as Map<string, IKeyRemapping>;
 
-    if (keys[keys.length - 1] === SpecialKeys.TimeoutFinished) {
+    if (keys.at(-1) === SpecialKeys.TimeoutFinished) {
       // Timeout finished. Don't let an ambiguous or potential remap start another timeout again
       keys = keys.slice(0, keys.length - 1);
       allowBufferingKeys = false;
@@ -124,7 +124,7 @@ export class Remapper implements IRemapper {
     Logger.trace(
       `trying to find matching remap. keys=${keys}. mode=${
         Mode[vimState.currentMode]
-      }. keybindings=${this.configKey}.`
+      }. keybindings=${this.configKey}.`,
     );
 
     let remapping: IKeyRemapping | undefined = this.findMatchingRemap(userDefinedRemappings, keys);
@@ -206,11 +206,11 @@ export class Remapper implements IRemapper {
           keys.push(SpecialKeys.TimeoutFinished); // include the '<TimeoutFinished>' key
 
           Logger.trace(
-            `${this.configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`
+            `${this.configKey}. timeout finished, handling timed out buffer keys without allowing a new timeout.`,
           );
         }
         Logger.trace(
-          `${this.configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`
+          `${this.configKey}. potential remap broken. resending keys without allowing a potential remap on first key. keys=${keys}`,
         );
         this.hasPotentialRemap = false;
         vimState.recordedState.allowPotentialRemapOnFirstKey = false;
@@ -229,7 +229,7 @@ export class Remapper implements IRemapper {
           } catch (e) {
             if (e instanceof ForceStopRemappingError) {
               Logger.trace(
-                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`,
               );
             }
           } finally {
@@ -266,12 +266,12 @@ export class Remapper implements IRemapper {
         this.hasAmbiguousRemap = remapping;
 
         Logger.trace(
-          `${this.configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`
+          `${this.configKey}. ambiguous match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. waiting for other key or timeout to finish.`,
         );
       } else {
         this.hasPotentialRemap = true;
         Logger.trace(
-          `${this.configKey}. potential remap found. waiting for other key or timeout to finish.`
+          `${this.configKey}. potential remap found. waiting for other key or timeout to finish.`,
         );
       }
 
@@ -280,7 +280,7 @@ export class Remapper implements IRemapper {
 
       // Create Timeout
       vimState.recordedState.bufferedKeysTimeoutObj = setTimeout(() => {
-        modeHandler.handleKeyEvent(SpecialKeys.TimeoutFinished);
+        void modeHandler.handleKeyEvent(SpecialKeys.TimeoutFinished);
       }, configuration.timeout);
       return true;
     }
@@ -333,7 +333,7 @@ export class Remapper implements IRemapper {
       remapState.mapDepth++;
 
       Logger.trace(
-        `${this.configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${remapState.mapDepth}.`
+        `${this.configKey}. match found. before=${remapping.before}. after=${remapping.after}. command=${remapping.commands}. remainingKeys=${remainingKeys}. mapDepth=${remapState.mapDepth}.`,
       );
 
       let remapFailed = false;
@@ -377,12 +377,12 @@ export class Remapper implements IRemapper {
           }
 
           Logger.trace(
-            `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+            `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`,
           );
         } else {
           // If some other error happens during the remapping handling it should stop the remap and rethrow
           Logger.trace(
-            `${this.configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`
+            `${this.configKey}. error found in the middle of remapping, ignoring the rest of the remap. error: ${e}`,
           );
           throw e;
         }
@@ -422,7 +422,7 @@ export class Remapper implements IRemapper {
             // If there was a performing remap that finished waiting for timeout then only the remaining keys
             // that are not part of that remap were typed by the user.
             let specialKey: string | undefined = '';
-            if (remainingKeys[remainingKeys.length - 1] === SpecialKeys.TimeoutFinished) {
+            if (remainingKeys.at(-1) === SpecialKeys.TimeoutFinished) {
               specialKey = remainingKeys.pop();
             }
             const lastRemap = remapState.wasPerformingRemapThatFinishedWaitingForTimeout.after!;
@@ -440,7 +440,8 @@ export class Remapper implements IRemapper {
               await modeHandler.handleMultipleKeyEvents(remainingKeys);
             } catch (e) {
               Logger.trace(
-                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                `${this.configKey}. Stopped the remapping in the middle, ignoring the rest. Reason: ${e.message}`,
               );
             } finally {
               remapState.isCurrentlyPerformingRecursiveRemapping = false;
@@ -466,7 +467,7 @@ export class Remapper implements IRemapper {
   private async handleRemapping(
     remapping: IKeyRemapping,
     modeHandler: ModeHandler,
-    skipFirstCharacter: boolean
+    skipFirstCharacter: boolean,
   ) {
     const { vimState, remapState } = modeHandler;
 
@@ -496,10 +497,10 @@ export class Remapper implements IRemapper {
           } else {
             commandString = command.command;
             commandArgs = Array.isArray(command.args)
-              ? command.args
+              ? (command.args as string[])
               : command.args
-              ? [command.args]
-              : [];
+                ? [command.args]
+                : [];
           }
 
           if (commandString.slice(0, 1) === ':') {
@@ -515,7 +516,7 @@ export class Remapper implements IRemapper {
             } else {
               throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandString);
             }
-            await modeHandler.updateView();
+            modeHandler.updateView();
           } else {
             await vscode.commands.executeCommand(commandString, ...commandArgs);
           }
@@ -531,7 +532,7 @@ export class Remapper implements IRemapper {
 
   protected findMatchingRemap(
     userDefinedRemappings: Map<string, IKeyRemapping>,
-    inputtedKeys: string[]
+    inputtedKeys: string[],
   ): IKeyRemapping | undefined {
     if (userDefinedRemappings.size === 0) {
       return undefined;
@@ -563,7 +564,7 @@ export class Remapper implements IRemapper {
    * @param remappings
    */
   protected static getRemappedKeysLengthRange(
-    remappings: ReadonlyMap<string, IKeyRemapping>
+    remappings: ReadonlyMap<string, IKeyRemapping>,
   ): [number, number] {
     if (remappings.size === 0) {
       return [0, 0];
@@ -581,7 +582,7 @@ export class Remapper implements IRemapper {
   protected static hasPotentialRemap(
     keys: string[],
     remappings: ReadonlyMap<string, IKeyRemapping>,
-    countRemapAsPotential: boolean = false
+    countRemapAsPotential: boolean = false,
   ): boolean {
     const keysAsString = keys.join('');
     const re = /^<([^>]+)>/;

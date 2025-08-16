@@ -22,7 +22,7 @@ export class LeftCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    await this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
@@ -38,9 +38,9 @@ export class LeftCommand extends ExCommand {
       lines
         .map(
           (line) =>
-            ' '.repeat(this.args.indent) + line.text.slice(line.firstNonWhitespaceCharacterIndex)
+            ' '.repeat(this.args.indent) + line.text.slice(line.firstNonWhitespaceCharacterIndex),
         )
-        .join('\n')
+        .join('\n'),
     );
   }
 }
@@ -61,7 +61,7 @@ export class RightCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    await this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
@@ -79,12 +79,12 @@ export class RightCommand extends ExCommand {
           const indent = ' '.repeat(
             Math.max(
               0,
-              this.args.width - (line.text.length - line.firstNonWhitespaceCharacterIndex)
-            )
+              this.args.width - (line.text.length - line.firstNonWhitespaceCharacterIndex),
+            ),
           );
           return indent + line.text.slice(line.firstNonWhitespaceCharacterIndex);
         })
-        .join('\n')
+        .join('\n'),
     );
   }
 }
@@ -105,7 +105,7 @@ export class CenterCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    await this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
@@ -123,12 +123,12 @@ export class CenterCommand extends ExCommand {
           const indent = ' '.repeat(
             Math.max(
               0,
-              this.args.width - (line.text.length - line.firstNonWhitespaceCharacterIndex)
-            ) / 2
+              this.args.width - (line.text.length - line.firstNonWhitespaceCharacterIndex),
+            ) / 2,
           );
           return indent + line.text.slice(line.firstNonWhitespaceCharacterIndex);
         })
-        .join('\n')
+        .join('\n'),
     );
   }
 }

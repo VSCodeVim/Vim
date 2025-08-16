@@ -1,4 +1,4 @@
-import { Range, DecorationOptions } from 'vscode';
+import { DecorationOptions, Range, TextDocument, window } from 'vscode';
 
 /**
  * Alias for the types of arrays that can be passed to a TextEditor's setDecorations method
@@ -23,8 +23,8 @@ export type SearchDecorations = {
  * returned object will specify an after element with the width of a single
  * character.
  */
-export function ensureVisible(range: Range): DecorationOptions {
-  return (range.isEmpty || range.end.isLineBeginning()) && range.start.isLineEnd()
+export function ensureVisible(range: Range, document: TextDocument): DecorationOptions {
+  return (range.isEmpty || range.end.isLineBeginning()) && range.start.isLineEnd(document)
     ? {
         // range is at EOL, possibly containing EOL char(s).
         range: range.with(undefined, range.start),
@@ -36,8 +36,8 @@ export function ensureVisible(range: Range): DecorationOptions {
         },
       }
     : range.isEmpty
-    ? { range: range.with(undefined, range.end.translate(0, 1)) } // extend range one character right
-    : { range };
+      ? { range: range.with(undefined, range.end.translate(0, 1)) } // extend range one character right
+      : { range };
 }
 
 /**
@@ -46,7 +46,7 @@ export function ensureVisible(range: Range): DecorationOptions {
 export function formatDecorationText(
   text: string,
   tabsize: number,
-  newlineReplacement: string | ((substring: string, ...args: any[]) => string) = '\u23ce' // "⏎" RETURN SYMBOL
+  newlineReplacement: string | ((substring: string, ...args: any[]) => string) = '\u23ce', // "⏎" RETURN SYMBOL
 ) {
   // surround with zero-width space to prevent trimming
   return `\u200b${text
@@ -54,7 +54,7 @@ export function formatDecorationText(
     .replace(/ /g, '\u00a0') // " " NO-BREAK SPACE
     .replace(/\t/g, '\u00a0'.repeat(tabsize))
     // Decorations can't change the apparent # of lines in the editor, so we must settle for a single-line version of our text
-    .replace(/\r\n|[\r\n]/g, newlineReplacement as any)}\u200b`;
+    .replace(/\r\n|[\r\n]/g, newlineReplacement as string)}\u200b`;
 }
 
 /**
@@ -62,13 +62,16 @@ export function formatDecorationText(
  */
 export function getDecorationsForSearchMatchRanges(
   ranges: Range[],
-  currentMatchIndex?: number
+  document: TextDocument,
+  currentMatchIndex?: number,
 ): SearchDecorations {
   const searchHighlight: DecorationOptions[] = [];
   const searchMatch: DecorationOptions[] = [];
 
   for (let i = 0; i < ranges.length; i++) {
-    (i === currentMatchIndex ? searchMatch : searchHighlight).push(ensureVisible(ranges[i]));
+    (i === currentMatchIndex ? searchMatch : searchHighlight).push(
+      ensureVisible(ranges[i], document),
+    );
   }
 
   return { searchHighlight, searchMatch };

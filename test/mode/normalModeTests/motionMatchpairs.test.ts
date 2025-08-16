@@ -1,15 +1,10 @@
 import { newTest } from '../../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../../testUtils';
-import { Configuration } from '../../testConfiguration';
+import { setupWorkspace } from './../../testUtils';
 
 suite('matchpair empty', () => {
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.matchpairs = '';
-    await setupWorkspace(configuration);
+    await setupWorkspace({ config: { matchpairs: '' } });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: "basic motion doesn't work",
@@ -21,11 +16,8 @@ suite('matchpair empty', () => {
 
 suite('matchpairs enabled', () => {
   suiteSetup(async () => {
-    const configuration = new Configuration();
-    configuration.matchpairs = '<:>';
-    await setupWorkspace(configuration);
+    await setupWorkspace({ config: { matchpairs: '<:>' } });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   suite('Tests for % with matchpairs', () => {
     newTest({

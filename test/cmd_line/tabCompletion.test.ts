@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
+import * as os from 'os';
 import { join, sep, basename } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
@@ -99,7 +100,7 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion directory with / at the end', async () => {
-    const dirPath = await t.createRandomDir();
+    const dirPath = await t.createDir();
 
     try {
       const baseCmd = `:e ${dirPath.slice(0, -1)}`.split('');
@@ -110,7 +111,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab,
         `:e ${dirPath}${sep}|`,
-        'Cannot complete with / at the end'
+        'Cannot complete with / at the end',
       );
     } finally {
       await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
@@ -120,7 +121,7 @@ suite('cmd_line tabComplete', () => {
   test('command line file navigate tab completion', async () => {
     // tmpDir --- inner0
     //         |- inner1 --- inner10 --- inner100
-    const tmpDir = await t.createRandomDir();
+    const tmpDir = await t.createDir();
     const inner0 = await t.createDir(join(tmpDir, 'inner0'));
     const inner1 = await t.createDir(join(tmpDir, 'inner1'));
     const inner10 = await t.createDir(join(inner1, 'inner10'));
@@ -184,15 +185,15 @@ suite('cmd_line tabComplete', () => {
     assert.strictEqual(
       statusBarAfterTab,
       ':edit|it',
-      'Failed to complete content left of the cursor'
+      'Failed to complete content left of the cursor',
     );
 
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
   test('command line file tab completion with .', async () => {
-    const dirPath = await t.createRandomDir();
-    const testFilePath = await t.createEmptyFile(join(dirPath, '.testfile'));
+    const dirPath = await t.createDir();
+    const testFilePath = await t.createFile({ fsPath: join(dirPath, '.testfile') });
 
     try {
       // There should only be one auto-completion
@@ -204,7 +205,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab.trim(),
         `:e ${testFilePath}|`,
-        'Cannot complete to .testfile'
+        'Cannot complete to .testfile',
       );
       // Second tab - resolve to .testfile
       // ./ and ../ because . is not explicitly typed in.
@@ -221,7 +222,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab,
         `:e ${dirPath}${sep}..${sep}|`,
-        'Cannot complete to ../'
+        'Cannot complete to ../',
       );
       // Second tab - resolve to ./
       await modeHandler.handleKeyEvent('<tab>');
@@ -238,12 +239,15 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion with space in file path', async () => {
-    // Create an random file in temp folder with a space in the file name
-    const spacedFilePath = await t.createRandomFile('', 'vscode-vim completion-test');
+    // Create a random file in temp folder with a space in the file name
+    const prefix = t.rndName();
+    const spacedFilePath = await t.createFile({
+      fsPath: join(os.tmpdir(), prefix + 'vscode-vim completion-test'),
+    });
     try {
-      // Get the base name of the path which is <random name>vscode-vim completion-test
+      // Get the base name of the path which is '<prefix>vscode-vim completion-test'
       const baseName = basename(spacedFilePath);
-      // Get the base name exclude the space which is <random name>vscode-vim
+      // Get the base name exclude the space which is '<prefix>vscode-vim'
       const baseNameExcludeSpace = baseName.substring(0, baseName.lastIndexOf(' '));
       const fullPathExcludeSpace = spacedFilePath.substring(0, spacedFilePath.lastIndexOf(' '));
       const failMsg = 'Cannot complete to a path with space';
@@ -277,8 +281,8 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion case-sensitivity platform dependent', async () => {
-    const dirPath = await t.createRandomDir();
-    const filePath = await t.createEmptyFile(join(dirPath, 'testfile'));
+    const dirPath = await t.createDir();
+    const filePath = await t.createFile({ fsPath: join(dirPath, 'testfile') });
     const fileAsTyped = join(dirPath, 'TESTFIL');
     const cmd = `:e ${fileAsTyped}`.split('');
 
@@ -291,7 +295,7 @@ suite('cmd_line tabComplete', () => {
         assert.strictEqual(
           statusBarAfterTab.toLowerCase(),
           `:e ${filePath}|`.toLowerCase(),
-          'Cannot complete path case-insensitive on windows'
+          'Cannot complete path case-insensitive on windows',
         );
       } else {
         await modeHandler.handleMultipleKeyEvents(cmd);
@@ -302,7 +306,7 @@ suite('cmd_line tabComplete', () => {
         assert.strictEqual(
           statusBarBeforeTab,
           statusBarAfterTab,
-          'Is case-insensitive on non-windows'
+          'Is case-insensitive on non-windows',
         );
       }
     } finally {

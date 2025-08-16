@@ -3,7 +3,7 @@ import { getAndUpdateModeHandler } from '../../extensionBase';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('Search text objects (gn and gN)', () => {
   let modeHandler: ModeHandler;
@@ -12,7 +12,6 @@ suite('Search text objects (gn and gN)', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-  teardown(cleanUpWorkspace);
 
   suite('can handle gn', () => {
     test(`gn selects the next match text`, async () => {
@@ -21,7 +20,7 @@ suite('Search text objects (gn and gN)', () => {
       await modeHandler.handleMultipleKeyEvents('gg'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
 
       const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
@@ -36,7 +35,7 @@ suite('Search text objects (gn and gN)', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
 
       const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);
@@ -67,7 +66,7 @@ suite('Search text objects (gn and gN)', () => {
       await modeHandler.handleMultipleKeyEvents('2ggel'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'n']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
 
       const selection = modeHandler.vimState.editor.selection;
 
@@ -201,7 +200,7 @@ suite('Search text objects (gn and gN)', () => {
       await modeHandler.handleMultipleKeyEvents(['G']);
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
 
       const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
@@ -216,7 +215,7 @@ suite('Search text objects (gn and gN)', () => {
       await modeHandler.handleMultipleKeyEvents(jumpCmd.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
 
       const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 'hi '.length);
@@ -247,7 +246,7 @@ suite('Search text objects (gn and gN)', () => {
       await modeHandler.handleMultipleKeyEvents('3gg2l'.split(''));
       await modeHandler.handleMultipleKeyEvents(['g', 'N']);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Visual);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
 
       const selection = modeHandler.vimState.editor.selection;
       assert.strictEqual(selection.start.character, 0);

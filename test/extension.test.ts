@@ -16,7 +16,7 @@ suite('package.json', () => {
       const found = registeredCommands.includes(keybinding.command);
       assert.ok(
         found,
-        'Missing handler for key=' + keybinding.key + '. Expected handler=' + keybinding.command
+        'Missing handler for key=' + keybinding.key + '. Expected handler=' + keybinding.command,
       );
     }
   });

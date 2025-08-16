@@ -27,7 +27,7 @@ suite('ModeHandler', () => {
       assert.notStrictEqual(modeHandler1, undefined);
       assert.deepStrictEqual(
         new Set(ModeHandlerMap.entries()),
-        new Set([[document1.uri, modeHandler1]])
+        new Set([[document1.uri, modeHandler1]]),
       );
     }
 
@@ -45,7 +45,7 @@ suite('ModeHandler', () => {
         new Set([
           [document1.uri, modeHandler1],
           [document2.uri, modeHandler2],
-        ])
+        ]),
       );
     }
 

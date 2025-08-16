@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
 import { doesFileExist } from 'platform/fs';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import untildify = require('untildify');
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -14,6 +16,7 @@ import {
   fileOptParser,
 } from '../../vimscript/parserUtils';
 import { optWhitespace, regexp, seq } from 'parsimmon';
+import { Position } from 'vscode';
 
 export enum FilePosition {
   NewWindowVerticalSplit,
@@ -52,7 +55,7 @@ type LegacyArgs = {
 };
 function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
   if (args.name === 'edit') {
-    return { file: args.file, bang: args.bang, createFileIfNotExists: true };
+    return { file: args.file, bang: args.bang, cmd: args.cmd, createFileIfNotExists: true };
   } else if (args.name === 'enew') {
     return { bang: args.bang, createFileIfNotExists: true };
   } else if (args.name === 'new') {
@@ -68,9 +71,19 @@ function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
       createFileIfNotExists: true,
     };
   } else if (args.name === 'split') {
-    return { file: args.file, position: FilePosition.NewWindowHorizontalSplit };
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowHorizontalSplit,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
+    };
   } else if (args.name === 'vsplit') {
-    return { file: args.file, position: FilePosition.NewWindowVerticalSplit };
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowVerticalSplit,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
+    };
   } else {
     throw new Error(`Unexpected FileCommand.arguments.name: ${args.name}`);
   }
@@ -84,28 +97,28 @@ export class FileCommand extends ExCommand {
       bangParser,
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([bang, opt, cmd, file]) => new FileCommand({ name: 'edit', bang, opt, cmd, file })),
     enew: bangParser.map((bang) => new FileCommand({ name: 'enew', bang })),
     new: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'new', opt, cmd, file })),
     split: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'split', opt, cmd, file })),
     vnew: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'vnew', opt, cmd, file })),
     vsplit: seq(
       optWhitespace.then(fileOptParser).fallback([]),
       optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined)
+      optWhitespace.then(fileNameParser).fallback(undefined),
     ).map(([opt, cmd, file]) => new FileCommand({ name: 'vsplit', opt, cmd, file })),
   };
 
@@ -221,19 +234,20 @@ export class FileCommand extends ExCommand {
     }
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    vscode.window.showTextDocument(doc);
 
     const lineNumber =
       args.cmd?.type === 'line_number'
         ? args.cmd.line
         : args.cmd?.type === 'last_line'
-        ? vscode.window.activeTextEditor!.document.lineCount - 1
-        : undefined;
+          ? doc.lineCount - 1
+          : undefined;
+    const options: vscode.TextDocumentShowOptions = {};
     if (lineNumber !== undefined && lineNumber >= 0) {
-      vscode.window.activeTextEditor!.revealRange(
-        new vscode.Range(new vscode.Position(lineNumber, 0), new vscode.Position(lineNumber, 0))
-      );
+      const pos = new Position(lineNumber, 0);
+      options.selection = new vscode.Range(pos, pos);
     }
+    await vscode.window.showTextDocument(doc, options);
+
     await hidePreviousEditor();
   }
 }

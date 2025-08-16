@@ -62,7 +62,7 @@ suite('Remapping Validator', () => {
 
     assert.strictEqual(
       configuration.insertModeKeyBindingsMap.get('jj'),
-      configuration.insertModeKeyBindings[0]
+      configuration.insertModeKeyBindings[0],
     );
   });
 

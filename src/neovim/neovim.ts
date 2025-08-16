@@ -1,18 +1,17 @@
+import { ChildProcess, spawn } from 'child_process';
+import { exists } from 'fs';
+import { Neovim } from 'neovim/lib/api/Neovim';
+import { attach } from 'neovim/lib/attach';
+import { dirname } from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
-import { Logger } from '../util/logger';
-import { sorted } from './../common/motion/position';
+import { Position, TextDocument } from 'vscode';
+import { configuration } from '../configuration/configuration';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
+import { Logger } from '../util/logger';
+import { sorted } from './../common/motion/position';
 import { VimState } from './../state/vimState';
-import { configuration } from '../configuration/configuration';
-import { dirname } from 'path';
-import { exists } from 'fs';
-import { spawn, ChildProcess } from 'child_process';
-import { attach } from 'neovim/lib/attach';
-import { Neovim } from 'neovim/lib/api/Neovim';
-import { Position } from 'vscode';
-import { TextDocument } from 'vscode';
 
 export class NeovimWrapper implements vscode.Disposable {
   private process?: ChildProcess;
@@ -21,7 +20,7 @@ export class NeovimWrapper implements vscode.Disposable {
 
   async run(
     vimState: VimState,
-    command: string
+    command: string,
   ): Promise<{ statusBarText: string; error: boolean }> {
     if (!this.nvim) {
       this.nvim = await this.startNeovim(vimState.document);
@@ -42,6 +41,7 @@ export class NeovimWrapper implements vscode.Disposable {
         await Promise.race([nvimAttach, timeout]);
       } catch (e) {
         configuration.enableNeovim = false;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         throw new Error(`Failed to attach to neovim process. ${e.message}`);
       }
 
@@ -137,7 +137,7 @@ export class NeovimWrapper implements vscode.Disposable {
 
     const [rangeStart, rangeEnd] = sorted(
       vimState.cursorStartPosition,
-      vimState.cursorStopPosition
+      vimState.cursorStopPosition,
     );
     await this.nvim.callFunction('setpos', [
       '.',
@@ -189,18 +189,18 @@ export class NeovimWrapper implements vscode.Disposable {
     await TextEditor.replace(
       vimState.editor,
       new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
-      fixedLines.join('\n')
+      fixedLines.join('\n'),
     );
 
     Logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
     const [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as number[]).slice(
       1,
-      3
+      3,
     );
     vimState.editor.selection = new vscode.Selection(
       new Position(row - 1, character),
-      new Position(row - 1, character)
+      new Position(row - 1, character),
     );
 
     if (configuration.expandtab) {

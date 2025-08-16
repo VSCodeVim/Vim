@@ -59,7 +59,7 @@ class MoveCamelCaseWordEnd extends CamelCaseBaseMovement {
 
   public override async execActionForOperator(
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<Position> {
     const end = position.nextWordEnd(vimState.document, { wordType: WordType.CamelCase });
 

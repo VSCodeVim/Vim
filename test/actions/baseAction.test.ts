@@ -2,10 +2,10 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { BaseAction } from '../../src/actions/base';
-import { VimState } from '../../src/state/vimState';
-import { setupWorkspace, cleanUpWorkspace } from './../testUtils';
-import { Mode } from '../../src/mode/mode';
 import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
+import { Mode } from '../../src/mode/mode';
+import { VimState } from '../../src/state/vimState';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
@@ -55,13 +55,11 @@ suite('base action', () => {
       [['<Esc>'], ['<Esc>'], true],
     ];
 
-    for (const test in testCases) {
-      if (testCases.hasOwnProperty(test)) {
-        const [left, right, expected] = testCases[test];
+    for (const test of testCases) {
+      const [left, right, expected] = test;
 
-        const actual = BaseAction.CompareKeypressSequence(left, right);
-        assert.strictEqual(actual, expected, `${left}. ${right}.`);
-      }
+      const actual = BaseAction.CompareKeypressSequence(left, right);
+      assert.strictEqual(actual, expected, `${left}. ${right}.`);
     }
   });
 

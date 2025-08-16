@@ -63,7 +63,7 @@ export class NumericString {
   // Return parse result and offset of suffix
   public static parse(
     input: string,
-    targetRadix?: NumericStringRadix
+    targetRadix?: NumericStringRadix,
   ): { num: NumericString; suffixOffset: number } | undefined {
     const filteredMatchings =
       targetRadix !== undefined
@@ -149,7 +149,7 @@ export class NumericString {
     prefix: string,
     suffix: string,
     negative: boolean,
-    isCapital: boolean
+    isCapital: boolean,
   ) {
     this.value = value;
     this.radix = radix;
@@ -162,7 +162,7 @@ export class NumericString {
 
   public toString(): string {
     // For decreased octal and hexadecimal
-    if (this.radix !== 10) {
+    if (this.radix !== NumericStringRadix.Dec) {
       const max = 0xffffffff;
       while (this.value < 0) {
         this.value = max + this.value + 1;
@@ -176,7 +176,7 @@ export class NumericString {
       num = num.toUpperCase();
     }
     // numLength of decimal *should not* be preserved.
-    if (this.radix !== 10) {
+    if (this.radix !== NumericStringRadix.Dec) {
       const diff = this.numLength - num.length;
       if (diff > 0) {
         // Preserve num length if it's narrower.

@@ -1,13 +1,12 @@
 import * as assert from 'assert';
-import { Configuration } from '../testConfiguration';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher';
 import { Mode } from '../../src/mode/mode';
+import { setupWorkspace } from '../testUtils';
 
 suite('Input method plugin', () => {
   let savedCmd = '';
 
-  function fakeExecuteChinese(cmd: string): Promise<string> {
+  const fakeExecuteChinese = (cmd: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
       if (cmd === 'im-select') {
         resolve('chinese');
@@ -16,9 +15,9 @@ suite('Input method plugin', () => {
         resolve('');
       }
     });
-  }
+  };
 
-  function fakeExecuteDefault(cmd: string): Promise<string> {
+  const fakeExecuteDefault = (cmd: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
       if (cmd === 'im-select') {
         resolve('default');
@@ -27,18 +26,20 @@ suite('Input method plugin', () => {
         resolve('');
       }
     });
-  }
+  };
 
   setup(async () => {
-    const configuration = new Configuration();
-    configuration.autoSwitchInputMethod.enable = true;
-    configuration.autoSwitchInputMethod.defaultIM = 'default';
-    configuration.autoSwitchInputMethod.obtainIMCmd = 'im-select';
-    configuration.autoSwitchInputMethod.switchIMCmd = 'im-select {im}';
-    await setupWorkspace(configuration);
+    await setupWorkspace({
+      config: {
+        autoSwitchInputMethod: {
+          enable: true,
+          defaultIM: 'default',
+          obtainIMCmd: 'im-select',
+          switchIMCmd: 'im-select {im}',
+        },
+      },
+    });
   });
-
-  teardown(cleanUpWorkspace);
 
   test('use default im in insert mode', async () => {
     savedCmd = '';

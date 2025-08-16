@@ -114,7 +114,9 @@ export class JumpTracker {
     if (jump.document) {
       try {
         // Open jump file from stored editor
-        await vscode.window.showTextDocument(jump.document);
+        await vscode.window.showTextDocument(jump.document, {
+          selection: new vscode.Range(jump.position, jump.position),
+        });
       } catch (e: unknown) {
         // This can happen when the document we'd like to jump to is weird (like a search editor) or has been deleted
         throw VimError.fromCode(ErrorCode.FileNoLongerAvailable);
@@ -132,11 +134,13 @@ export class JumpTracker {
     } else {
       // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
-        (e) => e.document.fileName === jump.fileName
+        (e) => e.document.fileName === jump.fileName,
       )[0];
 
       if (editor) {
-        await vscode.window.showTextDocument(editor.document, jump.position.character, false);
+        await vscode.window.showTextDocument(editor.document, {
+          selection: new vscode.Range(jump.position, jump.position),
+        });
       }
     }
   }
@@ -158,7 +162,7 @@ export class JumpTracker {
   private async jumpThroughHistory(
     getJump: (j: Jump) => Jump,
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<void> {
     let jump = new Jump({
       document: vimState.document,
@@ -326,13 +330,14 @@ export class JumpTracker {
       new Jump({
         document: jump.document,
         position: newPosition,
-      })
+      }),
     );
   }
 
   private clearJumpsOnSameLine(jump: Jump): void {
     this._jumps = this._jumps.filter(
-      (j) => j === jump || !(j.fileName === jump.fileName && j.position.line === jump.position.line)
+      (j) =>
+        j === jump || !(j.fileName === jump.fileName && j.position.line === jump.position.line),
     );
   }
 

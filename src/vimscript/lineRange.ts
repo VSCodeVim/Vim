@@ -1,3 +1,4 @@
+// eslint-disable-next-line id-denylist
 import { alt, any, optWhitespace, Parser, seq, string, succeed } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { ErrorCode, VimError } from '../error';
@@ -61,7 +62,7 @@ type LineSpecifier =
       type: 'last_substitute_pattern_next';
     };
 
-const lineSpecifierParser: Parser<LineSpecifier> = alt(
+const lineSpecifierParser: Parser<LineSpecifier> = alt<LineSpecifier>(
   numberParser.map((num) => {
     return { type: 'number', num };
   }),
@@ -92,7 +93,7 @@ const lineSpecifierParser: Parser<LineSpecifier> = alt(
     }),
   string('\\/').result({ type: 'last_search_pattern_next' }),
   string('\\?').result({ type: 'last_search_pattern_prev' }),
-  string('\\&').result({ type: 'last_substitute_pattern_next' })
+  string('\\&').result({ type: 'last_substitute_pattern_next' }),
 );
 
 const offsetParser: Parser<number> = alt(
@@ -100,7 +101,7 @@ const offsetParser: Parser<number> = alt(
   string('-')
     .then(numberParser.fallback(1))
     .map((num) => -num),
-  numberParser
+  numberParser,
 )
   .skip(optWhitespace)
   .atLeast(1)
@@ -117,7 +118,7 @@ export class Address {
 
   public static parser: Parser<Address> = alt(
     seq(lineSpecifierParser.skip(optWhitespace), offsetParser.fallback(0)),
-    seq(succeed({ type: 'current_line' as const }), offsetParser)
+    seq(succeed({ type: 'current_line' as const }), offsetParser),
   ).map(([specifier, offset]) => {
     return new Address(specifier, offset);
   });
@@ -148,20 +149,20 @@ export class Address {
           return res;
         case 'mark':
           const mark = vimState.historyTracker.getMark(this.specifier.mark);
-          if (!mark || (mark.document && mark.document !== vimState.document)) {
+          if (!mark || (mark.isUppercaseMark && mark.document !== vimState.document)) {
             throw VimError.fromCode(ErrorCode.MarkNotSet);
           }
           return mark.position.line;
         case 'pattern_next':
           const m = this.specifier.pattern.nextMatch(
             vimState.document,
-            vimState.cursorStopPosition
+            vimState.cursorStopPosition,
           );
           if (m === undefined) {
             // TODO: throw proper errors for nowrapscan
             throw VimError.fromCode(
               ErrorCode.PatternNotFound,
-              this.specifier.pattern.patternString
+              this.specifier.pattern.patternString,
             );
           } else {
             return m.start.line;
@@ -175,13 +176,13 @@ export class Address {
           const nextMatch = globalState.searchState.getNextSearchMatchPosition(
             vimState,
             vimState.cursorStopPosition,
-            SearchDirection.Forward
+            SearchDirection.Forward,
           );
           if (nextMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
             throw VimError.fromCode(
               ErrorCode.PatternNotFound,
-              globalState.searchState.searchString
+              globalState.searchState.searchString,
             );
           }
           return nextMatch.pos.line;
@@ -192,13 +193,13 @@ export class Address {
           const prevMatch = globalState.searchState.getNextSearchMatchPosition(
             vimState,
             vimState.cursorStopPosition,
-            SearchDirection.Backward
+            SearchDirection.Backward,
           );
           if (prevMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
             throw VimError.fromCode(
               ErrorCode.PatternNotFound,
-              globalState.searchState.searchString
+              globalState.searchState.searchString,
             );
           }
           return prevMatch.pos.line;
@@ -211,12 +212,12 @@ export class Address {
                 SearchDirection.Forward,
                 vimState.cursorStopPosition,
                 globalState.substituteState.searchPattern.patternString,
-                {}
+                {},
               )
             : undefined;
           const match = searchState?.getNextSearchMatchPosition(
             vimState,
-            vimState.cursorStopPosition
+            vimState.cursorStopPosition,
           );
           if (match === undefined) {
             // TODO: throw proper errors for nowrapscan
@@ -283,8 +284,8 @@ export class LineRange {
       Address.parser.skip(optWhitespace),
       seq(
         alt(string(','), string(';')).skip(optWhitespace),
-        Address.parser.fallback(undefined)
-      ).fallback(undefined)
+        Address.parser.fallback(undefined),
+      ).fallback(undefined),
     ).map(([start, sepEnd]) => {
       if (sepEnd) {
         const [sep, end] = sepEnd;
@@ -295,11 +296,11 @@ export class LineRange {
     seq(
       // without the start line
       alt(string(','), string(';')).skip(optWhitespace),
-      Address.parser.fallback(undefined)
+      Address.parser.fallback(undefined),
     ).map((sepEnd) => {
       const [sep, end] = sepEnd;
       return new LineRange(new Address({ type: 'current_line' }), sep, end);
-    })
+    }),
   );
 
   public resolve(vimState: VimState): { start: number; end: number } {
