@@ -105,7 +105,7 @@ export class RegisterCommand extends ExCommand {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
           editor.edit((editBuilder) => {
-            editBuilder.insert(editor.selection.end, content);
+            editBuilder.insert(editor.selection.active, content);
           });
         }
       }
