@@ -94,7 +94,7 @@ export class Register {
     return /^[a-zA-Z0-9:]$/.test(register);
   }
 
-  private static isBlackHoleRegister(registerName: string): boolean {
+  public static isBlackHoleRegister(registerName: string): boolean {
     return registerName === '_';
   }
 
@@ -322,6 +322,12 @@ export class Register {
     return [...Register.registers.keys()];
   }
 
+  public static getKeysSorted(): string[] {
+    return this.getKeys().sort(
+      (reg1: string, reg2: string) => this.sortIndex(reg1) - this.sortIndex(reg2),
+    );
+  }
+
   public static clearAllRegisters(): void {
     Register.registers.clear();
   }
@@ -365,6 +371,21 @@ export class Register {
       });
     } else {
       Register.registers = new Map();
+    }
+  }
+
+  private static sortIndex(register: string): number {
+    const specials = ['-', '*', '+', '.', ':', '%', '#', '/', '='];
+    if (register === '"') {
+      return 0;
+    } else if (register >= '0' && register <= '9') {
+      return 10 + parseInt(register, 10);
+    } else if (register >= 'a' && register <= 'z') {
+      return 100 + (register.charCodeAt(0) - 'a'.charCodeAt(0));
+    } else if (specials.includes(register)) {
+      return 1000 + specials.indexOf(register);
+    } else {
+      throw new Error(`Unexpected register ${register}`);
     }
   }
 }
