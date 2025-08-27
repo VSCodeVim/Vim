@@ -29,6 +29,7 @@ import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 import { GrepCommand } from '../../src/cmd_line/commands/grep';
+import { GlobalCommand } from '../../src/cmd_line/commands/global';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -787,5 +788,68 @@ suite('Ex command parsing', () => {
     exParseTest(':w !', new WriteCommand({ bang: false, opt: [], cmd: '', bgWrite: true }));
 
     // TODO
+  });
+
+  suite(':g[lobal]', () => {
+    const pattern = Pattern.parser({ direction: SearchDirection.Forward, delimiter: '/' });
+
+    exParseTest(
+      ':g/pattern/d',
+      new GlobalCommand({
+        pattern: pattern.tryParse('pattern/'),
+        command: 'd',
+        inverse: false,
+      }),
+    );
+
+    exParseTest(
+      ':g!/pattern/d',
+      new GlobalCommand({
+        pattern: pattern.tryParse('pattern/'),
+        command: 'd',
+        inverse: true,
+      }),
+    );
+
+    exParseTest(
+      ':global/pattern/s/old/new/',
+      new GlobalCommand({
+        pattern: pattern.tryParse('pattern/'),
+        command: 's/old/new/',
+        inverse: false,
+      }),
+    );
+
+    const hashPattern = Pattern.parser({ direction: SearchDirection.Forward, delimiter: '#' });
+    exParseTest(
+      ':g#pattern#d',
+      new GlobalCommand({
+        pattern: hashPattern.tryParse('pattern#'),
+        command: 'd',
+        inverse: false,
+      }),
+    );
+  });
+
+  suite(':v[global]', () => {
+    const pattern = Pattern.parser({ direction: SearchDirection.Forward, delimiter: '/' });
+
+    exParseTest(
+      ':v/pattern/d',
+      new GlobalCommand({
+        pattern: pattern.tryParse('pattern/'),
+        command: 'd',
+        inverse: true,
+      }),
+    );
+
+    exParseTest(
+      ':vglobal/pattern/d',
+      new GlobalCommand({
+        pattern: pattern.tryParse('pattern/'),
+        command: 'd',
+        inverse: true,
+      }),
+    );
   });
 });

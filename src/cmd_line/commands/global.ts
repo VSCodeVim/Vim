@@ -1,5 +1,5 @@
 // eslint-disable-next-line id-denylist
-import { Parser, string } from 'parsimmon';
+import { Parser, all, optWhitespace, regexp, seq, string } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
@@ -12,10 +12,33 @@ export interface IGlobalCommandArguments {
 }
 
 export class GlobalCommand extends ExCommand {
-  // Placeholder parser - will be implemented in task 2
-  public static readonly argParser: Parser<GlobalCommand> = string('').chain(() => {
-    throw new Error('GlobalCommand parser not implemented yet');
-  });
+  public static readonly argParser: Parser<GlobalCommand> = optWhitespace.then(
+    seq(
+      // Check for inverse flag (!)
+      string('!').fallback(''),
+      // Get the delimiter (any non-alphanumeric character)
+      regexp(/[^\w\s\\|"]{1}/),
+    ).chain(([inverse, delimiter]) =>
+      seq(
+        Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+        // Command is everything remaining (Pattern.parser consumes the delimiter)
+        all,
+      ).map(
+        ([pattern, command]) => new GlobalCommand({ pattern, command, inverse: inverse === '!' }),
+      ),
+    ),
+  );
+
+  // Parser for :v[global] commands (inverse global)
+  public static readonly vArgParser: Parser<GlobalCommand> = optWhitespace.then(
+    regexp(/[^\w\s\\|"]{1}/).chain((delimiter) =>
+      seq(
+        Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+        // Command is everything remaining (Pattern.parser consumes the delimiter)
+        all,
+      ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
+    ),
+  );
 
   private readonly arguments: IGlobalCommandArguments;
 
