@@ -13,19 +13,23 @@ export interface IGlobalCommandArguments {
 
 export class GlobalCommand extends ExCommand {
   public static readonly argParser: Parser<GlobalCommand> = optWhitespace.then(
-    seq(
-      // Check for inverse flag (!)
-      string('!').fallback(''),
-      // Get the delimiter (any non-alphanumeric character)
-      regexp(/[^\w\s\\|"]{1}/),
-    ).chain(([inverse, delimiter]) =>
+    regexp(/[^\w\s\\|"]{1}/).chain((delimiter) =>
       seq(
         Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
         // Command is everything remaining (Pattern.parser consumes the delimiter)
         all,
-      ).map(
-        ([pattern, command]) => new GlobalCommand({ pattern, command, inverse: inverse === '!' }),
-      ),
+      ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: false })),
+    ),
+  );
+
+  // Parser for :g! commands (inverse global)
+  public static readonly gInverseArgParser: Parser<GlobalCommand> = optWhitespace.then(
+    regexp(/[^\w\s\\|"]{1}/).chain((delimiter) =>
+      seq(
+        Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+        // Command is everything remaining (Pattern.parser consumes the delimiter)
+        all,
+      ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
     ),
   );
 
