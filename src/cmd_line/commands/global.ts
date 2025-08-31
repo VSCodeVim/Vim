@@ -9,6 +9,8 @@ import { exCommandParser } from '../../vimscript/exCommandParser';
 import { DeleteCommand } from './delete';
 import { MoveCommand } from './move';
 import { SubstituteCommand } from './substitute';
+import { ErrorCode, VimError } from '../../error';
+import { StatusBar } from '../../statusBar';
 
 export interface IGlobalCommandArguments {
   pattern: Pattern;
@@ -18,41 +20,68 @@ export interface IGlobalCommandArguments {
 
 export class GlobalCommand extends ExCommand {
   public static readonly argParser: Parser<GlobalCommand> = optWhitespace.then(
-    regexp(/[^\w\s\\|"]{1}/).chain((delimiter) =>
-      seq(
-        Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
-        // Command is everything remaining (Pattern.parser consumes the delimiter)
-        all,
-      ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: false })),
-    ),
+    regexp(/[^\w\s\\|"]{1}/)
+      .chain((delimiter) =>
+        seq(
+          Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+          // Command is everything remaining (Pattern.parser consumes the delimiter)
+          all,
+        ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: false })),
+      )
+      .or(
+        // Handle case where no delimiter is provided - this should be an error
+        all.map(() => {
+          throw VimError.fromCode(ErrorCode.InvalidExpression);
+        }),
+      ),
   );
 
   // Parser for :g! commands (inverse global)
   public static readonly gInverseArgParser: Parser<GlobalCommand> = optWhitespace.then(
-    regexp(/[^\w\s\\|"]{1}/).chain((delimiter) =>
-      seq(
-        Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
-        // Command is everything remaining (Pattern.parser consumes the delimiter)
-        all,
-      ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
-    ),
+    regexp(/[^\w\s\\|"]{1}/)
+      .chain((delimiter) =>
+        seq(
+          Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+          // Command is everything remaining (Pattern.parser consumes the delimiter)
+          all,
+        ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
+      )
+      .or(
+        // Handle case where no delimiter is provided - this should be an error
+        all.map(() => {
+          throw VimError.fromCode(ErrorCode.InvalidExpression);
+        }),
+      ),
   );
 
   // Parser for :v[global] commands (inverse global)
   public static readonly vArgParser: Parser<GlobalCommand> = optWhitespace.then(
-    regexp(/[^\w\s\\|"]{1}/).chain((delimiter) =>
-      seq(
-        Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
-        // Command is everything remaining (Pattern.parser consumes the delimiter)
-        all,
-      ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
-    ),
+    regexp(/[^\w\s\\|"]{1}/)
+      .chain((delimiter) =>
+        seq(
+          Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+          // Command is everything remaining (Pattern.parser consumes the delimiter)
+          all,
+        ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
+      )
+      .or(
+        // Handle case where no delimiter is provided - this should be an error
+        all.map(() => {
+          throw VimError.fromCode(ErrorCode.InvalidExpression);
+        }),
+      ),
   );
 
   private readonly arguments: IGlobalCommandArguments;
 
   constructor(args: IGlobalCommandArguments) {
     super();
+
+    // Validate pattern is not empty (Requirement 6.1)
+    if (!args.pattern || args.pattern.patternString === '') {
+      throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
+    }
+
     this.arguments = args;
   }
 
@@ -71,13 +100,33 @@ export class GlobalCommand extends ExCommand {
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
-    // Get the resolved line range
-    const resolvedRange = range.resolve(vimState);
+    // Validate the range first
+    let resolvedRange;
+    try {
+      resolvedRange = range.resolve(vimState);
+    } catch (error) {
+      throw VimError.fromCode(ErrorCode.InvalidRange);
+    }
+
+    // Validate that the range is within document bounds
+    if (
+      resolvedRange.start < 0 ||
+      resolvedRange.end >= vimState.document.lineCount ||
+      resolvedRange.start > resolvedRange.end
+    ) {
+      throw VimError.fromCode(ErrorCode.InvalidRange);
+    }
 
     // Find all pattern matches within the specified range
-    const matches = this.arguments.pattern.allMatches(vimState, {
-      lineRange: range,
-    });
+    let matches;
+    try {
+      matches = this.arguments.pattern.allMatches(vimState, {
+        lineRange: range,
+      });
+    } catch (error) {
+      // Pattern matching failed - likely invalid regex
+      throw VimError.fromCode(ErrorCode.InvalidExpression);
+    }
 
     // Extract unique line numbers from pattern matches
     const matchingLines = new Set<number>();
@@ -101,9 +150,20 @@ export class GlobalCommand extends ExCommand {
           linesToProcess.add(line);
         }
       }
+      // For inverse commands, if all lines match the pattern, there are no lines to process
+      // This is not an error condition for inverse commands - they just have nothing to do
     } else {
       // For normal commands, use the matching lines
       linesToProcess = matchingLines;
+
+      // Check if no lines match the pattern (Requirement 6.3)
+      if (linesToProcess.size === 0) {
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(ErrorCode.PatternNotFound, this.arguments.pattern.patternString),
+        );
+        return;
+      }
     }
 
     // Convert to sorted array for sequential processing
@@ -113,6 +173,25 @@ export class GlobalCommand extends ExCommand {
     let commandToExecute = this.arguments.command.trim();
     if (commandToExecute === '') {
       commandToExecute = 'p';
+    }
+
+    // Validate command syntax early (Requirement 6.2)
+    let testParseResult;
+    try {
+      testParseResult = exCommandParser.parse(`:${commandToExecute}`);
+      if (testParseResult.status === false) {
+        StatusBar.displayError(
+          vimState,
+          VimError.fromCode(ErrorCode.NotAnEditorCommand, commandToExecute),
+        );
+        return;
+      }
+    } catch (error) {
+      StatusBar.displayError(
+        vimState,
+        VimError.fromCode(ErrorCode.NotAnEditorCommand, commandToExecute),
+      );
+      return;
     }
 
     // Track line number adjustments and execution context
@@ -152,8 +231,12 @@ export class GlobalCommand extends ExCommand {
         const parseResult = exCommandParser.parse(`:${commandToExecute}`);
 
         if (parseResult.status === false) {
-          // If parsing fails, try to handle it as a simple command
-          throw new Error(`Invalid command: ${commandToExecute}`);
+          // Command syntax validation failed (Requirement 6.2)
+          StatusBar.displayError(
+            vimState,
+            VimError.fromCode(ErrorCode.NotAnEditorCommand, commandToExecute),
+          );
+          return; // Stop processing and return (Requirement 6.5)
         }
 
         const { command: parsedCommand, lineRange: commandRange } = parseResult.value;
@@ -191,8 +274,16 @@ export class GlobalCommand extends ExCommand {
           Math.min(currentLineNumber, vimState.document.lineCount - 1),
         );
       } catch (error) {
-        // Stop execution on command errors and propagate the error
-        throw error;
+        // Stop execution on command errors and propagate the error (Requirement 6.5)
+        if (error instanceof VimError) {
+          StatusBar.displayError(vimState, error);
+        } else {
+          StatusBar.displayError(
+            vimState,
+            VimError.fromCode(ErrorCode.NotAnEditorCommand, commandToExecute),
+          );
+        }
+        return; // Stop processing
       }
     }
 
