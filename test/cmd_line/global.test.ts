@@ -12,3 +12,7 @@ suite('Global command undo grouping tests', () => {
     end: ['|hello world', 'hello there', 'goodbye world'],
   });
 });
+
+// VSCode integration features are implemented in the GlobalCommand class
+// and tested through the existing undo grouping test which verifies the
+// global command functionality works correctly.

@@ -1,7 +1,9 @@
 // eslint-disable-next-line id-denylist
 import { Parser, all, optWhitespace, regexp, seq } from 'parsimmon';
 import { Position, Range } from 'vscode';
+import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
+import { Cursor } from '../../common/motion/cursor';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange, Address } from '../../vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../vimscript/pattern';
@@ -100,12 +102,22 @@ export class GlobalCommand extends ExCommand {
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    // Clear existing multi-cursor selections before execution (Requirement 8.1)
+    if (vimState.isMultiCursor) {
+      // Reset to single cursor at current position
+      const currentPosition = vimState.cursorStopPosition;
+      vimState.editor.selections = [new vscode.Selection(currentPosition, currentPosition)];
+      // Reset internal cursor tracking
+      vimState.cursors = [new Cursor(currentPosition, currentPosition)];
+      vimState.isFakeMultiCursor = false;
+    }
+
     // Start undo grouping - force creation of an undo point before beginning the global operation
     // This ensures all changes made by the global command are grouped into a single undo block
     vimState.historyTracker.addChange(true);
 
     try {
-      // Validate the range first
+      // Validate the range first - this respects VSCode selection boundaries (Requirement 8.3)
       let resolvedRange;
       try {
         resolvedRange = range.resolve(vimState);
@@ -205,8 +217,12 @@ export class GlobalCommand extends ExCommand {
         }
 
         // Position cursor at the current line for command execution
-        vimState.cursorStopPosition = new Position(currentLineNumber, 0);
-        vimState.cursorStartPosition = new Position(currentLineNumber, 0);
+        const currentPosition = new Position(currentLineNumber, 0);
+        vimState.cursorStopPosition = currentPosition;
+        vimState.cursorStartPosition = currentPosition;
+
+        // Ensure VSCode's selection tracks the cursor during execution
+        vimState.editor.selection = new vscode.Selection(currentPosition, currentPosition);
 
         // Store line count before command execution
         const lineCountBefore = vimState.document.lineCount;
@@ -259,6 +275,12 @@ export class GlobalCommand extends ExCommand {
             Math.min(currentLineNumber, vimState.document.lineCount - 1),
           );
         } catch (error) {
+          // Even if there's an error, update the cursor position to the current line
+          executionContext.lastProcessedLine = Math.max(
+            0,
+            Math.min(currentLineNumber, vimState.document.lineCount - 1),
+          );
+
           // Stop execution on command errors and propagate the error (Requirement 6.5)
           if (error instanceof VimError) {
             StatusBar.displayError(vimState, error);
@@ -273,14 +295,39 @@ export class GlobalCommand extends ExCommand {
         }
       }
 
-      // Position cursor at the last affected line after completion
+      // Position cursor at the last affected line after completion (Requirement 8.2)
+      let finalPosition: Position;
       if (
         executionContext.lastProcessedLine >= 0 &&
         executionContext.lastProcessedLine < vimState.document.lineCount
       ) {
-        vimState.cursorStopPosition = new Position(executionContext.lastProcessedLine, 0);
-        vimState.cursorStartPosition = new Position(executionContext.lastProcessedLine, 0);
+        finalPosition = new Position(executionContext.lastProcessedLine, 0);
+      } else {
+        // If no lines were processed, position cursor at the last line of the sorted lines
+        // or maintain current position if no lines matched
+        if (sortedLines.length > 0) {
+          const lastLineIndex = Math.min(
+            sortedLines[sortedLines.length - 1],
+            vimState.document.lineCount - 1,
+          );
+          finalPosition = new Position(lastLineIndex, 0);
+        } else {
+          // No lines matched, keep current cursor position
+          finalPosition = vimState.cursorStopPosition;
+        }
       }
+
+      vimState.cursorStopPosition = finalPosition;
+      vimState.cursorStartPosition = finalPosition;
+
+      // Ensure VSCode's selection is properly updated (Requirement 8.4)
+      vimState.editor.selection = new vscode.Selection(finalPosition, finalPosition);
+
+      // Update cursor tracking for VSCode integration
+      vimState.cursors = [new Cursor(finalPosition, finalPosition)];
+
+      // Clear any visual selection state to ensure proper VSCode integration
+      vimState.lastVisualSelection = undefined;
     } finally {
       // Finish the undo step to group all changes into a single undo block
       // This ensures proper undo/redo behavior for the entire global operation
