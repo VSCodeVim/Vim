@@ -578,6 +578,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ve', 'rsion'], undefined],
   [['verb', 'ose'], undefined],
   [['vert', 'ical'], VerticalCommand.argParser],
+  [['vertical-','resize'], VerticalCommand.argParser],
   [['vi', 'sual'], undefined],
   [['vie', 'w'], undefined],
   [['vim', 'grep'], GrepCommand.argParser],
