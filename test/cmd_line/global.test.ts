@@ -474,13 +474,134 @@ suite('Global command tests', () => {
     });
   });
 
+  suite('End-to-end workflow tests', () => {
+    // Test complete global operation workflow (Requirements 7.1, 7.2, 7.3, 7.4)
+    newTest({
+      title: 'Complete global substitute workflow with pattern matching',
+      start: ['|line1 match', 'line2 nomatch', 'line3 match'],
+      keysPressed: ':g/\\bmatch$/s/match/DELETED/\n',
+      end: ['line1 DELETED', 'line2 nomatch', '|line3 DELETED'],
+    });
+
+    newTest({
+      title: 'Complete global delete workflow',
+      start: ['|delete me', 'keep me', 'delete me too'],
+      keysPressed: ':g/^delete/d\n',
+      end: ['keep m|e'],
+    });
+
+    newTest({
+      title: 'Complete global substitute workflow',
+      start: ['|foo bar', 'baz qux', 'foo baz', 'qux bar'],
+      keysPressed: ':g/foo/s/foo/FOO/g\n',
+      end: ['FOO bar', 'baz qux', '|FOO baz', 'qux bar'],
+    });
+
+    newTest({
+      title: 'Complete inverse global workflow',
+      start: ['|keep this', 'delete this', 'keep this too', 'delete this too'],
+      keysPressed: ':v/keep/d\n',
+      end: ['keep this', 'keep this to|o'],
+    });
+
+    newTest({
+      title: 'Complex global with range and multiple operations',
+      start: ['|line1', 'target1', 'line3', 'target2', 'line5', 'target3'],
+      keysPressed: ':2,5g/target/s/target/FOUND/\n',
+      end: ['line1', 'FOUND1', 'line3', '|FOUND2', 'line5', 'target3'],
+    });
+
+    newTest({
+      title: 'Global with normal mode commands workflow',
+      start: ['|item1', 'item2', 'item3'],
+      keysPressed: ':g/item/normal A - processed\n',
+      end: ['item1 - processed', 'item2 - processed', 'item3 - processe|d'],
+    });
+  });
+
+  suite('Comprehensive undo/redo tests', () => {
+    // Test atomic undo behavior (Requirements 7.1, 7.2)
+    newTest({
+      title: 'Global operation is atomic - single undo undoes all changes',
+      start: ['|match1', 'nomatch1', 'match2', 'nomatch2', 'match3'],
+      keysPressed: ':g/match/s/match/CHANGED/\nu',
+      end: ['|match1', 'nomatch1', 'match2', 'nomatch2', 'match3'],
+    });
+
+    newTest({
+      title: 'Global delete is atomic - single undo restores all deleted lines',
+      start: ['|delete1', 'keep1', 'delete2', 'keep2', 'delete3'],
+      keysPressed: ':g/delete/d\nu',
+      end: ['|delete1', 'keep1', 'delete2', 'keep2', 'delete3'],
+    });
+
+    newTest({
+      title: 'Complex global operation is atomic',
+      start: ['|foo bar', 'baz qux', 'foo baz', 'qux foo'],
+      keysPressed: ':g/foo/s/foo/FOO/g\nu',
+      end: ['|foo bar', 'baz qux', 'foo baz', 'qux foo'],
+    });
+
+    // Test redo after undo (Requirements 7.4)
+    newTest({
+      title: 'Redo restores entire global operation',
+      start: ['|match1', 'nomatch1', 'match2', 'nomatch2'],
+      keysPressed: ':g/^match/s/match/CHANGED/\nu<C-r>',
+      end: ['|CHANGED1', 'nomatch1', 'CHANGED2', 'nomatch2'],
+    });
+
+    newTest({
+      title: 'Multiple undo/redo cycles work correctly',
+      start: ['|test1', 'other1', 'test2', 'other2'],
+      keysPressed: ':g/test/s/test/TEST/\nu<C-r>u<C-r>',
+      end: ['|TEST1', 'other1', 'TEST2', 'other2'],
+    });
+
+    // Test partial execution undo (Requirements 7.3)
+    newTest({
+      title: 'Undo works even if global operation encounters error',
+      start: ['|match1', 'nomatch1', 'match2'],
+      keysPressed: ':g/match/s/match/CHANGED/\nu',
+      end: ['|match1', 'nomatch1', 'match2'],
+    });
+
+    // Test undo with line count changes
+    newTest({
+      title: 'Undo works correctly with line insertions',
+      start: ['|line1', 'line2', 'line3'],
+      keysPressed: ':g/line/normal o  inserted\nu',
+      end: ['|line1', 'line2', 'line3'],
+    });
+
+    newTest({
+      title: 'Undo works correctly with line deletions',
+      start: ['|delete1', 'keep1', 'delete2', 'keep2'],
+      keysPressed: ':g/delete/d\nu',
+      end: ['|delete1', 'keep1', 'delete2', 'keep2'],
+    });
+  });
+
   suite('VSCode integration tests', () => {
     // Test cursor positioning after global command (Requirements 8.2)
     newTest({
-      title: 'Cursor positioned at last affected line',
+      title: 'Cursor positioned at last affected line after substitute',
       start: ['|hello world', 'goodbye world', 'hello there'],
       keysPressed: ':g/hello/s/hello/hi/\n',
       end: ['hi world', 'goodbye world', '|hi there'],
+    });
+
+    newTest({
+      title: 'Cursor positioned correctly after global delete',
+      start: ['|delete1', 'keep1', 'delete2', 'keep2', 'delete3'],
+      keysPressed: ':g/delete/d\n',
+      end: ['keep1', 'keep|2'],
+    });
+
+    newTest({
+      title: 'Cursor positioned at end after global with normal commands',
+      start: ['|item1', 'other', 'item2'],
+      keysPressed: ':g/item/normal A!\n',
+      end: ['item1!', 'other', 'item2|!'],
     });
 
     // Test multi-cursor clearing (Requirements 8.1)
@@ -493,6 +614,100 @@ suite('Global command tests', () => {
       start: ['|hello world', 'goodbye world', 'hello there', 'hello again'],
       keysPressed: 'Vjj:g/hello/d\n',
       end: ['goodbye world', 'hello agai|n'],
+    });
+
+    newTest({
+      title: 'Global command with visual line selection',
+      start: ['|line1 match', 'line2 match', 'line3 nomatch', 'line4 match'],
+      keysPressed: 'V:g/match/s/match/FOUND/\n',
+      end: ['|line1 FOUND', 'line2 match', 'line3 nomatch', 'line4 match'],
+    });
+
+    newTest({
+      title: 'Global command with visual block selection range',
+      start: ['|match1 text', 'match2 text', 'nomatch text', 'match3 text'],
+      keysPressed: 'Vjj:g/^match/s/match/FOUND/\n',
+      end: ['FOUND1 text', '|FOUND2 text', 'nomatch text', 'match3 text'],
+    });
+
+    // Test VSCode change tracking (Requirements 8.4)
+    newTest({
+      title: 'Global command properly updates document state',
+      start: ['|original1', 'original2', 'original3'],
+      keysPressed: ':g/original/s/original/modified/\n',
+      end: ['modified1', 'modified2', '|modified3'],
+    });
+  });
+
+  suite('Performance tests with large documents', () => {
+    // Test with moderately large document
+    newTest({
+      title: 'Global command performance with 50 lines',
+      start: [
+        '|line1 match',
+        ...Array(48)
+          .fill(0)
+          .map((_, i) => `line${i + 2} ${i % 5 === 0 ? 'match' : 'nomatch'}`),
+        'line50 match',
+      ],
+      keysPressed: ':g/ match$/s/match/FOUND/\n',
+      end: [
+        'line1 FOUND',
+        ...Array(48)
+          .fill(0)
+          .map((_, i) => `line${i + 2} ${i % 5 === 0 ? 'FOUND' : 'nomatch'}`),
+        '|line50 FOUND',
+      ],
+    });
+
+    // Test with complex regex pattern
+    newTest({
+      title: 'Global command with complex regex pattern',
+      start: [
+        '|email1@domain.com',
+        'not an email',
+        'email2@test.org',
+        'another non-email',
+        'email3@example.net',
+      ],
+      keysPressed: ':g/@/s/@/ AT /\n',
+      end: [
+        'email1 AT domain.com',
+        'not an email',
+        'email2 AT test.org',
+        'another non-email',
+        '|email3 AT example.net',
+      ],
+    });
+
+    // Test inverse global with large document
+    newTest({
+      title: 'Inverse global performance test',
+      start: [
+        '|keep1',
+        ...Array(18)
+          .fill(0)
+          .map((_, i) => (i % 3 === 0 ? 'keep' + (i + 2) : 'delete' + (i + 2))),
+        'keep20',
+      ],
+      keysPressed: ':v/keep/d\n',
+      end: ['keep1', 'keep2', 'keep5', 'keep8', 'keep11', 'keep14', 'keep17', 'keep2|0'],
+    });
+
+    // Test global with multiple pattern matches per line
+    newTest({
+      title: 'Global with multiple matches per line',
+      start: ['|foo bar foo baz foo', 'no matches here', 'foo test foo end foo'],
+      keysPressed: ':g/foo/s/foo/FOO/g\n',
+      end: ['FOO bar FOO baz FOO', 'no matches here', '|FOO test FOO end FOO'],
+    });
+
+    // Test nested global-like operations
+    newTest({
+      title: 'Global command with substitute containing global-like pattern',
+      start: ['|text with /global/ pattern', 'normal text', 'another /global/ match'],
+      keysPressed: ':g/\\/global\\//s/\\/global\\//[GLOBAL]/g\n',
+      end: ['text with [GLOBAL] pattern', 'normal text', '|another [GLOBAL] match'],
     });
   });
 });
