@@ -298,6 +298,182 @@ suite('Global command tests', () => {
     });
   });
 
+  suite('Error handling and validation tests', () => {
+    // Test invalid pattern syntax errors (Requirements 6.1)
+    newTest({
+      title: 'Invalid regex pattern syntax',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/[unclosed/d\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E486: Pattern not found: [unclosed',
+    });
+
+    newTest({
+      title: 'Invalid regex with unmatched parentheses',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/\\(unclosed/d\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E486: Pattern not found: \\(unclosed',
+    });
+
+    newTest({
+      title: 'Invalid regex with bad escape sequence',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/\\z/d\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E486: Pattern not found: \\z',
+    });
+
+    // Test invalid command syntax errors (Requirements 6.2)
+    newTest({
+      title: 'Invalid ex-command in global',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/hello/invalidcommand\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E492: Not an editor command: invalidcommand',
+    });
+
+    newTest({
+      title: 'Invalid substitute command syntax',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/hello/s/unclosed\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E486: Pattern not found: unclosed',
+    });
+
+    newTest({
+      title: 'Invalid normal mode command',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/hello/normal \\invalid\n',
+      end: ['|ello world', 'goodbye world'],
+      statusBar: '-- NORMAL --',
+    });
+
+    // Test "Pattern not found" scenarios (Requirements 6.3)
+    newTest({
+      title: 'Pattern not found in document',
+      start: ['|apple', 'banana', 'cherry'],
+      keysPressed: ':g/orange/d\n',
+      end: ['|apple', 'banana', 'cherry'],
+      statusBar: 'E486: Pattern not found: orange',
+    });
+
+    newTest({
+      title: 'Pattern not found in specified range',
+      start: ['|hello world', 'goodbye world', 'hello there'],
+      keysPressed: ':2,2g/hello/d\n',
+      end: ['|hello world', 'goodbye world', 'hello there'],
+      statusBar: 'E486: Pattern not found: hello',
+    });
+
+    newTest({
+      title: 'Inverse pattern matches all lines in range',
+      start: ['|hello world', 'hello there'],
+      keysPressed: ':g!/hello/d\n',
+      end: ['|hello world', 'hello there'],
+    });
+
+    // Test empty document and no matching lines cases (Requirements 6.3, 6.4)
+    newTest({
+      title: 'Empty document with global command',
+      start: ['|'],
+      keysPressed: ':g/anything/d\n',
+      end: ['|'],
+      statusBar: 'E486: Pattern not found: anything',
+    });
+
+    newTest({
+      title: 'Document with only empty lines',
+      start: ['|', '', ''],
+      keysPressed: ':g/text/d\n',
+      end: ['|', '', ''],
+      statusBar: 'E486: Pattern not found: text',
+    });
+
+    newTest({
+      title: 'Global command on whitespace-only document',
+      start: ['|   ', '  ', '\t'],
+      keysPressed: ':g/\\S/d\n',
+      end: ['|   ', '  ', '\t'],
+      statusBar: 'E486: Pattern not found: \\S',
+    });
+
+    // Test range validation errors (Requirements 6.5)
+    newTest({
+      title: 'Invalid range - line number too high',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':1,10g/hello/d\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E16: Invalid range',
+    });
+
+    newTest({
+      title: 'Invalid range - negative line number',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':-1,1g/hello/d\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E16: Invalid range',
+    });
+
+    newTest({
+      title: 'Invalid range - backwards range',
+      start: ['|hello world', 'goodbye world', 'hello there'],
+      keysPressed: ':3,1g/hello/d\n',
+      end: ['goodbye worl|d'],
+      statusBar: '-- NORMAL --',
+    });
+
+    newTest({
+      title: 'Invalid range with zero line number',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':0,1g/hello/d\n',
+      end: ['|goodbye world'],
+      statusBar: '-- NORMAL --',
+    });
+
+    // Test malformed global command syntax
+    newTest({
+      title: 'Missing pattern delimiter',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/hello\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'hello world',
+    });
+
+    newTest({
+      title: 'Missing closing delimiter',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g/hello/d/extra\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E488: Trailing characters: extra',
+    });
+
+    newTest({
+      title: 'Empty global command',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':g\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E15: Invalid expression',
+    });
+
+    // Test pattern delimiter edge cases
+    newTest({
+      title: 'Pattern contains unescaped delimiter',
+      start: ['|hello/world', 'goodbye/world'],
+      keysPressed: ':g/hello/world/d\n',
+      end: ['|hello/world', 'goodbye/world'],
+      statusBar: 'E492: Not an editor command: world/d',
+    });
+
+    newTest({
+      title: 'Alphanumeric delimiter should fail',
+      start: ['|hello world', 'goodbye world'],
+      keysPressed: ':gahelloa/d\n',
+      end: ['|hello world', 'goodbye world'],
+      statusBar: 'E492: Not an editor command: gahelloa/d',
+    });
+  });
+
   suite('VSCode integration tests', () => {
     // Test cursor positioning after global command (Requirements 8.2)
     newTest({
