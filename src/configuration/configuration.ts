@@ -16,6 +16,7 @@ import {
   IKeyRemapping,
   IModeSpecificStrings,
   ITargetsConfiguration,
+  ITextObjectConfig,
 } from './iconfiguration';
 
 import { SUPPORT_VIMRC } from 'platform/constants';
@@ -203,6 +204,11 @@ class Configuration implements IConfiguration {
     // workaround for circular dependency that would
     // prevent packaging if we simply called `updateLangmap(configuration.langmap);`
     this.loadListeners.forEach((listener) => listener());
+
+    // Load external text objects from vim.textObjects
+    this.textObjects = Array.isArray(vimConfigs.textObjects)
+      ? (vimConfigs.textObjects as ITextObjectConfig[])
+      : [];
 
     return validatorResults;
   }
@@ -490,6 +496,8 @@ class Configuration implements IConfiguration {
   langmapBindingsMap: Map<string, string> = new Map();
   langmapReverseBindingsMap: Map<string, string> = new Map();
   langmap = '';
+
+  textObjects: ITextObjectConfig[] = [];
 
   get textwidth(): number {
     const textwidth = this.getConfiguration('vim').get('textwidth', 80);

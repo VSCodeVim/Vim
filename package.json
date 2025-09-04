@@ -453,6 +453,31 @@
           "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
           "scope": "application"
         },
+        "vim.textObjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Key combinations to trigger the text object."
+              },
+              "command": {
+                "type": "string",
+                "description": "VSCode command ID to execute for the text object."
+              }
+            },
+            "required": [
+              "keys",
+              "command"
+            ]
+          },
+          "markdownDescription": "Configure external text objects powered by VSCode commands. Each object must specify keys and command ID.",
+          "scope": "application"
+        },
         "vim.normalModeKeyBindingsNonRecursive": {
           "type": "array",
           "markdownDescription": "Non-recursive remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
