@@ -10,7 +10,6 @@ import { RegisterAction } from '../actions/base';
 type TextObjectResult = {
   start: Position;
   stop: Position;
-  failed?: boolean;
 };
 
 type TextObjectArgs = {
@@ -41,7 +40,6 @@ export class ExternalCommandTextObject extends TextObject {
       return {
         start: result.start,
         stop: result.stop,
-        failed: !!result.failed,
       };
     } catch (e) {
       return failedMovement(vimState);

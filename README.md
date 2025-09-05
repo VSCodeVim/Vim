@@ -802,13 +802,10 @@ The command should return a result object:
 {
   start: Position;
   stop: Position;
-  failed?: boolean;
 }
 ```
 
 or `undefined` if the text object cannot be determined.
-
-If `failed` is true, the text object operation will be cancelled.
 
 ## 🎩 VSCodeVim tricks!
 
