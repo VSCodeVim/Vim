@@ -405,7 +405,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
           mh.internalSelectionsTracker.stopIgnoringIntermediateSelections();
         }
         const text = compositionState.composingText;
-        await mh.handleMultipleKeyEvents(text.split(''));
+        if (compositionState.insertedText) {
+          await mh.handleMultipleKeyEvents([text]);
+        } else {
+          await mh.handleMultipleKeyEvents(text.split(''));
+        }
       }
       compositionState.reset();
     });
