@@ -1636,23 +1636,24 @@ suite('Mode Normal', () => {
     });
   });
 
-  suite('gI', () => {
-    newTest({
-      title: 'gI enters insert mode at start of line',
-      start: ['    o|ne'],
-      keysPressed: 'gItest',
-      end: ['test|    one'],
-      endMode: Mode.Insert,
-    });
+  // TODO: tests for goToImplementation
+  // suite('gI', () => {
+  //   newTest({
+  //     title: 'gI enters insert mode at start of line',
+  //     start: ['    o|ne'],
+  //     keysPressed: 'gItest',
+  //     end: ['test|    one'],
+  //     endMode: Mode.Insert,
+  //   });
 
-    newTest({
-      title: '[count]gI',
-      start: ['    o|ne'],
-      keysPressed: '3gIab<Esc>',
-      end: ['ababa|b    one'],
-      endMode: Mode.Normal,
-    });
-  });
+  //   newTest({
+  //     title: '[count]gI',
+  //     start: ['    o|ne'],
+  //     keysPressed: '3gIab<Esc>',
+  //     end: ['ababa|b    one'],
+  //     endMode: Mode.Normal,
+  //   });
+  // });
 
   suite('gi', () => {
     newTest({
