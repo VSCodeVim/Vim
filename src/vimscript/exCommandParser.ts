@@ -4,6 +4,7 @@ import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
 import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
+import { ChangeCommand } from '../cmd_line/commands/change';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
 import { DeleteCommand } from '../cmd_line/commands/delete';
@@ -120,7 +121,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['buffers', ''], undefined],
   [['bun', 'load'], undefined],
   [['bw', 'ipeout'], undefined],
-  [['c', 'hange'], undefined],
+  [['c', 'hange'], ChangeCommand.argParser],
   [['cN', 'ext'], undefined],
   [['cNf', 'ile'], undefined],
   [['ca', 'bbrev'], undefined],

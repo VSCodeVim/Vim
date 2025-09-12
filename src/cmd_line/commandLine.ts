@@ -243,6 +243,10 @@ export class ExCommandLine extends CommandLine {
     return undefined;
   }
 
+  public getCommand(): ExCommand | undefined {
+    return this.command;
+  }
+
   public getDecorations(vimState: VimState): SearchDecorations | undefined {
     return this.command instanceof SubstituteCommand &&
       vimState.currentMode === Mode.CommandlineInProgress
