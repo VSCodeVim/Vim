@@ -4,7 +4,7 @@ import { Position } from 'vscode';
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
 import { ErrorCode, VimError } from '../../error';
 import { RecordedState } from '../../state/recordedState';
-import { VimState } from '../../state/vimState';
+import { QueuedInsertText, VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { isHighSurrogate, isLowSurrogate } from '../../util/util';
 import { PositionDiff } from './../../common/motion/position';
@@ -112,6 +112,19 @@ export class CommandEscInsertMode extends BaseCommand {
     if (vimState.isFakeMultiCursor) {
       vimState.cursors = [vimState.cursors[0]];
       vimState.isFakeMultiCursor = false;
+    }
+
+    if (vimState.normalCommandState === NormalCommandState.Queuing && vimState.queuedInsertText) {
+      const isFirst = vimState.queuedTransformations.length === 0;
+      const text = vimState.queuedInsertText.texts.join('');
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertText',
+        text,
+        position: vimState.queuedInsertText.cursorPos,
+        manuallySetCursorPositions: true,
+        diff: isFirst ? PositionDiff.offset({ line: 0, character: text.length }) : undefined,
+      });
+      vimState.queuedInsertText = undefined;
     }
   }
 }
@@ -264,12 +277,11 @@ export class CommandInsertInInsertMode extends BaseCommand {
     }
 
     if (vimState.normalCommandState === NormalCommandState.Queuing) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'insertText',
-        text,
-        position: vimState.cursorStartPosition,
-        diff: PositionDiff.offset({ line: 0, character: text.length }),
-      });
+      if (vimState.queuedInsertText) {
+        vimState.queuedInsertText.texts.push(text);
+      } else {
+        vimState.queuedInsertText = new QueuedInsertText([text], vimState.cursorStartPosition);
+      }
     } else {
       vimState.recordedState.transformer.addTransformation({
         type: 'insertTextVSCode',
