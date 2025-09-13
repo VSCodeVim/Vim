@@ -9,7 +9,7 @@ import { StatusBar } from '../../statusBar';
 import { isHighSurrogate, isLowSurrogate } from '../../util/util';
 import { PositionDiff } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
-import { Mode } from './../../mode/mode';
+import { Mode, NormalCommandState } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
 import { BaseCommand, RegisterAction } from './../base';
@@ -263,11 +263,19 @@ export class CommandInsertInInsertMode extends BaseCommand {
       }
     }
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertTextVSCode',
-      text,
-      isMultiCursor: vimState.isMultiCursor,
-    });
+    if (vimState.normalCommandState === NormalCommandState.Queuing) {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertText',
+        text,
+        position: vimState.cursorStartPosition,
+      });
+    } else {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertTextVSCode',
+        text,
+        isMultiCursor: vimState.isMultiCursor,
+      });
+    }
   }
 
   public override toString(): string {
