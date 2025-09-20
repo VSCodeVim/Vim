@@ -707,7 +707,7 @@ export class EvaluationContext {
           const newBytes = new Uint8Array(l!.data.byteLength + 1);
           newBytes.set(new Uint8Array(l!.data));
           newBytes[newBytes.length - 1] = toInt(item!);
-          l!.data = newBytes.buffer;
+          l!.data = newBytes;
           return blob(newBytes);
         }
         const lst = toList(l!);
@@ -1086,7 +1086,7 @@ export class EvaluationContext {
           newBytes.set(bytes.subarray(0, idx), 0);
           newBytes[idx] = toInt(item!);
           newBytes.set(bytes.subarray(idx), idx + 1);
-          l!.data = newBytes.buffer;
+          l!.data = newBytes;
           return blob(newBytes);
         }
         const lst = toList(l!);
