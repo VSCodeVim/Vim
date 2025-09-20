@@ -3723,13 +3723,13 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-neovim@5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/neovim/-/neovim-5.3.0.tgz#aa1113bc17282943576e83f0d0ee58aeea0ce841"
-  integrity sha512-32Cypq6qh7vzJ5wuVPPzIsBdOlvwo0do8/3jxLu+RGdneFSJjh5CYi0ScHHAw/2HLtIjRKhRjJMXeze21M+uyw==
+neovim@5.4.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/neovim/-/neovim-5.4.0.tgz#555c30f7b327cfe2c2780ed5acfa8952f6fbe144"
+  integrity sha512-95YXs6d5p8M0k8xrmJHQ9aVLv9ebpM3ZQnmTaSpbJtPSdxFaKq7szCP1Ou+S8K++rEsh7BvTPwqdtdlwQfT0pw==
   dependencies:
     "@msgpack/msgpack" "^2.8.0"
-    winston "3.14.1"
+    winston "3.15.0"
 
 node-abi@^2.21.0:
   version "2.30.1"
@@ -5731,10 +5731,10 @@ winston-transport@^4.7.0:
     readable-stream "^3.6.2"
     triple-beam "^1.3.0"
 
-winston@3.14.1:
-  version "3.14.1"
-  resolved "https://registry.yarnpkg.com/winston/-/winston-3.14.1.tgz#b296f2756e6b46d3b6faac5660d2af878fc3f666"
-  integrity sha512-CJi4Il/msz8HkdDfXOMu+r5Au/oyEjFiOZzbX2d23hRLY0narGjqfE5lFlrT5hfYJhPtM8b85/GNFsxIML/RVA==
+winston@3.15.0:
+  version "3.15.0"
+  resolved "https://registry.yarnpkg.com/winston/-/winston-3.15.0.tgz#4df7b70be091bc1a38a4f45b969fa79589b73ff5"
+  integrity sha512-RhruH2Cj0bV0WgNL+lOfoUBI4DVfdUNjVnJGVovWZmrcKtrFTTRzgXYK2O9cymSGjrERCtaAeHwMNnUWXlwZow==
   dependencies:
     "@colors/colors" "^1.6.0"
     "@dabh/diagnostics" "^2.0.2"
