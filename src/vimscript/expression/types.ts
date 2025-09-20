@@ -35,7 +35,7 @@ export type FuncRefValue = {
 
 export type BlobValue = {
   type: 'blob';
-  data: ArrayBuffer;
+  data: Uint8Array<ArrayBuffer>;
 };
 
 export type Value =
