@@ -1425,13 +1425,20 @@ export class EvaluationContext {
         return list(result.map(int));
       }
       case 'str2nr': {
-        const [s, _base] = getArgs(1, 2);
+        const [_s, _base] = getArgs(1, 2);
         const base = _base ? toInt(_base) : 10;
-        if (![2, 8, 10, 16].includes(base)) {
+        let s = toString(_s!);
+
+        if (base === 16) {
+          s = s.replace(/^0x/i, '');
+        } else if (base === 8) {
+          s = s.replace(/^0o/i, '');
+        } else if (base === 2) {
+          s = s.replace(/^0b/i, '');
+        } else if (base !== 10) {
           throw VimError.fromCode(ErrorCode.InvalidArgument474);
         }
-        // TODO: Skip prefixes like 0x
-        const parsed = Number.parseInt(toString(s!), base);
+        const parsed = Number.parseInt(s, base);
         return int(isNaN(parsed) ? 0 : parsed);
       }
       case 'stridx': {

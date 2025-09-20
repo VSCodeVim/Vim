@@ -842,6 +842,13 @@ suite('Vimscript expressions', () => {
       exprTest('str2nr("DEADBEEF", 16)', { value: int(3735928559) });
       exprTest('str2nr("DEADBEEF", 10)', { value: int(0) });
       exprTest('str2nr("DEADBEEF", 9)', { error: ErrorCode.InvalidArgument474 });
+
+      exprTest('str2nr("0xDEADBEEF", 16)', { value: int(3735928559) });
+      exprTest('str2nr("0XDEADBEEF", 16)', { value: int(3735928559) });
+      exprTest('str2nr("0o123", 8)', { value: int(83) });
+      exprTest('str2nr("0O123", 8)', { value: int(83) });
+      exprTest('str2nr("0b1001010110", 2)', { value: int(598) });
+      exprTest('str2nr("0B1001010110", 2)', { value: int(598) });
     });
 
     suite('stridx', () => {
