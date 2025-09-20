@@ -1182,8 +1182,8 @@
     "test": "node ./out/test/runTest.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prettier": "prettier --write .",
-    "prettier:check": "prettier --check .",
+    "prettier": "npx prettier --write .",
+    "prettier:check": "npx prettier --check .",
     "watch": "webpack -c webpack.dev.js --watch",
     "package": "yarn run vsce package --yarn --allow-star-activation",
     "prepare": "husky"
