@@ -1233,7 +1233,7 @@
     "plugin-error": "2.0.1",
     "prettier": "3.6.2",
     "sinon": "20.0.0",
-    "ts-loader": "9.5.2",
+    "ts-loader": "9.5.4",
     "typescript": "5.9.2",
     "vsce": "2.15.0",
     "webpack": "5.101.3",
