@@ -14,7 +14,7 @@ import Mocha from 'mocha';
 import * as path from 'path';
 
 import { Globals } from '../src/globals.ts';
-import { Configuration } from './testConfiguration';
+import { Configuration } from './testConfiguration.ts';
 
 Globals.isTesting = true;
 Globals.mockConfiguration = new Configuration();

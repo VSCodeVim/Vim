@@ -1,7 +1,7 @@
 import * as assert from 'assert';
-import * as testConfiguration from '../testConfiguration';
+import * as testConfiguration from '../testConfiguration.ts';
 import * as os from 'os';
-import { vimrc } from '../../src/configuration/vimrc';
+import { vimrc } from '../../src/configuration/vimrc.ts';
 
 suite('Vimrc', () => {
   const configuration = new testConfiguration.Configuration();

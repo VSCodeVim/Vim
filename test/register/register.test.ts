@@ -1,15 +1,15 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { Register } from '../../src/register/register';
-import { RecordedState } from '../../src/state/recordedState';
-import { VimState } from '../../src/state/vimState';
-import { Clipboard } from '../../src/util/clipboard';
-import { newTest } from '../testSimplifier';
-import { assertEqualLines, setupWorkspace } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { Register } from '../../src/register/register.ts';
+import { RecordedState } from '../../src/state/recordedState.ts';
+import { VimState } from '../../src/state/vimState.ts';
+import { Clipboard } from '../../src/util/clipboard.ts';
+import { newTest } from '../testSimplifier.ts';
+import { assertEqualLines, setupWorkspace } from '../testUtils.ts';
 
 suite('register', () => {
   let modeHandler: ModeHandler;

@@ -1,6 +1,6 @@
-import { Globals } from '../../src/globals';
-import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
-import { newTest } from '../testSimplifier';
+import { Globals } from '../../src/globals.ts';
+import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils.ts';
+import { newTest } from '../testSimplifier.ts';
 
 function sub(
   pattern: string,

@@ -3,8 +3,8 @@ import * as path from 'path';
 import * as sinon from 'sinon';
 import fs from 'fs';
 import childProcess from 'child_process';
-import { Configuration } from '../../testConfiguration';
-import { NeovimValidator } from '../../../src/configuration/validators/neovimValidator';
+import { Configuration } from '../../testConfiguration.ts';
+import { NeovimValidator } from '../../../src/configuration/validators/neovimValidator.ts';
 
 suite('Neovim Validator', () => {
   let sandbox: sinon.SinonSandbox;

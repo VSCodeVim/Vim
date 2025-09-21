@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ExCommandLine } from '../../src/cmd_line/commandLine.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from '../testUtils.ts';
 
 const isPanelVisible = async () =>
   withinIsolatedEditor(async () => {

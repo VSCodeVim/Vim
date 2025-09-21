@@ -1,4 +1,4 @@
-import { newTest } from '../testSimplifier';
+import { newTest } from '../testSimplifier.ts';
 
 suite('Repeatable movements with f and t', () => {
   newTest({

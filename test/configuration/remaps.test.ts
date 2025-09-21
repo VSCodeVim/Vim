@@ -1,8 +1,8 @@
-import { getAndUpdateModeHandler } from '../../extension';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTestWithRemaps, newTestWithRemapsSkip } from '../testSimplifier';
-import { setupWorkspace } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { newTestWithRemaps, newTestWithRemapsSkip } from '../testSimplifier.ts';
+import { setupWorkspace } from '../testUtils.ts';
 
 suite('Remaps', () => {
   let modeHandler: ModeHandler;

@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import { SearchOffset } from '../../src/vimscript/pattern';
+import { SearchOffset } from '../../src/vimscript/pattern.ts';
 
 function parseTest(name: string, input: string, output: SearchOffset) {
   test(name, () => {

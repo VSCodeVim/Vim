@@ -2,11 +2,11 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { join } from 'path';
-import { getAndUpdateModeHandler } from '../../extension';
-import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import * as error from '../../src/error';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import * as t from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ExCommandLine } from '../../src/cmd_line/commandLine.ts';
+import * as error from '../../src/error.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import * as t from '../testUtils.ts';
 
 suite('Buffer delete', () => {
   let modeHandler: ModeHandler;

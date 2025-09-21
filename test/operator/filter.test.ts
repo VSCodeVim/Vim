@@ -1,4 +1,4 @@
-import { newTest } from '../testSimplifier';
+import { newTest } from '../testSimplifier.ts';
 
 // TODO(#4844): this fails on Windows
 suite('filter operator', () => {

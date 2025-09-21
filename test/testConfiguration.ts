@@ -6,7 +6,7 @@ import {
   IKeyRemapping,
   IModeSpecificStrings,
   ITargetsConfiguration,
-} from '../src/configuration/iconfiguration';
+} from '../src/configuration/iconfiguration.ts';
 
 export class Configuration implements IConfiguration {
   [key: string]: any;

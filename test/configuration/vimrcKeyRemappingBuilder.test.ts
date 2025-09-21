@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { vimrcKeyRemappingBuilder } from '../../src/configuration/vimrcKeyRemappingBuilder';
+import { vimrcKeyRemappingBuilder } from '../../src/configuration/vimrcKeyRemappingBuilder.ts';
 
 suite('VimrcKeyRemappingBuilder', () => {
   test('Build IKeyRemapping objects from .vimrc lines', async () => {

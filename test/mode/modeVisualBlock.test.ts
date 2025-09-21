@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace } from './../testUtils';
-import { newTest } from '../testSimplifier';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { assertEqualLines, setupWorkspace } from './../testUtils.ts';
+import { newTest } from '../testSimplifier.ts';
 
 suite('VisualBlock mode', () => {
   let modeHandler: ModeHandler;

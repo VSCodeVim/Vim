@@ -1,6 +1,6 @@
-import { Mode } from '../../src/mode/mode';
-import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { Mode } from '../../src/mode/mode.ts';
+import { newTest } from '../testSimplifier.ts';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils.ts';
 
 const dvorakLangmap =
   '\'q,\\,w,.e,pr,yt,fy,gu,ci,ro,lp,/[,=],aa,os,ed,uf,ig,dh,hj,tk,nl,s\\;,-\',\\;z,qx,jc,kv,xb,bn,mm,w\\,,v.,z/,[-,]=,"Q,<W,>E,PR,YT,FY,GU,CI,RO,LP,?{,+},AA,OS,ED,UF,IG,DH,HJ,TK,NL,S:,_",:Z,QX,JC,KV,XB,BN,MM,W<,V>,Z?';

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import * as srcConfiguration from '../src/configuration/configuration';
-import * as testConfiguration from './testConfiguration';
+import * as srcConfiguration from '../src/configuration/configuration.ts';
+import * as testConfiguration from './testConfiguration.ts';
 
 import * as packagejson from '../package.json';
 
