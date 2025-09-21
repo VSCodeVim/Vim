@@ -13,7 +13,7 @@ import glob from 'glob';
 import Mocha from 'mocha';
 import * as path from 'path';
 
-import { Globals } from '../src/globals';
+import { Globals } from '../src/globals.ts';
 import { Configuration } from './testConfiguration';
 
 Globals.isTesting = true;
