@@ -30,7 +30,7 @@ export function run(): Promise<void> {
     grep: mochaGrep,
   });
 
-  const testsRoot = path.resolve(__dirname, '.');
+  const testsRoot = path.resolve(import.meta.dirname, '.');
 
   return new Promise((c, e) => {
     glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
