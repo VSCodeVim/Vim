@@ -19,7 +19,8 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "bundler",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "rewriteRelativeImportExtensions": true
     // "isolatedModules": true,
   },
   "exclude": ["node_modules", "!node_modules/@types"]
