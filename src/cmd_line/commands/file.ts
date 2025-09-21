@@ -2,9 +2,7 @@ import * as vscode from 'vscode';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
 import { doesFileExist } from 'platform/fs';
-// TODO:
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import untildify = require('untildify');
+import untildify from 'untildify';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import {
@@ -15,7 +13,7 @@ import {
   FileOpt,
   fileOptParser,
 } from '../../vimscript/parserUtils';
-import { optWhitespace, regexp, seq } from 'parsimmon';
+import { optWhitespace, seq } from 'parsimmon';
 import { Position } from 'vscode';
 
 export enum FilePosition {

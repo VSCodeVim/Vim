@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["ES2021"],
-    "module": "commonjs",
+    "module": "esnext",
     "target": "ES2021",
     "outDir": "out",
     "noImplicitOverride": true,
@@ -18,6 +18,7 @@
     },
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
     "esModuleInterop": true
     // "isolatedModules": true,
   },
