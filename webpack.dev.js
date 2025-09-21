@@ -1,15 +1,13 @@
-const merge = require('webpack-merge');
-const prod_configs = require('./webpack.config.js');
+import merge from 'webpack-merge';
+import { config } from './webpack.config.js';
 
-module.exports = [
-  merge.merge(prod_configs[0], {
-    mode: 'development',
-    devtool: 'source-map',
-    optimization: {
-      minimize: false,
-      removeAvailableModules: false,
-      removeEmptyChunks: false,
-      splitChunks: false,
-    },
-  }),
-];
+export const devConfig = merge.merge(config, {
+  mode: 'development',
+  devtool: 'source-map',
+  optimization: {
+    minimize: false,
+    removeAvailableModules: false,
+    removeEmptyChunks: false,
+    splitChunks: false,
+  },
+});

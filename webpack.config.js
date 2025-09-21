@@ -2,14 +2,14 @@
 
 'use strict';
 
-const path = require('path');
-const webpack = require('webpack');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const CircularDependencyPlugin = require('circular-dependency-plugin');
+import path from 'path';
+import webpack from 'webpack';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import CircularDependencyPlugin from 'circular-dependency-plugin';
 
 /**@type {import('webpack').Configuration}*/
-const config = {
+export const config = {
   target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
 
   mode: 'production',
@@ -71,7 +71,7 @@ const config = {
 };
 
 /**@type {import('webpack').Configuration}*/
-const nodelessConfig = {
+export const nodelessConfig = {
   target: 'webworker', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
 
   mode: 'development',
@@ -93,10 +93,10 @@ const nodelessConfig = {
       platform: path.resolve(import.meta.dirname, 'src', 'platform', 'browser'),
     },
     fallback: {
-      os: require.resolve('os-browserify/browser'),
-      path: require.resolve('path-browserify'),
-      process: require.resolve('process/browser'),
-      util: require.resolve('util'),
+      os: import.meta.resolve('os-browserify/browser'),
+      path: import.meta.resolve('path-browserify'),
+      process: import.meta.resolve('process/browser'),
+      util: import.meta.resolve('util'),
     },
   },
   optimization: {
@@ -134,5 +134,3 @@ const nodelessConfig = {
     new ForkTsCheckerWebpackPlugin(),
   ],
 };
-
-module.exports = [config, nodelessConfig];
