@@ -56,14 +56,42 @@ VSCodeVim can be installed via the VS Code [Marketplace](https://marketplace.vis
 
 ### Mac
 
-To enable key-repeating, execute the following in your Terminal, log out and back in, and then restart VS Code:
+To enable key-repeating, execute one of the following commands in your Terminal depending on the application you are using, log out and back in, and then restart VS Code:
+
+#### VS Code
 
 ```sh
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
-defaults write com.vscodium ApplePressAndHoldEnabled -bool false                      # For VS Codium
-defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
-defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+```
+
+#### VS Code Insider
+
+```sh
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
+```
+
+#### VS Codium
+
+```sh
+defaults write com.vscodium ApplePressAndHoldEnabled -bool false
+```
+
+#### VS Codium Exploration
+
+```sh
+defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false
+```
+
+#### Cursor
+
+```sh
+defaults write -app Cursor ApplePressAndHoldEnabled -bool false
+```
+
+#### If necessary, reset global default
+
+```sh
+defaults delete -g ApplePressAndHoldEnabled
 ```
 
 We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Settings/Preferences -> Keyboard_.
