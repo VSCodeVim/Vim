@@ -1,4 +1,4 @@
-import { DecorationOptions, Range, TextDocument, window } from 'vscode';
+import { DecorationOptions, Range, TextDocument } from 'vscode';
 
 /**
  * Alias for the types of arrays that can be passed to a TextEditor's setDecorations method
