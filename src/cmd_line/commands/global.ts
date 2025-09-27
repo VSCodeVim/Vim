@@ -21,58 +21,28 @@ export interface IGlobalCommandArguments {
 }
 
 export class GlobalCommand extends ExCommand {
-  public static readonly argParser: Parser<GlobalCommand> = optWhitespace.then(
-    regexp(/[^\w\s\\|"]{1}/)
-      .chain((delimiter) =>
-        seq(
-          Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
-          // Command is everything remaining (Pattern.parser consumes the delimiter)
-          all,
-        ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: false })),
-      )
-      .or(
-        // Handle case where no delimiter is provided - this should be an error
-        all.map(() => {
-          throw VimError.fromCode(ErrorCode.InvalidExpression);
-        }),
-      ),
-  );
+  public static readonly argParser: Parser<GlobalCommand> = GlobalCommand.createParser(false);
 
-  // Parser for :g! commands (inverse global)
-  public static readonly gInverseArgParser: Parser<GlobalCommand> = optWhitespace.then(
-    regexp(/[^\w\s\\|"]{1}/)
-      .chain((delimiter) =>
-        seq(
-          Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
-          // Command is everything remaining (Pattern.parser consumes the delimiter)
-          all,
-        ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
-      )
-      .or(
-        // Handle case where no delimiter is provided - this should be an error
-        all.map(() => {
-          throw VimError.fromCode(ErrorCode.InvalidExpression);
-        }),
-      ),
-  );
+  public static readonly vArgParser: Parser<GlobalCommand> = GlobalCommand.createParser(true);
 
-  // Parser for :v[global] commands (inverse global)
-  public static readonly vArgParser: Parser<GlobalCommand> = optWhitespace.then(
-    regexp(/[^\w\s\\|"]{1}/)
-      .chain((delimiter) =>
-        seq(
-          Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
-          // Command is everything remaining (Pattern.parser consumes the delimiter)
-          all,
-        ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse: true })),
-      )
-      .or(
-        // Handle case where no delimiter is provided - this should be an error
-        all.map(() => {
-          throw VimError.fromCode(ErrorCode.InvalidExpression);
-        }),
-      ),
-  );
+  private static createParser(inverse: boolean): Parser<GlobalCommand> {
+    return optWhitespace.then(
+      regexp(/[^\w\s\\|"]{1}/)
+        .chain((delimiter) =>
+          seq(
+            Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
+            // Command is everything remaining (Pattern.parser consumes the delimiter)
+            all,
+          ).map(([pattern, command]) => new GlobalCommand({ pattern, command, inverse })),
+        )
+        .or(
+          // Handle case where no delimiter is provided - this should be an error
+          all.map(() => {
+            throw VimError.fromCode(ErrorCode.InvalidExpression);
+          }),
+        ),
+    );
+  }
 
   private readonly arguments: IGlobalCommandArguments;
 

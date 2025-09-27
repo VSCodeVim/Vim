@@ -249,7 +249,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['for', ''], undefined],
   [['fu', 'nction'], undefined],
   [['g', 'lobal'], GlobalCommand.argParser],
-  [['g!', ''], GlobalCommand.gInverseArgParser],
+  [['g!', ''], GlobalCommand.vArgParser],
   [['go', 'to'], GotoCommand.argParser],
   [['gr', 'ep'], GrepCommand.argParser],
   [['grepa', 'dd'], undefined],
