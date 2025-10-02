@@ -677,6 +677,11 @@
           "description": "Regex matches for JumpToAnywhere motion.",
           "default": "\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]"
         },
+        "vim.easymotionOnlyVisibleRange": {
+          "type": "boolean",
+          "description": "Only use markers in visible range (ignores folded content).",
+          "default": false
+        },
         "vim.replaceWithRegister": {
           "type": "boolean",
           "markdownDescription": "Enable the [ReplaceWithRegister](https://github.com/vim-scripts/ReplaceWithRegister) plugin for Vim.",

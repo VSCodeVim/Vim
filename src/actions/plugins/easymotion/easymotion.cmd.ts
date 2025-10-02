@@ -115,13 +115,14 @@ function getMatchesForString(
         position,
         new RegExp(' {1,}', 'g'),
         options,
+        vimState.editor,
       );
     default:
       // Search all occurences of the character pressed
 
       // If the input is not a letter, treating it as regex can cause issues
       if (!/[a-zA-Z]/.test(searchString)) {
-        return vimState.easyMotion.sortedSearch(vimState.document, position, searchString, options);
+        return vimState.easyMotion.sortedSearch(vimState.document, position, searchString, options, vimState.editor);
       }
 
       const ignorecase =
@@ -132,6 +133,7 @@ function getMatchesForString(
         position,
         new RegExp(searchString, regexFlags),
         options,
+        vimState.editor,
       );
   }
 }
@@ -269,7 +271,7 @@ export abstract class EasyMotionWordMoveCommandBase extends BaseEasyMotionComman
     const regex = this._options.jumpToAnywhere
       ? new RegExp(configuration.easymotionJumpToAnywhereRegex, 'g')
       : new RegExp('\\w{1,}', 'g');
-    return vimState.easyMotion.sortedSearch(vimState.document, position, regex, options);
+    return vimState.easyMotion.sortedSearch(vimState.document, position, regex, options, vimState.editor);
   }
 }
 
@@ -300,6 +302,7 @@ export abstract class EasyMotionLineMoveCommandBase extends BaseEasyMotionComman
       position,
       new RegExp('^.', 'gm'),
       options,
+      vimState.editor,
     );
     for (const match of matches) {
       match.position = TextEditor.getFirstNonWhitespaceCharOnLine(
