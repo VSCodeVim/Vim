@@ -1,4 +1,4 @@
-import { all } from 'parsimmon';
+import { all, alt } from 'parsimmon';
 import { displayValue } from './displayValue';
 import { configuration } from '../../configuration/configuration';
 import { ErrorCode, VimError } from '../../error';
@@ -32,6 +32,7 @@ import {
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
 import { escapeRegExp, isInteger } from 'lodash';
+import { integerParser } from '../parserUtils';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -1411,10 +1412,14 @@ export class EvaluationContext {
         return float(Math.sqrt(toFloat(x!)));
       }
       case 'str2float': {
-        // TODO: There are differences. See `:help str2float`
-        const [s, quoted] = getArgs(1, 2);
-        const result = floatParser.parse(toString(s!));
-        return result.status === true ? result.value : float(0);
+        // TODO: Support 1e40 (rather than 1.0e40)
+        const [_s, quoted] = getArgs(1, 2);
+        const s = toString(_s!);
+        if (/^inf/i.test(s)) return float(Infinity);
+        if (/^-inf/i.test(s)) return float(-Infinity);
+        if (/^nan/i.test(s)) return float(NaN);
+        const result = alt<FloatValue | NumberValue>(floatParser, numberParser).skip(all).parse(s);
+        return float(result.status ? result.value.value : 0);
       }
       case 'str2list': {
         const [s, _ignored] = getArgs(1, 2);
