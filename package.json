@@ -1204,7 +1204,7 @@
     "@types/diff-match-patch": "1.0.36",
     "@types/lodash": "4.17.17",
     "@types/mocha": "10.0.10",
-    "@types/node": "20.19.17",
+    "@types/node": "20.19.19",
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "17.0.4",
     "@types/vscode": "1.74.0",
