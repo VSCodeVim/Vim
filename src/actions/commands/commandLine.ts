@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { CommandLine, ExCommandLine, SearchCommandLine } from '../../cmd_line/commandLine';
+import { ChangeCommand } from '../../cmd_line/commands/change';
 import { ErrorCode, VimError } from '../../error';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
@@ -152,6 +153,11 @@ class ExCommandLineEnter extends CommandLineAction {
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
     await commandLine.run(vimState);
+
+    if (commandLine instanceof ExCommandLine && commandLine.getCommand() instanceof ChangeCommand) {
+      return;
+    }
+
     await vimState.setCurrentMode(Mode.Normal);
   }
 }

@@ -1,5 +1,21 @@
 # Change Log
 
+## Unreleased
+
+### Added
+
+- Added `:gr[ep]` and `:vim[grep]` ([@AzimovParviz](https://github.com/AzimovParviz)).
+- Added `:c[hange]` ([@kiing-dom](https://github.com/kiing-dom)).
+- Added better expression support ([@J-Fields](https://github.com/J-Fields)).
+- Added unpacking, indexing, and slicing with `:let` ([@J-Fields](https://github.com/J-Fields)).
+- Added `:unl[et]` ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed significant delay after confirming IME input ([@s-kai273](https://github.com/s-kai273)).
+- Fixed `<Esc>` not closing quick diff ([@jacklee1792](https://github.com/jacklee1792)).
+- Fixed `Vi{` incorrectly including the ending braces ([@Whiskas101](https://github.com/Whiskas101)).
+
 ## [v1.30.1](https://github.com/vscodevim/vim/tree/v1.30.1) (2025-05-28)
 
 ### Added

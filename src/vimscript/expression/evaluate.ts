@@ -1,4 +1,4 @@
-import { all } from 'parsimmon';
+import { all, alt } from 'parsimmon';
 import { displayValue } from './displayValue';
 import { configuration } from '../../configuration/configuration';
 import { ErrorCode, VimError } from '../../error';
@@ -32,6 +32,7 @@ import {
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
 import { escapeRegExp, isInteger } from 'lodash';
+import { integerParser } from '../parserUtils';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -707,7 +708,7 @@ export class EvaluationContext {
           const newBytes = new Uint8Array(l!.data.byteLength + 1);
           newBytes.set(new Uint8Array(l!.data));
           newBytes[newBytes.length - 1] = toInt(item!);
-          l!.data = newBytes.buffer;
+          l!.data = newBytes;
           return blob(newBytes);
         }
         const lst = toList(l!);
@@ -1086,7 +1087,7 @@ export class EvaluationContext {
           newBytes.set(bytes.subarray(0, idx), 0);
           newBytes[idx] = toInt(item!);
           newBytes.set(bytes.subarray(idx), idx + 1);
-          l!.data = newBytes.buffer;
+          l!.data = newBytes;
           return blob(newBytes);
         }
         const lst = toList(l!);
@@ -1411,10 +1412,14 @@ export class EvaluationContext {
         return float(Math.sqrt(toFloat(x!)));
       }
       case 'str2float': {
-        // TODO: There are differences. See `:help str2float`
-        const [s, quoted] = getArgs(1, 2);
-        const result = floatParser.parse(toString(s!));
-        return result.status === true ? result.value : float(0);
+        // TODO: Support 1e40 (rather than 1.0e40)
+        const [_s, quoted] = getArgs(1, 2);
+        const s = toString(_s!);
+        if (/^inf/i.test(s)) return float(Infinity);
+        if (/^-inf/i.test(s)) return float(-Infinity);
+        if (/^nan/i.test(s)) return float(NaN);
+        const result = alt<FloatValue | NumberValue>(floatParser, numberParser).skip(all).parse(s);
+        return float(result.status ? result.value.value : 0);
       }
       case 'str2list': {
         const [s, _ignored] = getArgs(1, 2);
@@ -1425,13 +1430,20 @@ export class EvaluationContext {
         return list(result.map(int));
       }
       case 'str2nr': {
-        const [s, _base] = getArgs(1, 2);
+        const [_s, _base] = getArgs(1, 2);
         const base = _base ? toInt(_base) : 10;
-        if (![2, 8, 10, 16].includes(base)) {
+        let s = toString(_s!);
+
+        if (base === 16) {
+          s = s.replace(/^0x/i, '');
+        } else if (base === 8) {
+          s = s.replace(/^0o/i, '');
+        } else if (base === 2) {
+          s = s.replace(/^0b/i, '');
+        } else if (base !== 10) {
           throw VimError.fromCode(ErrorCode.InvalidArgument474);
         }
-        // TODO: Skip prefixes like 0x
-        const parsed = Number.parseInt(toString(s!), base);
+        const parsed = Number.parseInt(s, base);
         return int(isNaN(parsed) ? 0 : parsed);
       }
       case 'stridx': {
