@@ -1,5 +1,6 @@
+import type { Parser } from 'parsimmon';
 // eslint-disable-next-line id-denylist
-import { alt, any, noneOf, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
+const { alt, any, noneOf, regexp, seq, string, succeed, whitespace } = await import('parsimmon');
 import { configuration } from '../configuration/configuration';
 
 export const numberParser: Parser<number> = regexp(/\d+/)

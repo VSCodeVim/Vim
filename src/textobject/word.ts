@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import { Position, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { getAllEndPositions, getAllPositions } from './util';

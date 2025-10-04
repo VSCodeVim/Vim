@@ -1,5 +1,6 @@
+import type { Parser } from 'parsimmon';
 // eslint-disable-next-line id-denylist
-import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
+const { all, alt, optWhitespace, regexp, seq, string, succeed } = await import('parsimmon');
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
 import { Breakpoints } from '../cmd_line/commands/breakpoints';

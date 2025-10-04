@@ -1,4 +1,5 @@
-import { all, alt } from 'parsimmon';
+import type { Parser } from 'parsimmon';
+const { all, alt } = await import('parsimmon');
 import { displayValue } from './displayValue';
 import { configuration } from '../../configuration/configuration';
 import { ErrorCode, VimError } from '../../error';
@@ -31,8 +32,7 @@ import {
   VariableExpression,
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
-import { escapeRegExp, isInteger } from 'lodash';
-import { integerParser } from '../parserUtils';
+import { escapeRegExp, isInteger } from 'lodash-es';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;

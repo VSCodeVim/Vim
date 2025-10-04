@@ -1,5 +1,6 @@
+import type { Parser } from 'parsimmon';
 // eslint-disable-next-line id-denylist
-import { all, alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
+import { all, alt, optWhitespace, seq, string, whitespace } from 'parsimmon';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
 import { readFileAsync } from 'platform/fs';
 import { VimState } from '../../state/vimState';

@@ -13,7 +13,7 @@ import {
   FileOpt,
   fileOptParser,
 } from '../../vimscript/parserUtils';
-import { optWhitespace, seq } from 'parsimmon';
+const { optWhitespace, seq } = await import('parsimmon');
 import { Position } from 'vscode';
 
 export enum FilePosition {
