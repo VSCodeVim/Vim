@@ -390,6 +390,11 @@ suite('Vimscript expressions', () => {
         value: int(22848),
       });
 
+      exprTest('5/0', { value: int(Infinity) }); // TODO: Neovim returns `v:numbermax`
+      exprTest('-5/0', { value: int(-Infinity) }); // TODO: Neovim returns `v:numbermin`
+
+      // TODO: Grok what Neovim does with 5/0.0
+
       exprTest('4/5', { value: int(0) });
       exprTest('4/5.0', { display: '0.8' });
       exprTest('4.0/5', { display: '0.8' });
@@ -827,6 +832,16 @@ suite('Vimscript expressions', () => {
     suite('reverse', () => {
       exprTest('reverse([1, 2, 3])', { display: '[3, 2, 1]' });
       exprTest('reverse(0zABCDEF)', { display: '0zEFCDAB' });
+    });
+
+    suite('str2float', () => {
+      exprTest('str2float("5IGNORED")', { value: float(5.0) });
+      exprTest('str2float("2.34IGNORED")', { value: float(2.34) });
+      exprTest('str2float("infIGNORED")', { value: float(Infinity) });
+      exprTest('str2float("-infIGNORED")', { value: float(-Infinity) });
+      exprTest('str2float("nanIGNORED")', { value: float(NaN) });
+      exprTest('str2float("12,345.67")', { value: float(12.0) });
+      exprTest('str2float("1.2e4")', { value: float(12000) });
     });
 
     suite('str2list', () => {
