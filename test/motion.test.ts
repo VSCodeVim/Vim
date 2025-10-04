@@ -1,9 +1,12 @@
 import * as assert from 'assert';
 import { Position, window } from 'vscode';
-import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../src/textobject/paragraph';
-import { WordType } from '../src/textobject/word';
-import { TextEditor } from './../src/textEditor';
-import { setupWorkspace } from './testUtils';
+import {
+  getCurrentParagraphBeginning,
+  getCurrentParagraphEnd,
+} from '../src/textobject/paragraph.ts';
+import { WordType } from '../src/textobject/word.ts';
+import { TextEditor } from './../src/textEditor.ts';
+import { setupWorkspace } from './testUtils.ts';
 
 suite('basic motion', () => {
   const text: string[] = ['mary had', 'a', 'little lamb', ' whose fleece was '];

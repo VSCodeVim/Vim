@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { createFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ExCommandLine } from '../../src/cmd_line/commandLine.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { createFile, setupWorkspace, cleanUpWorkspace } from '../testUtils.ts';
 
 suite('cmd_line tab', () => {
   let modeHandler: ModeHandler;

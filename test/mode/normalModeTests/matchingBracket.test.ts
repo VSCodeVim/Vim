@@ -1,5 +1,5 @@
-import { newTest } from '../../testSimplifier';
-import { setupWorkspace } from './../../testUtils';
+import { newTest } from '../../testSimplifier.ts';
+import { setupWorkspace } from './../../testUtils.ts';
 
 suite('Matching Bracket (%)', () => {
   suiteSetup(setupWorkspace);

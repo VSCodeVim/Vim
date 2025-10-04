@@ -1,9 +1,9 @@
-import { setupWorkspace } from './../testUtils';
-import { newTest } from '../testSimplifier';
+import { setupWorkspace } from './../testUtils.ts';
+import { newTest } from '../testSimplifier.ts';
 import {
   CommandSurroundAddSurroundingFunction,
   CommandSurroundAddSurroundingTag,
-} from '../../src/actions/plugins/surround';
+} from '../../src/actions/plugins/surround.ts';
 
 suite('surround plugin', () => {
   suiteSetup(async () => {

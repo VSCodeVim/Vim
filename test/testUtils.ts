@@ -6,13 +6,13 @@ import { join } from 'path';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
 
-import { ExCommandLine } from '../src/cmd_line/commandLine';
-import { IConfiguration } from '../src/configuration/iconfiguration';
-import { Globals } from '../src/globals';
-import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
-import { StatusBar } from '../src/statusBar';
-import { TextEditor } from '../src/textEditor';
-import { Configuration } from './testConfiguration';
+import { ExCommandLine } from '../src/cmd_line/commandLine.ts';
+import { IConfiguration } from '../src/configuration/iconfiguration.ts';
+import { Globals } from '../src/globals.ts';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap.ts';
+import { StatusBar } from '../src/statusBar.ts';
+import { TextEditor } from '../src/textEditor.ts';
+import { Configuration } from './testConfiguration.ts';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();

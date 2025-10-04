@@ -1,8 +1,8 @@
 import * as assert from 'assert';
-import { Globals } from '../../src/globals';
-import { newTest } from '../testSimplifier';
-import { RetabCommand } from '../../src/cmd_line/commands/retab';
-import * as testUtils from './../testUtils';
+import { Globals } from '../../src/globals.ts';
+import { newTest } from '../testSimplifier.ts';
+import { RetabCommand } from '../../src/cmd_line/commands/retab.ts';
+import * as testUtils from './../testUtils.ts';
 
 suite(':retab', () => {
   suiteSetup(testUtils.setupWorkspace);

@@ -1,7 +1,7 @@
-import { newTest } from '../../test/testSimplifier';
-import { getAndUpdateModeHandler } from '../../extension';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace } from './../testUtils';
+import { newTest } from '../../test/testSimplifier.ts';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { assertEqualLines, setupWorkspace } from './../testUtils.ts';
 
 // TODO(#4844): this fails on Windows
 suite('bang (!) cmd_line', () => {

@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace, waitForTabChange } from './../testUtils';
-import { SmileCommand } from '../../src/cmd_line/commands/smile';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ExCommandLine } from '../../src/cmd_line/commandLine.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { assertEqualLines, setupWorkspace, waitForTabChange } from './../testUtils.ts';
+import { SmileCommand } from '../../src/cmd_line/commands/smile.ts';
 
 suite('Smile command', () => {
   let modeHandler: ModeHandler;

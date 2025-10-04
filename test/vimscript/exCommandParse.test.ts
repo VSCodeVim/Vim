@@ -1,34 +1,38 @@
 import { strict as assert } from 'assert';
-import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
-import { CloseCommand } from '../../src/cmd_line/commands/close';
-import { CopyCommand } from '../../src/cmd_line/commands/copy';
-import { DeleteCommand } from '../../src/cmd_line/commands/delete';
-import { DigraphsCommand } from '../../src/cmd_line/commands/digraph';
-import { FileCommand } from '../../src/cmd_line/commands/file';
-import { GotoCommand } from '../../src/cmd_line/commands/goto';
-import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
-import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
-import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
-import { LetCommand } from '../../src/cmd_line/commands/let';
-import { DeleteMarksCommand, MarksCommand, MarkCommand } from '../../src/cmd_line/commands/marks';
-import { PutExCommand } from '../../src/cmd_line/commands/put';
-import { QuitCommand } from '../../src/cmd_line/commands/quit';
-import { ReadCommand } from '../../src/cmd_line/commands/read';
-import { RetabCommand } from '../../src/cmd_line/commands/retab';
-import { RegisterCommand } from '../../src/cmd_line/commands/register';
-import { SetCommand } from '../../src/cmd_line/commands/set';
-import { SortCommand } from '../../src/cmd_line/commands/sort';
-import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute';
-import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab';
-import { WriteCommand } from '../../src/cmd_line/commands/write';
-import { YankCommand } from '../../src/cmd_line/commands/yank';
-import { ExCommand } from '../../src/vimscript/exCommand';
-import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
-import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build';
-import { Address } from '../../src/vimscript/lineRange';
-import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
-import { ShiftCommand } from '../../src/cmd_line/commands/shift';
-import { GrepCommand } from '../../src/cmd_line/commands/grep';
+import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete.ts';
+import { CloseCommand } from '../../src/cmd_line/commands/close.ts';
+import { CopyCommand } from '../../src/cmd_line/commands/copy.ts';
+import { DeleteCommand } from '../../src/cmd_line/commands/delete.ts';
+import { DigraphsCommand } from '../../src/cmd_line/commands/digraph.ts';
+import { FileCommand } from '../../src/cmd_line/commands/file.ts';
+import { GotoCommand } from '../../src/cmd_line/commands/goto.ts';
+import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine.ts';
+import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history.ts';
+import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter.ts';
+import { LetCommand } from '../../src/cmd_line/commands/let.ts';
+import {
+  DeleteMarksCommand,
+  MarksCommand,
+  MarkCommand,
+} from '../../src/cmd_line/commands/marks.ts';
+import { PutExCommand } from '../../src/cmd_line/commands/put.ts';
+import { QuitCommand } from '../../src/cmd_line/commands/quit.ts';
+import { ReadCommand } from '../../src/cmd_line/commands/read.ts';
+import { RetabCommand } from '../../src/cmd_line/commands/retab.ts';
+import { RegisterCommand } from '../../src/cmd_line/commands/register.ts';
+import { SetCommand } from '../../src/cmd_line/commands/set.ts';
+import { SortCommand } from '../../src/cmd_line/commands/sort.ts';
+import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute.ts';
+import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab.ts';
+import { WriteCommand } from '../../src/cmd_line/commands/write.ts';
+import { YankCommand } from '../../src/cmd_line/commands/yank.ts';
+import { ExCommand } from '../../src/vimscript/exCommand.ts';
+import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser.ts';
+import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build.ts';
+import { Address } from '../../src/vimscript/lineRange.ts';
+import { Pattern, SearchDirection } from '../../src/vimscript/pattern.ts';
+import { ShiftCommand } from '../../src/cmd_line/commands/shift.ts';
+import { GrepCommand } from '../../src/cmd_line/commands/grep.ts';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {

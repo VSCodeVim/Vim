@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { Globals } from '../../src/globals';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest, newTestSkip } from '../testSimplifier';
-import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { Globals } from '../../src/globals.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { newTest, newTestSkip } from '../testSimplifier.ts';
+import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils.ts';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;

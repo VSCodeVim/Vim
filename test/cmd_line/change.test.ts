@@ -1,6 +1,6 @@
-import { Mode } from '../../src/mode/mode';
-import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { Mode } from '../../src/mode/mode.ts';
+import { newTest } from '../testSimplifier.ts';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils.ts';
 
 suite('cmd_line change', () => {
   setup(async () => {

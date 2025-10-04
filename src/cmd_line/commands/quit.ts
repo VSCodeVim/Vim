@@ -1,4 +1,4 @@
-import { Parser } from 'parsimmon';
+import type { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
 import * as error from '../../error';

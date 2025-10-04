@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { exCommandParser } from '../../src/vimscript/exCommandParser';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ExCommandLine } from '../../src/cmd_line/commandLine.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { exCommandParser } from '../../src/vimscript/exCommandParser.ts';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils.ts';
 
 function clearBreakpoints() {
   vscode.debug.removeBreakpoints(vscode.debug.breakpoints);

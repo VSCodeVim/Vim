@@ -1,4 +1,5 @@
-import { alt, optWhitespace, Parser, seq, whitespace } from 'parsimmon';
+import type { Parser } from 'parsimmon';
+const { alt, optWhitespace, seq, whitespace } = await import('parsimmon');
 import * as vscode from 'vscode';
 
 import * as error from '../../error';

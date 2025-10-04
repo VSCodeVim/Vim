@@ -1,8 +1,8 @@
 import * as assert from 'assert';
-import { getAndUpdateModeHandler } from '../../extension';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, assertStatusBarEqual } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { setupWorkspace, assertStatusBarEqual } from '../testUtils.ts';
 
 suite('cmd_line/search command', () => {
   let modeHandler: ModeHandler;

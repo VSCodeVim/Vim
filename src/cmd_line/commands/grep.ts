@@ -1,10 +1,10 @@
+import type { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
 import * as error from '../../error';
-import { VimState } from '../../state/vimState';
 import { Pattern, SearchDirection } from '../../vimscript/pattern';
 import { ExCommand } from '../../vimscript/exCommand';
-import { Parser, seq, optWhitespace, whitespace } from 'parsimmon';
+const { seq, optWhitespace, whitespace } = await import('parsimmon');
 import { fileNameParser } from '../../vimscript/parserUtils';
 
 // Still missing:

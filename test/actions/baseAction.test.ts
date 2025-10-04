@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { BaseAction } from '../../src/actions/base';
-import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
-import { Mode } from '../../src/mode/mode';
-import { VimState } from '../../src/state/vimState';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { BaseAction } from '../../src/actions/base.ts';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { VimState } from '../../src/state/vimState.ts';
+import { cleanUpWorkspace, setupWorkspace } from './../testUtils.ts';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];

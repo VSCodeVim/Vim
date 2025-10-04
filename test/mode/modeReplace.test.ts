@@ -1,5 +1,5 @@
-import { Mode } from '../../src/mode/mode';
-import { newTest } from '../testSimplifier';
+import { Mode } from '../../src/mode/mode.ts';
+import { newTest } from '../testSimplifier.ts';
 
 suite('Mode Replace', () => {
   newTest({

@@ -13,8 +13,8 @@ import glob from 'glob';
 import Mocha from 'mocha';
 import * as path from 'path';
 
-import { Globals } from '../src/globals';
-import { Configuration } from './testConfiguration';
+import { Globals } from '../src/globals.ts';
+import { Configuration } from './testConfiguration.ts';
 
 Globals.isTesting = true;
 Globals.mockConfiguration = new Configuration();
@@ -30,7 +30,7 @@ export function run(): Promise<void> {
     grep: mochaGrep,
   });
 
-  const testsRoot = path.resolve(__dirname, '.');
+  const testsRoot = path.resolve(import.meta.dirname, '.');
 
   return new Promise((c, e) => {
     glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {

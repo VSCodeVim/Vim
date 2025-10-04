@@ -1,11 +1,11 @@
 import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
-import { getAndUpdateModeHandler } from '../extensionBase';
-import { Mode } from '../src/mode/mode';
-import { ModeHandler } from '../src/mode/modeHandler';
-import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
-import { newTest, newTestSkip } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { getAndUpdateModeHandler } from '../extensionBase.ts';
+import { Mode } from '../src/mode/mode.ts';
+import { ModeHandler } from '../src/mode/modeHandler.ts';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap.ts';
+import { newTest, newTestSkip } from './testSimplifier.ts';
+import { cleanUpWorkspace, setupWorkspace } from './testUtils.ts';
 
 suite('Marks', () => {
   let modeHandler: ModeHandler;

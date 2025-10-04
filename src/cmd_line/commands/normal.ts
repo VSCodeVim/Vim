@@ -1,4 +1,5 @@
-import { Parser, all, whitespace } from 'parsimmon';
+import type { Parser } from 'parsimmon';
+const { all, whitespace } = await import('parsimmon');
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';

@@ -1,6 +1,6 @@
-import { Mode } from '../src/mode/mode';
-import { newTest, newTestWithRemaps } from './testSimplifier';
-import { setupWorkspace } from './testUtils';
+import { Mode } from '../src/mode/mode.ts';
+import { newTest, newTestWithRemaps } from './testSimplifier.ts';
+import { setupWorkspace } from './testUtils.ts';
 
 suite('Record and execute a macro', () => {
   setup(async () => {

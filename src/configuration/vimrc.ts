@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import * as _ from 'lodash-es';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'platform/fs';

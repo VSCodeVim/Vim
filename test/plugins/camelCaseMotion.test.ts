@@ -1,5 +1,5 @@
-import { setupWorkspace } from './../testUtils';
-import { newTest } from '../testSimplifier';
+import { setupWorkspace } from './../testUtils.ts';
+import { newTest } from '../testSimplifier.ts';
 
 suite('camelCaseMotion plugin if not enabled', () => {
   suiteSetup(async () => {

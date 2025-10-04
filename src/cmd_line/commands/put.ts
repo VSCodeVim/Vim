@@ -1,8 +1,9 @@
+import type { Parser } from 'parsimmon';
 import { configuration } from '../../configuration/configuration';
 import { VimState } from '../../state/vimState';
 
 // eslint-disable-next-line id-denylist
-import { Parser, alt, any, optWhitespace, seq, string } from 'parsimmon';
+const { alt, any, optWhitespace, seq, string } = await import('parsimmon');
 import { Position } from 'vscode';
 import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
 import { ErrorCode, VimError } from '../../error';

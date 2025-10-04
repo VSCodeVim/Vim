@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
-import { StatusBar } from '../../src/statusBar';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { setupWorkspace, cleanUpWorkspace } from '../testUtils.ts';
+import { StatusBar } from '../../src/statusBar.ts';
 
 suite('cursor location', () => {
   let modeHandler: ModeHandler;

@@ -2,10 +2,10 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import vscode, { Position } from 'vscode';
 
-import { HistoryTracker, ILocalMark, IMark } from '../src/history/historyTracker';
-import { Jump } from '../src/jumps/jump';
-import { globalState } from '../src/state/globalState';
-import { VimState } from '../src/state/vimState';
+import { HistoryTracker, ILocalMark, IMark } from '../src/history/historyTracker.ts';
+import { Jump } from '../src/jumps/jump.ts';
+import { globalState } from '../src/state/globalState.ts';
+import { VimState } from '../src/state/vimState.ts';
 
 suite('historyTracker unit tests', () => {
   let sandbox: sinon.SinonSandbox;

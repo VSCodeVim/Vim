@@ -1,7 +1,8 @@
+import type { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
 // eslint-disable-next-line id-denylist
-import { Parser, alt, any, optWhitespace, seq, whitespace } from 'parsimmon';
+const { alt, any, optWhitespace, seq, whitespace } = await import('parsimmon');
 import { Position } from 'vscode';
 import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["ES2021"],
-    "module": "commonjs",
+    "module": "esnext",
     "target": "ES2021",
     "outDir": "out",
     "noImplicitOverride": true,
@@ -18,7 +18,9 @@
     },
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "rewriteRelativeImportExtensions": true
     // "isolatedModules": true,
   },
   "exclude": ["node_modules", "!node_modules/@types"]

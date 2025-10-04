@@ -1,7 +1,7 @@
 import * as assert from 'assert';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { getAndUpdateModeHandler } from '../../extension';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { getAndUpdateModeHandler } from '../../extension.ts';
 import * as vscode from 'vscode';
 
 suite('insertLineBefore', () => {

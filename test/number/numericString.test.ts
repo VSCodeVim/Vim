@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { NumericString, NumericStringRadix } from '../../src/common/number/numericString';
+import { NumericString, NumericStringRadix } from '../../src/common/number/numericString.ts';
 
 suite('numeric string', () => {
   test('fails on non-string', () => {

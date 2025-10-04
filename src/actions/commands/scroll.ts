@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { clamp } from 'lodash';
+import { clamp } from 'lodash-es';
 import { Position } from 'vscode';
 import { configuration } from '../../configuration/configuration';
 import { Mode, isVisualMode } from '../../mode/mode';

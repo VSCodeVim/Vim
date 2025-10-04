@@ -1,7 +1,7 @@
 import * as assert from 'assert';
-import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher';
-import { Mode } from '../../src/mode/mode';
-import { setupWorkspace } from '../testUtils';
+import { InputMethodSwitcher } from '../../src/actions/plugins/imswitcher.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { setupWorkspace } from '../testUtils.ts';
 
 suite('Input method plugin', () => {
   let savedCmd = '';

@@ -1,4 +1,5 @@
-import { optWhitespace, Parser } from 'parsimmon';
+import type { Parser } from 'parsimmon';
+const { optWhitespace } = await import('parsimmon');
 import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { ErrorCode, VimError } from '../../error';

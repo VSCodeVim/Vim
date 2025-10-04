@@ -1,16 +1,16 @@
 import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { IKeyRemapping } from '../../src/configuration/iconfiguration';
-import { Remapper, Remappers } from '../../src/configuration/remapper';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { IRegisterContent, Register } from '../../src/register/register';
-import { VimState } from '../../src/state/vimState';
-import { StatusBar } from '../../src/statusBar';
-import { Configuration } from '../testConfiguration';
-import { assertEqualLines, setupWorkspace } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { IKeyRemapping } from '../../src/configuration/iconfiguration.ts';
+import { Remapper, Remappers } from '../../src/configuration/remapper.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { IRegisterContent, Register } from '../../src/register/register.ts';
+import { VimState } from '../../src/state/vimState.ts';
+import { StatusBar } from '../../src/statusBar.ts';
+import { Configuration } from '../testConfiguration.ts';
+import { assertEqualLines, setupWorkspace } from '../testUtils.ts';
 
 suite('Remapper', () => {
   let modeHandler: ModeHandler;

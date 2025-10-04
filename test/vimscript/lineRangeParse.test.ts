@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
-import { Address, LineRange } from '../../src/vimscript/lineRange';
-import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
+import { Address, LineRange } from '../../src/vimscript/lineRange.ts';
+import { Pattern, SearchDirection } from '../../src/vimscript/pattern.ts';
 
 function parseTest(name: string, input: string, output: LineRange) {
   test(name, () => {

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { resolveUri, separatePath } from '../../src/util/path';
+import { resolveUri, separatePath } from '../../src/util/path.ts';
 
 suite('util path', () => {
   suite('separatePath', () => {

@@ -1,7 +1,8 @@
+import type { Parser } from 'parsimmon';
 import { QuickPickItem, window } from 'vscode';
 
 // eslint-disable-next-line id-denylist
-import { Parser, alt, noneOf, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
+const { alt, noneOf, optWhitespace, regexp, seq, string, whitespace } = await import('parsimmon');
 import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { ErrorCode, VimError } from '../../error';

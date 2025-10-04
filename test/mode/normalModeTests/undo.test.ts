@@ -1,5 +1,5 @@
-import { newTest, newTestSkip } from '../../testSimplifier';
-import { setupWorkspace } from '../../testUtils';
+import { newTest, newTestSkip } from '../../testSimplifier.ts';
+import { setupWorkspace } from '../../testUtils.ts';
 
 suite('Undo', () => {
   suiteSetup(setupWorkspace);

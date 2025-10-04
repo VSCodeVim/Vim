@@ -1,17 +1,19 @@
-const gulp = require('gulp');
-const bump = require('gulp-bump');
-const git = require('gulp-git');
-const tag_version = require('gulp-tag-version');
-const ts = require('gulp-typescript');
-const PluginError = require('plugin-error');
-const minimist = require('minimist');
-const path = require('path');
-const webpack = require('webpack');
-const webpack_stream = require('webpack-stream');
-const es = require('event-stream');
+import gulp from 'gulp';
+import bump from 'gulp-bump';
+import git from 'gulp-git';
+import tag_version from 'gulp-tag-version';
+import ts from 'gulp-typescript';
+import PluginError from 'plugin-error';
+import minimist from 'minimist';
+import path from 'path';
+import webpack from 'webpack';
+import webpack_stream from 'webpack-stream';
+import es from 'event-stream';
+import fs from 'fs';
+import { spawn } from 'child_process';
 
-const webpack_config = require('./webpack.config.js');
-const webpack_dev_config = require('./webpack.dev.js');
+import { config } from './webpack.config.js';
+import { devConfig } from './webpack.dev.js';
 
 const releaseOptions = {
   semver: '',
@@ -105,7 +107,7 @@ gulp.task('tsc', function () {
 gulp.task('webpack', function () {
   return webpack_stream(
     {
-      config: webpack_config,
+      config,
       entry: ['./extension.ts', './extensionWeb.ts'],
     },
     webpack,
@@ -115,7 +117,7 @@ gulp.task('webpack', function () {
 gulp.task('webpack-dev', function () {
   return webpack_stream(
     {
-      config: webpack_dev_config,
+      config: devConfig,
       entry: ['./extension.ts'],
     },
     webpack,
@@ -124,7 +126,7 @@ gulp.task('webpack-dev', function () {
 
 gulp.task('commit-hash', function (done) {
   git.revParse({ args: 'HEAD', quiet: true }, function (err, hash) {
-    require('fs').writeFileSync('out/version.txt', hash);
+    fs.writeFileSync('out/version.txt', hash);
     done();
   });
 });
@@ -138,7 +140,6 @@ gulp.task('run-test', function (done) {
   };
   var options = minimist(process.argv.slice(2), knownOptions);
 
-  var spawn = require('child_process').spawn;
   const dockerTag = 'vscodevim';
 
   console.log('Building container...');

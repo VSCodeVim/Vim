@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion.ts';
 import { Position } from 'vscode';
-import { Cursor } from '../../src/common/motion/cursor';
-import { VimState } from '../../src/state/vimState';
+import { Cursor } from '../../src/common/motion/cursor.ts';
+import { VimState } from '../../src/state/vimState.ts';
 
 suite('VimState', () => {
   test('de-dupes cursors', async () => {

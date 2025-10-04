@@ -1,9 +1,9 @@
 import {
   buildTriggerKeys,
   EasymotionTrigger,
-} from '../../src/actions/plugins/easymotion/easymotion.cmd';
-import { newTest } from '../testSimplifier';
-import { setupWorkspace } from './../testUtils';
+} from '../../src/actions/plugins/easymotion/easymotion.cmd.ts';
+import { newTest } from '../testSimplifier.ts';
+import { setupWorkspace } from './../testUtils.ts';
 
 function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpKey: string) {
   return [...buildTriggerKeys(trigger), searchWord, jumpKey].join('');

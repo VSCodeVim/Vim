@@ -4,18 +4,18 @@ import * as vscode from 'vscode';
 
 import * as os from 'os';
 import { Position } from 'vscode';
-import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration';
-import { VimrcImpl } from '../src/configuration/vimrc';
-import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder';
-import { Globals } from '../src/globals';
-import { Mode } from '../src/mode/mode';
-import { ModeHandler } from '../src/mode/modeHandler';
-import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
-import { Register } from '../src/register/register';
-import { globalState } from '../src/state/globalState';
-import { StatusBar } from '../src/statusBar';
-import { TextEditor } from '../src/textEditor';
-import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
+import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration.ts';
+import { VimrcImpl } from '../src/configuration/vimrc.ts';
+import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder.ts';
+import { Globals } from '../src/globals.ts';
+import { Mode } from '../src/mode/mode.ts';
+import { ModeHandler } from '../src/mode/modeHandler.ts';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap.ts';
+import { Register } from '../src/register/register.ts';
+import { globalState } from '../src/state/globalState.ts';
+import { StatusBar } from '../src/statusBar.ts';
+import { TextEditor } from '../src/textEditor.ts';
+import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils.ts';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,

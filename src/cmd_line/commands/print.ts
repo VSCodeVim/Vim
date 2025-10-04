@@ -1,4 +1,5 @@
-import { Parser, succeed } from 'parsimmon';
+import type { Parser } from 'parsimmon';
+const { succeed } = await import('parsimmon');
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';

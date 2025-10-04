@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { ErrorCode, ErrorMessage } from '../src/error';
+import { ErrorCode, ErrorMessage } from '../src/error.ts';
 
 suite('Error', () => {
   test('error code has message', () => {

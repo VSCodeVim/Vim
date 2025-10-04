@@ -1,10 +1,10 @@
 import * as assert from 'assert';
-import * as srcConfiguration from '../../src/configuration/configuration';
+import * as srcConfiguration from '../../src/configuration/configuration.ts';
 import * as vscode from 'vscode';
-import { setupWorkspace } from './../testUtils';
-import { Mode } from '../../src/mode/mode';
-import { newTest } from '../testSimplifier';
-import { IConfiguration } from '../../src/configuration/iconfiguration';
+import { setupWorkspace } from './../testUtils.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { newTest } from '../testSimplifier.ts';
+import { IConfiguration } from '../../src/configuration/iconfiguration.ts';
 
 const testConfig: Partial<IConfiguration> = {
   leader: '<space>',
