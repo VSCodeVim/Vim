@@ -52,7 +52,7 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
 
 ## 💾 Installation
 
-VSCodeVim can be installed via the VS Code [Marketplace](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim).
+VSCodeVim can be installed via the VS Code [Marketplace](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) or the OpenVSX [Marketplace](https://open-vsx.org/extension/vscodevim/vim).
 
 ### Mac
 
@@ -63,6 +63,7 @@ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false        
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
 defaults write com.vscodium ApplePressAndHoldEnabled -bool false                      # For VS Codium
 defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
+defaults write com.exafunction.windsurf ApplePressAndHoldEnabled -bool false          # For Windsurf
 defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
 ```
 
@@ -671,7 +672,6 @@ Any third-party program can be used to switch input methods. The following will 
 
 1.  Install im-select (see [installation guide](https://github.com/daipeihust/im-select#installation))
 1.  Find your default input method key
-
     - Mac:
 
       Switch your input method to English, and run the following in your terminal: `/<path-to-im-select-installation>/im-select` to output your default input method. The table below lists the common English key layouts for MacOS.
@@ -691,7 +691,6 @@ Any third-party program can be used to switch input methods. The following will 
       Refer to the [im-select guide](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale) on how to discover your input method key. Generally, if your keyboard layout is en_US the input method key is 1033 (the locale ID of en_US). You can also find your locale ID from [this page](https://www.science.co.il/language/Locale-codes.php), where the `LCID Decimal` column is the locale ID.
 
 1.  Configure `vim.autoSwitchInputMethod`.
-
     - MacOS:
 
       Given the input method key of `com.apple.keylayout.US` and `im-select` located at `/usr/local/bin`. The configuration is:

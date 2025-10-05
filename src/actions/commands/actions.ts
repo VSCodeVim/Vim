@@ -288,7 +288,9 @@ class CommandEsc extends BaseCommand {
         await Promise.allSettled([
           vscode.commands.executeCommand('closeReferenceSearchEditor'),
           vscode.commands.executeCommand('closeMarkersNavigation'),
+          // TODO: closeDirtyDiff renamed to closeQuickDiff (see microsoft/vscode#235601)
           vscode.commands.executeCommand('closeDirtyDiff'),
+          vscode.commands.executeCommand('closeQuickDiff'),
           vscode.commands.executeCommand('editor.action.inlineSuggest.hide'),
         ]);
       }
