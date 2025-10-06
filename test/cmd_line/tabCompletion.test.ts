@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as os from 'os';
 import { join, sep, basename } from 'path';
-import { getAndUpdateModeHandler } from '../../extension';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { StatusBar } from '../../src/statusBar';
-import * as t from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { StatusBar } from '../../src/statusBar.ts';
+import * as t from '../testUtils.ts';
 
 suite('cmd_line tabComplete', () => {
   let modeHandler: ModeHandler;

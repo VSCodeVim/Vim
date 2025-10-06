@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { getCompletionsForCurrentLine } from '../../src/completion/lineCompletionProvider';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
-import { VimState } from '../../src/state/vimState';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { getCompletionsForCurrentLine } from '../../src/completion/lineCompletionProvider.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils.ts';
+import { VimState } from '../../src/state/vimState.ts';
 import { Position } from 'vscode';
 
 suite('Provide line completions', () => {

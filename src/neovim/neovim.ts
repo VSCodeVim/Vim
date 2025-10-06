@@ -90,7 +90,7 @@ export class NeovimWrapper implements vscode.Disposable {
     Logger.debug('Spawning Neovim process...');
     let dir = dirname(document.uri.fsPath);
     if (!(await util.promisify(exists)(dir))) {
-      dir = __dirname;
+      dir = import.meta.dirname;
     }
     const neovimArgs: string[] = [];
     // '-u' flag is only added if user wants to use a custom path for

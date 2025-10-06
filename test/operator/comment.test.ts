@@ -1,6 +1,6 @@
-import { Mode } from '../../src/mode/mode';
-import { newTest } from '../testSimplifier';
-import { setupWorkspace } from './../testUtils';
+import { Mode } from '../../src/mode/mode.ts';
+import { newTest } from '../testSimplifier.ts';
+import { setupWorkspace } from './../testUtils.ts';
 
 suite('comment operator', () => {
   suiteSetup(async () => {

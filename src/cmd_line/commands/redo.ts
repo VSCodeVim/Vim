@@ -1,8 +1,9 @@
+import type { Parser } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { CommandRedo } from '../../actions/commands/actions';
 import { Position } from 'vscode';
 import { ExCommand } from '../../vimscript/exCommand';
-import { optWhitespace, Parser } from 'parsimmon';
+const { optWhitespace } = await import('parsimmon');
 import { numberParser } from '../../vimscript/parserUtils';
 
 //

@@ -14,12 +14,12 @@ import {
   bool,
   list,
   dictionary,
-} from '../../src/vimscript/expression/build';
-import { EvaluationContext } from '../../src/vimscript/expression/evaluate';
-import { expressionParser } from '../../src/vimscript/expression/parser';
-import { Expression, Value } from '../../src/vimscript/expression/types';
-import { displayValue } from '../../src/vimscript/expression/displayValue';
-import { ErrorCode, VimError } from '../../src/error';
+} from '../../src/vimscript/expression/build.ts';
+import { EvaluationContext } from '../../src/vimscript/expression/evaluate.ts';
+import { expressionParser } from '../../src/vimscript/expression/parser.ts';
+import { Expression, Value } from '../../src/vimscript/expression/types.ts';
+import { displayValue } from '../../src/vimscript/expression/displayValue.ts';
+import { ErrorCode, VimError } from '../../src/error.ts';
 
 function exprTest(
   input: string,

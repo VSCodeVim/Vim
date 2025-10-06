@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
-import { escapeRegExp } from 'lodash';
+import * as _ from 'lodash-es';
+import { escapeRegExp } from 'lodash-es';
 import { Position, Selection } from 'vscode';
 import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';

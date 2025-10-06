@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ExCommandLine } from '../../src/cmd_line/commandLine.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { newTest } from '../testSimplifier.ts';
+import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from './../testUtils.ts';
 
 suite('Basic write-quit', () => {
   let modeHandler: ModeHandler;

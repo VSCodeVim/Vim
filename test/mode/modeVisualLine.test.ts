@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest, newTestOnly } from '../testSimplifier';
-import { assertEqualLines, setupWorkspace } from './../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { newTest, newTestOnly } from '../testSimplifier.ts';
+import { assertEqualLines, setupWorkspace } from './../testUtils.ts';
 
 suite('Mode Visual Line', () => {
   let modeHandler: ModeHandler;

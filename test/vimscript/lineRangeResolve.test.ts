@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert';
-import { LineRange } from '../../src/vimscript/lineRange';
-import { ITestObject, testIt } from '../testSimplifier';
-import { setupWorkspace } from '../testUtils';
+import { LineRange } from '../../src/vimscript/lineRange.ts';
+import { ITestObject, testIt } from '../testSimplifier.ts';
+import { setupWorkspace } from '../testUtils.ts';
 
 function resolveTest(input: ITestObject & { lineRanges: Record<string, [number, number]> }) {
   suite(input.title, () => {

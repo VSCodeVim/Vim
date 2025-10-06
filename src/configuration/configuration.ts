@@ -19,7 +19,7 @@ import {
 } from './iconfiguration';
 
 import { SUPPORT_VIMRC } from 'platform/constants';
-import * as packagejson from '../../package.json';
+import packagejson from '../../package.json' with { type: 'json' };
 import { Mode } from '../mode/mode';
 
 // https://stackoverflow.com/questions/51465182/how-to-remove-index-signature-using-mapped-types/51956054#51956054

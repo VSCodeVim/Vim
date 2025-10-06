@@ -1,7 +1,7 @@
-import { getAndUpdateModeHandler } from '../../extension';
-import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { ExCommandLine } from '../../src/cmd_line/commandLine.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { assertEqualLines, setupWorkspace } from '../testUtils.ts';
 
 suite('Undo command', () => {
   let modeHandler: ModeHandler;

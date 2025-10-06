@@ -1,9 +1,9 @@
 import { strict as assert } from 'assert';
-import { getAndUpdateModeHandler } from '../../extensionBase';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest } from '../testSimplifier';
-import { setupWorkspace } from '../testUtils';
+import { getAndUpdateModeHandler } from '../../extensionBase.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { newTest } from '../testSimplifier.ts';
+import { setupWorkspace } from '../testUtils.ts';
 
 suite('Search text objects (gn and gN)', () => {
   let modeHandler: ModeHandler;

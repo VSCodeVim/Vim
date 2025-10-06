@@ -1,5 +1,5 @@
-import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { newTest } from '../testSimplifier.ts';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils.ts';
 
 suite('incsearch motion', () => {
   suiteSetup(async () => {

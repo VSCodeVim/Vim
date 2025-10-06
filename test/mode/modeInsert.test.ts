@@ -1,12 +1,12 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { getAndUpdateModeHandler } from '../../extension';
-import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace, reloadConfiguration } from './../testUtils';
-import { Globals } from '../../src/globals';
-import { newTest } from '../testSimplifier';
+import { getAndUpdateModeHandler } from '../../extension.ts';
+import { Mode } from '../../src/mode/mode.ts';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { assertEqualLines, setupWorkspace, reloadConfiguration } from './../testUtils.ts';
+import { Globals } from '../../src/globals.ts';
+import { newTest } from '../testSimplifier.ts';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;

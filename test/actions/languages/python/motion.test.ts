@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
 import { Position, TextDocument } from 'vscode';
-import { PythonDocument } from '../../../../src/actions/languages/python/motion';
+import { PythonDocument } from '../../../../src/actions/languages/python/motion.ts';
 
 suite('PythonDocument lines generator', () => {
   let _lines: string[];

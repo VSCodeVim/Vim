@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { window, workspace } from 'vscode';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { ModeHandlerMap } from '../../src/mode/modeHandlerMap';
+import { ModeHandler } from '../../src/mode/modeHandler.ts';
+import { ModeHandlerMap } from '../../src/mode/modeHandlerMap.ts';
 
 suite('ModeHandler', () => {
   setup(() => {

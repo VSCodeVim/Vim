@@ -1,5 +1,6 @@
+import type { Parser } from 'parsimmon';
 // eslint-disable-next-line id-denylist
-import { Parser, alt, optWhitespace, string } from 'parsimmon';
+const { alt, optWhitespace, string } = await import('parsimmon');
 import {
   CommandShowCommandHistory,
   CommandShowSearchHistory,
