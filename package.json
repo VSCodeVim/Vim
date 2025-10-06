@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.30.1",
+  "version": "1.31.0",
   "publisher": "vscodevim",
   "sponsor": {
     "url": "https://github.com/sponsors/J-Fields"
