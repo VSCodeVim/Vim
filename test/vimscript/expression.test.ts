@@ -32,15 +32,15 @@ function exprTest(
         assert.deepStrictEqual(expression, asserts.expr);
       }
       if ('error' in asserts) {
-        const ctx = new EvaluationContext();
+        const ctx = new EvaluationContext(undefined);
         ctx.evaluate(expression);
       } else {
         if (asserts.value !== undefined) {
-          const ctx = new EvaluationContext();
+          const ctx = new EvaluationContext(undefined);
           assert.deepStrictEqual(ctx.evaluate(expression), asserts.value);
         }
         if (asserts.display !== undefined) {
-          const ctx = new EvaluationContext();
+          const ctx = new EvaluationContext(undefined);
           assert.deepStrictEqual(displayValue(ctx.evaluate(expression)), asserts.display);
         }
       }

@@ -32,7 +32,9 @@ import {
 } from './types';
 import { Pattern, SearchDirection } from '../pattern';
 import { escapeRegExp, isInteger } from 'lodash';
-import { integerParser } from '../parserUtils';
+import { VimState } from '../../state/vimState';
+import { Position } from 'vscode';
+import { isVisualMode } from '../../mode/mode';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -146,8 +148,13 @@ export type VariableStore = Map<string, Variable>;
 export class EvaluationContext {
   private static globalVariables: VariableStore = new Map();
 
+  private vimState: VimState | undefined;
   private localScopes: VariableStore[] = [];
   private errors: string[] = [];
+
+  constructor(vimState: VimState | undefined) {
+    this.vimState = vimState;
+  }
 
   /**
    * Fully evaluates the given expression and returns the resulting value.
@@ -677,6 +684,33 @@ export class EvaluationContext {
       this.errors.push(msg);
       return int(1);
     };
+
+    const getpos = (arg: string) => {
+      const pos: Position | undefined = (() => {
+        if (arg === '.') {
+          return this.vimState!.cursorStopPosition;
+        } else if (arg === '$') {
+          return new Position(this.vimState!.document.lineCount, 0);
+        } else if (arg.startsWith("'") && arg.length === 2) {
+          const mark = this.vimState!.historyTracker.getMark(arg[1]);
+          return mark?.position;
+        } else if (arg === 'w0') {
+          return new Position(this.vimState!.editor.visibleRanges[0].start.line, 0);
+        } else if (arg === 'w$') {
+          return new Position(this.vimState!.editor.visibleRanges[0].end.line, 0);
+        } else if (arg === 'v') {
+          return this.vimState!.cursorStartPosition;
+        }
+        return undefined;
+      })();
+      return {
+        bufnum: 0, // TODO
+        lnum: (pos?.line ?? -1) + 1,
+        col: (pos?.character ?? -1) + 1,
+        off: 0,
+      };
+    };
+
     const getArgs = (min: number, max?: number) => {
       if (max === undefined) {
         max = min;
@@ -830,6 +864,10 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return float(Math.ceil(toFloat(x!)));
       }
+      case 'col': {
+        const [s] = getArgs(1);
+        return int(getpos(toString(s!)).col);
+      }
       case 'copy': {
         const [x] = getArgs(1);
         switch (x?.type) {
@@ -891,6 +929,7 @@ export class EvaluationContext {
         }
         return int(count);
       }
+      // TODO: cursor()
       case 'deepcopy': {
         // TODO: real deep copy once references are implemented
         const [x] = getArgs(1);
@@ -1028,6 +1067,11 @@ export class EvaluationContext {
       }
       // TODO: getcurpos()
       // TODO: getline()
+      case 'getpos': {
+        const [s] = getArgs(1);
+        const { bufnum, lnum, col, off } = getpos(toString(s!));
+        return list([int(bufnum), int(lnum), int(col), int(off)]);
+      }
       // TODO: getreg()
       // TODO: getreginfo()
       // TODO: getregtype()
@@ -1199,6 +1243,10 @@ export class EvaluationContext {
             throw VimError.fromCode(ErrorCode.InvalidTypeForLen);
         }
       }
+      case 'line': {
+        const [s, winid] = getArgs(1, 2);
+        return int(getpos(toString(s!)).lnum);
+      }
       case 'localtime': {
         return int(Date.now() / 1000);
       }
@@ -1354,6 +1402,7 @@ export class EvaluationContext {
         // Halfway between integers, Math.round() rounds toward infinity while Vim's round() rounds away from 0.
         return float(_x < 0 ? -Math.round(-_x) : Math.round(_x));
       }
+      // TODO: setpos()
       // TODO: setreg()
       case 'sin': {
         const [x] = getArgs(1);
@@ -1476,6 +1525,7 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return float(Math.tanh(toFloat(x!)));
       }
+      // TODO: timer*()
       case 'tolower': {
         const [s] = getArgs(1);
         return str(toString(s!).toLowerCase());
