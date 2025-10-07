@@ -1351,6 +1351,7 @@ export class EvaluationContext {
           case Mode.Replace:
             return str('R');
           case Mode.CommandlineInProgress:
+          case Mode.SearchInProgressMode:
             return str('c');
           default:
             return str(''); // TODO: Other modes
@@ -1385,9 +1386,12 @@ export class EvaluationContext {
         return list(items);
       }
       // TODO: reduce()
-      // TODO: reg_executing()
-      // TODO: reg_recorded()
-      // TODO: reg_recording()
+      case 'reg_executing': {
+        return str(this.vimState?.isReplayingMacro ? this.vimState.recordedState.registerName : '');
+      }
+      case 'reg_recording': {
+        return str(this.vimState?.macro?.registerName ?? '');
+      }
       // TODO: reltime*()
       case 'repeat': {
         const [val, count] = getArgs(2);
