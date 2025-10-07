@@ -34,6 +34,7 @@ import { Pattern, SearchDirection } from '../pattern';
 import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
+import { Mode } from '../../mode/mode';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -710,6 +711,16 @@ export class EvaluationContext {
       };
     };
 
+    // See `:help non-zero-arg`
+    const nonZeroArg = (arg: Value): boolean => {
+      if (arg.type === 'number' && arg.value !== 0) {
+        return true;
+      } else if (arg.type === 'string' && arg.value.length !== 0) {
+        return true;
+      }
+      return false;
+    };
+
     const getArgs = (min: number, max?: number) => {
       if (max === undefined) {
         max = min;
@@ -1322,7 +1333,29 @@ export class EvaluationContext {
         }
         return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
       }
-      // TODO: mode()
+      case 'mode': {
+        const [arg] = getArgs(1);
+        switch (this.vimState!.currentModeIncludingPseudoModes) {
+          case Mode.Normal:
+            return str('n');
+          case Mode.OperatorPendingMode:
+            return nonZeroArg(arg!) ? str('n') : str('no');
+          case Mode.Visual:
+            return str('v');
+          case Mode.VisualLine:
+            return str('V');
+          case Mode.VisualBlock:
+            return str('\x16');
+          case Mode.Insert:
+            return str('i');
+          case Mode.Replace:
+            return str('R');
+          case Mode.CommandlineInProgress:
+            return str('c');
+          default:
+            return str(''); // TODO: Other modes
+        }
+      }
       case 'or': {
         const [x, y] = getArgs(2);
         // eslint-disable-next-line no-bitwise
@@ -1626,7 +1659,14 @@ export class EvaluationContext {
         const [d] = getArgs(1);
         return list([...toDict(d!).items.values()]);
       }
-      // TODO: visualmode()
+      case 'visualmode': {
+        const [arg] = getArgs(1); // TODO: Use arg
+        const mode = this.vimState?.lastVisualSelection?.mode;
+        if (mode === undefined) {
+          return str('');
+        }
+        return mode === Mode.Visual ? str('v') : mode === Mode.VisualLine ? str('V') : str('\x16');
+      }
       // TODO: wordcount()
       case 'xor': {
         const [x, y] = getArgs(2);
