@@ -35,6 +35,7 @@ import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
+import { Range } from 'vscode';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -1080,7 +1081,18 @@ export class EvaluationContext {
         const curswant = this.vimState!.desiredColumn + 1;
         return list([int(bufnum), int(lnum), int(col), int(off), int(curswant)]);
       }
-      // TODO: getline()
+      case 'getline': {
+        const [lnum, _end] = getArgs(1, 2);
+        // TODO: When {lnum} is a String that doesn't start with a digit, line() is called
+        if (_end === undefined) {
+          return str(this.vimState!.document.lineAt(toInt(lnum!)).text);
+        }
+        const lines: string[] = [];
+        for (let i = toInt(lnum!); i <= toInt(_end); i++) {
+          lines.push(this.vimState!.document.lineAt(i).text);
+        }
+        return list(lines.map(str));
+      }
       case 'getpos': {
         const [s] = getArgs(1);
         const { bufnum, lnum, col, off } = getpos(toString(s!));
