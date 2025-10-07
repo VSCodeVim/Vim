@@ -34,7 +34,6 @@ import { Pattern, SearchDirection } from '../pattern';
 import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
-import { isVisualMode } from '../../mode/mode';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -1065,7 +1064,11 @@ export class EvaluationContext {
         return _default ?? int(0);
         // TODO: get({func}, {what})
       }
-      // TODO: getcurpos()
+      case 'getcurpos': {
+        const { bufnum, lnum, col, off } = getpos('.');
+        const curswant = this.vimState!.desiredColumn + 1;
+        return list([int(bufnum), int(lnum), int(col), int(off), int(curswant)]);
+      }
       // TODO: getline()
       case 'getpos': {
         const [s] = getArgs(1);
