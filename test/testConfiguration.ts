@@ -151,4 +151,5 @@ export class Configuration implements IConfiguration {
     '<C-d>': true,
   };
   langmap = '';
+  textObjects = [];
 }
