@@ -17,7 +17,31 @@ import {
   Value,
   BlobValue,
   FuncrefCallExpression,
+  NumberExpression,
+  BlobExpression,
+  DictionaryExpression,
+  FloatExpression,
+  FuncRefExpression,
+  StringExpression,
 } from './types';
+
+class UniqueIdGenerator {
+  private prefix: string;
+  private nextId: number = 1;
+
+  constructor(prefix: string) {
+    this.prefix = prefix;
+  }
+
+  public next(): string {
+    return `${this.prefix}${this.nextId++}`;
+  }
+}
+
+const listIdGen = new UniqueIdGenerator('list');
+const dictIdGen = new UniqueIdGenerator('dict');
+const funcIdGen = new UniqueIdGenerator('func');
+const blobIdGen = new UniqueIdGenerator('blob');
 
 export function int(value: number): NumberValue {
   return {
@@ -48,22 +72,28 @@ export function list(items: Value[]): ListValue {
   return {
     type: 'list',
     items,
+    id: listIdGen.next(),
   };
 }
 
 export function dictionary(items: Map<string, Value>): DictionaryValue {
   return {
-    type: 'dict_val',
+    type: 'dictionary',
     items,
+    id: dictIdGen.next(),
   };
 }
 
-export function funcref(name: string, arglist?: ListValue, dict?: DictionaryValue): FuncRefValue {
+export function funcref(args: {
+  name: string;
+  body?: (args: Value[]) => Value;
+  arglist?: ListValue;
+  dict?: DictionaryValue;
+}): FuncRefValue {
   return {
     type: 'funcref',
-    name,
-    arglist,
-    dict,
+    ...args,
+    id: funcIdGen.next(),
   };
 }
 
@@ -71,7 +101,44 @@ export function blob(data: Uint8Array<ArrayBuffer>): BlobValue {
   return {
     type: 'blob',
     data,
+    id: blobIdGen.next(),
   };
+}
+
+export function toExpr(value: NumberValue): NumberExpression;
+export function toExpr(value: FloatValue): FloatExpression;
+export function toExpr(value: StringValue): StringExpression;
+export function toExpr(value: ListValue): ListExpression;
+export function toExpr(value: DictionaryValue): DictionaryExpression;
+export function toExpr(value: FuncRefValue): FuncRefExpression;
+export function toExpr(value: BlobValue): BlobExpression;
+export function toExpr(value: Value): Expression;
+export function toExpr(value: Value): Expression {
+  if (value.type === 'number' || value.type === 'float' || value.type === 'string') {
+    return value;
+  } else if (value.type === 'list') {
+    return listExpr(value.items.map(toExpr));
+  } else if (value.type === 'dictionary') {
+    return {
+      type: 'dictionary',
+      items: [...value.items.entries()].map(([key, val]) => [str(key), toExpr(val)]),
+    };
+  } else if (value.type === 'funcref') {
+    return {
+      type: 'funcref',
+      name: value.name,
+      body: value.body,
+      arglist: value.arglist ? toExpr(value.arglist) : undefined,
+      dict: value.dict ? toExpr(value.dict) : undefined,
+    };
+  } else if (value.type === 'blob') {
+    return {
+      type: 'blob',
+      data: value.data,
+    };
+  }
+  const guard: never = value;
+  throw new Error(`Unknown value type in toExpr()`);
 }
 
 export function listExpr(items: Expression[]): ListExpression {

@@ -14,12 +14,34 @@ import {
   bool,
   list,
   dictionary,
+  blob,
 } from '../../src/vimscript/expression/build';
 import { EvaluationContext } from '../../src/vimscript/expression/evaluate';
 import { expressionParser } from '../../src/vimscript/expression/parser';
 import { Expression, Value } from '../../src/vimscript/expression/types';
 import { displayValue } from '../../src/vimscript/expression/displayValue';
 import { ErrorCode, VimError } from '../../src/error';
+
+function removeIds(value: Value): unknown {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { id, ...rest } = value as any;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const _value: any = { ...rest };
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (value.type === 'list') {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    _value.items = value.items.map(removeIds);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  } else if (value.type === 'dictionary') {
+    const items = new Map<string, unknown>();
+    for (const [key, val] of value.items) {
+      items.set(key, removeIds(val));
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    _value.items = items;
+  }
+  return _value;
+}
 
 function exprTest(
   input: string,
@@ -32,15 +54,15 @@ function exprTest(
         assert.deepStrictEqual(expression, asserts.expr);
       }
       if ('error' in asserts) {
-        const ctx = new EvaluationContext();
+        const ctx = new EvaluationContext(undefined);
         ctx.evaluate(expression);
       } else {
         if (asserts.value !== undefined) {
-          const ctx = new EvaluationContext();
-          assert.deepStrictEqual(ctx.evaluate(expression), asserts.value);
+          const ctx = new EvaluationContext(undefined);
+          assert.deepStrictEqual(removeIds(ctx.evaluate(expression)), removeIds(asserts.value));
         }
         if (asserts.display !== undefined) {
-          const ctx = new EvaluationContext();
+          const ctx = new EvaluationContext(undefined);
           assert.deepStrictEqual(displayValue(ctx.evaluate(expression)), asserts.display);
         }
       }
@@ -113,28 +135,16 @@ suite('Vimscript expressions', () => {
 
     suite('Blobs', () => {
       exprTest('0z', {
-        expr: {
-          type: 'blob',
-          data: new Uint8Array([]),
-        },
+        value: blob(new Uint8Array([])),
       });
       exprTest('0zabcd', {
-        expr: {
-          type: 'blob',
-          data: new Uint8Array([171, 205]),
-        },
+        value: blob(new Uint8Array([171, 205])),
       });
       exprTest('0ZABCD', {
-        expr: {
-          type: 'blob',
-          data: new Uint8Array([171, 205]),
-        },
+        value: blob(new Uint8Array([171, 205])),
       });
       exprTest('0zAB.CD', {
-        expr: {
-          type: 'blob',
-          data: new Uint8Array([171, 205]),
-        },
+        value: blob(new Uint8Array([171, 205])),
       });
       exprTest('0zabc', {
         error: ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters,
@@ -392,6 +402,7 @@ suite('Vimscript expressions', () => {
 
       exprTest('5/0', { value: int(Infinity) }); // TODO: Neovim returns `v:numbermax`
       exprTest('-5/0', { value: int(-Infinity) }); // TODO: Neovim returns `v:numbermin`
+      exprTest('0/0', { value: int(NaN) }); // TODO: Neovim returns `v:numbermax`
 
       // TODO: Grok what Neovim does with 5/0.0
 
@@ -660,6 +671,8 @@ suite('Vimscript expressions', () => {
       exprTest('float2nr(40.0)', { value: int(40) });
       exprTest('float2nr(65.7)', { value: int(65) });
       exprTest('float2nr(-20.7)', { value: int(-20) });
+
+      // TODO: Infinity, -Infinity, NaN
     });
 
     suite('fmod', () => {
@@ -689,6 +702,12 @@ suite('Vimscript expressions', () => {
     suite('has_key', () => {
       exprTest('has_key(#{a:1, b:2, c:3}, "b")', { value: bool(true) });
       exprTest('has_key(#{a:1, b:2, c:3}, "d")', { value: bool(false) });
+    });
+
+    suite('id', () => {
+      exprTest('id(2+2) == id(4)', { value: bool(true) });
+      exprTest('id(2+2) == id(5)', { value: bool(false) });
+      // TODO: Everything else
     });
 
     suite('index', () => {

@@ -49,7 +49,14 @@ export class QuitCommand extends ExCommand {
     }
 
     if (this.arguments.quitAll) {
-      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      if (!this.arguments.bang) {
+        await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      } else {
+        const totalTabCount = vscode.window.tabGroups.all.flatMap((group) => group.tabs).length;
+        for (let i = 0; i < totalTabCount; i++) {
+          await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+        }
+      }
     } else {
       if (!this.arguments.bang) {
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');

@@ -165,7 +165,6 @@ module.exports = {
     'no-invalid-this': 'off',
     'no-loss-of-precision': 'off',
     'no-new-wrappers': 'error',
-    'no-redeclare': 'error',
     'no-return-await': 'error',
     'no-shadow': 'off',
     'no-throw-literal': 'error',

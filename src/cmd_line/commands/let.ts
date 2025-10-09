@@ -11,6 +11,7 @@ import {
   modulo,
   multiply,
   subtract,
+  toExpr,
 } from '../../vimscript/expression/build';
 import { EvaluationContext, toInt, toString } from '../../vimscript/expression/evaluate';
 import {
@@ -154,7 +155,7 @@ export class LetCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const context = new EvaluationContext();
+    const context = new EvaluationContext(vimState);
     if (this.args.operation === 'print') {
       if (this.args.variables.length === 0) {
         // TODO
@@ -179,19 +180,19 @@ export class LetCommand extends ExCommand {
       const value = context.evaluate(this.args.expression);
       const newValue = (_var: Expression, _value: Value) => {
         if (this.args.operation === '+=') {
-          return context.evaluate(add(_var, _value));
+          return context.evaluate(add(_var, toExpr(_value)));
         } else if (this.args.operation === '-=') {
-          return context.evaluate(subtract(_var, _value));
+          return context.evaluate(subtract(_var, toExpr(_value)));
         } else if (this.args.operation === '*=') {
-          return context.evaluate(multiply(_var, _value));
+          return context.evaluate(multiply(_var, toExpr(_value)));
         } else if (this.args.operation === '/=') {
-          return context.evaluate(divide(_var, _value));
+          return context.evaluate(divide(_var, toExpr(_value)));
         } else if (this.args.operation === '%=') {
-          return context.evaluate(modulo(_var, _value));
+          return context.evaluate(modulo(_var, toExpr(_value)));
         } else if (this.args.operation === '.=') {
-          return context.evaluate(concat(_var, _value));
+          return context.evaluate(concat(_var, toExpr(_value)));
         } else if (this.args.operation === '..=') {
-          return context.evaluate(concat(_var, _value));
+          return context.evaluate(concat(_var, toExpr(_value)));
         }
         return _value;
       };
@@ -233,7 +234,7 @@ export class LetCommand extends ExCommand {
           );
           varValue.items[idx] = newItem;
           context.setVariable(variable.variable, varValue, this.args.lock);
-        } else if (varValue.type === 'dict_val') {
+        } else if (varValue.type === 'dictionary') {
           const key = toString(context.evaluate(variable.index));
           const newItem = newValue(
             {
@@ -306,7 +307,7 @@ export class UnletCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const ctx = new EvaluationContext();
+    const ctx = new EvaluationContext(vimState);
     for (const variable of this.variables) {
       const store = ctx.getVariableStore(variable.namespace);
       const existed = store?.delete(variable.name);
