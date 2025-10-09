@@ -232,7 +232,7 @@ export class Register {
         baseOperator.name === 'delete_last_char' ||
         baseOperator.name === 'delete_char_visual_line_mode' ||
         baseOperator.name === 'delete_char_with_del') &&
-      !(vimState.macro !== undefined || vimState.isReplayingMacro)
+      !vimState.isReplayingMacro
     ) {
       if (
         !content.toString().match(/\n/g) &&

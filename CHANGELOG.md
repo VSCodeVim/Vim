@@ -1,5 +1,26 @@
 # Change Log
 
+## [v1.31.0](https://github.com/vscodevim/vim/tree/v1.31.0) (2025-10-5)
+
+### Added
+
+- Added `:gr[ep]` and `:vim[grep]` ([@AzimovParviz](https://github.com/AzimovParviz)).
+- Added `:c[hange]` ([@kiing-dom](https://github.com/kiing-dom)).
+- Added better expression support ([@J-Fields](https://github.com/J-Fields)).
+- Added unpacking, indexing, and slicing with `:let` ([@J-Fields](https://github.com/J-Fields)).
+- Added `:unl[et]` ([@J-Fields](https://github.com/J-Fields)).
+
+### Changed
+
+- `:w` now disables preview for the saved editor, like VS Code's native `workbench.action.files.save` ([@mangas](https://github.com/mangas)).
+
+### Fixed
+
+- Fixed significant delay after confirming IME input ([@s-kai273](https://github.com/s-kai273)).
+- Fixed `<Esc>` not closing quick diff ([@jacklee1792](https://github.com/jacklee1792)).
+- Fixed `Vi{` incorrectly including the ending braces ([@Whiskas101](https://github.com/Whiskas101)).
+- Fixed small delete register (`"-`) not being updated while recording a macro ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.30.1](https://github.com/vscodevim/vim/tree/v1.30.1) (2025-05-28)
 
 ### Added
