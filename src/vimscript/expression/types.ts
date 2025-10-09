@@ -18,11 +18,13 @@ export type StringValue = {
 export type ListValue = {
   type: 'list';
   items: Value[];
+  id: string;
 };
 
 export type DictionaryValue = {
   type: 'dictionary';
   items: Map<string, Value>;
+  id: string;
 };
 
 export type FuncRefValue = {
@@ -31,11 +33,13 @@ export type FuncRefValue = {
   body?: (args: Value[]) => Value;
   arglist?: ListValue;
   dict?: DictionaryValue;
+  id: string;
 };
 
 export type BlobValue = {
   type: 'blob';
   data: Uint8Array<ArrayBuffer>;
+  id: string;
 };
 
 export type Value =

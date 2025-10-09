@@ -167,8 +167,9 @@ export class EvaluationContext {
       case 'number':
       case 'float':
       case 'string':
-      case 'blob':
         return expression;
+      case 'blob':
+        return blob(expression.data);
       case 'list':
         return list(expression.items.map((x) => this.evaluate(x)));
       case 'dictionary': {
@@ -590,6 +591,7 @@ export class EvaluationContext {
               )
             );
           case 'is':
+            // NOTE: `id` field should match if and only if they are the same list
             return lhs.items === rhs.items;
           default:
             throw VimError.fromCode(ErrorCode.InvalidOperationForList);
@@ -613,6 +615,7 @@ export class EvaluationContext {
               )
             );
           case 'is':
+            // NOTE: `id` field should match if and only if they are the same dictionary
             return lhs.items === rhs.items;
           default:
             throw VimError.fromCode(ErrorCode.InvalidOperationForDictionary);
@@ -628,6 +631,7 @@ export class EvaluationContext {
           case '==':
             return lhs.name === rhs.name && lhs.dict === rhs.dict;
           case 'is':
+            // NOTE: `id` field should match if and only if they are the same funcref
             return lhs === rhs;
           default:
             throw VimError.fromCode(ErrorCode.InvalidOperationForFuncrefs);
@@ -644,6 +648,7 @@ export class EvaluationContext {
             const [_lhs, _rhs] = [new Uint8Array(lhs.data), new Uint8Array(rhs.data)];
             return _lhs.length === _rhs.length && _lhs.every((byte, idx) => byte === _rhs[idx]);
           case 'is':
+            // NOTE: `id` field should match if and only if they are the same blob
             return lhs.data === rhs.data;
           default:
             throw VimError.fromCode(ErrorCode.InvalidOperationForBlob);
@@ -727,6 +732,18 @@ export class EvaluationContext {
         return true;
       }
       return false;
+    };
+
+    const copy = (arg: Value, deep: boolean): Value => {
+      switch (arg.type) {
+        case 'list':
+          return list(deep ? arg.items.map((item) => copy(item, true)) : arg.items);
+        case 'dictionary':
+          return dictionary(
+            new Map(deep ? [...arg.items].map(([k, v]) => [k, copy(v, true)]) : arg.items),
+          );
+      }
+      return arg;
     };
 
     const getArgs = (min: number, max?: number) => {
@@ -892,13 +909,7 @@ export class EvaluationContext {
       }
       case 'copy': {
         const [x] = getArgs(1);
-        switch (x?.type) {
-          case 'list':
-            return list([...x.items]);
-          case 'dictionary':
-            return dictionary(new Map(x.items));
-        }
-        return x!;
+        return copy(x!, false);
       }
       case 'cos': {
         const [x] = getArgs(1);
@@ -953,9 +964,8 @@ export class EvaluationContext {
       }
       // TODO: cursor()
       case 'deepcopy': {
-        // TODO: real deep copy once references are implemented
         const [x] = getArgs(1);
-        return x!;
+        return copy(x!, true);
       }
       case 'empty': {
         let [x] = getArgs(1);
@@ -1122,7 +1132,14 @@ export class EvaluationContext {
       }
       // TODO: hasmapto()
       // TODO: histadd()/histdel()/histget()/histnr()
-      // TODO: id()
+      case 'id': {
+        // NOTE: Vim behaves differently (generally returning pointer addresses), but this serves the purpose
+        const [x] = getArgs(1);
+        if (x!.type === 'number' || x!.type === 'float' || x!.type === 'string') {
+          return str(x!.value.toString());
+        }
+        return str(x!.id);
+      }
       case 'index': {
         const [_haystack, _needle, _start, ic] = getArgs(2, 4);
         const haystack: Value = _haystack!;

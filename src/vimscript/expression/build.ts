@@ -25,6 +25,24 @@ import {
   StringExpression,
 } from './types';
 
+class UniqueIdGenerator {
+  private prefix: string;
+  private nextId: number = 1;
+
+  constructor(prefix: string) {
+    this.prefix = prefix;
+  }
+
+  public next(): string {
+    return `${this.prefix}${this.nextId++}`;
+  }
+}
+
+const listIdGen = new UniqueIdGenerator('list');
+const dictIdGen = new UniqueIdGenerator('dict');
+const funcIdGen = new UniqueIdGenerator('func');
+const blobIdGen = new UniqueIdGenerator('blob');
+
 export function int(value: number): NumberValue {
   return {
     type: 'number',
@@ -54,6 +72,7 @@ export function list(items: Value[]): ListValue {
   return {
     type: 'list',
     items,
+    id: listIdGen.next(),
   };
 }
 
@@ -61,6 +80,7 @@ export function dictionary(items: Map<string, Value>): DictionaryValue {
   return {
     type: 'dictionary',
     items,
+    id: dictIdGen.next(),
   };
 }
 
@@ -73,6 +93,7 @@ export function funcref(args: {
   return {
     type: 'funcref',
     ...args,
+    id: funcIdGen.next(),
   };
 }
 
@@ -80,6 +101,7 @@ export function blob(data: Uint8Array<ArrayBuffer>): BlobValue {
   return {
     type: 'blob',
     data,
+    id: blobIdGen.next(),
   };
 }
 
