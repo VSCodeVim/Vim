@@ -67,7 +67,7 @@ export function funcref(name: string, arglist?: ListValue, dict?: DictionaryValu
   };
 }
 
-export function blob(data: ArrayBuffer): BlobValue {
+export function blob(data: Uint8Array<ArrayBuffer>): BlobValue {
   return {
     type: 'blob',
     data,

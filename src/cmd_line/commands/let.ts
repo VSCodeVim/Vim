@@ -154,7 +154,7 @@ export class LetCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const context = new EvaluationContext();
+    const context = new EvaluationContext(vimState);
     if (this.args.operation === 'print') {
       if (this.args.variables.length === 0) {
         // TODO
@@ -306,7 +306,7 @@ export class UnletCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const ctx = new EvaluationContext();
+    const ctx = new EvaluationContext(vimState);
     for (const variable of this.variables) {
       const store = ctx.getVariableStore(variable.namespace);
       const existed = store?.delete(variable.name);

@@ -32,15 +32,15 @@ function exprTest(
         assert.deepStrictEqual(expression, asserts.expr);
       }
       if ('error' in asserts) {
-        const ctx = new EvaluationContext();
+        const ctx = new EvaluationContext(undefined);
         ctx.evaluate(expression);
       } else {
         if (asserts.value !== undefined) {
-          const ctx = new EvaluationContext();
+          const ctx = new EvaluationContext(undefined);
           assert.deepStrictEqual(ctx.evaluate(expression), asserts.value);
         }
         if (asserts.display !== undefined) {
-          const ctx = new EvaluationContext();
+          const ctx = new EvaluationContext(undefined);
           assert.deepStrictEqual(displayValue(ctx.evaluate(expression)), asserts.display);
         }
       }
@@ -389,6 +389,11 @@ suite('Vimscript expressions', () => {
         expr: multiply(multiply(int(12), int(34)), int(56)),
         value: int(22848),
       });
+
+      exprTest('5/0', { value: int(Infinity) }); // TODO: Neovim returns `v:numbermax`
+      exprTest('-5/0', { value: int(-Infinity) }); // TODO: Neovim returns `v:numbermin`
+
+      // TODO: Grok what Neovim does with 5/0.0
 
       exprTest('4/5', { value: int(0) });
       exprTest('4/5.0', { display: '0.8' });
@@ -829,6 +834,16 @@ suite('Vimscript expressions', () => {
       exprTest('reverse(0zABCDEF)', { display: '0zEFCDAB' });
     });
 
+    suite('str2float', () => {
+      exprTest('str2float("5IGNORED")', { value: float(5.0) });
+      exprTest('str2float("2.34IGNORED")', { value: float(2.34) });
+      exprTest('str2float("infIGNORED")', { value: float(Infinity) });
+      exprTest('str2float("-infIGNORED")', { value: float(-Infinity) });
+      exprTest('str2float("nanIGNORED")', { value: float(NaN) });
+      exprTest('str2float("12,345.67")', { value: float(12.0) });
+      exprTest('str2float("1.2e4")', { value: float(12000) });
+    });
+
     suite('str2list', () => {
       exprTest('str2list("ABC")', { value: list([int(65), int(66), int(67)]) });
       exprTest('str2list("á")', { value: list([int(97), int(769)]) });
@@ -842,6 +857,13 @@ suite('Vimscript expressions', () => {
       exprTest('str2nr("DEADBEEF", 16)', { value: int(3735928559) });
       exprTest('str2nr("DEADBEEF", 10)', { value: int(0) });
       exprTest('str2nr("DEADBEEF", 9)', { error: ErrorCode.InvalidArgument474 });
+
+      exprTest('str2nr("0xDEADBEEF", 16)', { value: int(3735928559) });
+      exprTest('str2nr("0XDEADBEEF", 16)', { value: int(3735928559) });
+      exprTest('str2nr("0o123", 8)', { value: int(83) });
+      exprTest('str2nr("0O123", 8)', { value: int(83) });
+      exprTest('str2nr("0b1001010110", 2)', { value: int(598) });
+      exprTest('str2nr("0B1001010110", 2)', { value: int(598) });
     });
 
     suite('stridx', () => {
