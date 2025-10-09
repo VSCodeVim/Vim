@@ -34,7 +34,8 @@ import { Pattern, SearchDirection } from '../pattern';
 import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
-import { isVisualMode } from '../../mode/mode';
+import { Mode } from '../../mode/mode';
+import { Range } from 'vscode';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -711,6 +712,16 @@ export class EvaluationContext {
       };
     };
 
+    // See `:help non-zero-arg`
+    const nonZeroArg = (arg: Value): boolean => {
+      if (arg.type === 'number' && arg.value !== 0) {
+        return true;
+      } else if (arg.type === 'string' && arg.value.length !== 0) {
+        return true;
+      }
+      return false;
+    };
+
     const getArgs = (min: number, max?: number) => {
       if (max === undefined) {
         max = min;
@@ -1065,8 +1076,23 @@ export class EvaluationContext {
         return _default ?? int(0);
         // TODO: get({func}, {what})
       }
-      // TODO: getcurpos()
-      // TODO: getline()
+      case 'getcurpos': {
+        const { bufnum, lnum, col, off } = getpos('.');
+        const curswant = this.vimState!.desiredColumn + 1;
+        return list([int(bufnum), int(lnum), int(col), int(off), int(curswant)]);
+      }
+      case 'getline': {
+        const [lnum, _end] = getArgs(1, 2);
+        // TODO: When {lnum} is a String that doesn't start with a digit, line() is called
+        if (_end === undefined) {
+          return str(this.vimState!.document.lineAt(toInt(lnum!)).text);
+        }
+        const lines: string[] = [];
+        for (let i = toInt(lnum!); i <= toInt(_end); i++) {
+          lines.push(this.vimState!.document.lineAt(i).text);
+        }
+        return list(lines.map(str));
+      }
       case 'getpos': {
         const [s] = getArgs(1);
         const { bufnum, lnum, col, off } = getpos(toString(s!));
@@ -1319,7 +1345,30 @@ export class EvaluationContext {
         }
         return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
       }
-      // TODO: mode()
+      case 'mode': {
+        const [arg] = getArgs(1);
+        switch (this.vimState!.currentModeIncludingPseudoModes) {
+          case Mode.Normal:
+            return str('n');
+          case Mode.OperatorPendingMode:
+            return nonZeroArg(arg!) ? str('n') : str('no');
+          case Mode.Visual:
+            return str('v');
+          case Mode.VisualLine:
+            return str('V');
+          case Mode.VisualBlock:
+            return str('\x16');
+          case Mode.Insert:
+            return str('i');
+          case Mode.Replace:
+            return str('R');
+          case Mode.CommandlineInProgress:
+          case Mode.SearchInProgressMode:
+            return str('c');
+          default:
+            return str(''); // TODO: Other modes
+        }
+      }
       case 'or': {
         const [x, y] = getArgs(2);
         // eslint-disable-next-line no-bitwise
@@ -1349,9 +1398,12 @@ export class EvaluationContext {
         return list(items);
       }
       // TODO: reduce()
-      // TODO: reg_executing()
-      // TODO: reg_recorded()
-      // TODO: reg_recording()
+      case 'reg_executing': {
+        return str(this.vimState?.isReplayingMacro ? this.vimState.recordedState.registerName : '');
+      }
+      case 'reg_recording': {
+        return str(this.vimState?.macro?.registerName ?? '');
+      }
       // TODO: reltime*()
       case 'repeat': {
         const [val, count] = getArgs(2);
@@ -1623,7 +1675,14 @@ export class EvaluationContext {
         const [d] = getArgs(1);
         return list([...toDict(d!).items.values()]);
       }
-      // TODO: visualmode()
+      case 'visualmode': {
+        const [arg] = getArgs(1); // TODO: Use arg
+        const mode = this.vimState?.lastVisualSelection?.mode;
+        if (mode === undefined) {
+          return str('');
+        }
+        return mode === Mode.Visual ? str('v') : mode === Mode.VisualLine ? str('V') : str('\x16');
+      }
       // TODO: wordcount()
       case 'xor': {
         const [x, y] = getArgs(2);
