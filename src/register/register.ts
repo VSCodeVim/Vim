@@ -30,16 +30,19 @@ export interface IRegisterContent {
 }
 
 export class Register {
-  private static readonly specialRegisters: readonly string[] = [
-    '"', // Unnamed (default)
-    '*', // Clipboard
-    '+', // Clipboard
+  private static readonly readOnlyRegisters: readonly string[] = [
     '.', // Last inserted text
-    '-', // Last deleted text less than a line
-    '/', // Most recently executed search
     ':', // Most recently executed command
     '%', // Current file path (relative to workspace root)
     '#', // Previous file path (relative to workspace root)
+    '/', // Most recently executed search
+  ];
+  private static readonly specialRegisters: readonly string[] = [
+    ...this.readOnlyRegisters,
+    '"', // Unnamed (default)
+    '*', // Clipboard
+    '+', // Clipboard
+    '-', // Last deleted text less than a line
     '_', // Black hole (always empty)
     '=', // Expression register
   ];
@@ -80,10 +83,10 @@ export class Register {
 
   public static isValidRegister(register: string): boolean {
     return (
-      Register.isValidLowercaseRegister(register) ||
-      Register.isValidUppercaseRegister(register) ||
-      /^[0-9]$/.test(register) ||
-      this.specialRegisters.includes(register)
+      this.isValidLowercaseRegister(register) ||
+      this.isValidUppercaseRegister(register) ||
+      this.isValidNumberedRegister(register) ||
+      this.isValidSpecialRegister(register)
     );
   }
 
@@ -91,7 +94,7 @@ export class Register {
     return /^[a-zA-Z0-9:]$/.test(register);
   }
 
-  private static isBlackHoleRegister(registerName: string): boolean {
+  public static isBlackHoleRegister(registerName: string): boolean {
     return registerName === '_';
   }
 
@@ -100,15 +103,23 @@ export class Register {
   }
 
   private static isReadOnlyRegister(registerName: string): boolean {
-    return ['.', '%', ':', '#', '/'].includes(registerName);
+    return this.readOnlyRegisters.includes(registerName);
   }
 
-  private static isValidLowercaseRegister(register: string): boolean {
+  public static isValidLowercaseRegister(register: string): boolean {
     return /^[a-z]$/.test(register);
   }
 
   public static isValidUppercaseRegister(register: string): boolean {
     return /^[A-Z]$/.test(register);
+  }
+
+  public static isValidNumberedRegister(register: string): boolean {
+    return /^[0-9]$/.test(register);
+  }
+
+  public static isValidSpecialRegister(register: string): boolean {
+    return this.specialRegisters.includes(register);
   }
 
   /**
@@ -125,7 +136,8 @@ export class Register {
       Register.registers.set(register, []);
     }
 
-    Register.registers.get(register)![multicursorIndex] = {
+    const registerContent = Register.registers.get(register);
+    registerContent![multicursorIndex] = {
       registerMode: vimState.currentRegisterMode,
       text: content,
     };
@@ -310,6 +322,12 @@ export class Register {
     return [...Register.registers.keys()];
   }
 
+  public static getKeysSorted(): string[] {
+    return this.getKeys().sort(
+      (reg1: string, reg2: string) => this.sortIndex(reg1) - this.sortIndex(reg2),
+    );
+  }
+
   public static clearAllRegisters(): void {
     Register.registers.clear();
   }
@@ -353,6 +371,21 @@ export class Register {
       });
     } else {
       Register.registers = new Map();
+    }
+  }
+
+  private static sortIndex(register: string): number {
+    const specials = ['-', '*', '+', '.', ':', '%', '#', '/', '='];
+    if (register === '"') {
+      return 0;
+    } else if (register >= '0' && register <= '9') {
+      return 10 + parseInt(register, 10);
+    } else if (register >= 'a' && register <= 'z') {
+      return 100 + (register.charCodeAt(0) - 'a'.charCodeAt(0));
+    } else if (specials.includes(register)) {
+      return 1000 + specials.indexOf(register);
+    } else {
+      throw new Error(`Unexpected register ${register}`);
     }
   }
 }
