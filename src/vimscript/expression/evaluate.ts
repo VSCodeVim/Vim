@@ -14,6 +14,8 @@ import {
   blob,
   dictionary,
   funcrefCall,
+  toExpr,
+  variable,
 } from './build';
 import { expressionParser, floatParser, numberParser } from './parser';
 import {
@@ -35,7 +37,6 @@ import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
-import { Range } from 'vscode';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -54,7 +55,7 @@ export function toInt(value: Value): number {
       return parsed.value.value;
     case 'list':
       throw VimError.fromCode(ErrorCode.UsingAListAsANumber);
-    case 'dict_val':
+    case 'dictionary':
       throw VimError.fromCode(ErrorCode.UsingADictionaryAsANumber);
     case 'funcref':
       throw VimError.fromCode(ErrorCode.UsingAFuncrefAsANumber);
@@ -71,7 +72,7 @@ function toFloat(value: Value): number {
       return value.value;
     case 'string':
     case 'list':
-    case 'dict_val':
+    case 'dictionary':
     case 'funcref':
     case 'blob':
       throw VimError.fromCode(ErrorCode.NumberOrFloatRequired);
@@ -88,7 +89,7 @@ export function toString(value: Value): string {
       return value.value;
     case 'list':
       throw VimError.fromCode(ErrorCode.UsingListAsAString);
-    case 'dict_val':
+    case 'dictionary':
       throw VimError.fromCode(ErrorCode.UsingDictionaryAsAString);
     case 'funcref':
       throw VimError.fromCode(ErrorCode.UsingFuncrefAsAString);
@@ -103,7 +104,7 @@ function toList(value: Value): ListValue {
     case 'float':
     case 'string':
     case 'funcref':
-    case 'dict_val':
+    case 'dictionary':
     case 'blob':
       throw VimError.fromCode(ErrorCode.ListRequired);
     case 'list':
@@ -120,7 +121,7 @@ function toDict(value: Value): DictionaryValue {
     case 'funcref':
     case 'blob':
       throw VimError.fromCode(ErrorCode.DictionaryRequired);
-    case 'dict_val':
+    case 'dictionary':
       return value;
   }
 }
@@ -166,8 +167,6 @@ export class EvaluationContext {
       case 'number':
       case 'float':
       case 'string':
-      case 'dict_val':
-      case 'funcref':
       case 'blob':
         return expression;
       case 'list':
@@ -184,6 +183,21 @@ export class EvaluationContext {
         }
         return dictionary(items);
       }
+      case 'funcref':
+        const arglist = expression.arglist
+          ? list(expression.arglist.items.map((e) => this.evaluate(e)))
+          : undefined;
+        const dict = expression.dict
+          ? dictionary(
+              new Map(
+                [...expression.dict.items].map(([k, v]) => [
+                  toString(this.evaluate(k)),
+                  this.evaluate(v),
+                ]),
+              ),
+            )
+          : undefined;
+        return funcref({ name: expression.name, body: expression.body, arglist, dict });
       case 'variable':
         return this.evaluateVariable(expression);
       case 'register':
@@ -225,23 +239,20 @@ export class EvaluationContext {
           return fref.body(expression.args.map((x) => this.evaluate(x)));
         } else {
           return this.evaluateFunctionCall(
-            funcCall(
-              fref.name,
-              (fref.arglist?.items ?? []).concat(expression.args.map((x) => this.evaluate(x))),
-            ),
+            funcCall(fref.name, (fref.arglist?.items.map(toExpr) ?? []).concat(expression.args)),
           );
         }
       }
       case 'methodCall': {
         const obj = this.evaluate(expression.expression);
         return this.evaluateFunctionCall(
-          funcCall(expression.methodName, [obj, ...expression.args]),
+          funcCall(expression.methodName, [toExpr(obj), ...expression.args]),
         );
       }
       case 'lambda': {
-        return {
-          type: 'funcref',
+        return funcref({
           name: `<lambda>${lambdaNumber++}`,
+          arglist: list([]),
           body: (args: Value[]) => {
             // TODO: handle wrong # of args
             const store: VariableStore = new Map();
@@ -254,7 +265,7 @@ export class EvaluationContext {
             this.localScopes.pop();
             return retval;
           },
-        };
+        });
       }
       case 'unary':
         return this.evaluateUnary(expression.operator, expression.operand);
@@ -364,11 +375,7 @@ export class EvaluationContext {
       }
 
       // HACK: for things like v:key & v:val
-      return this.evaluate({
-        type: 'variable',
-        namespace: undefined,
-        name: `v:${varExpr.name}`,
-      });
+      return this.evaluate(variable(`v:${varExpr.name}`));
     }
 
     throw VimError.fromCode(
@@ -403,7 +410,7 @@ export class EvaluationContext {
         }
         return sequence.items[idx];
       }
-      case 'dict_val': {
+      case 'dictionary': {
         const key = toString(index);
         const result = sequence.items.get(key);
         if (result === undefined) {
@@ -452,7 +459,7 @@ export class EvaluationContext {
         }
         return list(sequence.items.slice(_start, _end + 1));
       }
-      case 'dict_val': {
+      case 'dictionary': {
         throw VimError.fromCode(ErrorCode.CannotUseSliceWithADictionary);
       }
       case 'funcref': {
@@ -592,8 +599,8 @@ export class EvaluationContext {
       }
     } else if (rhs.type === 'list') {
       throw VimError.fromCode(ErrorCode.CanOnlyCompareListWithList);
-    } else if (lhs.type === 'dict_val') {
-      if (rhs.type === 'dict_val') {
+    } else if (lhs.type === 'dictionary') {
+      if (rhs.type === 'dictionary') {
         switch (operator) {
           case '==':
             const rhsItems = rhs.items;
@@ -613,7 +620,7 @@ export class EvaluationContext {
       } else {
         throw VimError.fromCode(ErrorCode.CanOnlyCompareDictionaryWithDictionary);
       }
-    } else if (rhs.type === 'dict_val') {
+    } else if (rhs.type === 'dictionary') {
       throw VimError.fromCode(ErrorCode.CanOnlyCompareDictionaryWithDictionary);
     } else if (lhs.type === 'funcref') {
       if (rhs.type === 'funcref') {
@@ -867,9 +874,13 @@ export class EvaluationContext {
           if (_func?.type === 'funcref') {
             return _func;
           }
-          return funcref(toString(_func!), list([]), dict ? toDict(dict) : undefined);
+          return funcref({
+            name: toString(_func!),
+            arglist: list([]),
+            dict: dict ? toDict(dict) : undefined,
+          });
         })();
-        return this.evaluate(funcrefCall(func, arglist!.items));
+        return this.evaluate(funcrefCall(toExpr(func), arglist!.items.map(toExpr)));
       }
       case 'ceil': {
         const [x] = getArgs(1);
@@ -884,7 +895,7 @@ export class EvaluationContext {
         switch (x?.type) {
           case 'list':
             return list([...x.items]);
-          case 'dict_val':
+          case 'dictionary':
             return dictionary(new Map(x.items));
         }
         return x!;
@@ -928,7 +939,7 @@ export class EvaluationContext {
               }
             }
             break;
-          case 'dict_val':
+          case 'dictionary':
             for (const val of comp!.items.values()) {
               if (this.evaluateComparison('==', matchCase, val, expr!)) {
                 count++;
@@ -957,7 +968,7 @@ export class EvaluationContext {
             return bool(x.value.length === 0);
           case 'list':
             return bool(x.items.length === 0);
-          case 'dict_val':
+          case 'dictionary':
             return bool(x.items.size === 0);
           case 'blob':
             return bool(x.data.byteLength === 0);
@@ -1019,33 +1030,28 @@ export class EvaluationContext {
         const [name, arglist, dict] = getArgs(1, 3);
         if (arglist) {
           if (arglist.type === 'list') {
-            if (dict && dict.type !== 'dict_val') {
+            if (dict && dict.type !== 'dictionary') {
               throw VimError.fromCode(ErrorCode.ExpectedADict);
             }
-            return funcref(toString(name!), arglist, dict);
-          } else if (arglist.type === 'dict_val') {
+            return funcref({ name: toString(name!), arglist, dict });
+          } else if (arglist.type === 'dictionary') {
             if (dict) {
               // function('abs', {}, {})
               throw VimError.fromCode(ErrorCode.SecondArgumentOfFunction);
             }
-            return funcref(toString(name!), undefined, arglist);
+            return funcref({ name: toString(name!), dict: arglist });
           } else {
             throw VimError.fromCode(ErrorCode.SecondArgumentOfFunction);
           }
         }
-        if (dict && dict.type !== 'dict_val') {
+        if (dict && dict.type !== 'dictionary') {
           throw VimError.fromCode(ErrorCode.ExpectedADict);
         }
         // TODO:
         // if (toString(name!) is invalid function) {
         //   throw VimError.fromCode(ErrorCode.UnknownFunction_funcref, toString(name!));
         // }
-        return {
-          type: 'funcref',
-          name: toString(name!),
-          arglist,
-          dict,
-        };
+        return funcref({ name: toString(name!), arglist, dict });
       }
       case 'floor': {
         const [x] = getArgs(1);
@@ -1058,19 +1064,18 @@ export class EvaluationContext {
       // TODO: funcref()
       case 'get': {
         const [_haystack, _idx, _default] = getArgs(2, 3);
-        const haystack = this.evaluate(_haystack!);
+        const haystack: Value = _haystack!;
         if (haystack.type === 'list') {
-          let idx = toInt(this.evaluate(_idx!));
+          let idx = toInt(_idx!);
           idx = idx < 0 ? haystack.items.length + idx : idx;
           return idx < haystack.items.length ? haystack.items[idx] : (_default ?? int(0));
         } else if (haystack.type === 'blob') {
           const bytes = new Uint8Array(haystack.data);
-          let idx = toInt(this.evaluate(_idx!));
+          let idx = toInt(_idx!);
           idx = idx < 0 ? bytes.length + idx : idx;
           return idx < bytes.length ? int(bytes[idx]) : (_default ?? int(-1));
-        } else if (haystack.type === 'dict_val') {
-          const key = this.evaluate(_idx!);
-          const val = haystack.items.get(toString(key));
+        } else if (haystack.type === 'dictionary') {
+          const val = haystack.items.get(toString(_idx!));
           return val ? val : (_default ?? int(0));
         }
         return _default ?? int(0);
@@ -1120,8 +1125,7 @@ export class EvaluationContext {
       // TODO: id()
       case 'index': {
         const [_haystack, _needle, _start, ic] = getArgs(2, 4);
-        const haystack = this.evaluate(_haystack!);
-        const needle = this.evaluate(_needle!);
+        const haystack: Value = _haystack!;
 
         if (haystack.type === 'list') {
           let start: number | undefined;
@@ -1134,7 +1138,7 @@ export class EvaluationContext {
             if (start && idx < start) {
               continue;
             }
-            if (this.evaluateComparison('==', true, item, needle)) {
+            if (this.evaluateComparison('==', true, item, _needle!)) {
               return int(idx);
             }
           }
@@ -1231,7 +1235,7 @@ export class EvaluationContext {
               return x.value;
             case 'list':
               return x.items.map(toJSObj);
-            case 'dict_val':
+            case 'dictionary':
               const d: Record<string, unknown> = {};
               for (const [key, val] of x.items) {
                 d[key] = toJSObj(val);
@@ -1246,7 +1250,7 @@ export class EvaluationContext {
           }
         };
         const [expr] = getArgs(1);
-        return str(JSON.stringify(toJSObj(this.evaluate(expr!)), null, 0)); // TODO: Fix whitespace
+        return str(JSON.stringify(toJSObj(expr!), null, 0)); // TODO: Fix whitespace
       }
       case 'keys': {
         const [d] = getArgs(1);
@@ -1261,7 +1265,7 @@ export class EvaluationContext {
             return int(x!.value.length);
           case 'list':
             return int(x!.items.length);
-          case 'dict_val':
+          case 'dictionary':
             return int(x!.items.size);
           case 'blob':
             return int(x!.data.byteLength);
@@ -1292,7 +1296,7 @@ export class EvaluationContext {
             const newItems = seq.items.map((val, idx) => {
               switch (fn?.type) {
                 case 'funcref':
-                  return this.evaluate(funcrefCall(fn, [int(idx), val]));
+                  return this.evaluate(funcrefCall(toExpr(fn), [int(idx), toExpr(val)]));
                 default:
                   this.localScopes.push(
                     new Map([
@@ -1309,7 +1313,7 @@ export class EvaluationContext {
               seq.items = newItems;
             }
             return list(newItems);
-          case 'dict_val':
+          case 'dictionary':
           // TODO
           // case 'blob':
           // TODO
@@ -1325,7 +1329,7 @@ export class EvaluationContext {
         let values: Value[];
         if (l?.type === 'list') {
           values = l.items;
-        } else if (l?.type === 'dict_val') {
+        } else if (l?.type === 'dictionary') {
           values = [...l.items.values()];
         } else {
           throw VimError.fromCode(ErrorCode.ArgumentOfMaxMustBeAListOrDictionary);
@@ -1337,7 +1341,7 @@ export class EvaluationContext {
         let values: Value[];
         if (l?.type === 'list') {
           values = l.items;
-        } else if (l?.type === 'dict_val') {
+        } else if (l?.type === 'dictionary') {
           values = [...l.items.values()];
         } else {
           // TODO: This should say "min", but still have code 712
@@ -1416,9 +1420,9 @@ export class EvaluationContext {
       }
       case 'remove': {
         const [_haystack, _idx, _end] = getArgs(2, 3);
-        const haystack = this.evaluate(_haystack!);
+        const haystack: Value = _haystack!;
         if (haystack.type === 'list') {
-          let idx = toInt(this.evaluate(_idx!));
+          let idx = toInt(_idx!);
           idx = idx < 0 ? haystack.items.length + idx : idx;
           if (_end === undefined) {
             return haystack.items.splice(idx, 1)[0]; // TODO: This doesn't remove the item?
@@ -1427,8 +1431,8 @@ export class EvaluationContext {
           }
         }
         // TODO: remove({blob}, {idx}, [{end}])
-        else if (haystack.type === 'dict_val') {
-          const key = toString(this.evaluate(_idx!));
+        else if (haystack.type === 'dictionary') {
+          const key = toString(_idx!);
           const val = haystack.items.get(key);
           if (val) {
             haystack.items.delete(key);
@@ -1484,7 +1488,8 @@ export class EvaluationContext {
               throw Error('compare() with function name is not yet implemented');
             }
           } else if (func.type === 'funcref') {
-            compare = (x, y) => toInt(this.evaluate(funcrefCall(func, [x, y])));
+            compare = (x, y) =>
+              toInt(this.evaluate(funcrefCall(toExpr(func), [toExpr(x), toExpr(y)])));
           } else {
             throw VimError.fromCode(ErrorCode.InvalidArgument474);
           }
@@ -1498,7 +1503,7 @@ export class EvaluationContext {
         const [s, pattern, keepempty] = getArgs(1, 3);
         // TODO: Actually parse pattern
         const result = toString(s!).split(pattern && toString(pattern) ? toString(pattern) : /\s+/);
-        if (!(keepempty && toInt(this.evaluate(keepempty)))) {
+        if (!(keepempty && toInt(keepempty))) {
           if (result[0] === '') {
             result.shift();
           }
@@ -1635,7 +1640,7 @@ export class EvaluationContext {
             return int(2);
           case 'list':
             return int(3);
-          case 'dict_val':
+          case 'dictionary':
             return int(4);
           case 'float':
             return int(5);

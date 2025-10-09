@@ -16,7 +16,7 @@ export function displayValue(value: Value, topLevel = true): string {
       return topLevel ? value.value : `'${value.value.replace("'", "''")}'`;
     case 'list':
       return `[${value.items.map((v) => displayValue(v, false)).join(', ')}]`;
-    case 'dict_val':
+    case 'dictionary':
       return `{${[...value.items]
         .map(([k, v]) => `'${k}': ${displayValue(v, false)}`)
         .join(', ')}}`;

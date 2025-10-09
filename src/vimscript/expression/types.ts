@@ -21,7 +21,7 @@ export type ListValue = {
 };
 
 export type DictionaryValue = {
-  type: 'dict_val';
+  type: 'dictionary';
   items: Map<string, Value>;
 };
 
@@ -49,6 +49,10 @@ export type Value =
 
 // -------------------- Expressions --------------------
 
+export type NumberExpression = NumberValue;
+export type FloatExpression = FloatValue;
+export type StringExpression = StringValue;
+
 export type ListExpression = {
   type: 'list';
   items: Expression[];
@@ -57,6 +61,19 @@ export type ListExpression = {
 export type DictionaryExpression = {
   type: 'dictionary';
   items: Array<[Expression, Expression]>;
+};
+
+export type FuncRefExpression = {
+  type: 'funcref';
+  name: string;
+  body?: (args: Value[]) => Value;
+  arglist?: ListExpression;
+  dict?: DictionaryExpression;
+};
+
+export type BlobExpression = {
+  type: 'blob';
+  data: Uint8Array<ArrayBuffer>;
 };
 
 export type OptionExpression = {
@@ -158,9 +175,13 @@ export type TernaryExpression = {
 };
 
 export type Expression =
-  | Value
+  | NumberExpression
+  | FloatExpression
+  | StringExpression
   | ListExpression
   | DictionaryExpression
+  | FuncRefExpression
+  | BlobExpression
   | OptionExpression
   | VariableExpression
   | LambdaExpression

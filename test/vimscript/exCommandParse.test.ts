@@ -24,7 +24,15 @@ import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
-import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build';
+import {
+  add,
+  int,
+  str,
+  variable,
+  funcCall,
+  list,
+  toExpr,
+} from '../../src/vimscript/expression/build';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
@@ -374,7 +382,7 @@ suite('Ex command parsing', () => {
       new LetCommand({
         operation: '=',
         variable: { type: 'unpack', names: ['a', 'b', 'c'] },
-        expression: list([int(1), int(2), int(3)]),
+        expression: toExpr(list([int(1), int(2), int(3)])),
         lock: false,
       }),
     );
@@ -403,7 +411,7 @@ suite('Ex command parsing', () => {
           start: { type: 'variable', namespace: undefined, name: 'start' },
           end: { type: 'variable', namespace: undefined, name: 'end' },
         },
-        expression: list([int(1), int(2), int(3)]),
+        expression: toExpr(list([int(1), int(2), int(3)])),
         lock: false,
       }),
     );
@@ -454,7 +462,7 @@ suite('Ex command parsing', () => {
     );
     exParseTest(
       ':put!=[1,2,3]',
-      new PutExCommand({ bang: true, fromExpression: list([int(1), int(2), int(3)]) }),
+      new PutExCommand({ bang: true, fromExpression: toExpr(list([int(1), int(2), int(3)])) }),
     );
   });
 
