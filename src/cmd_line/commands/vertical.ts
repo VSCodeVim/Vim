@@ -34,9 +34,12 @@ export interface IVerticalCommandArguments {
  * in this Vim extension.
  */
 export class VerticalCommand extends ExCommand {
-  public static readonly argParser: Parser<VerticalCommand> = optWhitespace
-    .then(all)
-    .map((command) => new VerticalCommand({ command }));
+  public static readonly argParser = {
+    general: optWhitespace.then(all).map((command) => new VerticalCommand({ command })),
+    resize: optWhitespace
+      .then(all)
+      .map((command) => new VerticalCommand({ command: `resize ${command}` })),
+  };
 
   private readonly arguments: IVerticalCommandArguments;
 
