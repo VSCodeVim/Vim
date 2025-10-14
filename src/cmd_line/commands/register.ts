@@ -6,7 +6,7 @@ import { Register, RegisterContent } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { IPutCommandArguments, PutExCommand } from './put';
+import { PutExCommand } from './put';
 
 class RegisterDisplayItem implements vscode.QuickPickItem {
   public readonly label: string;
@@ -78,57 +78,40 @@ export class RegisterCommand extends ExCommand {
       }),
     );
 
+    // The user clicked a QuickPick item
     quickPick.onDidChangeSelection((items) => {
-      if (items.length === 0) {
-        return;
-      }
-
-      RegisterCommand.showRegisterContent(vimState, items[0]);
+      RegisterCommand.showRegisterContent(items);
       quickPick.dispose();
     });
 
     quickPick.onDidTriggerItemButton(async (event) => {
-      void RegisterCommand.paste(vimState, event.item);
+      await RegisterCommand.paste(vimState, event.item);
       quickPick.dispose();
     });
 
-    quickPick.show();
+    return new Promise<void>((resolve) => {
+      quickPick.onDidHide(resolve);
+      quickPick.show();
+    });
   }
 
-  private static showRegisterContent(vimState: VimState, item: RegisterDisplayItem) {
-    const paste: vscode.MessageItem = {
-      title: 'Paste',
-      isCloseAffordance: false,
-    };
+  private static showRegisterContent(items: readonly RegisterDisplayItem[]) {
+    if (items.length === 0) {
+      return;
+    }
 
-    void vscode.window
-      .showInformationMessage(`${item.label} ${item.stringContent}`, paste)
-      .then((action) => {
-        if (!action || action !== paste) {
-          return;
-        }
+    const item = items[0];
 
-        void RegisterCommand.paste(vimState, item);
-      });
+    const message = `${item.label} ${item.stringContent}`;
+    vscode.window.showInformationMessage(message);
   }
 
   private static async paste(vimState: VimState, item: RegisterDisplayItem) {
-    // TODO: Can I reuse PutCommand here?
-
-    const content = item.stringContent;
-    if (content === '') {
-      return;
-    }
-
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      return;
-    }
-
-    vimState.recordedState.registerKey = item.key;
-
-    editor.edit((builder) => {
-      builder.insert(vimState.cursorStopPosition, content);
+    const putCommand = new PutExCommand({
+      register: item.key,
+      bang: false,
     });
+
+    await putCommand.execute(vimState);
   }
 }
