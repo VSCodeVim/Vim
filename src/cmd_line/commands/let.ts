@@ -198,6 +198,37 @@ export class LetCommand extends ExCommand {
       };
 
       if (variable.type === 'variable') {
+        if (
+          variable.namespace === 'v' &&
+          variable.name in
+            [
+              'count',
+              'false',
+              'key',
+              'null',
+              'operator',
+              'prevcount',
+              'progname',
+              'progpath',
+              'servername',
+              'shell_error',
+              'swapname',
+              't_bool',
+              't_dict',
+              't_float',
+              't_func',
+              't_list',
+              't_number',
+              't_string',
+              't_blob',
+              'true',
+              'val',
+              'version',
+              'vim_did_enter',
+            ]
+        ) {
+          throw VimError.fromCode(ErrorCode.CannotChangeReadOnlyVariable);
+        }
         context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
         // TODO
