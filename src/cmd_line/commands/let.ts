@@ -11,6 +11,7 @@ import {
   modulo,
   multiply,
   subtract,
+  toExpr,
 } from '../../vimscript/expression/build';
 import { EvaluationContext, toInt, toString } from '../../vimscript/expression/evaluate';
 import {
@@ -179,24 +180,55 @@ export class LetCommand extends ExCommand {
       const value = context.evaluate(this.args.expression);
       const newValue = (_var: Expression, _value: Value) => {
         if (this.args.operation === '+=') {
-          return context.evaluate(add(_var, _value));
+          return context.evaluate(add(_var, toExpr(_value)));
         } else if (this.args.operation === '-=') {
-          return context.evaluate(subtract(_var, _value));
+          return context.evaluate(subtract(_var, toExpr(_value)));
         } else if (this.args.operation === '*=') {
-          return context.evaluate(multiply(_var, _value));
+          return context.evaluate(multiply(_var, toExpr(_value)));
         } else if (this.args.operation === '/=') {
-          return context.evaluate(divide(_var, _value));
+          return context.evaluate(divide(_var, toExpr(_value)));
         } else if (this.args.operation === '%=') {
-          return context.evaluate(modulo(_var, _value));
+          return context.evaluate(modulo(_var, toExpr(_value)));
         } else if (this.args.operation === '.=') {
-          return context.evaluate(concat(_var, _value));
+          return context.evaluate(concat(_var, toExpr(_value)));
         } else if (this.args.operation === '..=') {
-          return context.evaluate(concat(_var, _value));
+          return context.evaluate(concat(_var, toExpr(_value)));
         }
         return _value;
       };
 
       if (variable.type === 'variable') {
+        if (
+          variable.namespace === 'v' &&
+          variable.name in
+            [
+              'count',
+              'false',
+              'key',
+              'null',
+              'operator',
+              'prevcount',
+              'progname',
+              'progpath',
+              'servername',
+              'shell_error',
+              'swapname',
+              't_bool',
+              't_dict',
+              't_float',
+              't_func',
+              't_list',
+              't_number',
+              't_string',
+              't_blob',
+              'true',
+              'val',
+              'version',
+              'vim_did_enter',
+            ]
+        ) {
+          throw VimError.fromCode(ErrorCode.CannotChangeReadOnlyVariable);
+        }
         context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
         // TODO
@@ -233,7 +265,7 @@ export class LetCommand extends ExCommand {
           );
           varValue.items[idx] = newItem;
           context.setVariable(variable.variable, varValue, this.args.lock);
-        } else if (varValue.type === 'dict_val') {
+        } else if (varValue.type === 'dictionary') {
           const key = toString(context.evaluate(variable.index));
           const newItem = newValue(
             {
