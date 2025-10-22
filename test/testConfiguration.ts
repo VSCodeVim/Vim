@@ -49,6 +49,9 @@ export class Configuration implements IConfiguration {
     bracketObjects: {
       enable: true,
     },
+    separatorObjects: {
+      enable: true,
+    },
     smartQuotes: {
       enable: false,
       breakThroughLines: true,
