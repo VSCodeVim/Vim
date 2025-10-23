@@ -12,7 +12,7 @@ import {
   takeWhile,
   noneOf,
 } from 'parsimmon';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { binary, float, lambda, listExpr, int, str, blob } from './build';
 import {
   BinaryOp,
@@ -42,7 +42,7 @@ const blobParser: Parser<BlobValue> = regexp(/0[z]/i).then(
     .map<BlobValue>((bytes) => {
       const lastByte = bytes.at(-1);
       if (lastByte && lastByte.length !== 2) {
-        throw VimError.fromCode(ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters);
+        throw VimError.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters();
       }
       const data = new Uint8Array(new ArrayBuffer(bytes.length));
       let i = 0;
@@ -107,7 +107,7 @@ const stringParser: Parser<StringValue> = alt(
     .map((escaped) => {
       // TODO: handle other special chars (:help expr-quote)
       if (escaped === undefined) {
-        throw VimError.fromCode(ErrorCode.MissingQuote); // TODO: parameter
+        throw VimError.MissingQuote(); // TODO: parameter
       } else if (escaped === '\\') {
         return '\\';
       } else if (escaped === '"') {

@@ -1,5 +1,5 @@
 // eslint-disable-next-line id-denylist
-import { alt, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
+import { alt, optWhitespace, seq, string, whitespace } from 'parsimmon';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
@@ -13,7 +13,7 @@ import {
   fileOptParser,
   numberParser,
 } from '../../vimscript/parserUtils';
-import { VimError, ErrorCode } from '../../error';
+import { VimError } from '../../error';
 
 export enum TabCommandType {
   Next,
@@ -174,9 +174,9 @@ export class TabCommand extends ExCommand {
             }
           }
           if (foundBuffers.length === 0) {
-            throw VimError.fromCode(ErrorCode.NoMatchingBuffer, searchTerm);
+            throw VimError.NoMatchingBuffer(searchTerm);
           } else if (foundBuffers.length > 1) {
-            throw VimError.fromCode(ErrorCode.MultipleMatches, searchTerm);
+            throw VimError.MultipleMatches(searchTerm);
           }
           const tab = foundBuffers[0];
           if ((tab.input as vscode.TextDocument).uri !== undefined) {

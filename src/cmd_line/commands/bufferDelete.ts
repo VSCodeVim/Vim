@@ -1,7 +1,7 @@
 import { alt, optWhitespace, Parser, seq, whitespace } from 'parsimmon';
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -30,7 +30,7 @@ export class BufferDeleteCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     if (vimState.document.isDirty && !this.arguments.bang) {
-      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
+      throw VimError.NoWriteSinceLastChange();
     }
 
     if (this.arguments.buffers.length === 0) {
@@ -50,7 +50,7 @@ export class BufferDeleteCommand extends ExCommand {
         try {
           await vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${buffer}`);
         } catch (e) {
-          throw error.VimError.fromCode(error.ErrorCode.NoBuffersDeleted);
+          throw VimError.NoBuffersDeleted();
         }
 
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');

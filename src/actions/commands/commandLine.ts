@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { CommandLine, ExCommandLine, SearchCommandLine } from '../../cmd_line/commandLine';
 import { ChangeCommand } from '../../cmd_line/commands/change';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
@@ -305,7 +305,7 @@ class CommandInsertRegisterContentInCommandLine extends CommandLineAction {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
+        VimError.NothingInRegister(vimState.recordedState.registerName),
       );
       return;
     }

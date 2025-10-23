@@ -10,7 +10,7 @@ import { TextEditor } from '../../textEditor';
 import { reportLinesChanged } from '../../util/statusBarTextUtils';
 import { BaseCommand, RegisterAction } from '../base';
 import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
+import { VimError } from '../../error';
 import { Cursor } from '../../common/motion/cursor';
 import { Transformation } from '../../transformations/transformations';
 
@@ -39,7 +39,7 @@ abstract class BasePutCommand extends BaseCommand {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
+        VimError.NothingInRegister(vimState.recordedState.registerName),
       );
       return;
     }

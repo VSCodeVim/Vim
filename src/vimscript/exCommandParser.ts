@@ -46,7 +46,7 @@ import { WriteCommand } from '../cmd_line/commands/write';
 import { WriteQuitCommand } from '../cmd_line/commands/writequit';
 import { WriteQuitAllCommand } from '../cmd_line/commands/writequitall';
 import { YankCommand } from '../cmd_line/commands/yank';
-import { ErrorCode, VimError } from '../error';
+import { VimError } from '../error';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
@@ -682,22 +682,19 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
     )
     .map(([lineRange, whitespace, parseArgs, args]) => {
       if (parseArgs === undefined) {
-        throw VimError.fromCode(
-          ErrorCode.NotAnEditorCommand,
-          `${lineRange?.toString() ?? ''}${whitespace}${args}`,
-        );
+        throw VimError.NotAnEditorCommand(`${lineRange?.toString() ?? ''}${whitespace}${args}`);
       }
       const result = seq(parseArgs, optWhitespace.then(all)).parse(args);
       if (result.status === false) {
         if (result.index.offset === args.length) {
-          throw VimError.fromCode(ErrorCode.ArgumentRequired);
+          throw VimError.ArgumentRequired();
         }
-        throw VimError.fromCode(ErrorCode.InvalidArgument474);
+        throw VimError.InvalidArgument474();
       }
       if (result.value[1]) {
         // TODO: Implement `:help :bar`
         // TODO: Implement `:help :comment`
-        throw VimError.fromCode(ErrorCode.TrailingCharacters, result.value[1]);
+        throw VimError.TrailingCharacters(result.value[1]);
       }
       return { lineRange, command: result.value[0] };
     });
