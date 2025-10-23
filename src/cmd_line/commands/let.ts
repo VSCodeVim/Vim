@@ -227,7 +227,7 @@ export class LetCommand extends ExCommand {
               'vim_did_enter',
             ]
         ) {
-          throw VimError.fromCode(ErrorCode.CannotChangeReadOnlyVariable);
+          throw VimError.fromCode(ErrorCode.CannotChangeReadOnlyVariable); // TODO: Include variable name
         }
         context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {

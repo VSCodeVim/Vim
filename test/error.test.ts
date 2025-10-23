@@ -6,7 +6,7 @@ suite('Error', () => {
   test('error code has message', () => {
     // eslint-disable-next-line guard-for-in
     for (const errorCodeString in ErrorCode) {
-      const errorCode = Number(errorCodeString);
+      const errorCode = Number(errorCodeString) as ErrorCode;
       if (!isNaN(errorCode)) {
         assert.notStrictEqual(ErrorMessage[errorCode], undefined, errorCodeString);
       }
