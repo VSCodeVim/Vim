@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 // eslint-disable-next-line id-denylist
 import { Parser, any, optWhitespace } from 'parsimmon';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Register } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
@@ -37,7 +37,7 @@ export class RegisterCommand extends ExCommand {
   async displayRegisterValue(vimState: VimState, register: string): Promise<void> {
     let result = await this.getRegisterDisplayValue(register);
     if (result === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister, register));
+      StatusBar.displayError(vimState, VimError.NothingInRegister(register));
     } else {
       result = result.replace(/\n/g, '\\n');
       void vscode.window.showInformationMessage(`${register} ${result}`);

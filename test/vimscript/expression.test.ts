@@ -662,7 +662,7 @@ suite('Vimscript expressions', () => {
       exprTest('flatten([1, [2, [3, 4]], 5], 1)', { display: '[1, 2, [3, 4], 5]' });
       exprTest('flatten([1, [2, [3, 4]], 5], 0)', { display: '[1, [2, [3, 4]], 5]' });
 
-      exprTest('flatten({})', { error: ErrorCode.ArgumentOfSortMustBeAList });
+      exprTest('flatten({})', { error: ErrorCode.ArgumentMustBeAList });
       exprTest('flatten([], -2)', { error: ErrorCode.MaxDepthMustBeANonNegativeNumber });
     });
 

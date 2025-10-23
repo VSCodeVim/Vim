@@ -4,7 +4,7 @@ import { CancellationTokenSource, DecorationOptions, Position, Range, window } f
 import { PositionDiff } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Jump } from '../../jumps/jump';
 import { globalState } from '../../state/globalState';
 import { SearchState } from '../../state/searchState';
@@ -484,7 +484,7 @@ export class SubstituteCommand extends ExCommand {
         prevSubstituteState.searchPattern.patternString === ''
       ) {
         if (throwErrors) {
-          throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
+          throw VimError.NoPreviousSubstituteRegularExpression();
         }
       } else {
         pattern = prevSubstituteState.searchPattern;
@@ -497,7 +497,7 @@ export class SubstituteCommand extends ExCommand {
         const prevSearchState = globalState.searchState;
         if (prevSearchState === undefined || prevSearchState.searchString === '') {
           if (throwErrors) {
-            throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
+            throw VimError.NoPreviousRegularExpression();
           }
         } else {
           pattern = prevSearchState.pattern;
@@ -621,7 +621,7 @@ export class SubstituteCommand extends ExCommand {
     if (substitutions === 0) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, this.arguments.pattern?.patternString),
+        VimError.PatternNotFound(this.arguments.pattern?.patternString),
       );
     } else if (this.arguments.flags.printCount) {
       StatusBar.setText(

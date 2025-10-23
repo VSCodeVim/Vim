@@ -1,4 +1,4 @@
-import { ErrorCode, VimError } from '../error';
+import { VimError } from '../error';
 import { VimState } from '../state/vimState';
 import { LineRange } from './lineRange';
 
@@ -16,6 +16,6 @@ export abstract class ExCommand {
 
   async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
     // By default, throw E481 ("No range allowed")
-    throw VimError.fromCode(ErrorCode.NoRangeAllowed);
+    throw VimError.NoRangeAllowed();
   }
 }

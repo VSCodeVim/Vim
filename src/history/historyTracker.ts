@@ -19,7 +19,7 @@ import { Position } from 'vscode';
 import { Jump } from '../jumps/jump';
 import { globalState } from '../state/globalState';
 import { Mode } from '../mode/mode';
-import { ErrorCode, VimError } from '../error';
+import { VimError } from '../error';
 import { Logger } from '../util/logger';
 import { earlierOf } from '../common/motion/position';
 
@@ -359,7 +359,7 @@ class ChangeList {
   public nextChangePosition(): Position | VimError {
     if (this.index === undefined) {
       if (this.changeLocations.length === 0) {
-        return VimError.fromCode(ErrorCode.ChangeListIsEmpty);
+        return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
       return this.changeLocations[this.index];
@@ -367,14 +367,14 @@ class ChangeList {
       this.index++;
       return this.changeLocations[this.index];
     } else {
-      return VimError.fromCode(ErrorCode.AtEndOfChangeList);
+      return VimError.AtEndOfChangeList();
     }
   }
 
   public prevChangePosition(): Position | VimError {
     if (this.index === undefined) {
       if (this.changeLocations.length === 0) {
-        return VimError.fromCode(ErrorCode.ChangeListIsEmpty);
+        return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
       return this.changeLocations[this.index];
@@ -382,7 +382,7 @@ class ChangeList {
       this.index--;
       return this.changeLocations[this.index];
     } else {
-      return VimError.fromCode(ErrorCode.AtStartOfChangeList);
+      return VimError.AtStartOfChangeList();
     }
   }
 }

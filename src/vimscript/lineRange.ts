@@ -1,7 +1,7 @@
 // eslint-disable-next-line id-denylist
 import { alt, any, optWhitespace, Parser, seq, string, succeed } from 'parsimmon';
 import { Position, Range } from 'vscode';
-import { ErrorCode, VimError } from '../error';
+import { VimError } from '../error';
 import { globalState } from '../state/globalState';
 import { SearchState } from '../state/searchState';
 import { VimState } from '../state/vimState';
@@ -144,13 +144,13 @@ export class Address {
               ? vimState.lastVisualSelection?.start.line
               : vimState.lastVisualSelection?.end.line;
           if (res === undefined) {
-            throw VimError.fromCode(ErrorCode.MarkNotSet);
+            throw VimError.MarkNotSet();
           }
           return res;
         case 'mark':
           const mark = vimState.historyTracker.getMark(this.specifier.mark);
           if (!mark || (mark.isUppercaseMark && mark.document !== vimState.document)) {
-            throw VimError.fromCode(ErrorCode.MarkNotSet);
+            throw VimError.MarkNotSet();
           }
           return mark.position.line;
         case 'pattern_next':
@@ -160,10 +160,7 @@ export class Address {
           );
           if (m === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(
-              ErrorCode.PatternNotFound,
-              this.specifier.pattern.patternString,
-            );
+            throw VimError.PatternNotFound(this.specifier.pattern.patternString);
           } else {
             return m.start.line;
           }
@@ -171,7 +168,7 @@ export class Address {
           throw new Error('Using a backward pattern in a line range is not yet supported'); // TODO
         case 'last_search_pattern_next':
           if (!globalState.searchState) {
-            throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
+            throw VimError.NoPreviousRegularExpression();
           }
           const nextMatch = globalState.searchState.getNextSearchMatchPosition(
             vimState,
@@ -180,15 +177,12 @@ export class Address {
           );
           if (nextMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(
-              ErrorCode.PatternNotFound,
-              globalState.searchState.searchString,
-            );
+            throw VimError.PatternNotFound(globalState.searchState.searchString);
           }
           return nextMatch.pos.line;
         case 'last_search_pattern_prev':
           if (!globalState.searchState) {
-            throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
+            throw VimError.NoPreviousRegularExpression();
           }
           const prevMatch = globalState.searchState.getNextSearchMatchPosition(
             vimState,
@@ -197,15 +191,12 @@ export class Address {
           );
           if (prevMatch === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(
-              ErrorCode.PatternNotFound,
-              globalState.searchState.searchString,
-            );
+            throw VimError.PatternNotFound(globalState.searchState.searchString);
           }
           return prevMatch.pos.line;
         case 'last_substitute_pattern_next':
           if (!globalState.substituteState) {
-            throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
+            throw VimError.NoPreviousSubstituteRegularExpression();
           }
           const searchState = globalState.substituteState.searchPattern
             ? new SearchState(
@@ -221,7 +212,7 @@ export class Address {
           );
           if (match === undefined) {
             // TODO: throw proper errors for nowrapscan
-            throw VimError.fromCode(ErrorCode.PatternNotFound, searchState?.searchString);
+            throw VimError.PatternNotFound(searchState?.searchString);
           }
           return match.pos.line;
         default:
@@ -231,7 +222,7 @@ export class Address {
     })();
     const result = line + this.offset;
     if (boundsCheck && (result < 0 || result > vimState.document.lineCount)) {
-      throw VimError.fromCode(ErrorCode.InvalidRange);
+      throw VimError.InvalidRange();
     }
     return result;
   }
@@ -311,7 +302,7 @@ export class LineRange {
       return { start: 0, end: vimState.document.lineCount - 1 };
     } else if (end.specifier.type === 'last_visual_range') {
       if (vimState.lastVisualSelection === undefined) {
-        throw VimError.fromCode(ErrorCode.MarkNotSet);
+        throw VimError.MarkNotSet();
       }
       return {
         start: vimState.lastVisualSelection.start.line,

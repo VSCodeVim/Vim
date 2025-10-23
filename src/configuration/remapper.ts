@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { configuration } from '../configuration/configuration';
-import { ErrorCode, ForceStopRemappingError, VimError } from '../error';
+import { ForceStopRemappingError, VimError } from '../error';
 import { Mode } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { StatusBar } from '../statusBar';
@@ -341,7 +341,7 @@ export class Remapper implements IRemapper {
       try {
         // Check maxMapDepth
         if (remapState.mapDepth >= configuration.maxmapdepth) {
-          const vimError = VimError.fromCode(ErrorCode.RecursiveMapping);
+          const vimError = VimError.RecursiveMapping();
           StatusBar.displayError(vimState, vimError);
           throw ForceStopRemappingError.fromVimError(vimError);
         }
@@ -514,7 +514,7 @@ export class Remapper implements IRemapper {
                 await result.value.command.execute(vimState);
               }
             } else {
-              throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandString);
+              throw VimError.NotAnEditorCommand(commandString);
             }
             modeHandler.updateView();
           } else {

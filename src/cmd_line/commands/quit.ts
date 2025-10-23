@@ -1,7 +1,7 @@
 import { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser } from '../../vimscript/parserUtils';
@@ -45,7 +45,7 @@ export class QuitCommand extends ExCommand {
       !this.arguments.bang &&
       (!duplicatedInSplit || this.arguments.quitAll)
     ) {
-      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
+      throw VimError.NoWriteSinceLastChange();
     }
 
     if (this.arguments.quitAll) {
