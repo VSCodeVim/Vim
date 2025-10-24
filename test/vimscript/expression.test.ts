@@ -594,6 +594,8 @@ suite('Vimscript expressions', () => {
       exprTest('add(0zABCD, 0xEF)', { display: '0zABCDEF' });
     });
 
+    // TODO: byte2line()/line2byte()
+
     suite('call', () => {
       exprTest('call("abs", [-1])', { value: float(1) });
       exprTest('call(function("abs"), [-1])', { value: float(1) });

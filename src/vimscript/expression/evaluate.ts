@@ -880,6 +880,15 @@ export class EvaluationContext {
         }
         return assertFailed(msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`);
       }
+      case 'byte2line': {
+        const [_byte] = getArgs(1);
+        const byte = toInt(_byte!);
+        if (byte <= 0) {
+          return int(-1);
+        }
+        return int(this.vimState!.document.positionAt(byte - 1).line + 1);
+      }
+      // TODO: byteidx[comp]
       case 'call': {
         const [_func, arglist, dict] = getArgs(2, 3);
         if (arglist!.type !== 'list') {
@@ -1291,6 +1300,14 @@ export class EvaluationContext {
       case 'line': {
         const [s, winid] = getArgs(1, 2);
         return int(getpos(toString(s!)).lnum);
+      }
+      case 'line2byte': {
+        const [_line] = getArgs(1);
+        const line = toInt(_line!);
+        if (line <= 0) {
+          return int(-1);
+        }
+        return int(this.vimState!.document.offsetAt(new Position(line - 1, 0)) + 1);
       }
       case 'localtime': {
         return int(Date.now() / 1000);
