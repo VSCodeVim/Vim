@@ -1410,6 +1410,19 @@ export class EvaluationContext {
             return str(''); // TODO: Other modes
         }
       }
+      case 'nextnonblank': {
+        const [_line] = getArgs(1);
+        const line = toInt(_line!);
+        if (line <= 0) {
+          return int(0);
+        }
+        for (let i = line - 1; i < this.vimState!.document.lineCount; i++) {
+          if (this.vimState!.document.lineAt(i).text.length > 0) {
+            return int(i + 1);
+          }
+        }
+        return int(0);
+      }
       case 'or': {
         const [x, y] = getArgs(2);
         // eslint-disable-next-line no-bitwise
@@ -1418,6 +1431,19 @@ export class EvaluationContext {
       case 'pow': {
         const [x, y] = getArgs(2);
         return float(Math.pow(toFloat(x!), toFloat(y!)));
+      }
+      case 'prevnonblank': {
+        const [_line] = getArgs(1);
+        const line = toInt(_line!);
+        if (line > this.vimState!.document.lineCount) {
+          return int(0);
+        }
+        for (let i = line - 1; i >= 0; i--) {
+          if (this.vimState!.document.lineAt(i).text.length > 0) {
+            return int(i + 1);
+          }
+        }
+        return int(0);
       }
       // TODO: printf()
       // TODO: rand()
