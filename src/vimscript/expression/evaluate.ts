@@ -993,6 +993,12 @@ export class EvaluationContext {
             return bool(false);
         }
       }
+      case 'escape': {
+        const [s, chars] = getArgs(2);
+        return str(
+          toString(s!).replace(new RegExp(`[${escapeRegExp(toString(chars!))}]`, 'g'), '\\$&'),
+        );
+      }
       case 'eval': {
         const [expr] = getArgs(1);
         return this.evaluate(expressionParser.tryParse(toString(expr!)));

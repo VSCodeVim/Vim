@@ -642,6 +642,15 @@ suite('Vimscript expressions', () => {
       exprTest('empty(0z00)', { value: bool(false) });
     });
 
+    suite('escape', () => {
+      exprTest("escape('abc', '')", {
+        value: str('abc'),
+      });
+      exprTest("escape('c:\\program files\\vim', ' \\')", {
+        value: str('c:\\\\program\\ files\\\\vim'),
+      });
+    });
+
     suite('function', () => {
       exprTest("function('abs')", { display: 'abs' });
       exprTest("function('abs', [])", { display: 'abs' });
