@@ -1009,7 +1009,9 @@ export class EvaluationContext {
         return float(Math.exp(toFloat(x!)));
       }
       // TODO: extend/extendnew()
-      // TODO: filter
+      // TODO: filecopy()
+      // TODO: filereadable()/filewritable()
+      // TODO: filter()
       case 'flatten':
       case 'flattennew': {
         const [l, _depth] = getArgs(1, 2);
@@ -1048,6 +1050,14 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return int(toFloat(x!));
       }
+      case 'floor': {
+        const [x] = getArgs(1);
+        return float(Math.floor(toFloat(x!)));
+      }
+      case 'fmod': {
+        const [x, y] = getArgs(2);
+        return float(toFloat(x!) % toFloat(y!));
+      }
       // TODO: fullcommand()
       case 'function': {
         const [name, arglist, dict] = getArgs(1, 3);
@@ -1075,14 +1085,6 @@ export class EvaluationContext {
         //   throw VimError.fromCode(ErrorCode.UnknownFunction_funcref, toString(name!));
         // }
         return funcref({ name: toString(name!), arglist, dict });
-      }
-      case 'floor': {
-        const [x] = getArgs(1);
-        return float(Math.floor(toFloat(x!)));
-      }
-      case 'fmod': {
-        const [x, y] = getArgs(2);
-        return float(toFloat(x!) % toFloat(y!));
       }
       // TODO: funcref()
       case 'get': {
