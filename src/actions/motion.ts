@@ -263,6 +263,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let prevLine: number = position.line;
     let prevChar: number = position.character;
     const moveDownByScreenLine = new MoveDownByScreenLine();
+    moveDownByScreenLine.multicursorIndex = this.multicursorIndex;
     do {
       t = await moveDownByScreenLine.execAction(t, vimState);
       t = t instanceof Position ? t : t.stop;
@@ -299,7 +300,9 @@ class MoveDown extends BaseMovement {
     }
 
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
-      return new MoveDownFoldFix().execAction(position, vimState);
+      const moveDownFoldFix = new MoveDownFoldFix();
+      moveDownFoldFix.multicursorIndex = this.multicursorIndex;
+      return moveDownFoldFix.execAction(position, vimState);
     }
 
     if (position.line < vimState.document.lineCount - 1) {
@@ -337,7 +340,9 @@ class MoveUp extends BaseMovement {
     }
 
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
-      return new MoveUpFoldFix().execAction(position, vimState);
+      const moveUpFoldFix = new MoveUpFoldFix();
+      moveUpFoldFix.multicursorIndex = this.multicursorIndex;
+      return moveUpFoldFix.execAction(position, vimState);
     }
 
     if (position.line > 0) {
@@ -369,6 +374,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     }
     let t: Position | IMovement;
     const moveUpByScreenLine = new MoveUpByScreenLine();
+    moveUpByScreenLine.multicursorIndex = this.multicursorIndex;
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
