@@ -965,7 +965,7 @@ export class EvaluationContext {
             }
             break;
           default:
-            throw VimError.ArgumentOfMaxMustBeAListOrDictionary();
+            throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
         }
         return int(count);
       }
@@ -1370,7 +1370,7 @@ export class EvaluationContext {
         } else if (l?.type === 'dictionary') {
           values = [...l.items.values()];
         } else {
-          throw VimError.ArgumentOfMaxMustBeAListOrDictionary();
+          throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
         }
         return int(values.length === 0 ? 0 : Math.max(...values.map(toInt)));
       }
@@ -1382,7 +1382,7 @@ export class EvaluationContext {
         } else if (l?.type === 'dictionary') {
           values = [...l.items.values()];
         } else {
-          throw VimError.ArgumentOfMinMustBeAListOrDictionary();
+          throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
         }
         return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
       }

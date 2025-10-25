@@ -813,7 +813,7 @@ suite('Vimscript expressions', () => {
       exprTest('max([4, 3, 1, 5, 2])', { value: int(5) });
       exprTest('max(#{ten:10,twenty:20,thirty:30})', { value: int(30) });
       exprTest('max([1.2, 1.5])', { error: ErrorCode.UsingAFloatAsANumber });
-      exprTest("max('1,2,3')", { error: ErrorCode.ArgumentOfMaxMustBeAListOrDictionary });
+      exprTest("max('1,2,3')", { error: ErrorCode.ArgumentOfFuncMustBeAListOrDictionary });
     });
     suite('min', () => {
       exprTest('min([])', { value: int(0) });
@@ -821,7 +821,7 @@ suite('Vimscript expressions', () => {
       exprTest('min([4, 3, 1, 5, 2])', { value: int(1) });
       exprTest('min(#{ten:10,twenty:20,thirty:30})', { value: int(10) });
       exprTest('min([1.2, 1.5])', { error: ErrorCode.UsingAFloatAsANumber });
-      exprTest("min('1,2,3')", { error: ErrorCode.ArgumentOfMaxMustBeAListOrDictionary });
+      exprTest("min('1,2,3')", { error: ErrorCode.ArgumentOfFuncMustBeAListOrDictionary });
     });
 
     suite('tolower', () => {

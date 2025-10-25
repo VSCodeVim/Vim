@@ -58,7 +58,7 @@ export enum ErrorCode {
   SliceRequiresAListOrBlobValue = 709,
   ListValueHasMoreItemsThanTarget = 710,
   ListValueHasNotEnoughItems = 711,
-  ArgumentOfMaxMustBeAListOrDictionary = 712,
+  ArgumentOfFuncMustBeAListOrDictionary = 712,
   ListRequired = 714,
   DictionaryRequired = 715,
   KeyNotPresentInDictionary = 716,
@@ -317,16 +317,10 @@ export class VimError extends Error {
   static ListValueHasNotEnoughItems(): VimError {
     return new VimError(ErrorCode.ListValueHasNotEnoughItems, 'List value has not enough items');
   }
-  static ArgumentOfMaxMustBeAListOrDictionary(): VimError {
+  static ArgumentOfFuncMustBeAListOrDictionary(func: string): VimError {
     return new VimError(
-      ErrorCode.ArgumentOfMaxMustBeAListOrDictionary,
-      'Argument of max() must be a List or Dictionary',
-    );
-  }
-  static ArgumentOfMinMustBeAListOrDictionary(): VimError {
-    return new VimError(
-      ErrorCode.ArgumentOfMaxMustBeAListOrDictionary,
-      'Argument of min() must be a List or Dictionary',
+      ErrorCode.ArgumentOfFuncMustBeAListOrDictionary,
+      `Argument of ${func} must be a List or Dictionary`,
     );
   }
   static ListRequired(): VimError {
