@@ -9,7 +9,7 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-import glob from 'glob';
+import { glob } from 'glob';
 import Mocha from 'mocha';
 import * as path from 'path';
 
@@ -19,7 +19,7 @@ import { Configuration } from './testConfiguration';
 Globals.isTesting = true;
 Globals.mockConfiguration = new Configuration();
 
-export function run(): Promise<void> {
+export async function run(): Promise<void> {
   const mochaGrep = new RegExp(process.env.MOCHA_GREP || '');
 
   // Create the mocha test
@@ -32,17 +32,15 @@ export function run(): Promise<void> {
 
   const testsRoot = path.resolve(__dirname, '.');
 
-  return new Promise((c, e) => {
-    glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
-      if (err) {
-        return e(err);
-      }
+  try {
+    const files = await glob('**/**.test.js', { cwd: testsRoot });
 
-      // Add files to the test suite
-      files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
+    // Add files to the test suite
+    files.forEach((f: string) => mocha.addFile(path.resolve(testsRoot, f)));
 
+    // Run the mocha test
+    return new Promise((c, e) => {
       try {
-        // Run the mocha test
         mocha.run((failures) => {
           if (failures > 0) {
             e(new Error(`${failures} tests failed.`));
@@ -55,5 +53,7 @@ export function run(): Promise<void> {
         e(error as Error);
       }
     });
-  });
+  } catch (err) {
+    throw err;
+  }
 }
