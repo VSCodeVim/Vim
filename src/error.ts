@@ -110,8 +110,8 @@ export class VimError extends Error {
   static InvalidAddress(): VimError {
     return new VimError(ErrorCode.InvalidAddress, 'Invalid address');
   }
-  static InvalidExpression(): VimError {
-    return new VimError(ErrorCode.InvalidExpression, 'Invalid expression');
+  static InvalidExpression(expr: string): VimError {
+    return new VimError(ErrorCode.InvalidExpression, `Invalid expression: "${expr}"`);
   }
   static InvalidRange(): VimError {
     return new VimError(ErrorCode.InvalidRange, 'Invalid range');
