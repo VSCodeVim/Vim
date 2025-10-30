@@ -1,5 +1,5 @@
 // eslint-disable-next-line id-denylist
-import { alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
+import { all, alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -130,16 +130,22 @@ export class LetCommand extends ExCommand {
             letVarParser,
           ),
           operationParser.trim(optWhitespace),
-          expressionParser,
-        ).map(
-          ([variable, operation, expression]) =>
-            new LetCommand({
-              operation,
-              variable,
-              expression,
-              lock,
-            }),
-        ),
+          expressionParser.fallback(undefined),
+          all,
+        ).map(([variable, operation, expression, trailing]) => {
+          if (expression === undefined) {
+            throw VimError.InvalidExpression(trailing);
+          }
+          if (trailing) {
+            throw VimError.TrailingCharacters(trailing);
+          }
+          return new LetCommand({
+            operation,
+            variable,
+            expression,
+            lock,
+          });
+        }),
       ),
       // `:let`
       // `:let {var-name} ...`

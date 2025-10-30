@@ -691,11 +691,11 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
         }
         throw VimError.InvalidArgument474();
       }
-      const [command, remaining] = result.value;
-      if (remaining) {
+      const [command, trailing] = result.value;
+      if (trailing) {
         // TODO: Implement `:help :bar`
         // TODO: Implement `:help :comment`
-        throw VimError.TrailingCharacters(remaining);
+        throw VimError.TrailingCharacters(trailing);
       }
       return { lineRange, command };
     });
