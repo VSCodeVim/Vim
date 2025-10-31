@@ -33,6 +33,7 @@ import {
 import { displayValue } from '../../vimscript/expression/displayValue';
 import { VimError } from '../../error';
 import { bangParser } from '../../vimscript/parserUtils';
+import { Register } from '../../register/register';
 
 type Unpack = {
   type: 'unpack';
@@ -249,7 +250,8 @@ export class LetCommand extends ExCommand {
         }
         context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
-        // TODO
+        vimState.recordedState.registerName = variable.name;
+        Register.put(vimState, toString(value));
       } else if (variable.type === 'option') {
         // TODO
       } else if (variable.type === 'env_variable') {
