@@ -177,9 +177,21 @@ export class LetCommand extends ExCommand {
       if (this.args.lock) {
         if (this.args.operation !== '=') {
           throw VimError.CannotModifyExistingVariable();
-        } else if (variable.type !== 'variable') {
-          // TODO: this error message should vary by type
-          throw VimError.CannotLockARegister();
+        }
+        if (variable.type !== 'variable') {
+          if (variable.type === 'register') {
+            throw VimError.CannotLock('a register');
+          }
+          if (variable.type === 'option') {
+            throw VimError.CannotLock('an option');
+          }
+          if (variable.type === 'env_variable') {
+            throw VimError.CannotLock('an environment variable');
+          }
+          if (variable.type === 'slice') {
+            throw VimError.CannotLock('a range');
+          }
+          throw VimError.CannotLock('a list or dict');
         }
       }
 

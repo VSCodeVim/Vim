@@ -89,7 +89,7 @@ export enum ErrorCode {
   CanOnlyCompareBlobWithBlob = 977,
   InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
-  CannotLockARegister = 996,
+  CannotLock = 996,
   ListRequiredForArgument = 1211,
 }
 
@@ -437,8 +437,10 @@ export class VimError extends Error {
   static CannotModifyExistingVariable(): VimError {
     return new VimError(ErrorCode.CannotModifyExistingVariable, 'Cannot modify existing variable');
   }
-  static CannotLockARegister(): VimError {
-    return new VimError(ErrorCode.CannotLockARegister, 'Cannot lock a register');
+  static CannotLock(
+    what: 'a range' | 'an option' | 'a list or dict' | 'an environment variable' | 'a register',
+  ): VimError {
+    return new VimError(ErrorCode.CannotLock, `Cannot lock ${what}`);
   }
   static ListRequiredForArgument(idx: number): VimError {
     return new VimError(ErrorCode.ListRequiredForArgument, `List required for argument ${idx}`);
