@@ -666,44 +666,47 @@ function nameParser(
   return parser.map((p) => [fullName, p]);
 }
 
-export const commandNameParser: Parser<[string, Parser<ExCommand>] | undefined> = alt(
+const commandNameParser: Parser<[string, Parser<ExCommand>] | undefined> = alt(
   ...[...builtinExCommands]
     .reverse()
     .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace))),
 );
 
-export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
-  optWhitespace
-    .then(string(':').skip(optWhitespace).many())
-    .then(
-      seq(
-        LineRange.parser.fallback(undefined),
-        optWhitespace,
-        commandNameParser.fallback(undefined),
-        all,
-      ),
-    )
-    .map(([lineRange, whitespace, fullNameAndArgParser, args]) => {
-      if (fullNameAndArgParser === undefined) {
-        throw VimError.NotAnEditorCommand(`${lineRange?.toString() ?? ''}${whitespace}${args}`);
+export const exCommandParser: Parser<{
+  name: string;
+  lineRange: LineRange | undefined;
+  command: ExCommand;
+}> = optWhitespace
+  .then(string(':').skip(optWhitespace).many())
+  .then(
+    seq(
+      LineRange.parser.fallback(undefined),
+      optWhitespace,
+      commandNameParser.fallback(undefined),
+      all,
+    ),
+  )
+  .map(([lineRange, whitespace, fullNameAndArgParser, args]) => {
+    if (fullNameAndArgParser === undefined) {
+      throw VimError.NotAnEditorCommand(`${lineRange?.toString() ?? ''}${whitespace}${args}`);
+    }
+    const [name, argParser] = fullNameAndArgParser;
+    if (name === '' && lineRange === undefined && args !== '') {
+      // HACK: Handle edge cases like `:^`, which will be incorrectly parsed as a GotoLineCommand
+      throw VimError.NotAnEditorCommand(`${whitespace}${args}`);
+    }
+    const result = seq(argParser, optWhitespace.then(all)).parse(args);
+    if (result.status === false) {
+      if (result.index.offset === args.length) {
+        throw VimError.ArgumentRequired();
       }
-      const [fullName, argParser] = fullNameAndArgParser;
-      if (fullName === '' && lineRange === undefined && args !== '') {
-        // HACK: Handle edge cases like `:^`, which will be incorrectly parsed as a GotoLineCommand
-        throw VimError.NotAnEditorCommand(`${whitespace}${args}`);
-      }
-      const result = seq(argParser, optWhitespace.then(all)).parse(args);
-      if (result.status === false) {
-        if (result.index.offset === args.length) {
-          throw VimError.ArgumentRequired();
-        }
-        throw VimError.InvalidArgument474();
-      }
-      const [command, trailing] = result.value;
-      if (trailing) {
-        // TODO: Implement `:help :bar`
-        // TODO: Implement `:help :comment`
-        throw VimError.TrailingCharacters(trailing);
-      }
-      return { lineRange, command };
-    });
+      throw VimError.InvalidArgument474();
+    }
+    const [command, trailing] = result.value;
+    if (trailing) {
+      // TODO: Implement `:help :bar`
+      // TODO: Implement `:help :comment`
+      throw VimError.TrailingCharacters(trailing);
+    }
+    return { name, lineRange, command };
+  });

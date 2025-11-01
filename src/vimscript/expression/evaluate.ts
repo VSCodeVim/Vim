@@ -37,6 +37,7 @@ import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
+import { exCommandParser } from '../exCommandParser';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -1058,7 +1059,14 @@ export class EvaluationContext {
         const [x, y] = getArgs(2);
         return float(toFloat(x!) % toFloat(y!));
       }
-      // TODO: fullcommand()
+      case 'fullcommand': {
+        const [name] = getArgs(1);
+        try {
+          return str(exCommandParser.tryParse(toString(name!)).name);
+        } catch {
+          return str('');
+        }
+      }
       case 'function': {
         const [name, arglist, dict] = getArgs(1, 3);
         if (arglist) {

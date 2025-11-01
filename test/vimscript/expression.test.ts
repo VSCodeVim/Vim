@@ -696,6 +696,13 @@ suite('Vimscript expressions', () => {
       exprTest('fmod(-4.2, -1.0)', { display: '-0.2' });
     });
 
+    suite('fullcommand', () => {
+      for (const cmd of ['s', 'sub', ':%substitute']) {
+        exprTest(`fullcommand('${cmd}')`, { value: str('substitute') });
+      }
+      exprTest(`fullcommand('notarealthing')`, { value: str('') });
+    });
+
     suite('get', () => {
       exprTest('get([2,4,6], 1)', { value: int(4) });
       exprTest('get([2,4,6], -1)', { value: int(6) });
