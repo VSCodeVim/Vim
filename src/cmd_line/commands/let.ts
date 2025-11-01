@@ -255,7 +255,7 @@ export class LetCommand extends ExCommand {
       } else if (variable.type === 'option') {
         // TODO
       } else if (variable.type === 'env_variable') {
-        // TODO
+        process.env[variable.name] = toString(value);
       } else if (variable.type === 'unpack') {
         // TODO: Support :let [a, b; rest] = ["aval", "bval", 3, 4]
         if (value.type !== 'list') {
