@@ -5,6 +5,8 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser } from '../../vimscript/parserUtils';
 
 export class FileInfoCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<FileInfoCommand> = seq(
     bangParser,
     optWhitespace.then(all),

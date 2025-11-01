@@ -115,6 +115,8 @@ const sliceParser: Parser<Slice> = seq(
 }));
 
 export class LetCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser = (lock: boolean) =>
     alt<LetCommand>(
       // `:let {var} = {expr}`
@@ -318,6 +320,8 @@ export class LetCommand extends ExCommand {
 }
 
 export class UnletCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser = seqMap(
     bangParser,
     whitespace.then(variableParser.sepBy(whitespace)),

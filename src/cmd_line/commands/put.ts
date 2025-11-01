@@ -27,6 +27,8 @@ export interface IPutCommandArguments {
 //
 
 export class PutExCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<PutExCommand> = seq(
     bangParser,
     optWhitespace.then(

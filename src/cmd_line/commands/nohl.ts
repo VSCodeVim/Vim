@@ -4,6 +4,8 @@ import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
 
 export class NohlCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   async execute(vimState: VimState): Promise<void> {
     globalState.hl = false;
 

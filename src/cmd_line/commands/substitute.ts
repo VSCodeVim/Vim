@@ -269,6 +269,8 @@ const countParser: Parser<number | undefined> = optWhitespace
  *   - update search state too!
  */
 export class SubstituteCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<SubstituteCommand> = optWhitespace.then(
     alt(
       // :s[ubstitute]/{pattern}/{string}/[flags] [count]

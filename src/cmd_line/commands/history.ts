@@ -34,6 +34,8 @@ export interface IHistoryCommandArguments {
 
 // http://vimdoc.sourceforge.net/htmldoc/cmdline.html#:history
 export class HistoryCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<HistoryCommand> = optWhitespace
     .then(historyTypeParser.fallback(HistoryCommandType.Cmd))
     .map((type) => new HistoryCommand({ type }));

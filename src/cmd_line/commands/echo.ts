@@ -8,6 +8,8 @@ import { Expression } from '../../vimscript/expression/types';
 import { displayValue } from '../../vimscript/expression/displayValue';
 
 export class EchoCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static argParser(echoArgs: { sep: string; error: boolean }): Parser<EchoCommand> {
     return optWhitespace
       .then(expressionParser.sepBy(whitespace))

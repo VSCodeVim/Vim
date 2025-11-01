@@ -15,6 +15,8 @@ export interface IChangeCommandArguments {
 }
 
 export class ChangeCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<ChangeCommand> = optWhitespace.then(
     alt(
       numberParser.map((count) => {

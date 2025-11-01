@@ -11,6 +11,8 @@ type LeftArgs = {
 };
 
 export class LeftCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<LeftCommand> = optWhitespace
     .then(numberParser.fallback(0))
     .map((indent) => new LeftCommand({ indent }));
@@ -50,6 +52,8 @@ type RightArgs = {
 };
 
 export class RightCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<RightCommand> = optWhitespace
     .then(numberParser.fallback(undefined))
     .map((width) => new RightCommand({ width: width ?? configuration.textwidth }));
@@ -94,6 +98,8 @@ type CenterArgs = {
 };
 
 export class CenterCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<CenterCommand> = optWhitespace
     .then(numberParser.fallback(undefined))
     .map((width) => new CenterCommand({ width: width ?? configuration.textwidth }));

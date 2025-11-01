@@ -5,6 +5,8 @@ import { LineRange } from '../../vimscript/lineRange';
 import { numberParser } from '../../vimscript/parserUtils';
 
 export class GotoCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<GotoCommand> = optWhitespace
     .then(numberParser.fallback(undefined))
     .map((count) => new GotoCommand(count));

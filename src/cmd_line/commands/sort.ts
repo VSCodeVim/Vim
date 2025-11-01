@@ -19,6 +19,8 @@ export interface ISortCommandArguments {
 }
 
 export class SortCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<SortCommand> = seq(
     bangParser,
     optWhitespace.then(oneOf('bfilnorux').many()),

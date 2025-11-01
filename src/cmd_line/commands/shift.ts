@@ -16,6 +16,8 @@ export type ShiftArgs = {
 };
 
 export class ShiftCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser = (dir: '>' | '<'): Parser<ShiftCommand> =>
     optWhitespace
       .then(

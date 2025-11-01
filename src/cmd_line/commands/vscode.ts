@@ -6,6 +6,8 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { all, Parser, whitespace } from 'parsimmon';
 
 export class VsCodeCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<VsCodeCommand> = whitespace
     .then(all)
     .map((command) => new VsCodeCommand(command));

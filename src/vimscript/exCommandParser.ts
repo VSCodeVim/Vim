@@ -621,6 +621,8 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
 ];
 
 class UnimplementedCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   name: string;
 
   public override neovimCapable(): boolean {
@@ -647,6 +649,8 @@ class UnimplementedCommand extends ExCommand {
 }
 
 export class NoOpCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   async execute(vimState: VimState): Promise<void> {
     // nothing
   }

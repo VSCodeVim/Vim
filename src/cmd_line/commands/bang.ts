@@ -10,6 +10,8 @@ export interface IBangCommandArguments {
 }
 
 export class BangCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<BangCommand> = all.map(
     (command) =>
       new BangCommand({

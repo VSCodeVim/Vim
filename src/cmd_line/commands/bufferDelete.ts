@@ -17,6 +17,8 @@ interface IBufferDeleteCommandArguments {
 // http://vimdoc.sourceforge.net/htmldoc/windows.html#buffers
 //
 export class BufferDeleteCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<BufferDeleteCommand> = seq(
     bangParser.skip(optWhitespace),
     alt<string | number>(numberParser, fileNameParser).sepBy(whitespace),

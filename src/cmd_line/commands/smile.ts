@@ -4,6 +4,8 @@ import { TextEditor } from '../../textEditor';
 import { ExCommand } from '../../vimscript/exCommand';
 
 export class SmileCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   static readonly smileText: string = `
                                oooo$$$$$$$$$$$$oooo
                           oo$$$$$$$$$$$$$$$$$$$$$$$$o

@@ -32,6 +32,8 @@ class MarkQuickPickItem implements QuickPickItem {
 }
 
 export class MarksCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<MarksCommand> = optWhitespace
     .then(noneOf('|'))
     .many()
@@ -67,6 +69,8 @@ export class MarksCommand extends ExCommand {
 type DeleteMarksArgs = Array<{ start: string; end: string } | string> | '!';
 
 export class DeleteMarksCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<DeleteMarksCommand> = alt<DeleteMarksArgs>(
     string('!'),
     whitespace.then(
@@ -137,6 +141,8 @@ export class DeleteMarksCommand extends ExCommand {
 }
 
 export class MarkCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<MarkCommand> = seq(
     optWhitespace,
     regexp(/[a-zA-Z'`<>[\].]/).desc('mark name'),

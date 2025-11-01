@@ -3,6 +3,8 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
 
 export class GotoLineCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public async execute(vimState: VimState): Promise<void> {
     return;
   }

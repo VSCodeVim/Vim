@@ -6,6 +6,8 @@ import { Expression } from '../../vimscript/expression/types';
 import { EvaluationContext } from '../../vimscript/expression/evaluate';
 
 export class EvalCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static argParser: Parser<EvalCommand> = optWhitespace
     .then(expressionParser)
     .map((expression) => new EvalCommand(expression));
@@ -23,6 +25,8 @@ export class EvalCommand extends ExCommand {
 }
 
 export class CallCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static argParser: Parser<CallCommand> = optWhitespace
     .then(functionCallParser)
     .map((call) => new CallCommand(call));

@@ -3,6 +3,8 @@ import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 
 export class OnlyCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   async execute(vimState: VimState): Promise<void> {
     await Promise.allSettled([
       vscode.commands.executeCommand('workbench.action.joinAllGroups'),

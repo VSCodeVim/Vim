@@ -27,6 +27,8 @@ class JumpPickItem implements QuickPickItem {
 }
 
 export class JumpsCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     if (jumpTracker.hasJumps) {
@@ -46,6 +48,8 @@ export class JumpsCommand extends ExCommand {
 }
 
 export class ClearJumpsCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   async execute(vimState: VimState): Promise<void> {
     const jumpTracker = globalState.jumpTracker;
     jumpTracker.clearJumps();

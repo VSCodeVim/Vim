@@ -10,6 +10,8 @@ import { numberParser } from '../../vimscript/parserUtils';
 //  http://vimdoc.sourceforge.net/htmldoc/undo.html#redo
 //
 export class RedoCommand extends ExCommand {
+  public override isRepeatableWithDot = false;
+
   public static readonly argParser: Parser<RedoCommand> = optWhitespace
     .then(numberParser)
     .fallback(undefined)
