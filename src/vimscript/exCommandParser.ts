@@ -655,15 +655,18 @@ export class NoOpCommand extends ExCommand {
 function nameParser(
   name: [string, string],
   argParser: ArgParser | undefined,
-): Parser<Parser<ExCommand>> {
+): Parser<[string, Parser<ExCommand>]> {
   argParser ??= all.result(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
 
   const fullName = name[0] + name[1];
-  const p = nameAbbrevParser(name[0], name[1]).result(argParser);
-  return fullName === '' || /[a-z]$/i.test(fullName) ? p.notFollowedBy(regexp(/[a-z]/i)) : p;
+  let parser = nameAbbrevParser(name[0], name[1]).result(argParser);
+  if (fullName === '' || /[a-z]$/i.test(fullName)) {
+    parser = parser.notFollowedBy(regexp(/[a-z]/i));
+  }
+  return parser.map((p) => [fullName, p]);
 }
 
-export const commandNameParser: Parser<Parser<ExCommand> | undefined> = alt(
+export const commandNameParser: Parser<[string, Parser<ExCommand>] | undefined> = alt(
   ...[...builtinExCommands]
     .reverse()
     .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace))),
@@ -680,11 +683,16 @@ export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command
         all,
       ),
     )
-    .map(([lineRange, whitespace, parseArgs, args]) => {
-      if (parseArgs === undefined) {
+    .map(([lineRange, whitespace, fullNameAndArgParser, args]) => {
+      if (fullNameAndArgParser === undefined) {
         throw VimError.NotAnEditorCommand(`${lineRange?.toString() ?? ''}${whitespace}${args}`);
       }
-      const result = seq(parseArgs, optWhitespace.then(all)).parse(args);
+      const [fullName, argParser] = fullNameAndArgParser;
+      if (fullName === '' && lineRange === undefined && args !== '') {
+        // HACK: Handle edge cases like `:^`, which will be incorrectly parsed as a GotoLineCommand
+        throw VimError.NotAnEditorCommand(`${whitespace}${args}`);
+      }
+      const result = seq(argParser, optWhitespace.then(all)).parse(args);
       if (result.status === false) {
         if (result.index.offset === args.length) {
           throw VimError.ArgumentRequired();

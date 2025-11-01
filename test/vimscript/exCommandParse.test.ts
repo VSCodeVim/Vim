@@ -55,6 +55,7 @@ function exParseFails(input: string, error: VimError) {
 suite('Ex command parsing', () => {
   suite('Unknown command', () => {
     exParseFails(':fakecmd', VimError.NotAnEditorCommand('fakecmd'));
+    exParseFails(':^', VimError.NotAnEditorCommand('^'));
   });
 
   suite(':[range]', () => {
