@@ -1095,6 +1095,10 @@ export class EvaluationContext {
         return funcref({ name: toString(name!), arglist, dict });
       }
       // TODO: funcref()
+      case 'garbagecollect': {
+        const [atexit] = getArgs(0, 1);
+        return int(0); // No-op
+      }
       case 'get': {
         const [_haystack, _idx, _default] = getArgs(2, 3);
         const haystack: Value = _haystack!;
