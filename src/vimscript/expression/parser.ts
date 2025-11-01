@@ -210,7 +210,7 @@ export const variableParser: Parser<VariableExpression> = seq(
 });
 
 export const envVariableParser: Parser<EnvVariableExpression> = string('$')
-  .then(regexp(/[a-z]+/))
+  .then(regexp(/[a-z]+/i))
   .desc('$ENV')
   .map((name) => {
     return { type: 'env_variable', name };

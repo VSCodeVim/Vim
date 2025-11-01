@@ -993,6 +993,9 @@ export class EvaluationContext {
             return bool(false);
         }
       }
+      case 'environ': {
+        return dictionary(new Map(Object.entries(process.env).map(([k, v]) => [k, str(v ?? '')])));
+      }
       case 'escape': {
         const [s, chars] = getArgs(2);
         return str(
@@ -1058,7 +1061,15 @@ export class EvaluationContext {
         const [x, y] = getArgs(2);
         return float(toFloat(x!) % toFloat(y!));
       }
-      // TODO: fullcommand()
+      // TODO: Fix circular dependency
+      // case 'fullcommand': {
+      //   const [name] = getArgs(1);
+      //   try {
+      //     return str(exCommandParser.tryParse(toString(name!)).name);
+      //   } catch {
+      //     return str('');
+      //   }
+      // }
       case 'function': {
         const [name, arglist, dict] = getArgs(1, 3);
         if (arglist) {
@@ -1087,6 +1098,10 @@ export class EvaluationContext {
         return funcref({ name: toString(name!), arglist, dict });
       }
       // TODO: funcref()
+      case 'garbagecollect': {
+        const [atexit] = getArgs(0, 1);
+        return int(0); // No-op
+      }
       case 'get': {
         const [_haystack, _idx, _default] = getArgs(2, 3);
         const haystack: Value = _haystack!;
