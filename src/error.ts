@@ -70,6 +70,7 @@ export enum ErrorCode {
   UsingListAsAString = 730,
   UsingFuncrefAsAString = 729,
   UsingDictionaryAsAString = 731,
+  WrongVariableType = 734,
   CanOnlyCompareDictionaryWithDictionary = 735,
   InvalidOperationForDictionary = 736,
   ValueIsLocked = 741,
@@ -361,6 +362,9 @@ export class VimError extends Error {
   }
   static UsingDictionaryAsAString(): VimError {
     return new VimError(ErrorCode.UsingDictionaryAsAString, 'Using Dictionary as a String');
+  }
+  static WrongVariableType(operation: string): VimError {
+    return new VimError(ErrorCode.WrongVariableType, `Wrong variable type for ${operation}`);
   }
   static CanOnlyCompareDictionaryWithDictionary(): VimError {
     return new VimError(

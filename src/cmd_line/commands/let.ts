@@ -250,12 +250,24 @@ export class LetCommand extends ExCommand {
         }
         context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
-        vimState.recordedState.registerName = variable.name;
-        Register.put(vimState, toString(value));
+        if (this.args.operation === '=') {
+          vimState.recordedState.registerName = variable.name;
+          Register.put(vimState, toString(value));
+        } else if (this.args.operation === '.=' || this.args.operation === '..=') {
+          throw VimError.WrongVariableType(this.args.operation); // TODO
+        } else {
+          throw VimError.WrongVariableType(this.args.operation);
+        }
       } else if (variable.type === 'option') {
         // TODO
       } else if (variable.type === 'env_variable') {
-        process.env[variable.name] = toString(value);
+        if (this.args.operation === '=') {
+          process.env[variable.name] = toString(value);
+        } else if (this.args.operation === '.=' || this.args.operation === '..=') {
+          process.env[variable.name] = (process.env[variable.name] ?? '') + toString(value);
+        } else {
+          throw VimError.WrongVariableType(this.args.operation);
+        }
       } else if (variable.type === 'unpack') {
         // TODO: Support :let [a, b; rest] = ["aval", "bval", 3, 4]
         if (value.type !== 'list') {
