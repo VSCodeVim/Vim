@@ -993,6 +993,9 @@ export class EvaluationContext {
             return bool(false);
         }
       }
+      case 'environ': {
+        return dictionary(new Map(Object.entries(process.env).map(([k, v]) => [k, str(v ?? '')])));
+      }
       case 'escape': {
         const [s, chars] = getArgs(2);
         return str(
