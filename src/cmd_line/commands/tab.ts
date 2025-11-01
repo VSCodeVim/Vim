@@ -1,5 +1,5 @@
 // eslint-disable-next-line id-denylist
-import { alt, optWhitespace, seq, string, whitespace } from 'parsimmon';
+import { all, alt, optWhitespace, seq, string, whitespace } from 'parsimmon';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
@@ -130,13 +130,22 @@ export class TabCommand extends ExCommand {
     tabmove: optWhitespace
       .then(
         seq(
-          alt<'right' | 'left'>(string('+').result('right'), string('-').result('left')).fallback(
-            undefined,
-          ),
+          alt(string('+'), string('-')).fallback(undefined),
           numberParser.fallback(undefined),
+          all,
         ),
       )
-      .map(([direction, count]) => new TabCommand({ type: TabCommandType.Move, direction, count })),
+      .map(([plusminus, count, trailing]) => {
+        if (trailing || (plusminus && count === 0)) {
+          throw VimError.InvalidArgument475((plusminus ?? '') + (count ?? '') + trailing);
+        }
+        const direction = plusminus === '+' ? 'right' : plusminus === '-' ? 'left' : undefined;
+        return new TabCommand({
+          type: TabCommandType.Move,
+          direction,
+          count,
+        });
+      }),
   };
 
   public readonly arguments: ITabCommandArguments;
