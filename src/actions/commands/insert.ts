@@ -19,7 +19,6 @@ import {
   CommandInsertAtCursor,
   CommandInsertAtFirstCharacter,
   CommandInsertAtLastChange,
-  CommandInsertAtLineBegin,
   CommandInsertAtLineEnd,
   CommandInsertNewLineAbove,
   CommandInsertNewLineBefore,
@@ -75,7 +74,6 @@ export class CommandEscInsertMode extends BaseCommand {
         (a) =>
           a instanceof CommandInsertAtCursor ||
           a instanceof CommandInsertAfterCursor ||
-          a instanceof CommandInsertAtLineBegin ||
           a instanceof CommandInsertAtLineEnd ||
           a instanceof CommandInsertAtFirstCharacter ||
           a instanceof CommandInsertAtLastChange,
