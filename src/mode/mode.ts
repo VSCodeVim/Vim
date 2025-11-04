@@ -29,6 +29,7 @@ export enum VSCodeVimCursorType {
 
 export enum NormalCommandState {
   Waiting,
+  Queuing,
   Executing,
   Finished,
 }
