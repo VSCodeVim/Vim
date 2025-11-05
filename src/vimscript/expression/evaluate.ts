@@ -1138,6 +1138,9 @@ export class EvaluationContext {
         }
         return list(lines.map(str));
       }
+      case 'getpid': {
+        return int(process.pid);
+      }
       case 'getpos': {
         const [s] = getArgs(1);
         const { bufnum, lnum, col, off } = getpos(toString(s!));
