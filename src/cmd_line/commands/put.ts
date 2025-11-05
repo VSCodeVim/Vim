@@ -5,7 +5,7 @@ import { VimState } from '../../state/vimState';
 import { Parser, alt, any, optWhitespace, seq, string } from 'parsimmon';
 import { Position } from 'vscode';
 import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Register } from '../../register/register';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -76,7 +76,7 @@ export class PutExCommand extends ExCommand {
     const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');
 
     if (!Register.isValidRegister(registerName)) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.TrailingCharacters));
+      StatusBar.displayError(vimState, VimError.TrailingCharacters());
       return;
     }
 

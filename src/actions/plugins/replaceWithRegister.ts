@@ -5,7 +5,7 @@ import { VimState } from '../../state/vimState';
 import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
 import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
+import { VimError } from '../../error';
 import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 
@@ -32,7 +32,7 @@ class ReplaceOperator extends BaseOperator {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
+        VimError.NothingInRegister(vimState.recordedState.registerName),
       );
       return;
     }

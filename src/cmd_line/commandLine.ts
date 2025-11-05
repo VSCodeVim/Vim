@@ -480,7 +480,7 @@ export class SearchCommandLine extends CommandLine {
     globalState.hl = true;
 
     if (this.searchState.getMatchRanges(vimState).length === 0) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.PatternNotFound, this.text));
+      StatusBar.displayError(vimState, VimError.PatternNotFound(this.text));
       return;
     }
 
@@ -489,12 +489,9 @@ export class SearchCommandLine extends CommandLine {
     if (currentMatch === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(
-          this.searchState.direction === SearchDirection.Backward
-            ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom,
-          this.text,
-        ),
+        this.searchState.direction === SearchDirection.Backward
+          ? VimError.SearchHitTop(this.text)
+          : VimError.SearchHitBottom(this.text),
       );
       return;
     }

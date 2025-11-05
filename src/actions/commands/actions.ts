@@ -5,7 +5,7 @@ import { doesFileExist } from 'platform/fs';
 import { Position } from 'vscode';
 import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { Cursor } from '../../common/motion/cursor';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { globalState } from '../../state/globalState';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
@@ -223,7 +223,7 @@ class CommandExecuteLastMacro extends BaseCommand {
         replay: 'contentChange',
       });
     } else {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoPreviouslyUsedRegister));
+      StatusBar.displayError(vimState, VimError.NoPreviouslyUsedRegister());
     }
   }
 }
@@ -240,10 +240,7 @@ class CommandExecuteMacro extends BaseCommand {
 
     const isFilenameRegister = register === '%' || register === '#';
     if (!Register.isValidRegister(register) || isFilenameRegister) {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.InvalidRegisterName, `'${register}'`),
-      );
+      StatusBar.displayError(vimState, VimError.InvalidRegisterName(register));
     }
 
     if (Register.has(register)) {
@@ -526,12 +523,9 @@ export class CommandShowSearchHistory extends BaseCommand {
       );
 
       if (!nextMatch) {
-        throw VimError.fromCode(
-          this.direction === SearchDirection.Forward
-            ? ErrorCode.SearchHitBottom
-            : ErrorCode.SearchHitTop,
-          searchState.searchString,
-        );
+        throw this.direction === SearchDirection.Forward
+          ? VimError.SearchHitBottom(searchState.searchString)
+          : VimError.SearchHitTop(searchState.searchString);
       }
 
       vimState.cursorStopPosition = nextMatch.pos;
@@ -562,6 +556,9 @@ class CommandDot extends BaseCommand {
         count,
         recordedState: globalState.previousFullAction,
       });
+    } else {
+      // No previous action to repeat, so mark this as non-repeatable
+      vimState.lastCommandDotRepeatable = false;
     }
   }
 }
@@ -884,7 +881,7 @@ class CommandOpenFile extends BaseCommand {
             if (workspaceRoot) {
               uri = Uri.file(path.join(workspaceRoot.fsPath, pathStr));
               if (!(await doesFileExist(uri))) {
-                throw VimError.fromCode(ErrorCode.CantFindFileInPath, pathStr);
+                throw VimError.CantFindFileInPath(pathStr);
               }
             }
           }
@@ -2275,7 +2272,7 @@ class ActionGoToAlternateFile extends BaseCommand {
     if (altFile?.text instanceof RecordedState) {
       throw new Error(`# register unexpectedly contained a RecordedState`);
     } else if (altFile === undefined || altFile.text === '') {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoAlternateFile));
+      StatusBar.displayError(vimState, VimError.NoAlternateFile());
     } else {
       let files: vscode.Uri[];
       if (await doesFileExist(vscode.Uri.file(altFile.text))) {

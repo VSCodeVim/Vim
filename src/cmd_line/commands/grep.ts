@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
-import { VimState } from '../../state/vimState';
+import { VimError } from '../../error';
 import { Pattern, SearchDirection } from '../../vimscript/pattern';
 import { ExCommand } from '../../vimscript/exCommand';
 import { Parser, seq, optWhitespace, whitespace } from 'parsimmon';
@@ -43,7 +42,7 @@ export class GrepCommand extends ExCommand {
   async execute(): Promise<void> {
     const { pattern, files } = this.arguments;
     if (files.length === 0) {
-      throw error.VimError.fromCode(error.ErrorCode.NoFileName);
+      throw VimError.NoFileName();
     }
     // There are other arguments that can be passed, but probably need to dig into the VSCode source code, since they are not listed in the API reference
     // https://code.visualstudio.com/api/references/commands

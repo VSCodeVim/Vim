@@ -11,7 +11,7 @@ import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
-import { VimError, ErrorCode } from '../error';
+import { VimError } from '../error';
 import { BaseMovement, SelectionType, IMovement, isIMovement, failedMovement } from './baseMotion';
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
@@ -468,10 +468,7 @@ class CommandNextSearchMatch extends BaseMovement {
     globalState.hl = true;
 
     if (searchState.getMatchRanges(vimState).length === 0) {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString),
-      );
+      StatusBar.displayError(vimState, VimError.PatternNotFound(searchState.searchString));
       return failedMovement(vimState);
     }
 
@@ -488,12 +485,9 @@ class CommandNextSearchMatch extends BaseMovement {
     if (!nextMatch) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(
-          searchState.direction === SearchDirection.Forward
-            ? ErrorCode.SearchHitBottom
-            : ErrorCode.SearchHitTop,
-          searchState.searchString,
-        ),
+        searchState.direction === SearchDirection.Forward
+          ? VimError.SearchHitBottom(searchState.searchString)
+          : VimError.SearchHitTop(searchState.searchString),
       );
       return failedMovement(vimState);
     }
@@ -523,10 +517,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     globalState.hl = true;
 
     if (searchState.getMatchRanges(vimState).length === 0) {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString),
-      );
+      StatusBar.displayError(vimState, VimError.PatternNotFound(searchState.searchString));
       return failedMovement(vimState);
     }
 
@@ -546,12 +537,9 @@ class CommandPreviousSearchMatch extends BaseMovement {
     if (!prevMatch) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(
-          searchState.direction === SearchDirection.Forward
-            ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom,
-          searchState.searchString,
-        ),
+        searchState.direction === SearchDirection.Forward
+          ? VimError.SearchHitTop(searchState.searchString)
+          : VimError.SearchHitBottom(searchState.searchString),
       );
       return failedMovement(vimState);
     }
@@ -576,7 +564,7 @@ export abstract class BaseMarkMovement extends BaseMovement {
     const mark = vimState.historyTracker.getMark(markName);
 
     if (mark === undefined) {
-      throw VimError.fromCode(ErrorCode.MarkNotSet);
+      throw VimError.MarkNotSet();
     }
 
     if (
@@ -584,7 +572,7 @@ export abstract class BaseMarkMovement extends BaseMovement {
       vimState.recordedState.operator &&
       mark.document !== vimState.document
     ) {
-      throw VimError.fromCode(ErrorCode.MarkNotSet);
+      throw VimError.MarkNotSet();
     }
 
     if (this.registerMode) {

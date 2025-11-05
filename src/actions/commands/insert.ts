@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { Position } from 'vscode';
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
@@ -131,7 +131,7 @@ export class CommandInsertPreviousText extends BaseCommand {
       !(register.text instanceof RecordedState) ||
       !register.text.actionsRun
     ) {
-      throw VimError.fromCode(ErrorCode.NoInsertedTextYet);
+      throw VimError.NoInsertedTextYet();
     }
 
     const recordedState = register.text.clone();
@@ -343,7 +343,7 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     const register = await Register.get(registerKey, this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister, registerKey));
+      StatusBar.displayError(vimState, VimError.NothingInRegister(registerKey));
       return;
     }
 

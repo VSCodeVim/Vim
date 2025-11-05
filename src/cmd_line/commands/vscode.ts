@@ -1,4 +1,4 @@
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { StatusBar } from '../../statusBar';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
@@ -19,7 +19,7 @@ export class VsCodeCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     if (!this.command) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.ArgumentRequired));
+      StatusBar.displayError(vimState, VimError.ArgumentRequired());
       return;
     }
     await vscode.commands.executeCommand(this.command);

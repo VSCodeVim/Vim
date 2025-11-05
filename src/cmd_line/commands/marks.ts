@@ -4,7 +4,7 @@ import { QuickPickItem, window } from 'vscode';
 import { Parser, alt, noneOf, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
 import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { IMark } from '../../history/historyTracker';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -98,7 +98,7 @@ export class DeleteMarksCommand extends ExCommand {
   private static resolveMarkList(vimState: VimState, args: DeleteMarksArgs) {
     const asciiRange = (start: string, end: string) => {
       if (start > end) {
-        throw VimError.fromCode(ErrorCode.InvalidArgument474);
+        throw VimError.InvalidArgument474();
       }
 
       const [asciiStart, asciiEnd] = [start.charCodeAt(0), end.charCodeAt(0)];
@@ -122,7 +122,7 @@ export class DeleteMarksCommand extends ExCommand {
       } else {
         const range = asciiRange(x.start, x.end);
         if (range === undefined) {
-          throw VimError.fromCode(ErrorCode.InvalidArgument474);
+          throw VimError.InvalidArgument474();
         }
         marks.push(...range.concat());
       }
