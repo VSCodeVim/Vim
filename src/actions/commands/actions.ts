@@ -556,6 +556,9 @@ class CommandDot extends BaseCommand {
         count,
         recordedState: globalState.previousFullAction,
       });
+    } else {
+      // No previous action to repeat, so mark this as non-repeatable
+      vimState.lastCommandDotRepeatable = false;
     }
   }
 }
