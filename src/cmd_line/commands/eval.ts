@@ -10,6 +10,7 @@ export class EvalCommand extends ExCommand {
   public static argParser: Parser<EvalCommand> = optWhitespace
     .then(seq(expressionParser.fallback(undefined), all))
     .map(([expression, trailing]) => {
+      trailing = trailing.trim();
       if (expression === undefined) {
         throw VimError.InvalidExpression(trailing);
       }
@@ -20,7 +21,7 @@ export class EvalCommand extends ExCommand {
     });
 
   private expression: Expression;
-  private constructor(expression: Expression) {
+  constructor(expression: Expression) {
     super();
     this.expression = expression;
   }

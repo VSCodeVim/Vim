@@ -32,12 +32,17 @@ import {
   funcCall,
   list,
   toExpr,
+  dictionary,
+  listExpr,
 } from '../../src/vimscript/expression/build';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 import { GrepCommand } from '../../src/cmd_line/commands/grep';
 import { VimError } from '../../src/error';
+import { EvalCommand } from '../../src/cmd_line/commands/eval';
+import { EchoCommand } from '../../src/cmd_line/commands/echo';
+import { Expression } from '../../src/vimscript/expression/types';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -257,6 +262,17 @@ suite('Ex command parsing', () => {
     exParseFails(':dig e:', VimError.TrailingCharacters('e:')); // TODO: Should throw `E39: Number expected`
   });
 
+  suite(':ec[ho]', () => {
+    const echo = (exprs: Expression[]) => new EchoCommand({ sep: ' ', error: false }, exprs);
+    exParseTest(':echo', echo([]));
+    exParseTest(':echo []{}', echo([listExpr([]), toExpr(dictionary(new Map()))]));
+    exParseTest(':echo 5 + 5', echo([add(int(5), int(5))]));
+    exParseTest(':echo 5 + 5 5', echo([add(int(5), int(5)), int(5)]));
+
+    exParseFails(':echo 5 (', VimError.InvalidExpression('('));
+    // TODO: exParseFails(':echo 5 6abc', VimError.InvalidExpression('6abc'));
+  });
+
   suite(':e[dit]', () => {
     exParseTest(
       ':edit',
@@ -293,6 +309,14 @@ suite('Ex command parsing', () => {
   suite(':ene[w]', () => {
     exParseTest(':enew', new FileCommand({ name: 'enew', bang: false }));
     exParseTest(':enew!', new FileCommand({ name: 'enew', bang: true }));
+  });
+
+  suite(':eval', () => {
+    exParseTest(':eval 2 + 2', new EvalCommand(add(int(2), int(2))));
+
+    exParseFails(':eval', VimError.InvalidExpression(''));
+    // TODO: exParseFails(':eval 6abc', VimError.InvalidExpression('6abc'));
+    exParseFails(':eval 1 1', VimError.TrailingCharacters('1'));
   });
 
   suite(':go[to]', () => {
@@ -424,6 +448,10 @@ suite('Ex command parsing', () => {
     );
 
     // TODO
+
+    exParseFails(':let x = ', VimError.InvalidExpression(''));
+    // TODO: exParseFails(':let x = 6abc', VimError.InvalidExpression('6abc'));
+    exParseFails(':let x = 6 abc', VimError.TrailingCharacters('abc'));
   });
 
   suite(':marks', () => {
@@ -435,6 +463,8 @@ suite('Ex command parsing', () => {
   suite(':mark', () => {
     exParseTest(':mark a', new MarkCommand('a'));
     exParseTest(':mark `', new MarkCommand('`'));
+
+    exParseFails(':mark', VimError.ArgumentRequired());
   });
 
   suite(':p[rint]', () => {
