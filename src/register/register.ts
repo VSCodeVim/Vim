@@ -265,33 +265,36 @@ export class Register {
   }
 
   /**
-   * Gets content from a register. If no register is specified, uses `vimState.recordedState.registerName`.
+   * @returns content of the given register
    */
   public static async get(
     register: string,
     multicursorIndex = 0,
   ): Promise<IRegisterContent | undefined> {
+    if (Register.isClipboardRegister(register)) {
+      const text = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
+      return { registerMode: RegisterMode.CharacterWise, text };
+    }
+    return Register.getSync(register, multicursorIndex);
+  }
+
+  /**
+   * @returns content of the given register
+   *
+   * NOTE: The clipboard register is silently converted to the unnamed register
+   */
+  public static getSync(register: string, multicursorIndex = 0): IRegisterContent | undefined {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
+    }
+
+    if (Register.isClipboardRegister(register)) {
+      register = '"';
     }
 
     register = register.toLowerCase();
 
     const contentByCursor = Register.registers.get(register);
-
-    if (Register.isClipboardRegister(register)) {
-      const clipboardContent = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
-      const currentRegisterContent = (contentByCursor?.[0]?.text as string)?.replace(/\r\n/g, '\n');
-      if (currentRegisterContent !== clipboardContent) {
-        // System clipboard seems to have changed
-        const registerContent = {
-          text: clipboardContent,
-          registerMode: RegisterMode.CharacterWise,
-        };
-        Register.registers.set(register, [registerContent]);
-        return registerContent;
-      }
-    }
 
     // Default to the first cursor.
     if (contentByCursor?.[multicursorIndex] === undefined) {
