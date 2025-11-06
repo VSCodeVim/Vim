@@ -496,6 +496,9 @@ suite('Ex command parsing', () => {
       ':put!=[1,2,3]',
       new PutExCommand({ bang: true, fromExpression: toExpr(list([int(1), int(2), int(3)])) }),
     );
+    exParseFails(':put=)', VimError.InvalidExpression(')'));
+    // TODO: exParseFails(':put=1+', VimError.InvalidExpression('1+'));
+    exParseFails(':put=1 1', VimError.TrailingCharacters('1'));
   });
 
   suite(':q[uit] and :qa[ll]', () => {
