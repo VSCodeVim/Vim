@@ -135,7 +135,10 @@ export class WriteCommand extends ExCommand {
   }
 
   private async save(vimState: VimState): Promise<void> {
-    await vscode.window.showTextDocument(vimState.document, { preview: false });
+    if (this.shouldShowDocument(vimState.document.uri)) {
+      await vscode.window.showTextDocument(vimState.document, { preview: false });
+    }
+
     await this.background(
       vimState.document.save().then((success) => {
         if (success) {
@@ -150,6 +153,40 @@ export class WriteCommand extends ExCommand {
           // TODO: What's the right thing to do here?
         }
       }),
+    );
+  }
+
+  /**
+   * Determines whether to call showTextDocument when saving.
+   * Avoids disrupting diff views and handles preview tab pinning.
+   */
+  private shouldShowDocument(documentUri: vscode.Uri): boolean {
+    const uriString = documentUri.toString();
+    const matchingTab = vscode.window.tabGroups.activeTabGroup.tabs.find((tab: vscode.Tab) =>
+      this.tabContainsDocument(tab, uriString),
+    );
+
+    if (matchingTab) {
+      return matchingTab.isPreview;
+    }
+
+    // No matching tab found, show it
+    return true;
+  }
+
+  /**
+   * Check if a tab contains the specified document URI.
+   * Handles regular tabs and diff tabs.
+   */
+  private tabContainsDocument(tab: vscode.Tab, uriString: string): boolean {
+    const input = tab.input as
+      | { uri?: vscode.Uri; original?: vscode.Uri; modified?: vscode.Uri }
+      | undefined;
+
+    return (
+      input?.uri?.toString() === uriString ||
+      input?.original?.toString() === uriString ||
+      input?.modified?.toString() === uriString
     );
   }
 
