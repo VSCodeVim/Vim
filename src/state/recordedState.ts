@@ -219,9 +219,11 @@ export class RecordedState {
   }
 
   public getOperatorState(mode: Mode): 'pending' | 'ready' | undefined {
+    const operators = this.operators;
+
     // Do we have an operator that hasn't been run yet?
     if (
-      this.operator === undefined ||
+      operators.length === 0 ||
       this.hasRunOperator ||
       // TODO: Is this mode check necessary?
       mode === Mode.SearchInProgressMode ||
@@ -235,12 +237,8 @@ export class RecordedState {
       return 'ready';
     }
 
-    // TODO: I don't think reversing is necessary - can't there only ever be two operators?
     // This case is for a "repeated" operator (such as `dd` or `yy`)
-    if (
-      this.operators.length > 1 &&
-      this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor
-    ) {
+    if (operators.length > 1 && operators[0].constructor === operators[1].constructor) {
       return 'ready';
     }
 
