@@ -36,25 +36,10 @@ export class RecordedState {
    * String representation of the exact keys that the user entered.
    */
   public get commandString(): string {
-    let result = '';
+    const result =
+      this.actionsRunPressedKeys.join('') + this.actionKeys.join('') + this.bufferedKeys.join('');
 
-    if (this.actionsRun.length > 0) {
-      result = this.actionsRunPressedKeys.join('');
-    }
-    if (this.actionKeys.length > 0) {
-      // if there are any actionKeys waiting for other key append them
-      result += this.actionKeys.join('');
-    }
-    if (this.bufferedKeys.length > 0) {
-      // if there are any bufferedKeys waiting for other key append them
-      result += this.bufferedKeys.join('');
-    }
-    if (
-      this.actionsRun.length === 0 &&
-      this.actionKeys.length === 0 &&
-      this.bufferedKeys.length === 0 &&
-      this.commandList.length > 0
-    ) {
+    if (result.length === 0 && this.commandList.length > 0) {
       // Used for the registers and macros that only record on commandList
       // The commandList here saves the ex command, so we should not regex replace the
       // leader key by the literal string '<leader>', as would have been done for a normal command.
@@ -70,16 +55,8 @@ export class RecordedState {
    * String representation of the pending keys that the user entered.
    */
   public get pendingCommandString(): string {
-    let result = '';
+    const result = this.actionKeys.join('') + this.bufferedKeys.join('');
 
-    if (this.actionKeys.length > 0) {
-      // if there are any actionKeys waiting for other key append them
-      result += this.actionKeys.join('');
-    }
-    if (this.bufferedKeys.length > 0) {
-      // if there are any bufferedKeys waiting for other key append them
-      result += this.bufferedKeys.join('');
-    }
     return result
       .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
       .replace(BUFFERED_KEYS_REGEX, '');
@@ -183,8 +160,7 @@ export class RecordedState {
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
   public get operator(): IBaseOperator | undefined {
-    const operators = this.operators;
-    return operators.length > 0 ? operators[0] : undefined;
+    return this.operators.at(0);
   }
 
   public get operators(): IBaseOperator[] {
