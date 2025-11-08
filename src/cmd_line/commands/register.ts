@@ -10,8 +10,6 @@ import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
 
 export class RegisterCommand extends ExCommand {
-  public override isRepeatableWithDot: boolean = false;
-
   public static readonly argParser: Parser<RegisterCommand> = optWhitespace.then(
     // eslint-disable-next-line id-denylist
     any.sepBy(optWhitespace).map((registers) => new RegisterCommand(registers)),
