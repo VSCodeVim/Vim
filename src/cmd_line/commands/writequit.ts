@@ -22,8 +22,6 @@ export class WriteQuitCommand extends ExCommand {
     fileNameParser.fallback(undefined),
   ).map(([bang, opt, file]) => new WriteQuitCommand(file ? { bang, opt, file } : { bang, opt }));
 
-  public override isRepeatableWithDot = false;
-
   private readonly args: IWriteQuitCommandArguments;
   constructor(args: IWriteQuitCommandArguments) {
     super();
