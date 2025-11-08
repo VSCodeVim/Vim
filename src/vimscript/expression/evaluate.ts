@@ -37,6 +37,8 @@ import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
+import { Register } from '../../register/register';
+import { RecordedState } from '../../state/recordedState';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -202,7 +204,11 @@ export class EvaluationContext {
       case 'variable':
         return this.evaluateVariable(expression);
       case 'register':
-        return str(''); // TODO
+        const reg = Register.getSync(expression.name);
+        if (reg === undefined || reg.text instanceof RecordedState) {
+          return str(''); // TODO: Handle RecordedState?
+        }
+        return str(reg.text);
       case 'option':
         return str(''); // TODO
       case 'env_variable':
@@ -1137,6 +1143,9 @@ export class EvaluationContext {
           lines.push(this.vimState!.document.lineAt(i).text);
         }
         return list(lines.map(str));
+      }
+      case 'getpid': {
+        return int(process.pid);
       }
       case 'getpos': {
         const [s] = getArgs(1);

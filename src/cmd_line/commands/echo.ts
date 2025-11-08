@@ -1,4 +1,4 @@
-import { all, optWhitespace, Parser, seq, whitespace } from 'parsimmon';
+import { all, optWhitespace, Parser, seq } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -13,7 +13,7 @@ export class EchoCommand extends ExCommand {
 
   public static argParser(echoArgs: { sep: string; error: boolean }): Parser<EchoCommand> {
     return optWhitespace
-      .then(seq(expressionParser.sepBy(whitespace), all))
+      .then(seq(expressionParser.sepBy(optWhitespace), all))
       .map(([expressions, trailing]) => {
         trailing = trailing.trimStart();
         if (trailing) {
@@ -26,7 +26,7 @@ export class EchoCommand extends ExCommand {
   private sep: string;
   private error: boolean;
   private expressions: Expression[];
-  private constructor(args: { sep: string; error: boolean }, expressions: Expression[]) {
+  constructor(args: { sep: string; error: boolean }, expressions: Expression[]) {
     super();
     this.sep = args.sep;
     this.error = args.error;

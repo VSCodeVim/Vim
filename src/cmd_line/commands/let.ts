@@ -136,6 +136,7 @@ export class LetCommand extends ExCommand {
           expressionParser.fallback(undefined),
           all,
         ).map(([variable, operation, expression, trailing]) => {
+          trailing = trailing.trim();
           if (expression === undefined) {
             throw VimError.InvalidExpression(trailing);
           }
