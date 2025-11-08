@@ -20,8 +20,6 @@ interface DigraphQuickPickItem extends vscode.QuickPickItem {
 }
 
 export class DigraphsCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<DigraphsCommand> = seq(
     bangParser,
     whitespace.then(seq(any, any, whitespace.then(numberParser).atLeast(1))).fallback(undefined),

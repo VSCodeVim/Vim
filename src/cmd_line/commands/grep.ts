@@ -25,8 +25,6 @@ interface IGrepCommandArguments {
 // Implements :grep
 // https://vimdoc.sourceforge.net/htmldoc/quickfix.html#:vimgrep
 export class GrepCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   // TODO: parse the pattern for flags to notify the user that they are not supported yet
   public static readonly argParser: Parser<GrepCommand> = optWhitespace.then(
     seq(

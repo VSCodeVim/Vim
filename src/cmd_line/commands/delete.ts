@@ -15,8 +15,6 @@ export interface IDeleteCommandArguments {
 }
 
 export class DeleteCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   // TODO: this is copy-pasted from `:y[ank]`
   public static readonly argParser: Parser<DeleteCommand> = optWhitespace.then(
     alt(

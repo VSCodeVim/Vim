@@ -4,8 +4,6 @@ import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 
 export class TerminalCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<TerminalCommand> = succeed(new TerminalCommand());
 
   async execute(vimState: VimState): Promise<void> {

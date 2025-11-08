@@ -20,8 +20,6 @@ interface UpdatedLineSegment {
 
 // :[range]ret[ab][!] [new_tabstop]
 export class RetabCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<RetabCommand> = seq(
     bangParser,
     optWhitespace.then(numberParser).fallback(undefined),

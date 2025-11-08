@@ -11,8 +11,6 @@ import { bangParser } from '../../vimscript/parserUtils';
 //  http://vimdoc.sourceforge.net/htmldoc/windows.html#:close
 //
 export class CloseCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<CloseCommand> = bangParser.map(
     (bang) => new CloseCommand(bang),
   );

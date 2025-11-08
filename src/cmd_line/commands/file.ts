@@ -90,8 +90,6 @@ function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
 }
 
 export class FileCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   // TODO: There's a lot of duplication here
   // TODO: These `optWhitespace` calls should be `whitespace`
   public static readonly argParsers = {

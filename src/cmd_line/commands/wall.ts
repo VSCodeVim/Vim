@@ -9,8 +9,6 @@ import { bangParser } from '../../vimscript/parserUtils';
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:wall
 //
 export class WallCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<WallCommand> = bangParser.map(
     (bang) => new WallCommand(bang),
   );

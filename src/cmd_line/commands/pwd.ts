@@ -7,8 +7,6 @@ import * as vscode from 'vscode';
  * Implements the :pwd command, which prints the current working directory.
  */
 export class PwdCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   async execute(vimState: VimState): Promise<void> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (workspaceFolders && workspaceFolders.length > 0) {

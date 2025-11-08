@@ -66,8 +66,6 @@ export type ITabCommandArguments =
 //  http://vimdoc.sourceforge.net/htmldoc/tabpage.html
 //
 export class TabCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   // TODO: `count` is parsed as a number, which is incomplete
   public static readonly argParsers = {
     bfirst: whitespace

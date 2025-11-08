@@ -16,8 +16,6 @@ export type IReadCommandArguments = {
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read!
 //
 export class ReadCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<ReadCommand> = seq(
     whitespace.then(fileOptParser).fallback([]),
     optWhitespace

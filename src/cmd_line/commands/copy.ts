@@ -8,8 +8,6 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { Address, LineRange } from '../../vimscript/lineRange';
 
 export class CopyCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<CopyCommand> = optWhitespace
     .then(Address.parser.fallback(undefined))
     .map((address) => new CopyCommand(address));

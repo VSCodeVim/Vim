@@ -144,8 +144,6 @@ const setOperationParser: Parser<SetOperation> = whitespace
   .fallback({ type: 'show_or_set', option: undefined });
 
 export class SetCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<SetCommand> = setOperationParser.map(
     (operation) => new SetCommand(operation),
   );

@@ -7,8 +7,6 @@ import { EvaluationContext } from '../../vimscript/expression/evaluate';
 import { VimError } from '../../error';
 
 export class EvalCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static argParser: Parser<EvalCommand> = optWhitespace
     .then(seq(expressionParser.fallback(undefined), all))
     .map(([expression, trailing]) => {
@@ -35,8 +33,6 @@ export class EvalCommand extends ExCommand {
 }
 
 export class CallCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static argParser: Parser<CallCommand> = optWhitespace
     .then(functionCallParser)
     .map((call) => new CallCommand(call));

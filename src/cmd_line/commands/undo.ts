@@ -10,8 +10,6 @@ import { numberParser } from '../../vimscript/parserUtils';
 //  http://vimdoc.sourceforge.net/htmldoc/undo.html
 //
 export class UndoCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<UndoCommand> = optWhitespace
     .then(numberParser)
     .fallback(undefined)

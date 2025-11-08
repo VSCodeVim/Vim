@@ -27,8 +27,6 @@ export class QuitCommand extends ExCommand {
         }),
     );
 
-  public override isRepeatableWithDot = false;
-
   public arguments: IQuitCommandArguments;
   constructor(args: IQuitCommandArguments) {
     super();

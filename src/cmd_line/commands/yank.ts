@@ -14,8 +14,6 @@ export interface YankCommandArguments {
 }
 
 export class YankCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   public static readonly argParser: Parser<YankCommand> = optWhitespace.then(
     alt(
       numberParser.map((count) => {

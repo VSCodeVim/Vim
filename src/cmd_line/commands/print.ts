@@ -12,8 +12,6 @@ type PrintArgs = {
 // TODO: `:l[ist]` is more than an alias
 // TODO: `:z`
 export class PrintCommand extends ExCommand {
-  public override isRepeatableWithDot = false;
-
   // TODO: Print {count} and [flags]
   public static readonly argParser = (args: {
     printNumbers: boolean;

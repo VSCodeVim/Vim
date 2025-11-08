@@ -37,8 +37,6 @@ export class WriteCommand extends ExCommand {
     ).fallback({}),
   ).map(([bang, opt, other]) => new WriteCommand({ bang, opt, bgWrite: true, ...other }));
 
-  public override isRepeatableWithDot = false;
-
   public readonly arguments: IWriteCommandArguments;
 
   constructor(args: IWriteCommandArguments) {
