@@ -37,6 +37,8 @@ import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
+import { Register } from '../../register/register';
+import { RecordedState } from '../../state/recordedState';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -202,7 +204,11 @@ export class EvaluationContext {
       case 'variable':
         return this.evaluateVariable(expression);
       case 'register':
-        return str(''); // TODO
+        const reg = Register.getSync(expression.name);
+        if (reg === undefined || reg.text instanceof RecordedState) {
+          return str(''); // TODO: Handle RecordedState?
+        }
+        return str(reg.text);
       case 'option':
         return str(''); // TODO
       case 'env_variable':
@@ -880,6 +886,15 @@ export class EvaluationContext {
         }
         return assertFailed(msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`);
       }
+      case 'byte2line': {
+        const [_byte] = getArgs(1);
+        const byte = toInt(_byte!);
+        if (byte <= 0) {
+          return int(-1);
+        }
+        return int(this.vimState!.document.positionAt(byte - 1).line + 1);
+      }
+      // TODO: byteidx[comp]
       case 'call': {
         const [_func, arglist, dict] = getArgs(2, 3);
         if (arglist!.type !== 'list') {
@@ -956,7 +971,7 @@ export class EvaluationContext {
             }
             break;
           default:
-            throw VimError.ArgumentOfMaxMustBeAListOrDictionary();
+            throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
         }
         return int(count);
       }
@@ -984,6 +999,15 @@ export class EvaluationContext {
             return bool(false);
         }
       }
+      case 'environ': {
+        return dictionary(new Map(Object.entries(process.env).map(([k, v]) => [k, str(v ?? '')])));
+      }
+      case 'escape': {
+        const [s, chars] = getArgs(2);
+        return str(
+          toString(s!).replace(new RegExp(`[${escapeRegExp(toString(chars!))}]`, 'g'), '\\$&'),
+        );
+      }
       case 'eval': {
         const [expr] = getArgs(1);
         return this.evaluate(expressionParser.tryParse(toString(expr!)));
@@ -994,7 +1018,9 @@ export class EvaluationContext {
         return float(Math.exp(toFloat(x!)));
       }
       // TODO: extend/extendnew()
-      // TODO: filter
+      // TODO: filecopy()
+      // TODO: filereadable()/filewritable()
+      // TODO: filter()
       case 'flatten':
       case 'flattennew': {
         const [l, _depth] = getArgs(1, 2);
@@ -1033,7 +1059,23 @@ export class EvaluationContext {
         const [x] = getArgs(1);
         return int(toFloat(x!));
       }
-      // TODO: fullcommand()
+      case 'floor': {
+        const [x] = getArgs(1);
+        return float(Math.floor(toFloat(x!)));
+      }
+      case 'fmod': {
+        const [x, y] = getArgs(2);
+        return float(toFloat(x!) % toFloat(y!));
+      }
+      // TODO: Fix circular dependency
+      // case 'fullcommand': {
+      //   const [name] = getArgs(1);
+      //   try {
+      //     return str(exCommandParser.tryParse(toString(name!)).name);
+      //   } catch {
+      //     return str('');
+      //   }
+      // }
       case 'function': {
         const [name, arglist, dict] = getArgs(1, 3);
         if (arglist) {
@@ -1061,15 +1103,11 @@ export class EvaluationContext {
         // }
         return funcref({ name: toString(name!), arglist, dict });
       }
-      case 'floor': {
-        const [x] = getArgs(1);
-        return float(Math.floor(toFloat(x!)));
-      }
-      case 'fmod': {
-        const [x, y] = getArgs(2);
-        return float(toFloat(x!) % toFloat(y!));
-      }
       // TODO: funcref()
+      case 'garbagecollect': {
+        const [atexit] = getArgs(0, 1);
+        return int(0); // No-op
+      }
       case 'get': {
         const [_haystack, _idx, _default] = getArgs(2, 3);
         const haystack: Value = _haystack!;
@@ -1105,6 +1143,9 @@ export class EvaluationContext {
           lines.push(this.vimState!.document.lineAt(i).text);
         }
         return list(lines.map(str));
+      }
+      case 'getpid': {
+        return int(process.pid);
       }
       case 'getpos': {
         const [s] = getArgs(1);
@@ -1292,6 +1333,14 @@ export class EvaluationContext {
         const [s, winid] = getArgs(1, 2);
         return int(getpos(toString(s!)).lnum);
       }
+      case 'line2byte': {
+        const [_line] = getArgs(1);
+        const line = toInt(_line!);
+        if (line <= 0) {
+          return int(-1);
+        }
+        return int(this.vimState!.document.offsetAt(new Position(line - 1, 0)) + 1);
+      }
       case 'localtime': {
         return int(Date.now() / 1000);
       }
@@ -1347,7 +1396,7 @@ export class EvaluationContext {
         } else if (l?.type === 'dictionary') {
           values = [...l.items.values()];
         } else {
-          throw VimError.ArgumentOfMaxMustBeAListOrDictionary();
+          throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
         }
         return int(values.length === 0 ? 0 : Math.max(...values.map(toInt)));
       }
@@ -1359,7 +1408,7 @@ export class EvaluationContext {
         } else if (l?.type === 'dictionary') {
           values = [...l.items.values()];
         } else {
-          throw VimError.ArgumentOfMinMustBeAListOrDictionary();
+          throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
         }
         return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
       }
@@ -1387,6 +1436,19 @@ export class EvaluationContext {
             return str(''); // TODO: Other modes
         }
       }
+      case 'nextnonblank': {
+        const [_line] = getArgs(1);
+        const line = toInt(_line!);
+        if (line <= 0) {
+          return int(0);
+        }
+        for (let i = line - 1; i < this.vimState!.document.lineCount; i++) {
+          if (this.vimState!.document.lineAt(i).text.length > 0) {
+            return int(i + 1);
+          }
+        }
+        return int(0);
+      }
       case 'or': {
         const [x, y] = getArgs(2);
         // eslint-disable-next-line no-bitwise
@@ -1395,6 +1457,19 @@ export class EvaluationContext {
       case 'pow': {
         const [x, y] = getArgs(2);
         return float(Math.pow(toFloat(x!), toFloat(y!)));
+      }
+      case 'prevnonblank': {
+        const [_line] = getArgs(1);
+        const line = toInt(_line!);
+        if (line > this.vimState!.document.lineCount) {
+          return int(0);
+        }
+        for (let i = line - 1; i >= 0; i--) {
+          if (this.vimState!.document.lineAt(i).text.length > 0) {
+            return int(i + 1);
+          }
+        }
+        return int(0);
       }
       // TODO: printf()
       // TODO: rand()

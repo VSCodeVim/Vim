@@ -1,5 +1,5 @@
 // eslint-disable-next-line id-denylist
-import { alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
+import { all, alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -33,6 +33,7 @@ import {
 import { displayValue } from '../../vimscript/expression/displayValue';
 import { VimError } from '../../error';
 import { bangParser } from '../../vimscript/parserUtils';
+import { Register } from '../../register/register';
 
 type Unpack = {
   type: 'unpack';
@@ -130,16 +131,23 @@ export class LetCommand extends ExCommand {
             letVarParser,
           ),
           operationParser.trim(optWhitespace),
-          expressionParser,
-        ).map(
-          ([variable, operation, expression]) =>
-            new LetCommand({
-              operation,
-              variable,
-              expression,
-              lock,
-            }),
-        ),
+          expressionParser.fallback(undefined),
+          all,
+        ).map(([variable, operation, expression, trailing]) => {
+          trailing = trailing.trim();
+          if (expression === undefined) {
+            throw VimError.InvalidExpression(trailing);
+          }
+          if (trailing) {
+            throw VimError.TrailingCharacters(trailing);
+          }
+          return new LetCommand({
+            operation,
+            variable,
+            expression,
+            lock,
+          });
+        }),
       ),
       // `:let`
       // `:let {var-name} ...`
@@ -171,9 +179,21 @@ export class LetCommand extends ExCommand {
       if (this.args.lock) {
         if (this.args.operation !== '=') {
           throw VimError.CannotModifyExistingVariable();
-        } else if (variable.type !== 'variable') {
-          // TODO: this error message should vary by type
-          throw VimError.CannotLockARegister();
+        }
+        if (variable.type !== 'variable') {
+          if (variable.type === 'register') {
+            throw VimError.CannotLock('a register');
+          }
+          if (variable.type === 'option') {
+            throw VimError.CannotLock('an option');
+          }
+          if (variable.type === 'env_variable') {
+            throw VimError.CannotLock('an environment variable');
+          }
+          if (variable.type === 'slice') {
+            throw VimError.CannotLock('a range');
+          }
+          throw VimError.CannotLock('a list or dict');
         }
       }
 
@@ -231,11 +251,24 @@ export class LetCommand extends ExCommand {
         }
         context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
-        // TODO
+        if (this.args.operation === '=') {
+          vimState.recordedState.registerName = variable.name;
+          Register.put(vimState, toString(value));
+        } else if (this.args.operation === '.=' || this.args.operation === '..=') {
+          throw VimError.WrongVariableType(this.args.operation); // TODO
+        } else {
+          throw VimError.WrongVariableType(this.args.operation);
+        }
       } else if (variable.type === 'option') {
         // TODO
       } else if (variable.type === 'env_variable') {
-        // TODO
+        if (this.args.operation === '=') {
+          process.env[variable.name] = toString(value);
+        } else if (this.args.operation === '.=' || this.args.operation === '..=') {
+          process.env[variable.name] = (process.env[variable.name] ?? '') + toString(value);
+        } else {
+          throw VimError.WrongVariableType(this.args.operation);
+        }
       } else if (variable.type === 'unpack') {
         // TODO: Support :let [a, b; rest] = ["aval", "bval", 3, 4]
         if (value.type !== 'list') {

@@ -58,7 +58,7 @@ export enum ErrorCode {
   SliceRequiresAListOrBlobValue = 709,
   ListValueHasMoreItemsThanTarget = 710,
   ListValueHasNotEnoughItems = 711,
-  ArgumentOfMaxMustBeAListOrDictionary = 712,
+  ArgumentOfFuncMustBeAListOrDictionary = 712,
   ListRequired = 714,
   DictionaryRequired = 715,
   KeyNotPresentInDictionary = 716,
@@ -70,6 +70,7 @@ export enum ErrorCode {
   UsingListAsAString = 730,
   UsingFuncrefAsAString = 729,
   UsingDictionaryAsAString = 731,
+  WrongVariableType = 734,
   CanOnlyCompareDictionaryWithDictionary = 735,
   InvalidOperationForDictionary = 736,
   ValueIsLocked = 741,
@@ -89,7 +90,7 @@ export enum ErrorCode {
   CanOnlyCompareBlobWithBlob = 977,
   InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
-  CannotLockARegister = 996,
+  CannotLock = 996,
   ListRequiredForArgument = 1211,
 }
 
@@ -110,8 +111,8 @@ export class VimError extends Error {
   static InvalidAddress(): VimError {
     return new VimError(ErrorCode.InvalidAddress, 'Invalid address');
   }
-  static InvalidExpression(): VimError {
-    return new VimError(ErrorCode.InvalidExpression, 'Invalid expression');
+  static InvalidExpression(expr: string): VimError {
+    return new VimError(ErrorCode.InvalidExpression, `Invalid expression: "${expr}"`);
   }
   static InvalidRange(): VimError {
     return new VimError(ErrorCode.InvalidRange, 'Invalid range');
@@ -317,16 +318,10 @@ export class VimError extends Error {
   static ListValueHasNotEnoughItems(): VimError {
     return new VimError(ErrorCode.ListValueHasNotEnoughItems, 'List value has not enough items');
   }
-  static ArgumentOfMaxMustBeAListOrDictionary(): VimError {
+  static ArgumentOfFuncMustBeAListOrDictionary(func: string): VimError {
     return new VimError(
-      ErrorCode.ArgumentOfMaxMustBeAListOrDictionary,
-      'Argument of max() must be a List or Dictionary',
-    );
-  }
-  static ArgumentOfMinMustBeAListOrDictionary(): VimError {
-    return new VimError(
-      ErrorCode.ArgumentOfMaxMustBeAListOrDictionary,
-      'Argument of min() must be a List or Dictionary',
+      ErrorCode.ArgumentOfFuncMustBeAListOrDictionary,
+      `Argument of ${func} must be a List or Dictionary`,
     );
   }
   static ListRequired(): VimError {
@@ -367,6 +362,9 @@ export class VimError extends Error {
   }
   static UsingDictionaryAsAString(): VimError {
     return new VimError(ErrorCode.UsingDictionaryAsAString, 'Using Dictionary as a String');
+  }
+  static WrongVariableType(operation: string): VimError {
+    return new VimError(ErrorCode.WrongVariableType, `Wrong variable type for ${operation}`);
   }
   static CanOnlyCompareDictionaryWithDictionary(): VimError {
     return new VimError(
@@ -443,8 +441,10 @@ export class VimError extends Error {
   static CannotModifyExistingVariable(): VimError {
     return new VimError(ErrorCode.CannotModifyExistingVariable, 'Cannot modify existing variable');
   }
-  static CannotLockARegister(): VimError {
-    return new VimError(ErrorCode.CannotLockARegister, 'Cannot lock a register');
+  static CannotLock(
+    what: 'a range' | 'an option' | 'a list or dict' | 'an environment variable' | 'a register',
+  ): VimError {
+    return new VimError(ErrorCode.CannotLock, `Cannot lock ${what}`);
   }
   static ListRequiredForArgument(idx: number): VimError {
     return new VimError(ErrorCode.ListRequiredForArgument, `List required for argument ${idx}`);
