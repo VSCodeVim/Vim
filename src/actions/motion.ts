@@ -286,27 +286,7 @@ class MoveDown extends BaseMovement {
   override preservesDesiredColumn = true;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (
-      vimState.currentMode === Mode.Insert &&
-      this.keysPressed[0] === '<down>' &&
-      vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
-      position.line === vimState.document.lineCount - 1 &&
-      vimState.editor.selection.isEmpty
-    ) {
-      // navigate history in interactive window
-      await vscode.commands.executeCommand('interactive.history.next');
-      return vimState.editor.selection.active;
-    }
-
-    if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
-      return new MoveDownFoldFix().execAction(position, vimState);
-    }
-
-    if (position.line < vimState.document.lineCount - 1) {
-      return position.with({ character: vimState.desiredColumn }).getDown();
-    } else {
-      return position;
-    }
+    return this.execActionWithCount(position, vimState, 1) as Promise<Position>;
   }
 
   public override async execActionForOperator(
