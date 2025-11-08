@@ -37,7 +37,7 @@ import { escapeRegExp, isInteger } from 'lodash';
 import { VimState } from '../../state/vimState';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
-import { Register } from '../../register/register';
+import { Register, RegisterMode } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 
 // ID of next lambda; incremented each time one is created
@@ -1154,7 +1154,26 @@ export class EvaluationContext {
       }
       // TODO: getreg()
       // TODO: getreginfo()
-      // TODO: getregtype()
+      case 'getregtype': {
+        const [regname] = getArgs(1);
+        const reg = Register.getSync(toString(regname!));
+        if (reg === undefined) {
+          return str('');
+        }
+        if (reg.registerMode === RegisterMode.CharacterWise) {
+          return str('v');
+        } else if (reg.registerMode === RegisterMode.LineWise) {
+          return str('V');
+        } else if (reg.registerMode === RegisterMode.BlockWise) {
+          const text = reg.text as string;
+          const idx = text.indexOf('\n');
+          const width = idx === -1 ? text.length : idx;
+          const ctrlV = '\x16';
+          return str(`${ctrlV}${width}`);
+        }
+        const guard: never = reg.registerMode;
+        return str('');
+      }
       // TODO: gettext()
       case 'gettext': {
         const [s] = getArgs(1);
