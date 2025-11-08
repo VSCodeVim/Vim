@@ -708,6 +708,17 @@ suite('Ex command parsing', () => {
       }),
     );
 
+    exParseTest(
+      ':s/a/\\=x+1',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a/'),
+        replace: new ReplaceString([
+          { type: 'expression', expression: add(variable('x'), int(1)) },
+        ]),
+        flags: {},
+        count: undefined,
+      }),
+    );
     // TODO
   });
 
