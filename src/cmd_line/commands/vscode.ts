@@ -1,5 +1,4 @@
 import { VimError } from '../../error';
-import { StatusBar } from '../../statusBar';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -10,18 +9,17 @@ export class VsCodeCommand extends ExCommand {
     .then(all)
     .map((command) => new VsCodeCommand(command));
 
-  private command?: string;
+  private command: string;
 
-  public constructor(command?: string) {
+  public constructor(command: string) {
     super();
     this.command = command;
+    if (!this.command) {
+      throw VimError.ArgumentRequired();
+    }
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (!this.command) {
-      StatusBar.displayError(vimState, VimError.ArgumentRequired());
-      return;
-    }
     await vscode.commands.executeCommand(this.command);
   }
 }

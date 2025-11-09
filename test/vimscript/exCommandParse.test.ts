@@ -43,6 +43,7 @@ import { VimError } from '../../src/error';
 import { EvalCommand } from '../../src/cmd_line/commands/eval';
 import { EchoCommand } from '../../src/cmd_line/commands/echo';
 import { Expression } from '../../src/vimscript/expression/types';
+import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
@@ -798,6 +799,14 @@ suite('Ex command parsing', () => {
         files: ['foo.txt', 'bar.txt', 'baz.txt'],
       }),
     );
+  });
+
+  suite(':vscode', () => {
+    exParseTest(
+      ':vscode editor.action.commentLine',
+      new VsCodeCommand('editor.action.commentLine'),
+    );
+    exParseFails(':vscode', VimError.ArgumentRequired());
   });
 
   suite(':y[ank]', () => {
