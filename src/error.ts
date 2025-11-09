@@ -85,6 +85,7 @@ export enum ErrorCode {
   MaxDepthMustBeANonNegativeNumber = 900,
   ExpectedADict = 922,
   SecondArgumentOfFunction = 923,
+  PositiveCountRequired = 939,
   BlobLiteralShouldHaveAnEvenNumberOfHexCharacters = 973,
   UsingABlobAsANumber = 974,
   CanOnlyCompareBlobWithBlob = 977,
@@ -422,6 +423,9 @@ export class VimError extends Error {
       ErrorCode.SecondArgumentOfFunction,
       'Second argument of function() must be a list or a dict',
     );
+  }
+  static PositiveCountRequired(): VimError {
+    return new VimError(ErrorCode.PositiveCountRequired, 'Positive count required');
   }
   static BlobLiteralShouldHaveAnEvenNumberOfHexCharacters(): VimError {
     return new VimError(

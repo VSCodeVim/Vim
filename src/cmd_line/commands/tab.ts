@@ -14,6 +14,7 @@ import {
   numberParser,
 } from '../../vimscript/parserUtils';
 import { VimError } from '../../error';
+import { findTabInActiveTabGroup } from '../../util/util';
 
 export enum TabCommandType {
   Next,
@@ -171,23 +172,7 @@ export class TabCommand extends ExCommand {
             this.arguments.buf - 1,
           );
         } else if (this.arguments.buf !== undefined && typeof this.arguments.buf === 'string') {
-          const tabGroup = vscode.window.tabGroups.activeTabGroup;
-          const searchTerm = this.arguments.buf;
-          const foundBuffers = [];
-          for (const t of tabGroup.tabs) {
-            if (t.label.includes(searchTerm)) {
-              foundBuffers.push(t);
-            }
-            if (foundBuffers.length > 1) {
-              break;
-            }
-          }
-          if (foundBuffers.length === 0) {
-            throw VimError.NoMatchingBuffer(searchTerm);
-          } else if (foundBuffers.length > 1) {
-            throw VimError.MultipleMatches(searchTerm);
-          }
-          const tab = foundBuffers[0];
+          const [idx, tab] = findTabInActiveTabGroup(this.arguments.buf);
           if ((tab.input as vscode.TextDocument).uri !== undefined) {
             const uri = (tab.input as vscode.TextDocument).uri;
             await vscode.commands.executeCommand('vscode.open', uri);
