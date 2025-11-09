@@ -272,8 +272,18 @@ export class Register {
     multicursorIndex = 0,
   ): Promise<IRegisterContent | undefined> {
     if (Register.isClipboardRegister(register)) {
-      const text = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
-      return { registerMode: RegisterMode.CharacterWise, text };
+      const contentByCursor = Register.registers.get(register);
+      const clipboardContent = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
+      const currentRegisterContent = (contentByCursor?.[0]?.text as string)?.replace(/\r\n/g, '\n');
+      if (currentRegisterContent !== clipboardContent) {
+        // System clipboard seems to have changed
+        const registerContent = {
+          text: clipboardContent,
+          registerMode: RegisterMode.CharacterWise,
+        };
+        Register.registers.set(register, [registerContent]);
+        return registerContent;
+      }
     }
     return Register.getSync(register, multicursorIndex);
   }
