@@ -1,5 +1,23 @@
 # Change Log
 
+## [v1.32.0](https://github.com/vscodevim/vim/tree/v1.32.0) (2025-11-8)
+
+### Added
+
+- Improved expression support ([@J-Fields](https://github.com/J-Fields)).
+- `:let` can now set registers and environment variables ([@J-Fields](https://github.com/J-Fields)).
+- `:s[ubstitute]` can now replace instances with the value of an expression ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed `:qa!` prompting about unsaved changes ([@hirokiokada77](https://github.com/hirokiokada77)).
+- Fixed Ex commands being repeatable with `.` ([@coxxny](https://github.com/coxxny)).
+- Fixed bug that would freeze editor if `.` was pressed twice after a non-repeatable action at startup ([@coxxny](https://github.com/coxxny)).
+- Fixed some motions like `[{` when executed with a high count ([@brasswood](https://github.com/brasswood)).
+- Fixed `j` and `k` with multiple cursors and `vim.foldfix` enabled ([@dandn9](https://github.com/dandn9)).
+- Fixed `showTextDocument` being executed for non-preview tabs on `:w[rite]` ([@mccheesy](https://github.com/mccheesy)).
+- Fixed various Ex command error messages ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.31.0](https://github.com/vscodevim/vim/tree/v1.31.0) (2025-10-5)
 
 ### Added
