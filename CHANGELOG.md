@@ -1,5 +1,11 @@
 # Change Log
 
+## [v1.32.1](https://github.com/vscodevim/vim/tree/v1.32.1) (2025-11-8)
+
+### Fixed
+
+- Fixed clipboard register, which was broken in `v1.32.0` ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.32.0](https://github.com/vscodevim/vim/tree/v1.32.0) (2025-11-8)
 
 ### Added
