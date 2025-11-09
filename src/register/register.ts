@@ -282,10 +282,10 @@ export class Register {
           registerMode: RegisterMode.CharacterWise,
         };
         Register.registers.set(register, [registerContent]);
-        return registerContent;
       }
     }
-    return Register.getSync(register, multicursorIndex);
+
+    return Register._get(register, multicursorIndex);
   }
 
   /**
@@ -294,25 +294,27 @@ export class Register {
    * NOTE: The clipboard register is silently converted to the unnamed register
    */
   public static getSync(register: string, multicursorIndex = 0): IRegisterContent | undefined {
-    if (!Register.isValidRegister(register)) {
-      throw new Error(`Invalid register ${register}`);
-    }
-
     if (Register.isClipboardRegister(register)) {
       register = '"';
+    }
+
+    return Register._get(register, multicursorIndex);
+  }
+
+  private static _get(register: string, multicursorIndex: number): IRegisterContent | undefined {
+    if (!Register.isValidRegister(register)) {
+      throw new Error(`Invalid register ${register}`);
     }
 
     register = register.toLowerCase();
 
     const contentByCursor = Register.registers.get(register);
-
-    // Default to the first cursor.
-    if (contentByCursor?.[multicursorIndex] === undefined) {
-      // If multicursorIndex is too high, try the first cursor
-      multicursorIndex = 0;
+    if (contentByCursor === undefined) {
+      return undefined;
     }
 
-    return contentByCursor?.[multicursorIndex];
+    // Default to first cursor if the requested multicursor index doesn't exist
+    return contentByCursor[multicursorIndex] ?? contentByCursor[0];
   }
 
   public static has(register: string): boolean {
