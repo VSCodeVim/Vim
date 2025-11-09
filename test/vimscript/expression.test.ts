@@ -467,6 +467,7 @@ suite('Vimscript expressions', () => {
       exprTest("4 is '4'", { value: bool(false) });
       exprTest('0 is []', { value: bool(false) });
       exprTest('0 is {}', { value: bool(false) });
+      exprTest('0 isnot 0', { value: bool(false) });
       exprTest('[4] == ["4"]', { value: bool(false) });
       exprTest('3.2 > 3', { value: bool(true) });
       exprTest('5 == [5]', { error: VimError.CanOnlyCompareListWithList() });
