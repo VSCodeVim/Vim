@@ -4,7 +4,7 @@ import { Position, Selection } from 'vscode';
 import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Mode, isVisualMode } from '../../mode/mode';
 import { Register } from '../../register/register';
 import { globalState } from '../../state/globalState';
@@ -55,7 +55,7 @@ async function searchCurrentWord(
       searchStartCursorPosition,
     });
   } else {
-    StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoStringUnderCursor));
+    StatusBar.displayError(vimState, VimError.NoStringUnderCursor());
   }
 }
 
@@ -130,12 +130,9 @@ async function createSearchStateAndMoveToMatch(args: {
   } else {
     StatusBar.displayError(
       vimState,
-      VimError.fromCode(
-        args.direction === SearchDirection.Forward
-          ? ErrorCode.SearchHitBottom
-          : ErrorCode.SearchHitTop,
-        globalState.searchState.searchString,
-      ),
+      args.direction === SearchDirection.Forward
+        ? VimError.SearchHitBottom(globalState.searchState.searchString)
+        : VimError.SearchHitTop(globalState.searchState.searchString),
     );
   }
 }

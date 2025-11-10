@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.31.0",
+  "version": "1.32.1",
   "publisher": "vscodevim",
   "sponsor": {
     "url": "https://github.com/sponsors/J-Fields"
@@ -1244,7 +1244,7 @@
     "clean-webpack-plugin": "4.0.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-jsdoc": "^60.0.0",
+    "eslint-plugin-jsdoc": "^61.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "9.1.0",
@@ -1262,7 +1262,7 @@
     "sinon": "20.0.0",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
-    "webpack": "5.102.0",
+    "webpack": "5.102.1",
     "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1",
     "webpack-stream": "7.0.0"

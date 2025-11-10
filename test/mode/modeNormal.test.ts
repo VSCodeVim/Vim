@@ -120,12 +120,15 @@ suite('Mode Normal', () => {
     end: ['one', '|two'],
   });
 
-  newTest({
-    title: 'Can handle ddp',
-    start: ['|one', 'two'],
-    keysPressed: 'ddp',
-    end: ['two', '|one'],
-  });
+  for (const useSystemClipboard of [true, false]) {
+    newTest({
+      title: 'Can handle ddp',
+      config: { useSystemClipboard },
+      start: ['|one', 'two'],
+      keysPressed: 'ddp',
+      end: ['two', '|one'],
+    });
+  }
 
   newTest({
     title: "Can handle 'de'",

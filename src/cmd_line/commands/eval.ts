@@ -1,17 +1,27 @@
-import { optWhitespace, Parser } from 'parsimmon';
+import { all, optWhitespace, Parser, seq } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { expressionParser, functionCallParser } from '../../vimscript/expression/parser';
 import { Expression } from '../../vimscript/expression/types';
 import { EvaluationContext } from '../../vimscript/expression/evaluate';
+import { VimError } from '../../error';
 
 export class EvalCommand extends ExCommand {
   public static argParser: Parser<EvalCommand> = optWhitespace
-    .then(expressionParser)
-    .map((expression) => new EvalCommand(expression));
+    .then(seq(expressionParser.fallback(undefined), all))
+    .map(([expression, trailing]) => {
+      trailing = trailing.trim();
+      if (expression === undefined) {
+        throw VimError.InvalidExpression(trailing);
+      }
+      if (trailing) {
+        throw VimError.TrailingCharacters(trailing);
+      }
+      return new EvalCommand(expression);
+    });
 
   private expression: Expression;
-  private constructor(expression: Expression) {
+  constructor(expression: Expression) {
     super();
     this.expression = expression;
   }
