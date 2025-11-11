@@ -74,6 +74,11 @@ suite('Ex command parsing', () => {
     exParseTest(':,', new GotoLineCommand());
   });
 
+  suite(':"', () => {
+    exParseTest(':"', new NoOpCommand());
+    exParseTest(':"I am a comment', new NoOpCommand());
+  });
+
   suite(':!', () => {
     // TODO
   });
