@@ -1209,7 +1209,7 @@
     "@types/mocha": "10.0.10",
     "@types/node": "20.19.17",
     "@types/parsimmon": "1.10.9",
-    "@types/sinon": "17.0.4",
+    "@types/sinon": "20.0.0",
     "@types/vscode": "1.74.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
