@@ -67,6 +67,7 @@ type ArgParser = Parser<ExCommand>;
  */
 export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | undefined]> = [
   [['', ''], succeed(new GotoLineCommand())],
+  [['"', ''], all.map((_) => new NoOpCommand())],
   [['!', ''], BangCommand.argParser],
   [['#', ''], PrintCommand.argParser({ printNumbers: true, printText: true })],
   [['#!', ''], all.map((_) => new NoOpCommand())],
@@ -705,7 +706,6 @@ export const exCommandParser: Parser<{
     const [command, trailing] = result.value;
     if (trailing) {
       // TODO: Implement `:help :bar`
-      // TODO: Implement `:help :comment`
       throw VimError.TrailingCharacters(trailing);
     }
     return { name, lineRange, command };
