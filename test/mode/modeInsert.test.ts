@@ -4,12 +4,7 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import {
-  assertEqualLines,
-  cleanUpWorkspace,
-  setupWorkspace,
-  reloadConfiguration,
-} from './../testUtils';
+import { assertEqualLines, setupWorkspace, reloadConfiguration } from './../testUtils';
 import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
 
@@ -21,17 +16,15 @@ suite('Mode Insert', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  teardown(cleanUpWorkspace);
-
   test('can be activated', async () => {
     const activationKeys = ['o', 'I', 'i', 'O', 'a', 'A', '<Insert>'];
 
     for (const key of activationKeys) {
       await modeHandler.handleKeyEvent('<Esc>');
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
 
       await modeHandler.handleKeyEvent(key);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     }
   });
 
@@ -82,7 +75,7 @@ suite('Mode Insert', () => {
     await modeHandler.handleKeyEvent('i');
     for (let i = 0; i < 10; i++) {
       await modeHandler.handleKeyEvent('1');
-      assert.strictEqual(modeHandler.currentMode === Mode.Insert, true);
+      assert.strictEqual(modeHandler.vimState.currentMode === Mode.Insert, true);
     }
   });
 
@@ -686,7 +679,7 @@ suite('Mode Insert', () => {
       await vscode.commands.executeCommand('editor.action.selectAll');
       await modeHandler.handleKeyEvent('"');
       assertEqualLines(['"select"']);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 1);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 7);
     });
@@ -696,7 +689,7 @@ suite('Mode Insert', () => {
       await vscode.commands.executeCommand('editor.action.selectAll');
       await modeHandler.handleMultipleKeyEvents(['"', 'f', 'i', 'n', 'a', 'l']);
       assertEqualLines(['"final"']);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.start.character, 6);
       assert.strictEqual(vscode.window.activeTextEditor!.selection.end.character, 6);
     });
@@ -720,7 +713,7 @@ suite('Mode Insert', () => {
       await vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
       await modeHandler.handleKeyEvent('`');
       assertEqualLines(['`foo` (one) <two>']);
-      assert.strictEqual(modeHandler.currentMode, Mode.Insert);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     });
   });
 });

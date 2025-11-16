@@ -4,6 +4,7 @@ import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
 import { Breakpoints } from '../cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../cmd_line/commands/bufferDelete';
+import { ChangeCommand } from '../cmd_line/commands/change';
 import { CloseCommand } from '../cmd_line/commands/close';
 import { CopyCommand } from '../cmd_line/commands/copy';
 import { DeleteCommand } from '../cmd_line/commands/delete';
@@ -13,10 +14,11 @@ import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
 import { EchoCommand } from '../cmd_line/commands/echo';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
+import { GrepCommand } from '../cmd_line/commands/grep';
 import { HistoryCommand } from '../cmd_line/commands/history';
 import { ClearJumpsCommand, JumpsCommand } from '../cmd_line/commands/jumps';
 import { CenterCommand, LeftCommand, RightCommand } from '../cmd_line/commands/leftRightCenter';
-import { DeleteMarksCommand, MarksCommand } from '../cmd_line/commands/marks';
+import { DeleteMarksCommand, MarksCommand, MarkCommand } from '../cmd_line/commands/marks';
 import { ExploreCommand } from '../cmd_line/commands/explore';
 import { MoveCommand } from '../cmd_line/commands/move';
 import { NohlCommand } from '../cmd_line/commands/nohl';
@@ -44,14 +46,15 @@ import { WriteCommand } from '../cmd_line/commands/write';
 import { WriteQuitCommand } from '../cmd_line/commands/writequit';
 import { WriteQuitAllCommand } from '../cmd_line/commands/writequitall';
 import { YankCommand } from '../cmd_line/commands/yank';
-import { ErrorCode, VimError } from '../error';
+import { VimError } from '../error';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
 import { LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
-import { LetCommand } from '../cmd_line/commands/let';
+import { LetCommand, UnletCommand } from '../cmd_line/commands/let';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
+import { PwdCommand } from '../cmd_line/commands/pwd';
 
 type ArgParser = Parser<ExCommand>;
 
@@ -64,6 +67,7 @@ type ArgParser = Parser<ExCommand>;
  */
 export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | undefined]> = [
   [['', ''], succeed(new GotoLineCommand())],
+  [['"', ''], all.map((_) => new NoOpCommand())],
   [['!', ''], BangCommand.argParser],
   [['#', ''], PrintCommand.argParser({ printNumbers: true, printText: true })],
   [['#!', ''], all.map((_) => new NoOpCommand())],
@@ -118,7 +122,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['buffers', ''], undefined],
   [['bun', 'load'], undefined],
   [['bw', 'ipeout'], undefined],
-  [['c', 'hange'], undefined],
+  [['c', 'hange'], ChangeCommand.argParser],
   [['cN', 'ext'], undefined],
   [['cNf', 'ile'], undefined],
   [['ca', 'bbrev'], undefined],
@@ -247,7 +251,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['fu', 'nction'], undefined],
   [['g', 'lobal'], undefined],
   [['go', 'to'], GotoCommand.argParser],
-  [['gr', 'ep'], undefined],
+  [['gr', 'ep'], GrepCommand.argParser],
   [['grepa', 'dd'], undefined],
   [['gu', 'i'], undefined],
   [['gv', 'im'], undefined],
@@ -350,7 +354,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['lvimgrepa', 'dd'], undefined],
   [['lw', 'indow'], succeed(new VsCodeCommand('workbench.action.focusCommentsPanel'))],
   [['m', 'ove'], MoveCommand.argParser],
-  [['ma', 'rk'], undefined],
+  [['ma', 'rk'], MarkCommand.argParser],
   [['mak', 'e'], undefined],
   [['map', ''], undefined],
   [['mapc', 'lear'], undefined],
@@ -419,7 +423,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['ptr', 'ewind'], undefined],
   [['pts', 'elect'], undefined],
   [['pu', 't'], PutExCommand.argParser],
-  [['pw', 'd'], undefined],
+  [['pw', 'd'], succeed(new PwdCommand())],
   [['py', 'thon'], undefined],
   [['py3', ''], undefined],
   [['py3d', 'o'], undefined],
@@ -564,7 +568,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['undoj', 'oin'], undefined],
   [['undol', 'ist'], undefined],
   [['unh', 'ide'], undefined],
-  [['unl', 'et'], undefined],
+  [['unl', 'et'], UnletCommand.argParser],
   [['unlo', 'ckvar'], undefined],
   [['unm', 'ap'], undefined],
   [['unme', 'nu'], undefined],
@@ -576,7 +580,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['vert', 'ical'], undefined],
   [['vi', 'sual'], undefined],
   [['vie', 'w'], undefined],
-  [['vim', 'grep'], undefined],
+  [['vim', 'grep'], GrepCommand.argParser],
   [['vimgrepa', 'dd'], undefined],
   [['viu', 'sage'], undefined],
   [['vm', 'ap'], undefined],
@@ -652,44 +656,57 @@ export class NoOpCommand extends ExCommand {
 function nameParser(
   name: [string, string],
   argParser: ArgParser | undefined,
-): Parser<Parser<ExCommand>> {
+): Parser<[string, Parser<ExCommand>]> {
   argParser ??= all.result(new UnimplementedCommand(name[1] ? `${name[0]}[${name[1]}]` : name[0]));
 
   const fullName = name[0] + name[1];
-  const p = nameAbbrevParser(name[0], name[1]).result(argParser);
-  return fullName === '' || /[a-z]$/i.test(fullName) ? p.notFollowedBy(regexp(/[a-z]/i)) : p;
+  let parser = nameAbbrevParser(name[0], name[1]).result(argParser);
+  if (fullName === '' || /[a-z]$/i.test(fullName)) {
+    parser = parser.notFollowedBy(regexp(/[a-z]/i));
+  }
+  return parser.map((p) => [fullName, p]);
 }
 
-export const commandNameParser: Parser<Parser<ExCommand> | undefined> = alt(
+const commandNameParser: Parser<[string, Parser<ExCommand>] | undefined> = alt(
   ...[...builtinExCommands]
     .reverse()
     .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace))),
 );
 
-export const exCommandParser: Parser<{ lineRange: LineRange | undefined; command: ExCommand }> =
-  optWhitespace
-    .then(string(':').skip(optWhitespace).many())
-    .then(
-      seq(
-        LineRange.parser.fallback(undefined),
-        optWhitespace,
-        commandNameParser.fallback(undefined),
-        all,
-      ),
-    )
-    .map(([lineRange, whitespace, parseArgs, args]) => {
-      if (parseArgs === undefined) {
-        throw VimError.fromCode(
-          ErrorCode.NotAnEditorCommand,
-          `${lineRange?.toString() ?? ''}${whitespace}${args}`,
-        );
+export const exCommandParser: Parser<{
+  name: string;
+  lineRange: LineRange | undefined;
+  command: ExCommand;
+}> = optWhitespace
+  .then(string(':').skip(optWhitespace).many())
+  .then(
+    seq(
+      LineRange.parser.fallback(undefined),
+      optWhitespace,
+      commandNameParser.fallback(undefined),
+      all,
+    ),
+  )
+  .map(([lineRange, whitespace, fullNameAndArgParser, args]) => {
+    if (fullNameAndArgParser === undefined) {
+      throw VimError.NotAnEditorCommand(`${lineRange?.toString() ?? ''}${whitespace}${args}`);
+    }
+    const [name, argParser] = fullNameAndArgParser;
+    if (name === '' && lineRange === undefined && args !== '') {
+      // HACK: Handle edge cases like `:^`, which will be incorrectly parsed as a GotoLineCommand
+      throw VimError.NotAnEditorCommand(`${whitespace}${args}`);
+    }
+    const result = seq(argParser, optWhitespace.then(all)).parse(args);
+    if (result.status === false) {
+      if (result.index.offset === args.length) {
+        throw VimError.ArgumentRequired();
       }
-      const result = seq(parseArgs, optWhitespace.then(all)).parse(args);
-      if (result.status === false || result.value[1]) {
-        // TODO: All possible parsing errors are lumped into "trailing characters", which is wrong
-        // TODO: Implement `:help :bar`
-        // TODO: Implement `:help :comment`
-        throw VimError.fromCode(ErrorCode.TrailingCharacters);
-      }
-      return { lineRange, command: result.value[0] };
-    });
+      throw VimError.InvalidArgument474();
+    }
+    const [command, trailing] = result.value;
+    if (trailing) {
+      // TODO: Implement `:help :bar`
+      throw VimError.TrailingCharacters(trailing);
+    }
+    return { name, lineRange, command };
+  });

@@ -6,7 +6,7 @@ import { VimState } from '../state/vimState';
 import { Jump } from './jump';
 import { existsAsync } from 'platform/fs';
 import { Position } from 'vscode';
-import { ErrorCode, VimError } from '../error';
+import { VimError } from '../error';
 
 const MAX_JUMPS = 100;
 
@@ -114,10 +114,12 @@ export class JumpTracker {
     if (jump.document) {
       try {
         // Open jump file from stored editor
-        await vscode.window.showTextDocument(jump.document);
+        await vscode.window.showTextDocument(jump.document, {
+          selection: new vscode.Range(jump.position, jump.position),
+        });
       } catch (e: unknown) {
         // This can happen when the document we'd like to jump to is weird (like a search editor) or has been deleted
-        throw VimError.fromCode(ErrorCode.FileNoLongerAvailable);
+        throw VimError.FileNoLongerAvailable();
       }
     } else if (await existsAsync(jump.fileName)) {
       // Open jump file from disk
@@ -136,7 +138,9 @@ export class JumpTracker {
       )[0];
 
       if (editor) {
-        await vscode.window.showTextDocument(editor.document, jump.position.character, false);
+        await vscode.window.showTextDocument(editor.document, {
+          selection: new vscode.Range(jump.position, jump.position),
+        });
       }
     }
   }

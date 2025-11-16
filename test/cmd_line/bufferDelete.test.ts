@@ -4,9 +4,9 @@ import * as vscode from 'vscode';
 import { join } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import * as error from '../../src/error';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import * as t from '../testUtils';
+import { VimError } from '../../src/error';
 
 suite('Buffer delete', () => {
   let modeHandler: ModeHandler;
@@ -15,8 +15,6 @@ suite('Buffer delete', () => {
     await t.setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(t.cleanUpWorkspace);
 
   for (const cmd of ['bdelete', 'bdel', 'bd']) {
     test(`${cmd} deletes the current buffer`, async () => {
@@ -32,7 +30,7 @@ suite('Buffer delete', () => {
     try {
       await new ExCommandLine('bd', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     } catch (e) {
-      assert.strictEqual(e, error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange));
+      assert.strictEqual(e, VimError.NoWriteSinceLastChange());
     }
   });
 
@@ -46,7 +44,7 @@ suite('Buffer delete', () => {
   });
 
   test.skip("bd 'N' deletes the Nth buffer open", async () => {
-    const dirPath = await t.createRandomDir();
+    const dirPath = await t.createDir();
     const filePaths: string[] = [];
 
     try {

@@ -3,7 +3,7 @@ import {
   EasymotionTrigger,
 } from '../../src/actions/plugins/easymotion/easymotion.cmd';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 function easymotionCommand(trigger: EasymotionTrigger, searchWord: string, jumpKey: string) {
   return [...buildTriggerKeys(trigger), searchWord, jumpKey].join('');
@@ -15,7 +15,6 @@ suite('easymotion plugin', () => {
       config: { easymotion: true },
     });
   });
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can handle s move',

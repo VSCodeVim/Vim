@@ -26,13 +26,13 @@ suite('Mode Normal', () => {
       await modeHandler.handleKeyEvent('i');
       await modeHandler.handleKeyEvent(key);
 
-      assert.strictEqual(modeHandler.currentMode, Mode.Normal, `${key} doesn't work.`);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal, `${key} doesn't work.`);
     }
 
     await modeHandler.handleKeyEvent('v');
     await modeHandler.handleKeyEvent('v');
 
-    assert.strictEqual(modeHandler.currentMode, Mode.Normal);
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -120,12 +120,15 @@ suite('Mode Normal', () => {
     end: ['one', '|two'],
   });
 
-  newTest({
-    title: 'Can handle ddp',
-    start: ['|one', 'two'],
-    keysPressed: 'ddp',
-    end: ['two', '|one'],
-  });
+  for (const useSystemClipboard of [true, false]) {
+    newTest({
+      title: 'Can handle ddp',
+      config: { useSystemClipboard },
+      start: ['|one', 'two'],
+      keysPressed: 'ddp',
+      end: ['two', '|one'],
+    });
+  }
 
   newTest({
     title: "Can handle 'de'",
@@ -520,6 +523,14 @@ suite('Mode Normal', () => {
     start: ['print(|"hello")'],
     keysPressed: 'cib',
     end: ['print(|)'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: "Can handle 'cib' between sets of parentheses",
+    start: ['one (two) th|ree (four) five'],
+    keysPressed: 'cib',
+    end: ['one (two) three (|) five'],
     endMode: Mode.Insert,
   });
 
@@ -2777,6 +2788,8 @@ suite('Mode Normal', () => {
   suite('<C-g>', () => {
     // TODO: test with untitled file
     // TODO: test [count]<C-g>
+
+    suiteSetup(cleanUpWorkspace);
 
     newTest({
       title: '<C-g> displays info about the file in status bar (line 1 of 3)',

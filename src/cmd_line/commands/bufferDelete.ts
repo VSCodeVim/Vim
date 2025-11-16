@@ -1,11 +1,11 @@
 import { alt, optWhitespace, Parser, seq, whitespace } from 'parsimmon';
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
-import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser, fileNameParser, numberParser } from '../../vimscript/parserUtils';
+import { findTabInActiveTabGroup } from '../../util/util';
 
 interface IBufferDeleteCommandArguments {
   bang: boolean;
@@ -30,31 +30,50 @@ export class BufferDeleteCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     if (vimState.document.isDirty && !this.arguments.bang) {
-      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
+      throw VimError.NoWriteSinceLastChange();
     }
 
+    const activeBuffer =
+      vscode.window.tabGroups.activeTabGroup.tabs.findIndex((t) => t.isActive) + 1;
     if (this.arguments.buffers.length === 0) {
-      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    } else {
-      for (const buffer of this.arguments.buffers) {
-        if (typeof buffer === 'string') {
-          // TODO
-          StatusBar.setText(
-            vimState,
-            ':bd[elete][!] {bufname} is not yet implemented (PRs are welcome!)',
-            true,
-          );
+      this.arguments.buffers = [activeBuffer];
+    }
+
+    let deletedBuffers = 0;
+
+    for (let buffer of this.arguments.buffers) {
+      if (typeof buffer === 'string') {
+        const [idx, tab] = findTabInActiveTabGroup(buffer);
+        buffer = idx + 1;
+      }
+
+      if (buffer < 1) {
+        throw VimError.PositiveCountRequired();
+      }
+      if (buffer > vscode.window.tabGroups.activeTabGroup.tabs.length) {
+        continue;
+      }
+
+      if (buffer !== activeBuffer) {
+        try {
+          await vscode.commands.executeCommand('workbench.action.openEditorAtIndex', buffer - 1);
+        } catch (e) {
           continue;
         }
+      }
 
-        try {
-          await vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${buffer}`);
-        } catch (e) {
-          throw error.VimError.fromCode(error.ErrorCode.NoBuffersDeleted);
-        }
-
+      if (this.arguments.bang) {
+        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+      } else {
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
       }
+      ++deletedBuffers;
+    }
+
+    if (deletedBuffers === 0) {
+      throw VimError.NoBuffersDeleted();
     }
   }
+
+  // TODO: executeWithRange
 }

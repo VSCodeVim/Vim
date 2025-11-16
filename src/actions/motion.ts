@@ -11,7 +11,7 @@ import { TagMatcher } from './../common/matching/tagMatcher';
 import { VimState } from './../state/vimState';
 import { configuration } from './../configuration/configuration';
 import { shouldWrapKey } from './wrapping';
-import { VimError, ErrorCode } from '../error';
+import { VimError } from '../error';
 import { BaseMovement, SelectionType, IMovement, isIMovement, failedMovement } from './baseMotion';
 import { globalState } from '../state/globalState';
 import { reportSearch } from '../util/statusBarTextUtils';
@@ -263,6 +263,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let prevLine: number = position.line;
     let prevChar: number = position.character;
     const moveDownByScreenLine = new MoveDownByScreenLine();
+    moveDownByScreenLine.multicursorIndex = this.multicursorIndex;
     do {
       t = await moveDownByScreenLine.execAction(t, vimState);
       t = t instanceof Position ? t : t.stop;
@@ -276,7 +277,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       prevChar = t.character;
       prevLine = t.line;
     } while (t.line === position.line);
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 
@@ -299,7 +300,9 @@ class MoveDown extends BaseMovement {
     }
 
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
-      return new MoveDownFoldFix().execAction(position, vimState);
+      const moveDownFoldFix = new MoveDownFoldFix();
+      moveDownFoldFix.multicursorIndex = this.multicursorIndex;
+      return moveDownFoldFix.execAction(position, vimState);
     }
 
     if (position.line < vimState.document.lineCount - 1) {
@@ -337,7 +340,9 @@ class MoveUp extends BaseMovement {
     }
 
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
-      return new MoveUpFoldFix().execAction(position, vimState);
+      const moveUpFoldFix = new MoveUpFoldFix();
+      moveUpFoldFix.multicursorIndex = this.multicursorIndex;
+      return moveUpFoldFix.execAction(position, vimState);
     }
 
     if (position.line > 0) {
@@ -369,11 +374,12 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     }
     let t: Position | IMovement;
     const moveUpByScreenLine = new MoveUpByScreenLine();
+    moveUpByScreenLine.multicursorIndex = this.multicursorIndex;
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
     } while (t.line === position.line);
-    return t;
+    return t.with({ character: vimState.desiredColumn });
   }
 }
 
@@ -468,10 +474,7 @@ class CommandNextSearchMatch extends BaseMovement {
     globalState.hl = true;
 
     if (searchState.getMatchRanges(vimState).length === 0) {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString),
-      );
+      StatusBar.displayError(vimState, VimError.PatternNotFound(searchState.searchString));
       return failedMovement(vimState);
     }
 
@@ -488,12 +491,9 @@ class CommandNextSearchMatch extends BaseMovement {
     if (!nextMatch) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(
-          searchState.direction === SearchDirection.Forward
-            ? ErrorCode.SearchHitBottom
-            : ErrorCode.SearchHitTop,
-          searchState.searchString,
-        ),
+        searchState.direction === SearchDirection.Forward
+          ? VimError.SearchHitBottom(searchState.searchString)
+          : VimError.SearchHitTop(searchState.searchString),
       );
       return failedMovement(vimState);
     }
@@ -523,10 +523,7 @@ class CommandPreviousSearchMatch extends BaseMovement {
     globalState.hl = true;
 
     if (searchState.getMatchRanges(vimState).length === 0) {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, searchState.searchString),
-      );
+      StatusBar.displayError(vimState, VimError.PatternNotFound(searchState.searchString));
       return failedMovement(vimState);
     }
 
@@ -546,12 +543,9 @@ class CommandPreviousSearchMatch extends BaseMovement {
     if (!prevMatch) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(
-          searchState.direction === SearchDirection.Forward
-            ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom,
-          searchState.searchString,
-        ),
+        searchState.direction === SearchDirection.Forward
+          ? VimError.SearchHitTop(searchState.searchString)
+          : VimError.SearchHitBottom(searchState.searchString),
       );
       return failedMovement(vimState);
     }
@@ -562,55 +556,81 @@ class CommandPreviousSearchMatch extends BaseMovement {
   }
 }
 
-@RegisterAction
-class MarkMovementBOL extends BaseMovement {
-  keys = ["'", '<register>'];
+export abstract class BaseMarkMovement extends BaseMovement {
   override isJump = true;
+  protected registerMode?: RegisterMode;
 
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+  protected abstract getNewPosition(document: vscode.TextDocument, position: Position): Position;
+
+  public override async execAction(
+    position: Position,
+    vimState: VimState,
+  ): Promise<Position | IMovement> {
     const markName = this.keysPressed[1];
     const mark = vimState.historyTracker.getMark(markName);
 
     if (mark === undefined) {
-      throw VimError.fromCode(ErrorCode.MarkNotSet);
+      throw VimError.MarkNotSet();
     }
 
-    vimState.currentRegisterMode = RegisterMode.LineWise;
-
-    if (mark.isUppercaseMark && mark.document !== undefined) {
-      if (vimState.recordedState.operator && mark.document !== vimState.document) {
-        // Operators don't work across files
-        throw VimError.fromCode(ErrorCode.MarkNotSet);
-      }
-      await ensureEditorIsActive(mark.document);
+    if (
+      mark.isUppercaseMark &&
+      vimState.recordedState.operator &&
+      mark.document !== vimState.document
+    ) {
+      throw VimError.MarkNotSet();
     }
 
-    return TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, mark.position.line);
+    if (this.registerMode) {
+      vimState.currentRegisterMode = this.registerMode;
+    }
+
+    const document = mark.isUppercaseMark ? mark.document : vimState.document;
+    const newPosition = this.getNewPosition(document, mark.position);
+
+    // Navigate to mark in another document
+    if (mark.isUppercaseMark && mark.document !== vimState.document) {
+      const options: vscode.TextDocumentShowOptions = {
+        selection: new vscode.Range(newPosition, newPosition),
+      };
+      await vscode.window.showTextDocument(mark.document, options);
+      return failedMovement(vimState); // Don't move cursor in current document
+    }
+
+    // Navigate to mark in the current document
+    return newPosition;
   }
 }
 
 @RegisterAction
-class MarkMovement extends BaseMovement {
+export class MarkMovementBOL extends BaseMarkMovement {
+  keys = ["'", '<register>'];
+  protected override registerMode = RegisterMode.LineWise;
+
+  protected override getNewPosition(document: vscode.TextDocument, position: Position): Position {
+    return TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line);
+  }
+}
+
+@RegisterAction
+export class MarkMovement extends BaseMarkMovement {
   keys = ['`', '<register>'];
-  override isJump = true;
 
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    const markName = this.keysPressed[1];
-    const mark = vimState.historyTracker.getMark(markName);
-
-    if (mark === undefined) {
-      throw VimError.fromCode(ErrorCode.MarkNotSet);
+  /**
+   * If the exact position exists, returns that position.
+   * If the character position is beyond the end of line, returns the end of line.
+   * Otherwise returns the position at the end of the document.
+   */
+  protected override getNewPosition(document: vscode.TextDocument, position: Position): Position {
+    const lastLine = document.lineCount - 1;
+    if (position.line > lastLine) {
+      const lastLineLength = document.lineAt(lastLine).text.length;
+      return new Position(lastLine, lastLineLength);
     }
 
-    if (mark.isUppercaseMark && mark.document !== undefined) {
-      if (vimState.recordedState.operator && mark.document !== vimState.document) {
-        // Operators don't work across files
-        throw VimError.fromCode(ErrorCode.MarkNotSet);
-      }
-      await ensureEditorIsActive(mark.document);
-    }
-
-    return mark.position;
+    const { text } = document.lineAt(position.line);
+    const character = Math.min(position.character, text.length);
+    return new Position(position.line, character);
   }
 }
 
@@ -673,12 +693,6 @@ class PrevMarkLinewise extends BaseMovement {
       .map((mark) => mark.position.line);
     const line = lines.length === 0 ? position.line : Math.max(...lines);
     return new Position(line, 0).getLineBeginRespectingIndent(vimState.document);
-  }
-}
-
-async function ensureEditorIsActive(document: vscode.TextDocument) {
-  if (document !== vscode.window.activeTextEditor?.document) {
-    await vscode.window.showTextDocument(document);
   }
 }
 
@@ -1499,7 +1513,7 @@ export class MoveWordBegin extends BaseMovement {
       return position.getLineEnd();
     }
 
-    if (result.isLineEnd()) {
+    if (result.isLineEnd(vimState.document)) {
       return new Position(result.line, result.character + 1);
     }
 
@@ -1674,7 +1688,7 @@ class MoveParagraphEnd extends BaseMovement {
        * current paragraph, we want the position just before that one to
        * accurately emulate Vim's behaviour, unless we are at EOF.
        */
-      return isLastIteration && !paragraphEnd.isAtDocumentEnd()
+      return isLastIteration && !paragraphEnd.isAtDocumentEnd(vimState.document)
         ? paragraphEnd.getLeftThroughLineBreaks(true)
         : paragraphEnd;
     }
@@ -1894,7 +1908,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
           break;
         }
         const lineText = vimState.document.lineAt(lineNum).text;
-        const matchIndex = lineText.indexOf(this.charToMatch);
+        const matchIndex = lineText.indexOf(this.charToMatch, selStart.character);
         if (matchIndex !== -1) {
           openPos = new Position(lineNum, matchIndex);
           break;
@@ -1946,6 +1960,21 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
 
     if (lastIteration && !isVisualMode(vimState.currentMode) && selStart.isBefore(openPos)) {
       vimState.recordedState.operatorPositionDiff = openPos.subtract(selStart);
+    }
+
+    // Adjust for VisualLine mode: exclude the line containing the closing brace
+    // moves the cursor back to just within the brackets, accurately mirroring what
+    // Vim does for Vi{ Vi( Vi[ etc.
+    if (
+      !this.includeSurrounding &&
+      vimState.currentMode === Mode.VisualLine &&
+      closePos.line > openPos.line
+    ) {
+      const adjustedLine = closePos.line - 1;
+      if (adjustedLine >= 0) {
+        const lineText = vimState.document.lineAt(adjustedLine).text;
+        closePos = new Position(adjustedLine, lineText.length);
+      }
     }
 
     // TODO: setting the cursor manually like this shouldn't be necessary (probably a Cursor, not Position, should be passed to `exec`)

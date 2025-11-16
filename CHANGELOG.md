@@ -1,6 +1,100 @@
 # Change Log
 
-## Unreleased
+## [v1.32.1](https://github.com/vscodevim/vim/tree/v1.32.1) (2025-11-9)
+
+### Fixed
+
+- Fixed clipboard register, which was broken in `v1.32.0` ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.32.0](https://github.com/vscodevim/vim/tree/v1.32.0) (2025-11-8)
+
+### Added
+
+- Improved expression support ([@J-Fields](https://github.com/J-Fields)).
+- `:let` can now set registers and environment variables ([@J-Fields](https://github.com/J-Fields)).
+- `:s[ubstitute]` can now replace instances with the value of an expression ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed `:qa!` prompting about unsaved changes ([@hirokiokada77](https://github.com/hirokiokada77)).
+- Fixed Ex commands being repeatable with `.` ([@coxxny](https://github.com/coxxny)).
+- Fixed bug that would freeze editor if `.` was pressed twice after a non-repeatable action at startup ([@coxxny](https://github.com/coxxny)).
+- Fixed some motions like `[{` when executed with a high count ([@brasswood](https://github.com/brasswood)).
+- Fixed `j` and `k` with multiple cursors and `vim.foldfix` enabled ([@dandn9](https://github.com/dandn9)).
+- Fixed `showTextDocument` being executed for non-preview tabs on `:w[rite]` ([@mccheesy](https://github.com/mccheesy)).
+- Fixed various Ex command error messages ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.31.0](https://github.com/vscodevim/vim/tree/v1.31.0) (2025-10-5)
+
+### Added
+
+- Added `:gr[ep]` and `:vim[grep]` ([@AzimovParviz](https://github.com/AzimovParviz)).
+- Added `:c[hange]` ([@kiing-dom](https://github.com/kiing-dom)).
+- Added better expression support ([@J-Fields](https://github.com/J-Fields)).
+- Added unpacking, indexing, and slicing with `:let` ([@J-Fields](https://github.com/J-Fields)).
+- Added `:unl[et]` ([@J-Fields](https://github.com/J-Fields)).
+
+### Changed
+
+- `:w` now disables preview for the saved editor, like VS Code's native `workbench.action.files.save` ([@mangas](https://github.com/mangas)).
+
+### Fixed
+
+- Fixed significant delay after confirming IME input ([@s-kai273](https://github.com/s-kai273)).
+- Fixed `<Esc>` not closing quick diff ([@jacklee1792](https://github.com/jacklee1792)).
+- Fixed `Vi{` incorrectly including the ending braces ([@Whiskas101](https://github.com/Whiskas101)).
+- Fixed small delete register (`"-`) not being updated while recording a macro ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.30.1](https://github.com/vscodevim/vim/tree/v1.30.1) (2025-05-28)
+
+### Added
+
+- Added a few character classes to Vim regexes ([@J-Fields](https://github.com/@J-Fields)).
+
+### Fixed
+
+- Fixed an issue where the cursor would jump away after some VS Code navigation commands ([@alythobani](https://github.com/@alythobani)).
+- Fixed surround with tags containing non-word characters ([@robertmoura](https://github.com/@robertmoura)).
+- Fixed a performance issue when typing `(` or similar in large files ([@J-Fields](https://github.com/@J-Fields)).
+
+## [v1.30.0](https://github.com/vscodevim/vim/tree/v1.30.0) (2025-05-22)
+
+### Added
+
+- Added `:pw[d]` ([@zeevoffen](https://github.com/zeevoffen)).
+- Added `:ma[rk]` ([@arunchaganty](https://github.com/arunchaganty)).
+
+### Changed
+
+- Enabled emulated Vim plugins in web extension ([@joshuali925](https://github.com/joshuali925)).
+- `gf` now interprets relative paths as relative to current file. If that fails, it tries relative to workspace root ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed Python function motions `[m`/`]m` with `async def` ([@nathan-gage](https://github.com/nathan-gage)).
+- Fixed `o` in Visual mode when selection starts at line end ([@kajikentaro](https://github.com/kajikentaro)).
+- Fixed `i(` when cursor is between two pairs of parentheses ([@prakhargupta-jan](https://github.com/prakhargupta-jan)).
+- Fixed global marks jumping to the wrong position ([@NeedsSoySauce](https://github.com/NeedsSoySauce)).
+- Fixed global marks messing up your position in the file you came from ([@J-Fields](https://github.com/J-Fields)).
+- Fixed `gf` with paths containing `..` ([@ekinakkaya](https://github.com/ekinakkaya)).
+- Fixed cursor position after `:ju[mps]` and `breakl[ist]` ([@J-Fields](https://github.com/J-Fields))
+- Fixed jumps going to right file, but wrong line ([@J-Fields](https://github.com/J-Fields)).
+- Fixed `:norm[al]` with a double quote (`"`) in the argument ([@s-kai273](https://github.com/s-kai273)).
+
+## [v1.29.2](https://github.com/vscodevim/vim/tree/v1.29.2) (2025-05-16)
+
+### Fixed
+
+- Revert make tab and escape fix for native vscode keybindings ([@ulugbekna](https://github.com/ulugbekna)).
+- Dismiss inline suggestion/NES on Escape without interfering with Vim modes ([@ulugbekna](https://github.com/ulugbekna)).
+
+## [v1.29.1](https://github.com/vscodevim/vim/tree/v1.29.1) (2025-05-15)
+
+### Fixed
+
+- fix(keybindings): make tab and escape play nicer with native vscode keybindings ([@ulugbekna](https://github.com/ulugbekna)).
+
+## [v1.29.0](https://github.com/vscodevim/vim/tree/v1.29.0) (2024-12-04)
 
 ### Added
 

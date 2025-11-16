@@ -1,14 +1,10 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 // TODO(#4844): this fails on Windows
 suite('filter operator', () => {
   if (process.platform === 'win32') {
     return;
   }
-
-  suiteSetup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: '!! with no count',

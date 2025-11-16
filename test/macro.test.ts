@@ -1,6 +1,6 @@
 import { Mode } from '../src/mode/mode';
 import { newTest, newTestWithRemaps } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('Record and execute a macro', () => {
   setup(async () => {
@@ -11,7 +11,6 @@ suite('Record and execute a macro', () => {
       },
     });
   });
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can record and execute',

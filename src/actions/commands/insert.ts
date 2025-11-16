@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { Position } from 'vscode';
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
@@ -24,8 +24,8 @@ import {
   CommandInsertNewLineAbove,
   CommandInsertNewLineBefore,
   CommandReplaceAtCursorFromNormalMode,
-  DocumentContentChangeAction,
 } from './actions';
+import { DocumentContentChangeAction } from './documentChange';
 import { DefaultDigraphs } from './digraphs';
 
 @RegisterAction
@@ -39,6 +39,7 @@ export class CommandEscInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void vscode.commands.executeCommand('closeParameterHints');
+    void vscode.commands.executeCommand('editor.action.inlineSuggest.hide');
 
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
     if (vimState.returnToInsertAfterCommand && position.character !== 0) {
@@ -130,7 +131,7 @@ export class CommandInsertPreviousText extends BaseCommand {
       !(register.text instanceof RecordedState) ||
       !register.text.actionsRun
     ) {
-      throw VimError.fromCode(ErrorCode.NoInsertedTextYet);
+      throw VimError.NoInsertedTextYet();
     }
 
     const recordedState = register.text.clone();
@@ -234,7 +235,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   keys = ['<character>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const char = this.keysPressed[this.keysPressed.length - 1];
+    const char = this.keysPressed.at(-1)!;
 
     let text = char;
 
@@ -270,7 +271,7 @@ export class CommandInsertInInsertMode extends BaseCommand {
   }
 
   public override toString(): string {
-    return this.keysPressed[this.keysPressed.length - 1];
+    return this.keysPressed.at(-1)!;
   }
 }
 
@@ -342,7 +343,7 @@ class CommandInsertRegisterContent extends BaseCommand {
 
     const register = await Register.get(registerKey, this.multicursorIndex);
     if (register === undefined) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NothingInRegister, registerKey));
+      StatusBar.displayError(vimState, VimError.NothingInRegister(registerKey));
       return;
     }
 
@@ -413,7 +414,7 @@ export class InsertCharAbove extends BaseCommand {
     }
 
     const charPos = position.getUp();
-    if (charPos.isLineEnd()) {
+    if (charPos.isLineEnd(vimState.document)) {
       return;
     }
 
@@ -434,7 +435,7 @@ export class InsertCharBelow extends BaseCommand {
     }
 
     const charPos = position.getDown();
-    if (charPos.isLineEnd()) {
+    if (charPos.isLineEnd(vimState.document)) {
       return;
     }
 

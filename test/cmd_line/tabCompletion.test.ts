@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
+import * as os from 'os';
 import { join, sep, basename } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
@@ -99,7 +100,7 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion directory with / at the end', async () => {
-    const dirPath = await t.createRandomDir();
+    const dirPath = await t.createDir();
 
     try {
       const baseCmd = `:e ${dirPath.slice(0, -1)}`.split('');
@@ -120,7 +121,7 @@ suite('cmd_line tabComplete', () => {
   test('command line file navigate tab completion', async () => {
     // tmpDir --- inner0
     //         |- inner1 --- inner10 --- inner100
-    const tmpDir = await t.createRandomDir();
+    const tmpDir = await t.createDir();
     const inner0 = await t.createDir(join(tmpDir, 'inner0'));
     const inner1 = await t.createDir(join(tmpDir, 'inner1'));
     const inner10 = await t.createDir(join(inner1, 'inner10'));
@@ -191,8 +192,8 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion with .', async () => {
-    const dirPath = await t.createRandomDir();
-    const testFilePath = await t.createEmptyFile(join(dirPath, '.testfile'));
+    const dirPath = await t.createDir();
+    const testFilePath = await t.createFile({ fsPath: join(dirPath, '.testfile') });
 
     try {
       // There should only be one auto-completion
@@ -238,12 +239,15 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion with space in file path', async () => {
-    // Create an random file in temp folder with a space in the file name
-    const spacedFilePath = await t.createRandomFile('', 'vscode-vim completion-test');
+    // Create a random file in temp folder with a space in the file name
+    const prefix = t.rndName();
+    const spacedFilePath = await t.createFile({
+      fsPath: join(os.tmpdir(), prefix + 'vscode-vim completion-test'),
+    });
     try {
-      // Get the base name of the path which is <random name>vscode-vim completion-test
+      // Get the base name of the path which is '<prefix>vscode-vim completion-test'
       const baseName = basename(spacedFilePath);
-      // Get the base name exclude the space which is <random name>vscode-vim
+      // Get the base name exclude the space which is '<prefix>vscode-vim'
       const baseNameExcludeSpace = baseName.substring(0, baseName.lastIndexOf(' '));
       const fullPathExcludeSpace = spacedFilePath.substring(0, spacedFilePath.lastIndexOf(' '));
       const failMsg = 'Cannot complete to a path with space';
@@ -277,8 +281,8 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion case-sensitivity platform dependent', async () => {
-    const dirPath = await t.createRandomDir();
-    const filePath = await t.createEmptyFile(join(dirPath, 'testfile'));
+    const dirPath = await t.createDir();
+    const filePath = await t.createFile({ fsPath: join(dirPath, 'testfile') });
     const fileAsTyped = join(dirPath, 'TESTFIL');
     const cmd = `:e ${fileAsTyped}`.split('');
 

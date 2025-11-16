@@ -1,5 +1,5 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('smartQuotes plugin', () => {
   suite('smartQuotes.breakThroughLines = false', () => {
@@ -19,7 +19,7 @@ suite('smartQuotes plugin', () => {
         fileExtension: '.js',
       });
     });
-    suiteTeardown(cleanUpWorkspace);
+
     // test quotes types
     newTest({
       title: 'single quote - 1',
@@ -733,7 +733,6 @@ suite('smartQuotes plugin', () => {
         fileExtension: '.js',
       });
     });
-    suiteTeardown(cleanUpWorkspace);
 
     // test next
     newTest({
