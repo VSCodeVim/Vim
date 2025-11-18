@@ -16,6 +16,7 @@ import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
+import { VimState } from '../src/state/vimState';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
@@ -193,6 +194,28 @@ function tokenizeKeySequence(sequence: string): string[] {
   return result;
 }
 
+async function applyDocState(editor: vscode.TextEditor, docState: DocState): Promise<void> {
+  assert.ok(
+    await editor.edit((builder) => {
+      builder.replace(TextEditor.getDocumentRange(editor.document), docState.lines.join('\n'));
+    }),
+    'Edit failed',
+  );
+  editor.selections = [new vscode.Selection(docState.cursor, docState.cursor)];
+}
+
+function assertDocState(vimState: VimState, docState: DocState): void {
+  assertEqualLines(docState.lines);
+
+  const actualPos = vimState.editor.selection.start;
+  const expectedPos = docState.cursor;
+  assert.deepEqual(
+    { line: actualPos.line, character: actualPos.character },
+    { line: expectedPos.line, character: expectedPos.character },
+    'Cursor position is wrong.',
+  );
+}
+
 async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   if (vscode.window.activeTextEditor === undefined) {
     await setupWorkspace({
@@ -210,21 +233,17 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     editor.options = testObj.editorOptions;
   }
 
-  // Initialize the editor with the starting text and cursor selection
-  assert.ok(
-    await editor.edit((builder) => {
-      builder.replace(TextEditor.getDocumentRange(editor.document), start.lines.join('\n'));
-    }),
-    'Edit failed',
-  );
+  await applyDocState(editor, start);
+
   if (testObj.saveDocBeforeTest) {
     assert.ok(await editor.document.save(), 'Save failed');
   }
-  editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
   const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
+
+  assertDocState(modeHandler.vimState, start);
 
   globalState.lastInvokedMacro = undefined;
   globalState.jumpTracker.clearJumps();
@@ -243,17 +262,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
   }
 
-  // Check given end output is correct
-  assertEqualLines(end.lines);
-
-  // Check final cursor position
-  const actualPosition = modeHandler.vimState.editor.selection.start;
-  const expectedPosition = end.cursor;
-  assert.deepEqual(
-    { line: actualPosition.line, character: actualPosition.character },
-    { line: expectedPosition.line, character: expectedPosition.character },
-    'Cursor position is wrong.',
-  );
+  assertDocState(modeHandler.vimState, end);
 
   if (testObj.endMode !== undefined) {
     assert.equal(
@@ -315,14 +324,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
-  // Initialize the editor with the starting text and cursor selection
-  await editor.edit((builder) => {
-    builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
-  });
-  {
-    const start = DocState.parse(testObj.start);
-    editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
-  }
+  await applyDocState(editor, DocState.parse(testObj.start));
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
