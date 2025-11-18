@@ -2,6 +2,7 @@ import * as assert from 'assert';
 
 import { ROT13Operator } from '../../src/actions/operator';
 import { newTest } from '../testSimplifier';
+import { Mode } from '../../src/mode/mode';
 
 suite('rot13 operator', () => {
   test('rot13() unit test', () => {
@@ -23,24 +24,28 @@ suite('rot13 operator', () => {
     end: ['n|op', 'qrs', 'ghi'],
   });
 
+  // TODO: Fix cursor position in Visual modes
   newTest({
     title: 'g? in visual mode works',
     start: ['a|bc', 'def', 'ghi'],
     keysPressed: 'vj$g?',
-    end: ['a|op', 'qrs', 'ghi'],
+    end: ['aop', 'qrs', '|ghi'],
+    endMode: Mode.Visual,
   });
 
   newTest({
     title: 'g? in visual line mode works',
     start: ['a|bc', 'def', 'ghi'],
     keysPressed: 'Vj$g?',
-    end: ['|nop', 'qrs', 'ghi'],
+    end: ['nop', 'qr|s', 'ghi'],
+    endMode: Mode.VisualLine,
   });
 
   newTest({
     title: 'g? in visual block mode works',
     start: ['a|bc', 'def', 'ghi'],
     keysPressed: '<C-v>j$g?',
-    end: ['a|op', 'drs', 'ghi'],
+    end: ['aop', 'drs|', 'ghi'],
+    endMode: Mode.VisualBlock,
   });
 });

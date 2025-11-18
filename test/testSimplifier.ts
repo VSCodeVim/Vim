@@ -120,26 +120,30 @@ interface ITestWithRemapsObject {
 class DocState {
   public static parse(lines: string[]): DocState {
     lines = [...lines];
-    const cursor = (() => {
-      for (let i = 0; i < lines.length; i++) {
-        const columnIdx = lines[i].indexOf('|');
-        if (columnIdx >= 0) {
-          lines[i] = lines[i].replace('|', '');
-          return new Position(i, columnIdx);
-        }
-      }
 
+    const cursors: Position[] = [];
+    for (let i = 0; i < lines.length; ) {
+      const columnIdx = lines[i].indexOf('|');
+      if (columnIdx >= 0) {
+        lines[i] = lines[i].replace('|', '');
+        cursors.push(new Position(i, columnIdx));
+      } else {
+        i++;
+      }
+    }
+    if (cursors.length === 0) {
       throw new Error("Missing '|' in test object");
-    })();
-    return new DocState(cursor, lines);
+    }
+
+    return new DocState(cursors, lines);
   }
 
-  constructor(cursor: Position, lines: string[]) {
-    this.cursor = cursor;
+  constructor(cursors: Position[], lines: string[]) {
+    this.cursors = cursors;
     this.lines = lines;
   }
 
-  public readonly cursor: Position; // TODO(#4582): support multiple cursors
+  public readonly cursors: Position[];
   public readonly lines: string[];
 }
 
@@ -201,18 +205,27 @@ async function applyDocState(editor: vscode.TextEditor, docState: DocState): Pro
     }),
     'Edit failed',
   );
-  editor.selections = [new vscode.Selection(docState.cursor, docState.cursor)];
+  editor.selections = docState.cursors.map((cursor) => new vscode.Selection(cursor, cursor));
 }
 
 function assertDocState(vimState: VimState, docState: DocState): void {
   assertEqualLines(docState.lines);
 
-  const actualPos = vimState.editor.selection.start;
-  const expectedPos = docState.cursor;
+  const simplify = (position: Position) => ({ line: position.line, character: position.character });
+  const compare = (
+    a: { line: number; character: number },
+    b: { line: number; character: number },
+  ) => {
+    if (a.line !== b.line) {
+      return a.line - b.line;
+    }
+    return a.character - b.character;
+  };
+  // TODO: Assert selections match vimState.cursors
   assert.deepEqual(
-    { line: actualPos.line, character: actualPos.character },
-    { line: expectedPos.line, character: expectedPos.character },
-    'Cursor position is wrong.',
+    vimState.cursors.map((cursor) => simplify(cursor.stop)).sort(compare),
+    docState.cursors.map(simplify).sort(compare),
+    'Cursors are wrong.',
   );
 }
 
@@ -456,7 +469,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
     // Check end cursor position
     const actualEndPosition = result1.position;
-    const expectedEndPosition = resolvedStep.end.cursor;
+    const expectedEndPosition = resolvedStep.end.cursors[0];
     assert.deepEqual(
       { line: actualEndPosition.line, character: actualEndPosition.character },
       { line: expectedEndPosition.line, character: expectedEndPosition.character },
@@ -486,7 +499,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
       // Check endAfterTimeout cursor position
       const actualEndAfterTimeoutPosition = result2.position;
-      const expectedEndAfterTimeoutPosition = resolvedStep.endAfterTimeout!.cursor;
+      const expectedEndAfterTimeoutPosition = resolvedStep.endAfterTimeout!.cursors[0];
       assert.deepEqual(
         {
           line: actualEndAfterTimeoutPosition.line,
