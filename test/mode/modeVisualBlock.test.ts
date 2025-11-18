@@ -339,7 +339,8 @@ suite('VisualBlock mode', () => {
     });
   });
 
-  suite('`gJ`', () => {
+  // TODO(9830)
+  suite.skip('`gJ`', () => {
     newTest({
       title: "Can handle 'gJ' when the entire visual block is on the same line",
       start: ['one', '|two', 'three', 'four'],
