@@ -4073,10 +4073,10 @@ load-json-file@^1.0.0:
     pinkie-promise "^2.0.0"
     strip-bom "^2.0.0"
 
-loader-runner@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/loader-runner/-/loader-runner-4.2.0.tgz#d7022380d66d14c5fb1d496b89864ebcfd478384"
-  integrity sha512-92+huvxMvYlMzMt0iIOukcwYBFpkYJdpl2xsZ7LrlayO7E8SOv+JJUEK17B/dJIHAOLMfh2dZZ/Y18WgmGtYNw==
+loader-runner@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/loader-runner/-/loader-runner-4.3.1.tgz#6c76ed29b0ccce9af379208299f07f876de737e3"
+  integrity sha512-IWqP2SCPhyVFTBtRcgMHdzlf9ul25NwaFx4wCEH/KjAXuuHY4yNjvPXsBokp8jCB936PyWRaPKUNh8NvylLp2Q==
 
 locate-path@^5.0.0:
   version "5.0.0"
@@ -6592,10 +6592,10 @@ webpack-stream@7.0.0:
     through "^2.3.8"
     vinyl "^2.2.1"
 
-webpack@5.102.0:
-  version "5.102.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.102.0.tgz#7a2416e6da356c35f1fb35333d2f5cee0133e953"
-  integrity sha512-hUtqAR3ZLVEYDEABdBioQCIqSoguHbFn1K7WlPPWSuXmx0031BD73PSE35jKyftdSh4YLDoQNgK4pqBt5Q82MA==
+webpack@5.103.0:
+  version "5.103.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.103.0.tgz#17a7c5a5020d5a3a37c118d002eade5ee2c6f3da"
+  integrity sha512-HU1JOuV1OavsZ+mfigY0j8d1TgQgbZ6M+J75zDkpEAwYeXjWSqrGJtgnPblJjd/mAyTNQ7ygw0MiKOn6etz8yw==
   dependencies:
     "@types/eslint-scope" "^3.7.7"
     "@types/estree" "^1.0.8"
@@ -6614,7 +6614,7 @@ webpack@5.102.0:
     glob-to-regexp "^0.4.1"
     graceful-fs "^4.2.11"
     json-parse-even-better-errors "^2.3.1"
-    loader-runner "^4.2.0"
+    loader-runner "^4.3.1"
     mime-types "^2.1.27"
     neo-async "^2.6.2"
     schema-utils "^4.3.2"
