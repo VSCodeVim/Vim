@@ -171,6 +171,11 @@ class MoveUpByScreenLine extends MoveByScreenLine {
   movementType: CursorMovePosition = 'up';
   override by: CursorMoveByUnit = 'wrappedLine';
   override value = 1;
+
+  constructor(multicursorIndex: number) {
+    super();
+    this.multicursorIndex = multicursorIndex;
+  }
 }
 
 class MoveDownByScreenLine extends MoveByScreenLine {
@@ -178,6 +183,11 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   movementType: CursorMovePosition = 'down';
   override by: CursorMoveByUnit = 'wrappedLine';
   override value = 1;
+
+  constructor(multicursorIndex: number) {
+    super();
+    this.multicursorIndex = multicursorIndex;
+  }
 }
 
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
@@ -260,22 +270,19 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement = position;
-    let prevLine: number = position.line;
-    let prevChar: number = position.character;
-    const moveDownByScreenLine = new MoveDownByScreenLine();
-    moveDownByScreenLine.multicursorIndex = this.multicursorIndex;
+    let prev: Position = position;
+    const moveDownByScreenLine = new MoveDownByScreenLine(this.multicursorIndex ?? 0);
     do {
       t = await moveDownByScreenLine.execAction(t, vimState);
       t = t instanceof Position ? t : t.stop;
-      const lineChanged = prevLine !== t.line;
+      const lineChanged = prev.line !== t.line;
       // wrappedLine movement goes to eol character only when at the last line
       // thus a column change on wrappedLine movement represents a visual last line
-      const colChanged = prevChar !== t.character;
+      const colChanged = prev.character !== t.character;
       if (lineChanged || !colChanged) {
         break;
       }
-      prevChar = t.character;
-      prevLine = t.line;
+      prev = t;
     } while (t.line === position.line);
     return t.with({ character: vimState.desiredColumn });
   }
@@ -373,8 +380,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
-    const moveUpByScreenLine = new MoveUpByScreenLine();
-    moveUpByScreenLine.multicursorIndex = this.multicursorIndex;
+    const moveUpByScreenLine = new MoveUpByScreenLine(this.multicursorIndex ?? 0);
     do {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
