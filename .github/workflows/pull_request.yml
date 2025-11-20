@@ -31,9 +31,9 @@ jobs:
         run: yarn lint
 
       - name: Build
-        run: gulp webpack
+        run: yarn build
 
       - name: Test
         run: |
-          gulp prepare-test
+          yarn build-test
           xvfb-run -a yarn test

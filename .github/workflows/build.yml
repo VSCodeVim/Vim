@@ -32,16 +32,16 @@ jobs:
         run: yarn lint
 
       - name: Build
-        run: gulp webpack
+        run: yarn build
 
       - name: Test on ubuntu-latest
         if: matrix.os != 'windows-latest'
         run: |
-          gulp prepare-test
+          yarn build-test
           xvfb-run -a yarn test
 
       - name: Test on windows-latest
         if: matrix.os == 'windows-latest'
         run: |
-          gulp prepare-test
+          yarn build-test
           yarn test
