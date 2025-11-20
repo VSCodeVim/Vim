@@ -30,6 +30,19 @@ import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMat
 import { useSmartQuotes } from './plugins/targets/targetsConfig';
 import { ModeDataFor } from '../mode/modeData';
 
+function adjustForDesiredColumn(args: {
+  position: Position;
+  desiredColumn: number;
+  multicursorIndex: number | undefined;
+}): Position {
+  const { position, desiredColumn, multicursorIndex } = args;
+  // HACK: until we put `desiredColumn` on `Cursor`, only the first cursor will respect it (except after `$`)
+  if (multicursorIndex && multicursorIndex > 0 && desiredColumn !== Number.POSITIVE_INFINITY) {
+    return position;
+  }
+  return position.with({ character: desiredColumn });
+}
+
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
@@ -284,7 +297,11 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       }
       prev = t;
     }
-    return t.with({ character: vimState.desiredColumn });
+    return adjustForDesiredColumn({
+      position: t,
+      desiredColumn: vimState.desiredColumn,
+      multicursorIndex: this.multicursorIndex,
+    });
   }
 }
 
@@ -313,10 +330,13 @@ class MoveDown extends BaseMovement {
     }
 
     if (position.line < vimState.document.lineCount - 1) {
-      return position.with({ character: vimState.desiredColumn }).getDown();
-    } else {
-      return position;
+      return adjustForDesiredColumn({
+        position,
+        desiredColumn: vimState.desiredColumn,
+        multicursorIndex: this.multicursorIndex,
+      }).getDown();
     }
+    return position;
   }
 
   public override async execActionForOperator(
@@ -353,10 +373,13 @@ class MoveUp extends BaseMovement {
     }
 
     if (position.line > 0) {
-      return position.with({ character: vimState.desiredColumn }).getUp();
-    } else {
-      return position;
+      return adjustForDesiredColumn({
+        position,
+        desiredColumn: vimState.desiredColumn,
+        multicursorIndex: this.multicursorIndex,
+      }).getUp();
     }
+    return position;
   }
 
   public override async execActionForOperator(
@@ -392,7 +415,11 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       }
       prev = t;
     }
-    return t.with({ character: vimState.desiredColumn });
+    return adjustForDesiredColumn({
+      position: t,
+      desiredColumn: vimState.desiredColumn,
+      multicursorIndex: this.multicursorIndex,
+    });
   }
 }
 
@@ -1201,10 +1228,13 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
     vimState: VimState,
   ): Promise<Position | IMovement> {
     if (position.line > 0) {
-      return position.with({ character: vimState.desiredColumn }).getUp();
-    } else {
-      return position;
+      return adjustForDesiredColumn({
+        position,
+        desiredColumn: vimState.desiredColumn,
+        multicursorIndex: this.multicursorIndex,
+      }).getUp();
     }
+    return position;
   }
 
   public override async execActionForOperator(
@@ -1230,10 +1260,13 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
     vimState: VimState,
   ): Promise<Position | IMovement> {
     if (position.line < vimState.document.lineCount - 1) {
-      return position.with({ character: vimState.desiredColumn }).getDown();
-    } else {
-      return position;
+      return adjustForDesiredColumn({
+        position,
+        desiredColumn: vimState.desiredColumn,
+        multicursorIndex: this.multicursorIndex,
+      }).getDown();
     }
+    return position;
   }
 
   public override async execActionForOperator(
