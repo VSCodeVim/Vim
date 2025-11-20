@@ -272,7 +272,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     let t: Position | IMovement = position;
     let prev: Position = position;
     const moveDownByScreenLine = new MoveDownByScreenLine(this.multicursorIndex ?? 0);
-    do {
+    while (true) {
       t = await moveDownByScreenLine.execAction(t, vimState);
       t = t instanceof Position ? t : t.stop;
       const lineChanged = prev.line !== t.line;
@@ -283,7 +283,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
         break;
       }
       prev = t;
-    } while (t.line === position.line);
+    }
     return t.with({ character: vimState.desiredColumn });
   }
 }
@@ -380,11 +380,18 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
+    let prev: Position = position;
     const moveUpByScreenLine = new MoveUpByScreenLine(this.multicursorIndex ?? 0);
-    do {
+    while (true) {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
-    } while (t.line === position.line);
+      const lineChanged = prev.line !== t.line;
+      const colChanged = prev.character !== t.character;
+      if (lineChanged || !colChanged) {
+        break;
+      }
+      prev = t;
+    }
     return t.with({ character: vimState.desiredColumn });
   }
 }
