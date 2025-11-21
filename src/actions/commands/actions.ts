@@ -155,6 +155,10 @@ class CommandRecordMacro extends BaseCommand {
     ['q', '"'],
   ];
 
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const registerKey = this.keysPressed[1];
     const register = registerKey.toLocaleLowerCase();
@@ -177,6 +181,10 @@ class CommandRecordMacro extends BaseCommand {
 export class CommandQuitRecordMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['q'];
+
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const macro = vimState.macro;
@@ -213,6 +221,10 @@ class CommandExecuteLastMacro extends BaseCommand {
   override createsUndoPoint = true;
   override isJump = true;
 
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const { lastInvokedMacro } = globalState;
 
@@ -234,6 +246,10 @@ class CommandExecuteMacro extends BaseCommand {
   keys = ['@', '<register>'];
   override runsOnceForEachCountPrefix = true;
   override createsUndoPoint = true;
+
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = this.keysPressed[1].toLocaleLowerCase();
@@ -625,12 +641,12 @@ export class CommandUndo extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPosition = await vimState.historyTracker.goBackHistoryStep();
+    const cursors = await vimState.historyTracker.goBackHistoryStep();
 
-    if (newPosition === undefined) {
+    if (cursors === undefined) {
       StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      vimState.cursors = [new Cursor(newPosition, newPosition)];
+      vimState.cursors = cursors;
     }
   }
 }
@@ -661,12 +677,12 @@ export class CommandRedo extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPosition = await vimState.historyTracker.goForwardHistoryStep();
+    const cursors = await vimState.historyTracker.goForwardHistoryStep();
 
-    if (newPosition === undefined) {
+    if (cursors === undefined) {
       StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      vimState.cursors = [new Cursor(newPosition, newPosition)];
+      vimState.cursors = cursors;
     }
   }
 }
@@ -676,9 +692,6 @@ class CommandDeleteToLineEnd extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['D'];
   override createsUndoPoint = true;
-  override runsOnceForEveryCursor() {
-    return true;
-  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (position.isLineEnd(vimState.document)) {
@@ -1347,9 +1360,6 @@ export class ActionReplaceCharacter extends BaseCommand {
 class ActionReplaceCharacterVisual extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['r', '<character>'];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -1427,9 +1437,6 @@ class ActionReplaceCharacterVisual extends BaseCommand {
 class ActionReplaceCharacterVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = ['r', '<character>'];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -1466,9 +1473,6 @@ class ActionDeleteVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = [['d'], ['x'], ['X']];
   override createsUndoPoint = true;
-  override runsOnceForEveryCursor() {
-    return false;
-  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const lines: string[] = [];
@@ -1501,9 +1505,6 @@ class ActionShiftDVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = ['D'];
   override createsUndoPoint = true;
-  override runsOnceForEveryCursor() {
-    return false;
-  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const lines: string[] = [];

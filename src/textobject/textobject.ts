@@ -595,8 +595,6 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObject {
 }
 
 abstract class IndentObjectMatch extends TextObject {
-  override setsDesiredColumnToEOL = true;
-
   protected includeLineAbove = false;
   protected includeLineBelow = false;
 

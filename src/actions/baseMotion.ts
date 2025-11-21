@@ -53,12 +53,6 @@ export abstract class BaseMovement extends BaseAction {
    */
   isRepeat = false;
 
-  /**
-   * This is for commands like $ which force the desired column to be at
-   * the end of even the longest line.
-   */
-  public setsDesiredColumnToEOL = false;
-
   protected selectionType = SelectionType.Concatenating;
 
   constructor(keysPressed?: string[], isRepeat?: boolean) {

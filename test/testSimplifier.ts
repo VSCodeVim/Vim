@@ -16,6 +16,7 @@ import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
+import { VimState } from '../src/state/vimState';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
@@ -119,26 +120,30 @@ interface ITestWithRemapsObject {
 class DocState {
   public static parse(lines: string[]): DocState {
     lines = [...lines];
-    const cursor = (() => {
-      for (let i = 0; i < lines.length; i++) {
-        const columnIdx = lines[i].indexOf('|');
-        if (columnIdx >= 0) {
-          lines[i] = lines[i].replace('|', '');
-          return new Position(i, columnIdx);
-        }
-      }
 
+    const cursors: Position[] = [];
+    for (let i = 0; i < lines.length; ) {
+      const columnIdx = lines[i].indexOf('|');
+      if (columnIdx >= 0) {
+        lines[i] = lines[i].replace('|', '');
+        cursors.push(new Position(i, columnIdx));
+      } else {
+        i++;
+      }
+    }
+    if (cursors.length === 0) {
       throw new Error("Missing '|' in test object");
-    })();
-    return new DocState(cursor, lines);
+    }
+
+    return new DocState(cursors, lines);
   }
 
-  constructor(cursor: Position, lines: string[]) {
-    this.cursor = cursor;
+  constructor(cursors: Position[], lines: string[]) {
+    this.cursors = cursors;
     this.lines = lines;
   }
 
-  public readonly cursor: Position; // TODO(#4582): support multiple cursors
+  public readonly cursors: Position[];
   public readonly lines: string[];
 }
 
@@ -193,6 +198,37 @@ function tokenizeKeySequence(sequence: string): string[] {
   return result;
 }
 
+async function applyDocState(editor: vscode.TextEditor, docState: DocState): Promise<void> {
+  assert.ok(
+    await editor.edit((builder) => {
+      builder.replace(TextEditor.getDocumentRange(editor.document), docState.lines.join('\n'));
+    }),
+    'Edit failed',
+  );
+  editor.selections = docState.cursors.map((cursor) => new vscode.Selection(cursor, cursor));
+}
+
+function assertDocState(vimState: VimState, docState: DocState): void {
+  assertEqualLines(docState.lines);
+
+  const simplify = (position: Position) => ({ line: position.line, character: position.character });
+  const compare = (
+    a: { line: number; character: number },
+    b: { line: number; character: number },
+  ) => {
+    if (a.line !== b.line) {
+      return a.line - b.line;
+    }
+    return a.character - b.character;
+  };
+  // TODO: Assert selections match vimState.cursors
+  assert.deepEqual(
+    vimState.cursors.map((cursor) => simplify(cursor.stop)).sort(compare),
+    docState.cursors.map(simplify).sort(compare),
+    'Cursors are wrong.',
+  );
+}
+
 async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   if (vscode.window.activeTextEditor === undefined) {
     await setupWorkspace({
@@ -210,21 +246,17 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     editor.options = testObj.editorOptions;
   }
 
-  // Initialize the editor with the starting text and cursor selection
-  assert.ok(
-    await editor.edit((builder) => {
-      builder.replace(TextEditor.getDocumentRange(editor.document), start.lines.join('\n'));
-    }),
-    'Edit failed',
-  );
+  await applyDocState(editor, start);
+
   if (testObj.saveDocBeforeTest) {
     assert.ok(await editor.document.save(), 'Save failed');
   }
-  editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
   const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
+
+  assertDocState(modeHandler.vimState, start);
 
   globalState.lastInvokedMacro = undefined;
   globalState.jumpTracker.clearJumps();
@@ -243,17 +275,7 @@ async function testIt(testObj: ITestObject): Promise<ModeHandler> {
     await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
   }
 
-  // Check given end output is correct
-  assertEqualLines(end.lines);
-
-  // Check final cursor position
-  const actualPosition = modeHandler.vimState.editor.selection.start;
-  const expectedPosition = end.cursor;
-  assert.deepEqual(
-    { line: actualPosition.line, character: actualPosition.character },
-    { line: expectedPosition.line, character: expectedPosition.character },
-    'Cursor position is wrong.',
-  );
+  assertDocState(modeHandler.vimState, end);
 
   if (testObj.endMode !== undefined) {
     assert.equal(
@@ -315,14 +337,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
-  // Initialize the editor with the starting text and cursor selection
-  await editor.edit((builder) => {
-    builder.insert(new Position(0, 0), testObj.start.join('\n').replace('|', ''));
-  });
-  {
-    const start = DocState.parse(testObj.start);
-    editor.selections = [new vscode.Selection(start.cursor, start.cursor)];
-  }
+  await applyDocState(editor, DocState.parse(testObj.start));
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
@@ -454,7 +469,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
     // Check end cursor position
     const actualEndPosition = result1.position;
-    const expectedEndPosition = resolvedStep.end.cursor;
+    const expectedEndPosition = resolvedStep.end.cursors[0];
     assert.deepEqual(
       { line: actualEndPosition.line, character: actualEndPosition.character },
       { line: expectedEndPosition.line, character: expectedEndPosition.character },
@@ -484,7 +499,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
       // Check endAfterTimeout cursor position
       const actualEndAfterTimeoutPosition = result2.position;
-      const expectedEndAfterTimeoutPosition = resolvedStep.endAfterTimeout!.cursor;
+      const expectedEndAfterTimeoutPosition = resolvedStep.endAfterTimeout!.cursors[0];
       assert.deepEqual(
         {
           line: actualEndAfterTimeoutPosition.line,
