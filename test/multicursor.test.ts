@@ -60,6 +60,15 @@ suite('Multicursor', () => {
     });
   });
 
+  suite('Undo/redo', () => {
+    newTest({
+      title: 'Can undo with multiple cursors',
+      start: ['|one', '|two', '|three'],
+      keysPressed: 'l' + 'iXXX<Esc>' + '$' + 'u',
+      end: ['o|ne', 't|wo', 't|hree'],
+    });
+  });
+
   test('can add multiple cursors below', async () => {
     await modeHandler.handleMultipleKeyEvents('i11\n22'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);

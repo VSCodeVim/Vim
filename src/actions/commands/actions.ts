@@ -641,12 +641,12 @@ export class CommandUndo extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPosition = await vimState.historyTracker.goBackHistoryStep();
+    const cursors = await vimState.historyTracker.goBackHistoryStep();
 
-    if (newPosition === undefined) {
+    if (cursors === undefined) {
       StatusBar.setText(vimState, 'Already at oldest change');
     } else {
-      vimState.cursors = [new Cursor(newPosition, newPosition)];
+      vimState.cursors = cursors;
     }
   }
 }
@@ -677,12 +677,12 @@ export class CommandRedo extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPosition = await vimState.historyTracker.goForwardHistoryStep();
+    const cursors = await vimState.historyTracker.goForwardHistoryStep();
 
-    if (newPosition === undefined) {
+    if (cursors === undefined) {
       StatusBar.setText(vimState, 'Already at newest change');
     } else {
-      vimState.cursors = [new Cursor(newPosition, newPosition)];
+      vimState.cursors = cursors;
     }
   }
 }
