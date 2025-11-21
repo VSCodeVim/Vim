@@ -12,30 +12,35 @@ jobs:
       - name: Checkout VSCodeVim
         uses: actions/checkout@v6
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install
 
       - name: Lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Build
-        run: yarn build
+        run: pnpm build
 
       - name: Test
         run: |
-          yarn build-test
-          xvfb-run -a yarn test
+          pnpm build-test
+          xvfb-run -a pnpm test
 
       - name: Build extension package
         id: build_vsix
         run: |
-          yarn package;
+          pnpm package;
           echo ::set-output name=vsix_path::$(ls *.vsix);
 
       - name: Create release on GitHub
@@ -60,7 +65,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Publish to VSCode Extension Marketplace
-        run: yarn run vsce publish --yarn
+        run: pnpm vsce publish
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 

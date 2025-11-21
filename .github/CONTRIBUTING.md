@@ -33,7 +33,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1. Install prerequisites:
    - [Visual Studio Code](https://code.visualstudio.com/), latest stable or insiders
    - [Node.js](https://nodejs.org/) v20.x or higher
-   - [Yarn](https://classic.yarnpkg.com/) v1.x
+   - [pnpm](https://pnpm.io/installation) v10.x or higher
    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 
 2. Fork and clone repository:
@@ -47,15 +47,15 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
    ```bash
    # Install the dependencies
-   yarn install
+   pnpm install
 
    # Open in VS Code
    code .
 
    # Build with one of these...
-   yarn build-dev # Fast build for development
-   yarn build     # Slow build for release
-   yarn watch     # Fast build whenever a file changes
+   pnpm build-dev # Fast build for development
+   pnpm build     # Slow build for release
+   pnpm watch     # Fast build whenever a file changes
    ```
 
 4. Run extension using VS Code's "Run and Debug" menu
@@ -64,13 +64,12 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
    ```bash
    # If Docker is installed and running:
-   npx gulp test                 # Run tests inside Docker container
-   npx gulp test --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
+   pnpm gulp test                 # Run tests inside Docker container
+   pnpm gulp test --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
 
    # Otherwise, build and run the tests locally:
-   yarn build                    # Build
-   yarn build-test               # Build tests
-   yarn test                     # Test (must close all instances of VS Code)
+   pnpm build-test               # Build tests
+   pnpm test                     # Test (must close all instances of VS Code)
    ```
 
 6. Package and install extension:
@@ -78,7 +77,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
    ```bash
    # Package extension into `vim-<MAJOR>.<MINOR>.<PATCH>.vsix`
    # (This can be opened and inspected like a .zip file)
-   yarn package
+   pnpm package
 
    # Install packaged extension to your local VS Code installation
    code --install-extension vim-<MAJOR>.<MINOR>.<PATCH>.vsix --force
@@ -126,7 +125,7 @@ Before you push a release, be sure to make sure the changelog is updated!
 To push a release:
 
 ```bash
-npx gulp release --semver [SEMVER]
+pnpm gulp release --semver [SEMVER]
 git push --follow-tags
 ```
 
@@ -142,7 +141,7 @@ In addition to building and testing the extension, when a tag is applied to the 
 
 ### VS Code Slowdown
 
-If you notice a slowdown and have ever run `yarn test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
+If you notice a slowdown and have ever run `pnpm test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
 
 ```bash
 rm -rf .vscode-test/

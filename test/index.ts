@@ -9,7 +9,7 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-import glob from 'glob';
+import { glob } from 'glob';
 import Mocha from 'mocha';
 import * as path from 'path';
 
