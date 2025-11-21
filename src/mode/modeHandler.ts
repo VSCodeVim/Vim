@@ -60,6 +60,7 @@ import {
   isVisualMode,
 } from './mode';
 import { DocumentContentChangeAction } from '../actions/commands/documentChange';
+import { MoveLineEnd } from '../actions/motion';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -862,7 +863,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (!preservesDesiredColumn) {
       if (action instanceof BaseMovement) {
         // We check !operator here because e.g. d$ should NOT set the desired column to EOL.
-        if (action.setsDesiredColumnToEOL && !recordedState.operator) {
+        if (action instanceof MoveLineEnd && !recordedState.operator) {
           this.vimState.desiredColumn = Number.POSITIVE_INFINITY;
         } else {
           this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;

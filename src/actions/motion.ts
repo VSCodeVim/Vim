@@ -1085,9 +1085,8 @@ class MoveRepeatReversed extends BaseMovement {
 }
 
 @RegisterAction
-class MoveLineEnd extends BaseMovement {
+export class MoveLineEnd extends BaseMovement {
   keys = [['$'], ['<End>'], ['<D-right>']];
-  override setsDesiredColumnToEOL = true;
 
   public override async execActionWithCount(
     position: Position,
