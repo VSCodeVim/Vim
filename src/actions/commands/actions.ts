@@ -155,6 +155,10 @@ class CommandRecordMacro extends BaseCommand {
     ['q', '"'],
   ];
 
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const registerKey = this.keysPressed[1];
     const register = registerKey.toLocaleLowerCase();
@@ -177,6 +181,10 @@ class CommandRecordMacro extends BaseCommand {
 export class CommandQuitRecordMacro extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['q'];
+
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const macro = vimState.macro;
@@ -213,6 +221,10 @@ class CommandExecuteLastMacro extends BaseCommand {
   override createsUndoPoint = true;
   override isJump = true;
 
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const { lastInvokedMacro } = globalState;
 
@@ -234,6 +246,10 @@ class CommandExecuteMacro extends BaseCommand {
   keys = ['@', '<register>'];
   override runsOnceForEachCountPrefix = true;
   override createsUndoPoint = true;
+
+  public override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const register = this.keysPressed[1].toLocaleLowerCase();

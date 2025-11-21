@@ -51,6 +51,15 @@ suite('Multicursor', () => {
     }
   });
 
+  suite('Macros', () => {
+    newTest({
+      title: 'Can record and play macros with multiple cursors',
+      start: ['|one', '|two', '|three'],
+      keysPressed: 'qx' + 'A!' + '<Esc>' + 'q' + '2@x',
+      end: ['one!!|!', 'two!!|!', 'three!!|!'],
+    });
+  });
+
   test('can add multiple cursors below', async () => {
     await modeHandler.handleMultipleKeyEvents('i11\n22'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
