@@ -1363,9 +1363,6 @@ export class ActionReplaceCharacter extends BaseCommand {
 class ActionReplaceCharacterVisual extends BaseCommand {
   modes = [Mode.Visual, Mode.VisualLine];
   keys = ['r', '<character>'];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -1443,9 +1440,6 @@ class ActionReplaceCharacterVisual extends BaseCommand {
 class ActionReplaceCharacterVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = ['r', '<character>'];
-  override runsOnceForEveryCursor() {
-    return false;
-  }
   override createsUndoPoint = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {

@@ -69,6 +69,29 @@ suite('Multicursor', () => {
     });
   });
 
+  suite('Replace', () => {
+    newTest({
+      title: 'r (Normal mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 'rX',
+      end: ['|Xat', 'c|Xt', 'ca|X'],
+    });
+
+    newTest({
+      title: 'r (Visual mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 've' + 'rX',
+      end: ['|XXX', 'c|XX', 'ca|X'],
+    });
+
+    newTest({
+      title: 'r (VisualBlock mode)',
+      start: ['|ca|t', 'cat', 'cat'],
+      keysPressed: '<C-v>jj' + 'rX',
+      end: ['|Xa|X', 'XaX', 'XaX'],
+    });
+  });
+
   test('can add multiple cursors below', async () => {
     await modeHandler.handleMultipleKeyEvents('i11\n22'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
