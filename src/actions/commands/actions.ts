@@ -692,9 +692,6 @@ class CommandDeleteToLineEnd extends BaseCommand {
   modes = [Mode.Normal];
   keys = ['D'];
   override createsUndoPoint = true;
-  override runsOnceForEveryCursor() {
-    return true;
-  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     if (position.isLineEnd(vimState.document)) {
@@ -1476,9 +1473,6 @@ class ActionDeleteVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = [['d'], ['x'], ['X']];
   override createsUndoPoint = true;
-  override runsOnceForEveryCursor() {
-    return false;
-  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const lines: string[] = [];
@@ -1511,9 +1505,6 @@ class ActionShiftDVisualBlock extends BaseCommand {
   modes = [Mode.VisualBlock];
   keys = ['D'];
   override createsUndoPoint = true;
-  override runsOnceForEveryCursor() {
-    return false;
-  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const lines: string[] = [];

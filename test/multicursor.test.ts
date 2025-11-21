@@ -69,6 +69,26 @@ suite('Multicursor', () => {
     });
   });
 
+  suite('Delete', () => {
+    newTest({
+      title: 'x (Normal mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 'x',
+      end: ['|at', 'c|t', 'c|a'],
+    });
+
+    // TODO: `D`
+
+    newTest({
+      title: 'd (Visual mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 'vl' + 'd',
+      end: ['|t', '|c', 'c|a'],
+    });
+
+    // TODO: VisualBlock mode
+  });
+
   suite('Replace', () => {
     newTest({
       title: 'r (Normal mode)',
