@@ -40,7 +40,7 @@ function updateVersion(done) {
   var options = minimist(process.argv.slice(2), releaseOptions);
 
   return gulp
-    .src(['./package.json', './yarn.lock'])
+    .src(['./package.json', './pnpm-lock.yaml'])
     .pipe(bump({ type: options.semver }))
     .pipe(gulp.dest('./'))
     .on('end', () => {
@@ -157,4 +157,4 @@ gulp.task(
     createGitTag,
   ),
 );
-gulp.task('default', shell.task('yarn build-dev'));
+gulp.task('default', shell.task('pnpm build-dev'));

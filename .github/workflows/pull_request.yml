@@ -15,25 +15,30 @@ jobs:
       - name: Checkout VSCodeVim
         uses: actions/checkout@v6
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install
 
       - name: Prettier
-        run: yarn prettier:check
+        run: pnpm prettier:check
 
       - name: Lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Build
-        run: yarn build
+        run: pnpm build
 
       - name: Test
         run: |
-          yarn build-test
-          xvfb-run -a yarn test
+          pnpm build-test
+          xvfb-run -a pnpm test

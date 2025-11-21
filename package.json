@@ -1178,7 +1178,7 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn build",
+    "vscode:prepublish": "pnpm build",
     "build": "webpack -c webpack.config.js && npm run commit-hash",
     "build-dev": "webpack -c webpack.dev.js && npm run commit-hash",
     "build-test": "gulp prepare-test",
@@ -1186,10 +1186,10 @@
     "test": "node ./out/test/runTest.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prettier": "npx prettier --write .",
-    "prettier:check": "npx prettier --check .",
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
     "watch": "webpack -c webpack.dev.js --watch",
-    "package": "yarn run vsce package --yarn --allow-star-activation",
+    "package": "vsce package --allow-star-activation",
     "prepare": "husky"
   },
   "dependencies": {

@@ -17,8 +17,8 @@
 
 ## Developer Workflows
 
-- **Build:** Use `yarn build-dev` (or the VS Code task) to build the extension. See `package.json` and `gulpfile.js` for all tasks.
-- **Test:** Run tests with `yarn build-test` then `yarn test`. Tests are in `test/` and mirror the structure of `src/`.
+- **Build:** Use `pnpm build-dev` (or the VS Code task) to build the extension. See `package.json` and `gulpfile.js` for all tasks.
+- **Test:** Run tests with `pnpm build-test` then `pnpm test`. Tests are in `test/` and mirror the structure of `src/`.
 - **Debug:** Launch the extension in the Extension Development Host via VS Code's debugger. Use breakpoints in TypeScript files.
 - **Release:** Versioning and release tasks are managed via Gulp (`gulpfile.js`).
 

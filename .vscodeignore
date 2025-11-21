@@ -24,3 +24,4 @@ tsconfig.json
 webpack.*.js
 gulpfile.js
 renovate.json
+pnpm-lock.yaml
