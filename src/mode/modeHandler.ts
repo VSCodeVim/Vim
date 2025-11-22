@@ -742,13 +742,18 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // including the last character we will at the end of 'runAction' shift our stop position
     // to the right. So here we shift it back by one so that our actions have our correct
     // position instead of the position sent to VSCode.
-    if (this.vimState.currentMode === Mode.Visual) {
-      this.vimState.cursors = this.vimState.cursors.map((c) =>
-        c.start.isBefore(c.stop) ? c.withNewStop(c.stop.getLeftThroughLineBreaks(true)) : c,
-      );
-    }
-
-    // Make sure all cursors are within the document's bounds before running any action
+    // NOTE: Visual mode uses text decoration for cursor rendering, so we skip shifts to prevent
+    // double cursor artifacts. VisualLine and VisualBlock still need the shifts.
+    if (this.vimState.currentMode !== Mode.Visual) {
+      if (
+        this.vimState.currentMode === Mode.VisualLine ||
+        this.vimState.currentMode === Mode.VisualBlock
+      ) {
+        this.vimState.cursors = this.vimState.cursors.map((c) =>
+          c.start.isBefore(c.stop) ? c.withNewStop(c.stop.getLeftThroughLineBreaks(true)) : c,
+        );
+      }
+    } // Make sure all cursors are within the document's bounds before running any action
     // It's not 100% clear to me that this is the correct place to do this, but it should solve a lot of issues
     this.vimState.cursors = this.vimState.cursors.map(
       (c) =>
@@ -878,16 +883,23 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // for VSCode to select including the last character we shift our stop position to the
     // right now that all steps that need that position have already run. On the next action
     // we will shift it back again on the start of 'runAction'.
-    if (this.vimState.currentMode === Mode.Visual) {
-      this.vimState.cursors = this.vimState.cursors.map((c) =>
-        c.start.isBeforeOrEqual(c.stop)
-          ? c.withNewStop(
-              c.stop.isLineEnd(this.vimState.document)
-                ? c.stop.getRightThroughLineBreaks()
-                : c.stop.getRight(),
-            )
-          : c,
-      );
+    // NOTE: Visual mode uses text decoration for cursor rendering, so we skip shifts to prevent
+    // double cursor artifacts. VisualLine and VisualBlock still need the shifts.
+    if (this.vimState.currentMode !== Mode.Visual && ranAction) {
+      if (
+        this.vimState.currentMode === Mode.VisualLine ||
+        this.vimState.currentMode === Mode.VisualBlock
+      ) {
+        this.vimState.cursors = this.vimState.cursors.map((c) =>
+          c.start.isBeforeOrEqual(c.stop)
+            ? c.withNewStop(
+                c.stop.isLineEnd(this.vimState.document)
+                  ? c.stop.getRightThroughLineBreaks()
+                  : c.stop.getRight(),
+              )
+            : c,
+        );
+      }
     }
 
     // We've run a complete action sequence - wipe the slate clean with a new RecordedState
@@ -1521,7 +1533,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (this.currentMode === Mode.Visual) {
         for (const { start: cursorStart, stop: cursorStop } of this.vimState.cursors) {
           if (cursorStart.isBefore(cursorStop)) {
-            cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
+            // In Visual mode, cursorStop is at the actual last character position (not shifted).
+            // We render from cursorStop to cursorStop.getRight() to highlight the current character.
+            cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
           } else {
             cursorRange.push(new vscode.Range(cursorStop, cursorStop.getRight()));
           }
