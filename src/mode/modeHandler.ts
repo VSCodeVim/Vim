@@ -1725,9 +1725,9 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
     case Mode.Visual:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualBlock:
-      return VSCodeVimCursorType.TextDecoration;
+      return VSCodeVimCursorType.Native;
     case Mode.VisualLine:
-      return VSCodeVimCursorType.TextDecoration;
+      return VSCodeVimCursorType.Native;
     case Mode.SearchInProgressMode:
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.CommandlineInProgress:
