@@ -183,7 +183,9 @@ class DecorationImpl {
       backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
       borderColor: new vscode.ThemeColor('editorCursor.foreground'),
       dark: {
-        color: 'rgb(81,80,82)',
+        // Use white color in dark mode to ensure visibility against selection background
+        // In Visual mode, this shows the cursor position at the end of selection
+        color: 'rgb(220, 220, 220)',
       },
       light: {
         // used for light colored themes
