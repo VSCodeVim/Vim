@@ -6,7 +6,7 @@ import { VimState } from '../../state/vimState';
 import { BaseCommand, RegisterAction } from '../base';
 import { BaseOperator } from '../operator';
 
-type FoldDirection = 'up' | 'down' | undefined;
+type FoldDirection = 'up' | 'down';
 abstract class CommandFold extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   abstract commandName: string;
