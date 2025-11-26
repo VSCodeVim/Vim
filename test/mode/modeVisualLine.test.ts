@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest, newTestOnly } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {

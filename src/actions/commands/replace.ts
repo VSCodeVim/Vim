@@ -2,12 +2,12 @@ import { Position, Range } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { PositionDiff, sorted } from '../../common/motion/position';
 import { DotCommandStatus, Mode, visualBlockGetTopLeftPosition } from '../../mode/mode';
+import { ModeDataFor } from '../../mode/modeData';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { BaseCommand, RegisterAction } from '../base';
-import { ModeDataFor } from '../../mode/modeData';
 import { BaseMovement } from '../baseMotion';
-import { MoveUp, MoveDown, MoveLeft, MoveRight } from '../motion';
+import { MoveDown, MoveLeft, MoveRight, MoveUp } from '../motion';
 
 @RegisterAction
 export class ReplaceCharacter extends BaseCommand {

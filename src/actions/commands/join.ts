@@ -7,7 +7,7 @@ import { RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { isTextTransformation } from '../../transformations/transformations';
-import { RegisterAction, BaseCommand } from '../base';
+import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
 class ActionJoin extends BaseCommand {

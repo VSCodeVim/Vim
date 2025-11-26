@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 
+import { Position } from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { getCompletionsForCurrentLine } from '../../src/completion/lineCompletionProvider';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 import { VimState } from '../../src/state/vimState';
-import { Position } from 'vscode';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('Provide line completions', () => {
   let modeHandler: ModeHandler;

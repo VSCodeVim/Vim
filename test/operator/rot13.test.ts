@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 
 import { ROT13Operator } from '../../src/actions/operator';
-import { newTest } from '../testSimplifier';
 import { Mode } from '../../src/mode/mode';
+import { newTest } from '../testSimplifier';
 
 suite('rot13 operator', () => {
   test('rot13() unit test', () => {

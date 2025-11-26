@@ -1,8 +1,8 @@
 import * as assert from 'assert';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { getAndUpdateModeHandler } from '../../extension';
 import * as vscode from 'vscode';
+import { getAndUpdateModeHandler } from '../../extension';
+import { ModeHandler } from '../../src/mode/modeHandler';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('insertLineBefore', () => {
   let modeHandler: ModeHandler;

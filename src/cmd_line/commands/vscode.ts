@@ -1,8 +1,8 @@
-import { VimError } from '../../error';
+import { all, Parser, whitespace } from 'parsimmon';
 import * as vscode from 'vscode';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
-import { all, Parser, whitespace } from 'parsimmon';
 
 export class VsCodeCommand extends ExCommand {
   public static readonly argParser: Parser<VsCodeCommand> = whitespace

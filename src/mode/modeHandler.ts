@@ -4,6 +4,10 @@ import * as vscode from 'vscode';
 import * as process from 'process';
 import { Position, Range, Uri } from 'vscode';
 import { BaseMovement } from '../actions/baseMotion';
+import { DocumentContentChangeAction } from '../actions/commands/documentChange';
+import { QuitRecordMacro } from '../actions/commands/macro';
+import { ReplaceCharacter } from '../actions/commands/replace';
+import { MoveLineEnd } from '../actions/motion';
 import { BaseOperator } from '../actions/operator';
 import { EasyMotion } from '../actions/plugins/easymotion/easymotion';
 import { SearchByNCharCommand } from '../actions/plugins/easymotion/easymotion.cmd';
@@ -30,11 +34,11 @@ import { ActionOverrideCmdD, CommandNumber, CommandRegister } from './../actions
 import {
   BackspaceInInsertMode,
   ExitInsertMode,
-  TypeInInsertMode,
-  InsertPreviousText,
+  Insert,
   InsertCharAbove,
   InsertCharBelow,
-  Insert,
+  InsertPreviousText,
+  TypeInInsertMode,
 } from './../actions/commands/insert';
 import { earlierOf, laterOf } from './../common/motion/position';
 import { ForceStopRemappingError, VimError } from './../error';
@@ -53,10 +57,6 @@ import {
   isStatusBarMode,
   isVisualMode,
 } from './mode';
-import { DocumentContentChangeAction } from '../actions/commands/documentChange';
-import { MoveLineEnd } from '../actions/motion';
-import { QuitRecordMacro } from '../actions/commands/macro';
-import { ReplaceCharacter } from '../actions/commands/replace';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;

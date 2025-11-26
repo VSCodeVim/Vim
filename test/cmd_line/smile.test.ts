@@ -3,9 +3,9 @@ import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
+import { SmileCommand } from '../../src/cmd_line/commands/smile';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { assertEqualLines, setupWorkspace, waitForTabChange } from './../testUtils';
-import { SmileCommand } from '../../src/cmd_line/commands/smile';
 
 suite('Smile command', () => {
   let modeHandler: ModeHandler;

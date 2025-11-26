@@ -12,17 +12,17 @@
 import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
-import { VimState } from './../state/vimState';
-import { TextEditor } from './../textEditor';
-import { StatusBar } from '../statusBar';
 import { Position } from 'vscode';
-import { Jump } from '../jumps/jump';
-import { globalState } from '../state/globalState';
-import { Mode } from '../mode/mode';
-import { VimError } from '../error';
-import { Logger } from '../util/logger';
 import { Cursor } from '../common/motion/cursor';
 import { earlierOf } from '../common/motion/position';
+import { VimError } from '../error';
+import { Jump } from '../jumps/jump';
+import { Mode } from '../mode/mode';
+import { globalState } from '../state/globalState';
+import { StatusBar } from '../statusBar';
+import { Logger } from '../util/logger';
+import { VimState } from './../state/vimState';
+import { TextEditor } from './../textEditor';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second

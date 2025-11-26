@@ -1,7 +1,7 @@
 import * as assert from 'assert';
+import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
-import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import * as testUtils from './../testUtils';
 
 suite(':retab', () => {

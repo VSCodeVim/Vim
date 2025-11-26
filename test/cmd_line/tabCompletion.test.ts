@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as os from 'os';
-import { join, sep, basename } from 'path';
+import { basename, join, sep } from 'path';
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { StatusBar } from '../../src/statusBar';

@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace } from './testUtils';
 import { newTest, newTestSkip } from './testSimplifier';
+import { assertEqualLines, setupWorkspace } from './testUtils';
 
 suite('Multicursor', () => {
   let modeHandler: ModeHandler;

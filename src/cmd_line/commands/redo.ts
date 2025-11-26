@@ -1,9 +1,9 @@
-import { VimState } from '../../state/vimState';
-import { Position } from 'vscode';
-import { ExCommand } from '../../vimscript/exCommand';
 import { optWhitespace, Parser } from 'parsimmon';
-import { numberParser } from '../../vimscript/parserUtils';
+import { Position } from 'vscode';
 import { Redo } from '../../actions/commands/undo';
+import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { numberParser } from '../../vimscript/parserUtils';
 
 //
 //  Implements :red[o]

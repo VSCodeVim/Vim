@@ -1,19 +1,19 @@
 import {
+  alt,
+  // eslint-disable-next-line id-denylist
+  any,
+  lazy,
+  noneOf,
+  optWhitespace,
   Parser,
   regexp,
   seq,
-  alt,
   // eslint-disable-next-line id-denylist
   string,
-  lazy,
-  // eslint-disable-next-line id-denylist
-  any,
-  optWhitespace,
   takeWhile,
-  noneOf,
 } from 'parsimmon';
 import { VimError } from '../../error';
-import { binary, float, lambda, listExpr, int, str, blob } from './build';
+import { binary, blob, float, int, lambda, listExpr, str } from './build';
 import {
   BinaryOp,
   BlobValue,

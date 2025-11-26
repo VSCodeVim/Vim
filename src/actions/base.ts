@@ -1,12 +1,12 @@
 import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
+import { isLiteralMode, unmapLiteral } from '../configuration/langmap';
 import { Notation } from '../configuration/notation';
-import { ActionType, IBaseAction } from './types';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
-import { isLiteralMode, unmapLiteral } from '../configuration/langmap';
+import { ActionType, IBaseAction } from './types';
 
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;

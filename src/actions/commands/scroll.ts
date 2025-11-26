@@ -1,10 +1,10 @@
-import * as vscode from 'vscode';
 import { clamp } from 'lodash';
+import * as vscode from 'vscode';
 import { Position } from 'vscode';
 import { configuration } from '../../configuration/configuration';
 import { Mode, isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { EditorScrollDirection, EditorScrollByUnit, TextEditor } from '../../textEditor';
+import { EditorScrollByUnit, EditorScrollDirection, TextEditor } from '../../textEditor';
 import { BaseCommand, RegisterAction } from '../base';
 
 abstract class CommandEditorScroll extends BaseCommand {

@@ -2,8 +2,8 @@ import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
 import { StatusBar } from '../../src/statusBar';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('cursor location', () => {
   let modeHandler: ModeHandler;

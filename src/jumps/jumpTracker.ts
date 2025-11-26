@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 
-import { FileCommand } from './../cmd_line/commands/file';
 import { VimState } from '../state/vimState';
+import { FileCommand } from './../cmd_line/commands/file';
 
-import { Jump } from './jump';
 import { existsAsync } from 'platform/fs';
 import { Position } from 'vscode';
 import { VimError } from '../error';
+import { Jump } from './jump';
 
 const MAX_JUMPS = 100;
 

@@ -13,10 +13,10 @@ import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { Register } from '../src/register/register';
 import { globalState } from '../src/state/globalState';
+import { VimState } from '../src/state/vimState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
-import { VimState } from '../src/state/vimState';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,

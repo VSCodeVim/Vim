@@ -1,12 +1,12 @@
 import { all, optWhitespace, Parser, seq } from 'parsimmon';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
+import { displayValue } from '../../vimscript/expression/displayValue';
 import { EvaluationContext } from '../../vimscript/expression/evaluate';
 import { expressionParser } from '../../vimscript/expression/parser';
 import { Expression } from '../../vimscript/expression/types';
-import { displayValue } from '../../vimscript/expression/displayValue';
-import { VimError } from '../../error';
 
 export class EchoCommand extends ExCommand {
   public static argParser(echoArgs: { sep: string; error: boolean }): Parser<EchoCommand> {

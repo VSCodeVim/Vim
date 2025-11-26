@@ -8,6 +8,8 @@ import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { getCursorsAfterSync, isHighSurrogate, isLowSurrogate } from '../../util/util';
+import { BaseMovement } from '../baseMotion';
+import { MoveDown, MoveLeft, MoveRight, MoveUp } from '../motion';
 import { PositionDiff } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
 import { Mode } from './../../mode/mode';
@@ -18,8 +20,6 @@ import { CommandNumber } from './actions';
 import { DefaultDigraphs } from './digraphs';
 import { DocumentContentChangeAction } from './documentChange';
 import { EnterReplaceMode } from './replace';
-import { BaseMovement } from '../baseMotion';
-import { MoveUp, MoveDown, MoveLeft, MoveRight } from '../motion';
 
 @RegisterAction
 export class Insert extends BaseCommand {

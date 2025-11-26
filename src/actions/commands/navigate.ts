@@ -6,7 +6,7 @@ import { Mode } from '../../mode/mode';
 import { globalState } from '../../state/globalState';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import { RegisterAction, BaseCommand } from '../base';
+import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
 class GoToDeclaration extends BaseCommand {
