@@ -11,7 +11,7 @@ import { isLiteralMode, unmapLiteral } from '../configuration/langmap';
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;
 
-  public name = '';
+  public readonly name: string | undefined;
 
   /**
    * If true, the cursor position will be added to the jump list on completion.
@@ -204,14 +204,12 @@ export abstract class BaseCommand extends BaseAction {
 
     const resultingCursors: Cursor[] = [];
 
-    const cursorsToIterateOver = vimState.cursors
-      .map((x) => new Cursor(x.start, x.stop))
-      .sort((a, b) =>
-        a.start.line > b.start.line ||
-        (a.start.line === b.start.line && a.start.character > b.start.character)
-          ? 1
-          : -1,
-      );
+    const cursorsToIterateOver = [...vimState.cursors].sort((a, b) =>
+      a.start.line > b.start.line ||
+      (a.start.line === b.start.line && a.start.character > b.start.character)
+        ? 1
+        : -1,
+    );
 
     let cursorIndex = 0;
     for (const { start, stop } of cursorsToIterateOver) {
