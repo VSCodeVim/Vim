@@ -16,6 +16,9 @@ class Quit extends BaseCommand {
     ['<C-w>', 'c'],
     ['<C-w>', '<C-c>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void new QuitCommand({}).execute(vimState);
@@ -26,7 +29,6 @@ class Quit extends BaseCommand {
 class WriteQuit extends BaseCommand {
   modes = [Mode.Normal];
   keys = [['Z', 'Z']];
-
   override runsOnceForEveryCursor() {
     return false;
   }
@@ -40,7 +42,6 @@ class WriteQuit extends BaseCommand {
 class ForceQuit extends BaseCommand {
   modes = [Mode.Normal];
   keys = [['Z', 'Q']];
-
   override runsOnceForEveryCursor() {
     return false;
   }
@@ -57,6 +58,9 @@ class Only extends BaseCommand {
     ['<C-w>', 'o'],
     ['<C-w>', '<C-o>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void new OnlyCommand().execute(vimState);
@@ -71,6 +75,9 @@ class MoveToLeftPane extends BaseCommand {
     ['<C-w>', '<left>'],
     ['<C-w>', '<C-h>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -89,6 +96,9 @@ class MoveToRightPane extends BaseCommand {
     ['<C-w>', '<right>'],
     ['<C-w>', '<C-l>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -107,6 +117,9 @@ class MoveToLowerPane extends BaseCommand {
     ['<C-w>', '<down>'],
     ['<C-w>', '<C-j>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -125,6 +138,9 @@ class MoveToUpperPane extends BaseCommand {
     ['<C-w>', '<up>'],
     ['<C-w>', '<C-k>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -142,6 +158,9 @@ class CycleThroughPanes extends BaseCommand {
     ['<C-w>', '<C-w>'],
     ['<C-w>', 'w'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -159,6 +178,9 @@ class VerticalSplit extends BaseCommand {
     ['<C-w>', 'v'],
     ['<C-w>', '<C-v>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -175,6 +197,9 @@ class OrthogonalSplit extends BaseCommand {
     ['<C-w>', 's'],
     ['<C-w>', '<C-s>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -188,6 +213,9 @@ class OrthogonalSplit extends BaseCommand {
 class EvenPaneWidths extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '='];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -201,6 +229,9 @@ class EvenPaneWidths extends BaseCommand {
 class IncreasePaneWidth extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '>'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -214,6 +245,9 @@ class IncreasePaneWidth extends BaseCommand {
 class DecreasePaneWidth extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '<'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -227,6 +261,9 @@ class DecreasePaneWidth extends BaseCommand {
 class IncreasePaneHeight extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '+'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -240,6 +277,9 @@ class IncreasePaneHeight extends BaseCommand {
 class DecreasePaneHeight extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '-'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -254,6 +294,9 @@ class NextTab extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [['g', 't'], ['<C-pagedown>']];
   override runsOnceForEachCountPrefix = false;
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     // gt behaves differently than gT and goes to an absolute index tab
@@ -276,7 +319,10 @@ class NextTab extends BaseCommand {
 class PreviousTab extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [['g', 'T'], ['<C-pageup>']];
-  override runsOnceForEachCountPrefix = true;
+  override runsOnceForEachCountPrefix = true; // Yes, this is different from `{count}gt`
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void new TabCommand({
