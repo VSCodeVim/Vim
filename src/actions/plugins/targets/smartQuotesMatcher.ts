@@ -1,7 +1,7 @@
 import { Position, TextDocument } from 'vscode';
 import { configuration } from '../../../configuration/configuration';
 
-type Quote = '"' | "'" | '`';
+type Quote = '"' | "'" | '`' | '$';
 enum QuoteMatch {
   Opening,
   Closing,
