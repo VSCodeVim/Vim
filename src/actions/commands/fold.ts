@@ -31,46 +31,46 @@ abstract class CommandFold extends BaseCommand {
 }
 
 @RegisterAction
-class CommandToggleFold extends CommandFold {
+class ToggleFold extends CommandFold {
   keys = ['z', 'a'];
   commandName = 'editor.toggleFold';
 }
 
 @RegisterAction
-class CommandCloseFold extends CommandFold {
+class CloseFold extends CommandFold {
   keys = ['z', 'c'];
   commandName = 'editor.fold';
   override direction: FoldDirection = 'up';
 }
 
 @RegisterAction
-class CommandCloseAllFolds extends CommandFold {
+class CloseAllFolds extends CommandFold {
   keys = ['z', 'M'];
   commandName = 'editor.foldAll';
 }
 
 @RegisterAction
-class CommandOpenFold extends CommandFold {
+class OpenFold extends CommandFold {
   keys = ['z', 'o'];
   commandName = 'editor.unfold';
   override direction: FoldDirection = 'down';
 }
 
 @RegisterAction
-class CommandOpenAllFolds extends CommandFold {
+class OpenAllFolds extends CommandFold {
   keys = ['z', 'R'];
   commandName = 'editor.unfoldAll';
 }
 
 @RegisterAction
-class CommandCloseAllFoldsRecursively extends CommandFold {
+class CloseAllFoldsRecursively extends CommandFold {
   override modes = [Mode.Normal];
   keys = ['z', 'C'];
   commandName = 'editor.foldRecursively';
 }
 
 @RegisterAction
-class CommandOpenAllFoldsRecursively extends CommandFold {
+class OpenAllFoldsRecursively extends CommandFold {
   override modes = [Mode.Normal];
   keys = ['z', 'O'];
   commandName = 'editor.unfoldRecursively';

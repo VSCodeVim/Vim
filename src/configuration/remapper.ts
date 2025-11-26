@@ -79,7 +79,7 @@ export class Remapper implements IRemapper {
    * there was a potential remap that never came or was broken, so we can
    * resend the keys again without allowing for a potential remap on the first
    * key, which means we won't get to the same state because the first key
-   * will be handled as an action (in this case a 'CommandInsertAfterCursor')
+   * will be handled as an action (in this case an 'Insert')
    */
   private hasPotentialRemap = false;
 

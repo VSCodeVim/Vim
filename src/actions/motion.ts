@@ -24,11 +24,9 @@ import { PythonDocument } from './languages/python/motion';
 import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { WordType } from '../textobject/word';
-import { CommandInsertAtCursor } from './commands/actions';
 import { SearchDirection } from '../vimscript/pattern';
 import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMatcher';
 import { useSmartQuotes } from './plugins/targets/targetsConfig';
-import { ModeDataFor } from '../mode/modeData';
 
 function adjustForDesiredColumn(args: {
   position: Position;
@@ -306,7 +304,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
 }
 
 @RegisterAction
-class MoveDown extends BaseMovement {
+export class MoveDown extends BaseMovement {
   keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
   override preservesDesiredColumn = true;
 
@@ -349,7 +347,7 @@ class MoveDown extends BaseMovement {
 }
 
 @RegisterAction
-class MoveUp extends BaseMovement {
+export class MoveUp extends BaseMovement {
   keys = [['k'], ['<up>'], ['<C-p>']];
   override preservesDesiredColumn = true;
 
@@ -420,78 +418,6 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       desiredColumn: vimState.desiredColumn,
       multicursorIndex: this.multicursorIndex,
     });
-  }
-}
-
-@RegisterAction
-export class ArrowsInInsertMode extends BaseMovement {
-  override modes = [Mode.Insert];
-  keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
-
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    // Moving with the arrow keys in Insert mode "resets" our insertion for the purpose of repeating with dot or `<C-a>`.
-    // No matter how we got into Insert mode, repeating will now be done as if we started with `i`.
-    // Note that this does not affect macros, which re-construct a list of actions based on keypresses.
-    // TODO: ACTUALLY, we should reset this only after something is typed (`Axyz<Left><Esc>.` does repeat the insertion)
-    // TODO: This also should mark an "insertion end" for the purpose of `<C-a>` (try `ixyz<Right><C-a>`)
-    vimState.recordedState.actionsRun = [new CommandInsertAtCursor()];
-
-    // Force an undo point to be created
-    vimState.historyTracker.addChange(true);
-    vimState.historyTracker.finishCurrentStep();
-
-    let newPosition: Position;
-    switch (this.keysPressed[0]) {
-      case '<up>':
-        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<down>':
-        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<left>':
-        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<right>':
-        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
-        break;
-      default:
-        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
-    }
-    return newPosition;
-  }
-}
-
-@RegisterAction
-class ArrowsInReplaceMode extends BaseMovement {
-  override modes = [Mode.Replace];
-  keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
-
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    // Force an undo point to be created
-    vimState.historyTracker.addChange(true);
-    vimState.historyTracker.finishCurrentStep();
-
-    let newPosition: Position = position;
-    switch (this.keysPressed[0]) {
-      case '<up>':
-        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<down>':
-        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<left>':
-        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<right>':
-        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
-        break;
-      default:
-        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
-    }
-    (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState.resetChanges(
-      this.multicursorIndex ?? 0,
-    );
-    return newPosition;
   }
 }
 
@@ -737,7 +663,7 @@ class PrevMarkLinewise extends BaseMovement {
 }
 
 @RegisterAction
-class MoveLeft extends BaseMovement {
+export class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -774,7 +700,7 @@ class MoveLeft extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRight extends BaseMovement {
+export class MoveRight extends BaseMovement {
   keys = [['l'], ['<right>'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {

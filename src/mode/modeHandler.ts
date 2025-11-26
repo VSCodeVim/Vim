@@ -26,21 +26,15 @@ import { SpecialKeys } from '../util/specialKeys';
 import { scrollView } from '../util/util';
 import { VSCodeContext } from '../util/vscodeContext';
 import { BaseAction, BaseCommand, KeypressState, getRelevantAction } from './../actions/base';
+import { ActionOverrideCmdD, CommandNumber, CommandRegister } from './../actions/commands/actions';
 import {
-  ActionOverrideCmdD,
-  ActionReplaceCharacter,
-  CommandInsertAtCursor,
-  CommandNumber,
-  CommandQuitRecordMacro,
-  CommandRegister,
-} from './../actions/commands/actions';
-import {
-  CommandBackspaceInInsertMode,
-  CommandEscInsertMode,
-  CommandInsertInInsertMode,
-  CommandInsertPreviousText,
+  BackspaceInInsertMode,
+  ExitInsertMode,
+  TypeInInsertMode,
+  InsertPreviousText,
   InsertCharAbove,
   InsertCharBelow,
+  Insert,
 } from './../actions/commands/insert';
 import { earlierOf, laterOf } from './../common/motion/position';
 import { ForceStopRemappingError, VimError } from './../error';
@@ -61,6 +55,8 @@ import {
 } from './mode';
 import { DocumentContentChangeAction } from '../actions/commands/documentChange';
 import { MoveLineEnd } from '../actions/motion';
+import { QuitRecordMacro } from '../actions/commands/macro';
+import { ReplaceCharacter } from '../actions/commands/replace';
 
 interface IModeHandlerMap {
   get(editorId: Uri): ModeHandler | undefined;
@@ -668,14 +664,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       recordedState.actionsRun.push(action);
     } else {
       const actionCanBeMergedWithDocumentChange =
-        action instanceof CommandInsertInInsertMode ||
-        action instanceof CommandBackspaceInInsertMode ||
-        action instanceof CommandInsertPreviousText ||
+        action instanceof TypeInInsertMode ||
+        action instanceof BackspaceInInsertMode ||
+        action instanceof InsertPreviousText ||
         action instanceof InsertCharAbove ||
         action instanceof InsertCharBelow;
 
       if (lastAction instanceof DocumentContentChangeAction) {
-        if (!(action instanceof CommandEscInsertMode)) {
+        if (!(action instanceof ExitInsertMode)) {
           // TODO: this includes things like <BS>, which it shouldn't
           lastAction.keysPressed.push(key);
         }
@@ -711,7 +707,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (
       this.vimState.macro !== undefined &&
       actionToRecord &&
-      !(actionToRecord instanceof CommandQuitRecordMacro)
+      !(actionToRecord instanceof QuitRecordMacro)
     ) {
       this.vimState.macro.actionsRun.push(actionToRecord);
     }
@@ -1180,9 +1176,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     let replayMode = null;
-    if (actions[0] instanceof CommandInsertAtCursor) {
+    if (actions[0] instanceof Insert) {
       replayMode = ReplayMode.Insert;
-    } else if (actions[0] instanceof ActionReplaceCharacter) {
+    } else if (actions[0] instanceof ReplaceCharacter) {
       replayMode = ReplayMode.Replace;
     } else if (actions[0] instanceof CommandRegister) {
       // Increment numbered registers "1 to "9.
@@ -1198,7 +1194,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (
           replayMode === ReplayMode.Insert &&
           !(j === transformation.count - 1 && i === actions.length - 1) &&
-          action instanceof CommandEscInsertMode
+          action instanceof ExitInsertMode
         ) {
           continue;
         }
