@@ -4,7 +4,9 @@ import './motion';
 import '../textobject/textobject';
 
 // commands
+import './commands/documentChange';
 import './commands/insert';
+import './commands/visual';
 import './commands/replace';
 import './commands/actions';
 import './commands/commandLine';
@@ -15,3 +17,9 @@ import './commands/window';
 import './commands/fold';
 import './commands/scroll';
 import './commands/join';
+import './commands/macro';
+import './commands/incrementDecrement';
+import './commands/undo';
+import './commands/window';
+import './commands/file';
+import './commands/navigate';

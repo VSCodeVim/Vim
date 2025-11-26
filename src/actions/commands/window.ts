@@ -1,12 +1,14 @@
 import { Position } from 'vscode';
 import { OnlyCommand } from '../../cmd_line/commands/only';
 import { QuitCommand } from '../../cmd_line/commands/quit';
+import { TabCommand, TabCommandType } from '../../cmd_line/commands/tab';
+import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
-class CommandQuit extends BaseCommand {
+class Quit extends BaseCommand {
   modes = [Mode.Normal];
   keys = [
     ['<C-w>', 'q'],
@@ -21,7 +23,35 @@ class CommandQuit extends BaseCommand {
 }
 
 @RegisterAction
-class CommandOnly extends BaseCommand {
+class WriteQuit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Z']];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await new WriteQuitCommand({ bang: false, opt: [] }).execute(vimState);
+  }
+}
+
+@RegisterAction
+class ForceQuit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Q']];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await new QuitCommand({ bang: true }).execute(vimState);
+  }
+}
+
+@RegisterAction
+class Only extends BaseCommand {
   modes = [Mode.Normal];
   keys = [
     ['<C-w>', 'o'],
@@ -30,6 +60,24 @@ class CommandOnly extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void new OnlyCommand().execute(vimState);
+  }
+}
+
+@RegisterAction
+class MoveToLeftPane extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [
+    ['<C-w>', 'h'],
+    ['<C-w>', '<left>'],
+    ['<C-w>', '<C-h>'],
+  ];
+  override isJump = true;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.navigateLeft',
+      args: {},
+    });
   }
 }
 
@@ -82,24 +130,6 @@ class MoveToUpperPane extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
       command: 'workbench.action.navigateUp',
-      args: {},
-    });
-  }
-}
-
-@RegisterAction
-class MoveToLeftPane extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = [
-    ['<C-w>', 'h'],
-    ['<C-w>', '<left>'],
-    ['<C-w>', '<C-h>'],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.postponedCodeViewChanges.push({
-      command: 'workbench.action.navigateLeft',
       args: {},
     });
   }
@@ -216,5 +246,42 @@ class DecreasePaneHeight extends BaseCommand {
       command: 'workbench.action.decreaseViewHeight',
       args: {},
     });
+  }
+}
+
+@RegisterAction
+class NextTab extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['g', 't'], ['<C-pagedown>']];
+  override runsOnceForEachCountPrefix = false;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    // gt behaves differently than gT and goes to an absolute index tab
+    // (1-based), it does NOT iterate over next tabs
+    if (vimState.recordedState.count > 0) {
+      void new TabCommand({
+        type: TabCommandType.Edit,
+        buf: vimState.recordedState.count,
+      }).execute(vimState);
+    } else {
+      void new TabCommand({
+        type: TabCommandType.Next,
+        bang: false,
+      }).execute(vimState);
+    }
+  }
+}
+
+@RegisterAction
+class PreviousTab extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['g', 'T'], ['<C-pageup>']];
+  override runsOnceForEachCountPrefix = true;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    void new TabCommand({
+      type: TabCommandType.Previous,
+      bang: false,
+    }).execute(vimState);
   }
 }
