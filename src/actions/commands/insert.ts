@@ -288,7 +288,6 @@ export class ExitInsertMode extends BaseCommand {
     }
 
     if (vimState.isFakeMultiCursor) {
-      vimState.cursors = [vimState.cursors[0]];
       vimState.isFakeMultiCursor = false;
     }
   }
