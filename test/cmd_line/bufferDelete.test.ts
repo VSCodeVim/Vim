@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { join } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
-import * as error from '../../src/error';
+import { VimError } from '../../src/error';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import * as t from '../testUtils';
 
@@ -30,7 +30,7 @@ suite('Buffer delete', () => {
     try {
       await new ExCommandLine('bd', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     } catch (e) {
-      assert.strictEqual(e, error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange));
+      assert.strictEqual(e, VimError.NoWriteSinceLastChange());
     }
   });
 

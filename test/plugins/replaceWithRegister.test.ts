@@ -1,6 +1,6 @@
 import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
-import { setupWorkspace, reloadConfiguration } from '../testUtils';
+import { reloadConfiguration, setupWorkspace } from '../testUtils';
 
 suite('replaceWithRegister plugin', () => {
   const YankInnerWord = 'yiw';

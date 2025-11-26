@@ -120,12 +120,15 @@ suite('Mode Normal', () => {
     end: ['one', '|two'],
   });
 
-  newTest({
-    title: 'Can handle ddp',
-    start: ['|one', 'two'],
-    keysPressed: 'ddp',
-    end: ['two', '|one'],
-  });
+  for (const useSystemClipboard of [true, false]) {
+    newTest({
+      title: 'Can handle ddp',
+      config: { useSystemClipboard },
+      start: ['|one', 'two'],
+      keysPressed: 'ddp',
+      end: ['two', '|one'],
+    });
+  }
 
   newTest({
     title: "Can handle 'de'",
@@ -2213,7 +2216,7 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'Can do cit on a multiline tag',
-    start: [' <blink>\nhe|llo\ntext</blink>'],
+    start: [' <blink>', 'he|llo', 'text</blink>'],
     keysPressed: 'cit',
     end: [' <blink>|</blink>'],
     endMode: Mode.Insert,
@@ -2221,7 +2224,7 @@ suite('Mode Normal', () => {
 
   newTest({
     title: 'Can do cit on a multiline tag with nested tags',
-    start: [' <blink>\n<h1>hello</h1>\nh<br>e|llo\nte</h1>xt</blink>'],
+    start: [' <blink>', '<h1>hello</h1>', 'h<br>e|llo', 'te</h1>xt</blink>'],
     keysPressed: 'cit',
     end: [' <blink>|</blink>'],
     endMode: Mode.Insert,

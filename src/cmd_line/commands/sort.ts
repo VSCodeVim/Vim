@@ -1,7 +1,7 @@
 import { oneOf, optWhitespace, Parser, seq } from 'parsimmon';
-import { NumericString, NumericStringRadix } from '../../common/number/numericString';
 import * as vscode from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
+import { NumericString, NumericStringRadix } from '../../common/number/numericString';
 
 import { isVisualMode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';

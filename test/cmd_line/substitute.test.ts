@@ -1,6 +1,6 @@
 import { Globals } from '../../src/globals';
-import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
 import { newTest } from '../testSimplifier';
+import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
 
 function sub(
   pattern: string,
@@ -502,5 +502,30 @@ suite('Basic substitute', () => {
       // TODO: Cursor position is wrong
       end: ['one two three', 'one two', '|four', 'one two three'],
     });
+  });
+
+  suite('Replace with expression', () => {
+    newTest({
+      title: 'Replace with string',
+      start: ['|one', 'two', 'one'],
+      keysPressed: sub('one', '\\="X" .. "Y" .. "Z"', { lineRange: '%' }),
+      end: ['XYZ', 'two', '|XYZ'],
+    });
+
+    newTest({
+      title: 'Replace with int',
+      start: ['|one', 'two', 'one'],
+      keysPressed: sub('one', '\\=1 + 2 + 3', { lineRange: '%' }),
+      end: ['6', 'two', '|6'],
+    });
+
+    newTest({
+      title: 'Replace with list',
+      start: ['|one', 'two', 'one'],
+      keysPressed: sub('one', '\\=[1, "2", [3, "4"]]', { lineRange: '%' }),
+      end: ['1', '2', "[3, '4']", '', 'two', '1', '2', "[3, '4']", '|'],
+    });
+
+    // TODO: Test submatch()
   });
 });

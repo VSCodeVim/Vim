@@ -239,7 +239,7 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     title: '<C-a> in visual block mode',
     start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: '<C-v>jj3<C-a>',
-    end: ['9 9 9', '9 |12 9', '9 12 9', '9 12 9', '9 9 9'],
+    end: ['9 9 9', '9 |12 9', '9 1|2 9', '9 1|2 9', '9 9 9'], // TODO: Bad cursor position?
     endMode: Mode.Normal,
   });
 
@@ -247,7 +247,7 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     title: '<C-a> in visual block mode does not go past selection',
     start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: '<C-v>jj3<C-a>',
-    end: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
+    end: ['9 9 9', '9| 9 9', '9| 9 9', '9| 9 9', '9 9 9'],
     endMode: Mode.Normal,
   });
 
@@ -271,7 +271,7 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     title: 'g<C-a> in visual block mode',
     start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: '<C-v>jj3g<C-a>',
-    end: ['9 9 9', '9 |12 9', '9 15 9', '9 18 9', '9 9 9'],
+    end: ['9 9 9', '9 |12 9', '9 1|5 9', '9 1|8 9', '9 9 9'], // TODO: Bad cursor position?
     endMode: Mode.Normal,
   });
 });

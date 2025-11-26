@@ -84,7 +84,7 @@ export class Pattern {
       // HACK: This pattern matches each character, but for purposes of perf when highlighting, merge them.
       return [
         {
-          range: new Range(new Position(0, 0), TextEditor.getDocumentEnd(vimState.document)),
+          range: TextEditor.getDocumentRange(vimState.document),
           groups: [],
         },
       ];

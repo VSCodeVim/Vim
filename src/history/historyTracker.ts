@@ -12,16 +12,17 @@
 import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
+import { Position } from 'vscode';
+import { Cursor } from '../common/motion/cursor';
+import { earlierOf } from '../common/motion/position';
+import { VimError } from '../error';
+import { Jump } from '../jumps/jump';
+import { Mode } from '../mode/mode';
+import { globalState } from '../state/globalState';
+import { StatusBar } from '../statusBar';
+import { Logger } from '../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import { StatusBar } from '../statusBar';
-import { Position } from 'vscode';
-import { Jump } from '../jumps/jump';
-import { globalState } from '../state/globalState';
-import { Mode } from '../mode/mode';
-import { ErrorCode, VimError } from '../error';
-import { Logger } from '../util/logger';
-import { earlierOf } from '../common/motion/position';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -134,9 +135,9 @@ class HistoryStep {
 
   /**
    * The cursor position at the start of this history step.
-   * Restored by `u`. Currently, only one cursor is remembered.
+   * Restored by `u`.
    */
-  public cursorStart: Position | undefined;
+  public cursorsAtStart: readonly Cursor[] | undefined;
 
   /**
    * The position of every mark at the start of this history step.
@@ -359,7 +360,7 @@ class ChangeList {
   public nextChangePosition(): Position | VimError {
     if (this.index === undefined) {
       if (this.changeLocations.length === 0) {
-        return VimError.fromCode(ErrorCode.ChangeListIsEmpty);
+        return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
       return this.changeLocations[this.index];
@@ -367,14 +368,14 @@ class ChangeList {
       this.index++;
       return this.changeLocations[this.index];
     } else {
-      return VimError.fromCode(ErrorCode.AtEndOfChangeList);
+      return VimError.AtEndOfChangeList();
     }
   }
 
   public prevChangePosition(): Position | VimError {
     if (this.index === undefined) {
       if (this.changeLocations.length === 0) {
-        return VimError.fromCode(ErrorCode.ChangeListIsEmpty);
+        return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
       return this.changeLocations[this.index];
@@ -382,7 +383,7 @@ class ChangeList {
       this.index--;
       return this.changeLocations[this.index];
     } else {
-      return VimError.fromCode(ErrorCode.AtStartOfChangeList);
+      return VimError.AtStartOfChangeList();
     }
   }
 }
@@ -390,7 +391,7 @@ class ChangeList {
 export class HistoryTracker {
   public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
 
-  private nextStepStartPosition: Position | undefined;
+  private nextStepCursorsAtStart: readonly Cursor[] | undefined;
 
   private readonly undoStack: UndoStack;
 
@@ -691,10 +692,9 @@ export class HistoryTracker {
       return;
     }
 
-    if (this.nextStepStartPosition === undefined) {
-      const cursor = this.vimState.cursorsInitialState[0];
-      this.nextStepStartPosition = earlierOf(cursor.start, cursor.stop);
-      Logger.debug(`Set nextStepStartPosition to ${this.nextStepStartPosition}`);
+    if (this.nextStepCursorsAtStart === undefined) {
+      this.nextStepCursorsAtStart = this.vimState.cursorsInitialState;
+      Logger.debug(`Set nextStepCursorsAtStart to ${this.nextStepCursorsAtStart}`);
     }
 
     if (
@@ -772,8 +772,10 @@ export class HistoryTracker {
       currentHistoryStep.isFinished = true;
       currentHistoryStep.timestamp = new Date();
 
-      currentHistoryStep.cursorStart ??= this.nextStepStartPosition;
-      this.nextStepStartPosition = undefined;
+      if (this.nextStepCursorsAtStart !== undefined) {
+        currentHistoryStep.cursorsAtStart ??= this.nextStepCursorsAtStart;
+        this.nextStepCursorsAtStart = undefined;
+      }
 
       currentHistoryStep.merge(this.vimState.document);
 
@@ -794,7 +796,7 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to undo
    */
-  public async goBackHistoryStep(): Promise<Position | undefined> {
+  public async goBackHistoryStep(): Promise<Cursor[] | undefined> {
     const step = this.undoStack.stepBackward();
     if (step === undefined) {
       return undefined;
@@ -815,7 +817,10 @@ export class HistoryTracker {
       }  ${step.howLongAgo()}`,
     );
 
-    return step.cursorStart;
+    return step.cursorsAtStart?.map((c) => {
+      const start = earlierOf(c.start, c.stop);
+      return new Cursor(start, start);
+    });
   }
 
   /**
@@ -823,7 +828,7 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to redo
    */
-  public async goForwardHistoryStep(): Promise<Position | undefined> {
+  public async goForwardHistoryStep(): Promise<Cursor[] | undefined> {
     const step = this.undoStack.stepForward();
     if (step === undefined) {
       return undefined;
@@ -842,7 +847,10 @@ export class HistoryTracker {
       `${changes}; after #${this.undoStack.getCurrentHistoryStepIndex()}  ${step.howLongAgo()}`,
     );
 
-    return step.cursorStart;
+    return step.cursorsAtStart?.map((c) => {
+      const start = earlierOf(c.start, c.stop);
+      return new Cursor(start, start);
+    });
   }
 
   /**
@@ -918,7 +926,7 @@ export class HistoryTracker {
         changes: changesToUndo.map((change) => change.reversed()).reverse(),
         cameFromU: true,
       });
-      this.nextStepStartPosition = lastChange.start;
+      this.nextStepCursorsAtStart = [new Cursor(lastChange.start, lastChange.start)];
       this.undoStack.pushHistoryStep(newStep);
 
       this.finishCurrentStep();
@@ -957,7 +965,7 @@ export class HistoryTracker {
   }
 
   public getLastHistoryStartPosition(): Position | undefined {
-    return this.undoStack.getCurrentHistoryStep()?.cursorStart;
+    return this.undoStack.getCurrentHistoryStep()?.cursorsAtStart?.[0]?.start;
   }
 
   private getLastChangeStartPosition(): Position | undefined {

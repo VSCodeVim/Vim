@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../extension';
 import { ModeHandler } from '../src/mode/modeHandler';
+import { newTest, newTestSkip } from './testSimplifier';
 import { assertEqualLines, setupWorkspace } from './testUtils';
-import { newTest } from './testSimplifier';
 
 suite('Multicursor', () => {
   let modeHandler: ModeHandler;
@@ -10,6 +10,106 @@ suite('Multicursor', () => {
   setup(async () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
+  });
+
+  suite('Motions', () => {
+    for (const foldfix of [true, false]) {
+      suite(`j and k ${foldfix ? '(foldfix)' : ''}`, () => {
+        newTest({
+          title: 'j',
+          config: { foldfix },
+          start: ['l|ine 1', 'lin|e 2', 'line 3'],
+          keysPressed: 'j',
+          end: ['line 1', 'l|ine 2', 'lin|e 3'],
+        });
+
+        newTest({
+          title: 'j (at bottom)',
+          config: { foldfix },
+          start: ['line 1', 'l|ine 2', 'lin|e 3'],
+          keysPressed: 'j',
+          end: ['line 1', 'line 2', 'l|in|e 3'],
+        });
+
+        newTest({
+          title: 'k',
+          config: { foldfix },
+          start: ['line 1', 'l|ine 2', 'lin|e 3'],
+          keysPressed: 'k',
+          end: ['l|ine 1', 'lin|e 2', 'line 3'],
+        });
+
+        // TODO: Fix for foldfix
+        (foldfix ? newTestSkip : newTest)({
+          title: 'k (at top)',
+          config: { foldfix },
+          start: ['l|ine 1', 'lin|e 2', 'line 3'],
+          keysPressed: 'k',
+          end: ['l|in|e 1', 'line 2', 'line 3'],
+        });
+      });
+    }
+  });
+
+  suite('Macros', () => {
+    newTest({
+      title: 'Can record and play macros with multiple cursors',
+      start: ['|one', '|two', '|three'],
+      keysPressed: 'qx' + 'A!' + '<Esc>' + 'q' + '2@x',
+      end: ['one!!|!', 'two!!|!', 'three!!|!'],
+    });
+  });
+
+  suite('Undo/redo', () => {
+    newTest({
+      title: 'Can undo with multiple cursors',
+      start: ['|one', '|two', '|three'],
+      keysPressed: 'l' + 'iXXX<Esc>' + '$' + 'u',
+      end: ['o|ne', 't|wo', 't|hree'],
+    });
+  });
+
+  suite('Delete', () => {
+    newTest({
+      title: 'x (Normal mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 'x',
+      end: ['|at', 'c|t', 'c|a'],
+    });
+
+    // TODO: `D`
+
+    newTest({
+      title: 'd (Visual mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 'vl' + 'd',
+      end: ['|t', '|c', 'c|a'],
+    });
+
+    // TODO: VisualBlock mode
+  });
+
+  suite('Replace', () => {
+    newTest({
+      title: 'r (Normal mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 'rX',
+      end: ['|Xat', 'c|Xt', 'ca|X'],
+    });
+
+    newTest({
+      title: 'r (Visual mode)',
+      start: ['|cat', 'c|at', 'ca|t'],
+      keysPressed: 've' + 'rX',
+      end: ['|XXX', 'c|XX', 'ca|X'],
+    });
+
+    newTest({
+      title: 'r (VisualBlock mode)',
+      start: ['|ca|t', 'cat', 'cat'],
+      keysPressed: '<C-v>jj' + 'rX',
+      end: ['|Xa|X', 'XaX', 'XaX'],
+    });
   });
 
   test('can add multiple cursors below', async () => {

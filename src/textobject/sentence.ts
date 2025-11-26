@@ -1,7 +1,7 @@
 import { Position } from 'vscode';
 import { TextEditor } from '../textEditor';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
-import { getAllPositions, getAllEndPositions } from './util';
+import { getAllEndPositions, getAllPositions } from './util';
 
 const sentenceEndRegex = /[\.!\?]["')\]]*?([ \n\t]+|$)/g;
 

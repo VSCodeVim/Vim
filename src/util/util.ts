@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Cursor } from '../common/motion/cursor';
+import { VimError } from '../error';
 import { VimState } from '../state/vimState';
 
 /**
@@ -45,4 +46,22 @@ export function isHighSurrogate(charCode: number): boolean {
 
 export function isLowSurrogate(charCode: number): boolean {
   return 0xdc00 <= charCode && charCode <= 0xdfff;
+}
+
+export function findTabInActiveTabGroup(name: string): [number, vscode.Tab] {
+  const foundBuffers: Array<[number, vscode.Tab]> = [];
+  const tabs = vscode.window.tabGroups.activeTabGroup.tabs;
+  for (let t = 0; t < tabs.length; t++) {
+    const tab = tabs[t];
+    if (tab.label.includes(name)) {
+      foundBuffers.push([t, tab]);
+      if (foundBuffers.length > 1) {
+        throw VimError.MultipleMatches(name);
+      }
+    }
+  }
+  if (foundBuffers.length === 0) {
+    throw VimError.NoMatchingBuffer(name);
+  }
+  return foundBuffers[0];
 }

@@ -2,11 +2,11 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
+import { Globals } from '../../src/globals';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace, reloadConfiguration } from './../testUtils';
-import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
+import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
@@ -611,7 +611,7 @@ suite('Mode Insert', () => {
     start: ['foo |bar', 'foo bar'],
     // create two cursors on bar, yank. Then paste it in insert mode
     keysPressed: 'gbgby' + 'i<C-r>"',
-    end: ['foo bar|bar', 'foo barbar'],
+    end: ['foo bar|bar', 'foo bar|bar'],
     endMode: Mode.Insert,
   });
 
