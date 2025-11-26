@@ -1,7 +1,7 @@
 import { getAndUpdateModeHandler } from '../../extension';
-import { setupWorkspace, cleanUpWorkspace } from '../testUtils';
-import { newTest } from '../testSimplifier';
 import { CursorCommand } from '../../src/cmd_line/commands/cursor';
+import { newTest } from '../testSimplifier';
+import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 function cursor(pattern: string, then: string, count?: number): string {
   const countStr = count ? `${count}` : '';

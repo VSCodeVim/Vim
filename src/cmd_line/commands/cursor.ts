@@ -1,5 +1,6 @@
 import { escapeRegExp } from 'lodash';
-import { optWhitespace, Parser, seq, string, whitespace, eof } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { eof, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { isVisualMode, Mode } from '../../mode/mode';
@@ -32,8 +33,8 @@ export class CursorCommand extends ExCommand {
           ],
         })
           .map((p) => (p.patternString.length === 0 ? undefined : p))
-          .fallback(undefined) // fallback to undefined if pattern is empty, so we can use current word/selection as pattern
-      )
+          .fallback(undefined), // fallback to undefined if pattern is empty, so we can use current word/selection as pattern
+      ),
     )
     .map(([c, sp]) => new CursorCommand(c, sp));
 
@@ -51,7 +52,7 @@ export class CursorCommand extends ExCommand {
               .split(CursorCommand.CURSOR_LOCATION_REGEX)
               .slice(undefined, -1)
               .map((s) => `(${s})`)
-              .join('')
+              .join(''),
           );
           const groupedMatches = groupBetweenCursorRegex.exec(match.groups[0]);
           const cursorPositions =
