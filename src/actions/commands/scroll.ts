@@ -10,6 +10,9 @@ import { BaseCommand, RegisterAction } from '../base';
 abstract class CommandEditorScroll extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   override runsOnceForEachCountPrefix = false;
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   abstract to: EditorScrollDirection;
   abstract by: EditorScrollByUnit;
 
