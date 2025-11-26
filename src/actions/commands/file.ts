@@ -1,9 +1,9 @@
 import path from 'path';
+import { doesFileExist } from 'platform/fs';
 import { Position, Range, Uri, window, workspace } from 'vscode';
 import { FileCommand } from '../../cmd_line/commands/file';
 import { VimError } from '../../error';
 import { Mode } from '../../mode/mode';
-import { doesFileExist } from '../../platform/node/fs';
 import { Register } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
