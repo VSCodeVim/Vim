@@ -1156,6 +1156,11 @@
         "vim.langmap": {
           "type": "string",
           "description": "Language map for alternate keyboard layouts. When you are typing text in Insert (or Replace, etc.) mode, the characters are inserted derectly. Otherwise, they are translated based on the provided map."
+        },
+        "vim.statusBarCursor": {
+          "type": "string",
+          "description": "The character to use as the cursor in the status bar (e.g. during search or command line mode).",
+          "default": "|"
         }
       }
     },

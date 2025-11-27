@@ -79,6 +79,7 @@ export class Configuration implements IConfiguration {
     visualblock: '#A3BE8C',
     replace: '#D08770',
   };
+  statusBarCursor = '|';
   searchHighlightColor = 'rgba(150, 150, 255, 0.3)';
   searchHighlightTextColor = '';
   searchMatchColor = 'rgba(255, 150, 150, 0.3)';
