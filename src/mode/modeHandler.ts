@@ -937,9 +937,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // If we're in Normal mode, collapse each cursor down to one character
     if (this.currentMode === Mode.Normal) {
-      this.vimState.cursors = this.vimState.cursors.map(
-        (cursor) => new Cursor(cursor.stop, cursor.stop),
-      );
+      this.vimState.cursors = this.vimState.cursors.map((cursor) => Cursor.atPosition(cursor.stop));
     }
 
     // Ensure cursors are within bounds

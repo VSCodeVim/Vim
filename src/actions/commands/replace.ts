@@ -177,11 +177,11 @@ class ReplaceCharacterVisualBlock extends BaseCommand {
       });
     }
 
-    const topLeft = visualBlockGetTopLeftPosition(
-      vimState.cursorStopPosition,
-      vimState.cursorStartPosition,
-    );
-    vimState.cursors = [new Cursor(topLeft, topLeft)];
+    vimState.cursors = [
+      Cursor.atPosition(
+        visualBlockGetTopLeftPosition(vimState.cursorStopPosition, vimState.cursorStartPosition),
+      ),
+    ];
     await vimState.setCurrentMode(Mode.Normal);
   }
 }

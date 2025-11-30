@@ -38,7 +38,7 @@ class UndoOnLine extends BaseCommand {
     const newPosition = await vimState.historyTracker.goBackHistoryStepsOnLine();
 
     if (newPosition !== undefined) {
-      vimState.cursors = [new Cursor(newPosition, newPosition)];
+      vimState.cursors = [Cursor.atPosition(newPosition)];
     }
   }
 }

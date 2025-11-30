@@ -623,12 +623,11 @@ class VisualBlockDelete extends BaseCommand {
     vimState.currentRegisterMode = RegisterMode.BlockWise;
     Register.put(vimState, text, this.multicursorIndex, true);
 
-    const topLeft = visualBlockGetTopLeftPosition(
-      vimState.cursorStopPosition,
-      vimState.cursorStartPosition,
-    );
-
-    vimState.cursors = [new Cursor(topLeft, topLeft)];
+    vimState.cursors = [
+      Cursor.atPosition(
+        visualBlockGetTopLeftPosition(vimState.cursorStopPosition, vimState.cursorStartPosition),
+      ),
+    ];
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -659,7 +658,7 @@ class VisualBlockDeleteToLineEnd extends BaseCommand {
     const text = lines.length === 1 ? lines[0] : lines.join('\n');
     Register.put(vimState, text, this.multicursorIndex, true);
 
-    vimState.cursors = [new Cursor(topLeft, topLeft)];
+    vimState.cursors = [Cursor.atPosition(topLeft)];
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -679,7 +678,7 @@ class VisualBlockInsert extends BaseCommand {
         if (line === '' && start.character !== 0) {
           continue;
         }
-        cursors.push(new Cursor(start, start));
+        cursors.push(Cursor.atPosition(start));
       }
     }
     vimState.cursors = cursors;
@@ -714,7 +713,7 @@ class VisualBlockChange extends BaseCommand {
             range: new vscode.Range(start, end),
             manuallySetCursorPositions: true,
           });
-          cursors.push(new Cursor(start, start));
+          cursors.push(Cursor.atPosition(start));
         }
       }
     }
@@ -741,7 +740,7 @@ class ActionChangeToEOLInVisualBlockMode extends BaseCommand {
     for (const cursor of vimState.cursors) {
       for (const { start, end } of TextEditor.iterateLinesInBlock(vimState, cursor)) {
         vimState.recordedState.transformer.delete(new vscode.Range(start, start.getLineEnd()));
-        cursors.push(new Cursor(end, end));
+        cursors.push(Cursor.atPosition(end));
       }
     }
     vimState.cursors = cursors;
@@ -797,11 +796,7 @@ class VisualLineInsert extends ActionGoToInsertVisualLineModeCommand {
   keys = ['I'];
 
   getCursorRangeForLine(line: vscode.TextLine): Cursor {
-    const startCharacterPosition = new Position(
-      line.lineNumber,
-      line.firstNonWhitespaceCharacterIndex,
-    );
-    return new Cursor(startCharacterPosition, startCharacterPosition);
+    return Cursor.atPosition(new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex));
   }
 }
 
@@ -811,8 +806,7 @@ class VisualLineAppend extends ActionGoToInsertVisualLineModeCommand {
   keys = ['A'];
 
   getCursorRangeForLine(line: vscode.TextLine): Cursor {
-    const endCharacterPosition = new Position(line.lineNumber, line.range.end.character);
-    return new Cursor(endCharacterPosition, endCharacterPosition);
+    return Cursor.atPosition(new Position(line.lineNumber, line.range.end.character));
   }
 }
 
@@ -826,11 +820,11 @@ class VisualInsert extends ActionGoToInsertVisualLineModeCommand {
     selectionStart: Position,
     selectionEnd: Position,
   ): Cursor {
-    const startCharacterPosition =
+    return Cursor.atPosition(
       line.lineNumber === selectionStart.line
         ? selectionStart
-        : new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex);
-    return new Cursor(startCharacterPosition, startCharacterPosition);
+        : new Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex),
+    );
   }
 }
 
@@ -844,11 +838,11 @@ class VisualAppend extends ActionGoToInsertVisualLineModeCommand {
     selectionStart: Position,
     selectionEnd: Position,
   ): Cursor {
-    const endCharacterPosition =
+    return Cursor.atPosition(
       line.lineNumber === selectionEnd.line
         ? selectionEnd
-        : new Position(line.lineNumber, line.range.end.character);
-    return new Cursor(endCharacterPosition, endCharacterPosition);
+        : new Position(line.lineNumber, line.range.end.character),
+    );
   }
 }
 
@@ -878,8 +872,7 @@ class VisualBlockAppend extends BaseCommand {
             false,
           );
         }
-        const newCursor = new Position(lineNum, insertionColumn);
-        newCursors.push(new Cursor(newCursor, newCursor));
+        newCursors.push(Cursor.atPosition(new Position(lineNum, insertionColumn)));
       }
     }
 

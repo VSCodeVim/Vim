@@ -9,8 +9,8 @@ export class Cursor {
     this.stop = stop;
   }
 
-  public isValid(textEditor: TextEditor) {
-    return this.start.isValid(textEditor) && this.stop.isValid(textEditor);
+  public static atPosition(position: Position): Cursor {
+    return new Cursor(position, position);
   }
 
   /**
@@ -18,6 +18,10 @@ export class Cursor {
    */
   public static FromVSCodeSelection(sel: Selection): Cursor {
     return new Cursor(sel.start, sel.end);
+  }
+
+  public isValid(textEditor: TextEditor) {
+    return this.start.isValid(textEditor) && this.stop.isValid(textEditor);
   }
 
   public equals(other: Cursor): boolean {

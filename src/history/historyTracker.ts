@@ -818,8 +818,7 @@ export class HistoryTracker {
     );
 
     return step.cursorsAtStart?.map((c) => {
-      const start = earlierOf(c.start, c.stop);
-      return new Cursor(start, start);
+      return Cursor.atPosition(earlierOf(c.start, c.stop));
     });
   }
 
@@ -848,8 +847,7 @@ export class HistoryTracker {
     );
 
     return step.cursorsAtStart?.map((c) => {
-      const start = earlierOf(c.start, c.stop);
-      return new Cursor(start, start);
+      return Cursor.atPosition(earlierOf(c.start, c.stop));
     });
   }
 
@@ -926,7 +924,7 @@ export class HistoryTracker {
         changes: changesToUndo.map((change) => change.reversed()).reverse(),
         cameFromU: true,
       });
-      this.nextStepCursorsAtStart = [new Cursor(lastChange.start, lastChange.start)];
+      this.nextStepCursorsAtStart = [Cursor.atPosition(lastChange.start)];
       this.undoStack.pushHistoryStep(newStep);
 
       this.finishCurrentStep();

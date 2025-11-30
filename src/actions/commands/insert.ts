@@ -140,9 +140,9 @@ class InsertAbove extends BaseCommand {
     for (let i = 0; i < count; i++) {
       const newPos = new Position(vimState.cursors[0].start.line + i, charPos);
       if (i === 0) {
-        vimState.cursors[0] = new Cursor(newPos, newPos);
+        vimState.cursors[0] = Cursor.atPosition(newPos);
       } else {
-        vimState.cursors.push(new Cursor(newPos, newPos));
+        vimState.cursors.push(Cursor.atPosition(newPos));
       }
       if (indentAmt >= 0) {
         vimState.recordedState.transformer.addTransformation({
@@ -188,7 +188,7 @@ class InsertBelow extends BaseCommand {
         vimState.cursorStartPosition.line - i,
         vimState.cursorStartPosition.character,
       );
-      vimState.cursors.push(new Cursor(newPos, newPos));
+      vimState.cursors.push(Cursor.atPosition(newPos));
 
       // Ahhhhhh. We have to manually set cursor position here as we need text
       // transformations AND to set multiple cursors.
