@@ -1,4 +1,4 @@
-import { Position, Selection, TextEditor } from 'vscode';
+import { Position, Selection, TextDocument, TextEditor } from 'vscode';
 
 export class Cursor {
   public readonly start: Position;
@@ -44,5 +44,9 @@ export class Cursor {
 
   public toString(): string {
     return `[${this.start.toString()} | ${this.stop.toString()}]`;
+  }
+
+  public validate(document: TextDocument): Cursor {
+    return new Cursor(document.validatePosition(this.start), document.validatePosition(this.stop));
   }
 }

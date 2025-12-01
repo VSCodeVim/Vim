@@ -746,13 +746,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // Make sure all cursors are within the document's bounds before running any action
     // It's not 100% clear to me that this is the correct place to do this, but it should solve a lot of issues
-    this.vimState.cursors = this.vimState.cursors.map(
-      (c) =>
-        new Cursor(
-          this.vimState.document.validatePosition(c.start),
-          this.vimState.document.validatePosition(c.stop),
-        ),
-    );
+    this.vimState.cursors = this.vimState.cursors.map((c) => c.validate(this.vimState.document));
 
     let ranRepeatableAction = false;
     let ranAction = false;
@@ -945,17 +939,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       !this.vimState.document.isClosed &&
       this.vimState.editor === vscode.window.activeTextEditor
     ) {
-      const documentEndPosition = TextEditor.getDocumentEnd(this.vimState.document);
-      const documentLineCount = this.vimState.document.lineCount;
-
       this.vimState.cursors = this.vimState.cursors.map((cursor: Cursor) => {
-        // Adjust start/stop
-        if (cursor.start.line >= documentLineCount) {
-          cursor = cursor.withNewStart(documentEndPosition);
-        }
-        if (cursor.stop.line >= documentLineCount) {
-          cursor = cursor.withNewStop(documentEndPosition);
-        }
+        cursor = cursor.validate(this.vimState.document);
 
         // Adjust column. When getting from insert into normal mode with <C-o>,
         // the cursor position should remain even if it is behind the last
