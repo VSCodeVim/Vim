@@ -66,7 +66,7 @@ export class Configuration implements IConfiguration {
     obtainIMCmd: '',
   };
   timeout = 1000;
-  maxmapdepth = 1000;
+  maxmapdepth = 100;
   showcmd = true;
   showmodename = true;
   leader = '//';

@@ -368,7 +368,7 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
   await reloadConfiguration(config);
 
-  for (const { step, index } of testObj.steps.map((value, i) => ({ step: value, index: i }))) {
+  for (const [index, step] of testObj.steps.entries()) {
     const resolvedStep = (() => {
       let start: DocState;
       if (index === 0) {
