@@ -23,7 +23,7 @@ suite('Marks', () => {
         tabstop: 4,
         expandtab: false,
       },
-      newFileContent: content,
+      fileContent: content,
       forceNewFile: true,
       disableCleanUp: true,
     });

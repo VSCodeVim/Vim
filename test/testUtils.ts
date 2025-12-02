@@ -136,25 +136,26 @@ export async function setupWorkspace(
   args: {
     config?: Partial<IConfiguration>;
     fileExtension?: string;
-    newFileContent?: string;
+    fileContent?: string;
     forceNewFile?: boolean;
     disableCleanUp?: boolean;
   } = {},
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
 
-  if (
+  const newFile =
     vscode.window.activeTextEditor === undefined ||
     vscode.window.activeTextEditor.document.isUntitled ||
     vscode.window.visibleTextEditors.length > 1 ||
     (args.fileExtension &&
       !vscode.window.activeTextEditor.document.fileName.endsWith(args.fileExtension)) ||
-    args.forceNewFile
-  ) {
+    args.forceNewFile;
+
+  if (newFile) {
     if (!args.disableCleanUp) await cleanUpWorkspace();
     const filePath = await createFile({
       fileExtension: args.fileExtension,
-      contents: args.newFileContent,
+      contents: args.fileContent,
     });
     const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
     await vscode.window.showTextDocument(doc);
@@ -170,12 +171,17 @@ export async function setupWorkspace(
   activeTextEditor.options.tabSize = Globals.mockConfiguration.tabstop;
   activeTextEditor.options.insertSpaces = Globals.mockConfiguration.expandtab;
 
-  assert.ok(
-    await activeTextEditor.edit((builder) => {
-      builder.delete(TextEditor.getDocumentRange(activeTextEditor.document));
-    }),
-    'Edit failed',
-  );
+  if (!newFile) {
+    assert.ok(
+      await activeTextEditor.edit((builder) => {
+        builder.replace(
+          TextEditor.getDocumentRange(activeTextEditor.document),
+          args.fileContent ?? '',
+        );
+      }),
+      'Edit failed',
+    );
+  }
 
   if (!args.disableCleanUp) ModeHandlerMap.clear();
 }
