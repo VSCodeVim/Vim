@@ -113,9 +113,8 @@ suite('Multicursor', () => {
   });
 
   test('can add multiple cursors below', async () => {
-    await modeHandler.handleMultipleKeyEvents('i11\n22'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-    assertEqualLines(['11', '22']);
+    await setupWorkspace({ fileContent: ['11', '22'] });
+    await modeHandler.handleMultipleKeyEvents(['g', 'g']);
 
     if (process.platform === 'darwin') {
       await modeHandler.handleMultipleKeyEvents(['<D-alt+down>']);
@@ -129,9 +128,8 @@ suite('Multicursor', () => {
   });
 
   test('can add multiple cursors above', async () => {
-    await modeHandler.handleMultipleKeyEvents('i11\n22\n33'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0']);
-    assertEqualLines(['11', '22', '33']);
+    await setupWorkspace({ fileContent: ['11', '22', '33'] });
+    await modeHandler.handleMultipleKeyEvents(['G']);
 
     if (process.platform === 'darwin') {
       await modeHandler.handleMultipleKeyEvents(['<D-alt+up>', '<D-alt+up>']);
@@ -145,9 +143,8 @@ suite('Multicursor', () => {
   });
 
   test('viwd with multicursors deletes the words and keeps the cursors', async () => {
-    await modeHandler.handleMultipleKeyEvents('ifoo dont delete\nbar\ndont foo'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', 'k', '0']);
-    assertEqualLines(['foo dont delete', 'bar', 'dont foo']);
+    await setupWorkspace({ fileContent: ['foo dont delete', 'bar', 'dont foo'] });
+    await modeHandler.handleMultipleKeyEvents(['g', 'g']);
 
     await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 
@@ -158,11 +155,8 @@ suite('Multicursor', () => {
   });
 
   test('vibd with multicursors deletes the content between brackets and keeps the cursors', async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split(''),
-    );
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
-    assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
+    await setupWorkspace({ fileContent: ['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]'] });
+    await modeHandler.handleMultipleKeyEvents(['g', 'g', 'l', 'l']);
 
     await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 
@@ -173,11 +167,8 @@ suite('Multicursor', () => {
   });
 
   test('vi[d with multicursors deletes the content between brackets and keeps the cursors', async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'i[(foo) asd ]\n[(bar) asd ]\n[(foo) asd ]'.split(''),
-    );
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'l', 'l']);
-    assertEqualLines(['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]']);
+    await setupWorkspace({ fileContent: ['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]'] });
+    await modeHandler.handleMultipleKeyEvents(['g', 'g', 'l', 'l']);
 
     await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 
@@ -188,11 +179,8 @@ suite('Multicursor', () => {
   });
 
   test('vitd with multicursors deletes the content between tags and keeps the cursors', async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'i<div> foo bar</div> asd\n<div>foo asd</div>'.split(''),
-    );
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'k', '0', 'W']);
-    assertEqualLines(['<div> foo bar</div> asd', '<div>foo asd</div>']);
+    await setupWorkspace({ fileContent: ['<div> foo bar</div> asd', '<div>foo asd</div>'] });
+    await modeHandler.handleMultipleKeyEvents(['g', 'g', 'W']);
 
     await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
 

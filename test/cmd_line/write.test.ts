@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { assertEqualLines, setupWorkspace } from '../testUtils';
 
 suite('Write command (:w)', () => {
   let modeHandler: ModeHandler;
@@ -14,8 +14,6 @@ suite('Write command (:w)', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   /**
    * Helper to type "hello world!" in insert mode

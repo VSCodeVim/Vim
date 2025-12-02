@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { StatusBar } from '../../src/statusBar';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('cursor location', () => {
   let modeHandler: ModeHandler;
@@ -12,8 +12,6 @@ suite('cursor location', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  suiteTeardown(cleanUpWorkspace);
 
   test('cursor location in command line', async () => {
     await modeHandler.handleMultipleKeyEvents([

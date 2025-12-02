@@ -136,7 +136,7 @@ export async function setupWorkspace(
   args: {
     config?: Partial<IConfiguration>;
     fileExtension?: string;
-    fileContent?: string;
+    fileContent?: string[];
     forceNewFile?: boolean;
     disableCleanUp?: boolean;
   } = {},
@@ -150,12 +150,13 @@ export async function setupWorkspace(
     (args.fileExtension &&
       !vscode.window.activeTextEditor.document.fileName.endsWith(args.fileExtension)) ||
     args.forceNewFile;
+  const fileContent = (args.fileContent ?? []).join(os.EOL);
 
   if (newFile) {
     if (!args.disableCleanUp) await cleanUpWorkspace();
     const filePath = await createFile({
       fileExtension: args.fileExtension,
-      contents: args.fileContent,
+      contents: fileContent,
     });
     const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
     await vscode.window.showTextDocument(doc);
@@ -173,10 +174,7 @@ export async function setupWorkspace(
   if (!newFile) {
     assert.ok(
       await activeTextEditor.edit((builder) => {
-        builder.replace(
-          TextEditor.getDocumentRange(activeTextEditor.document),
-          args.fileContent ?? '',
-        );
+        builder.replace(TextEditor.getDocumentRange(activeTextEditor.document), fileContent);
       }),
       'Edit failed',
     );

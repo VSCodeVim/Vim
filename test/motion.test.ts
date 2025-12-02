@@ -9,7 +9,7 @@ suite('basic motion', () => {
   const text: string[] = ['mary had', 'a', 'little lamb', ' whose fleece was '];
 
   suiteSetup(async () => {
-    await setupWorkspace({ fileContent: text.join('\n') });
+    await setupWorkspace({ fileContent: text });
   });
 
   test('char right: should move one column right', () => {
@@ -144,7 +144,7 @@ suite('word motion', () => {
   ];
 
   suiteSetup(async () => {
-    await setupWorkspace({ fileContent: text.join('\n') });
+    await setupWorkspace({ fileContent: text });
   });
 
   suite('word right', () => {
@@ -384,7 +384,7 @@ suite('unicode word motion', () => {
   ];
 
   suiteSetup(async () => {
-    await setupWorkspace({ fileContent: text.join('\n') });
+    await setupWorkspace({ fileContent: text });
   });
 
   suite('word right', () => {
@@ -485,7 +485,7 @@ suite('sentence motion', () => {
   ];
 
   suiteSetup(async () => {
-    await setupWorkspace({ fileContent: text.join('\n') });
+    await setupWorkspace({ fileContent: text });
   });
 
   suite('sentence forward', () => {
@@ -595,7 +595,7 @@ suite('paragraph motion', () => {
   ];
 
   suiteSetup(async () => {
-    await setupWorkspace({ fileContent: text.join('\n') });
+    await setupWorkspace({ fileContent: text });
   });
 
   suite('paragraph down', () => {
