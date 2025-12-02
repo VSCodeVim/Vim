@@ -1,4 +1,4 @@
-import { Globals } from '../../src/globals';
+import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
 
@@ -247,8 +247,7 @@ suite('Basic substitute', () => {
 
   suite('Effects of gdefault=true', () => {
     setup(async () => {
-      Globals.mockConfiguration.gdefault = true;
-      await reloadConfiguration();
+      await reloadConfiguration(new Configuration({ gdefault: true }));
     });
 
     newTest({

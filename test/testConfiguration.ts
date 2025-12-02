@@ -9,6 +9,10 @@ import {
 } from '../src/configuration/iconfiguration';
 
 export class Configuration implements IConfiguration {
+  constructor(overrides: Partial<IConfiguration> = {}) {
+    Object.assign(this, overrides);
+  }
+
   [key: string]: any;
 
   useSystemClipboard = false;

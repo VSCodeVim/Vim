@@ -161,15 +161,14 @@ export async function setupWorkspace(
     await vscode.window.showTextDocument(doc);
   }
 
-  Globals.mockConfiguration = new Configuration();
-  Object.assign(Globals.mockConfiguration, args?.config ?? {});
-  await reloadConfiguration();
+  const config = new Configuration(args?.config);
+  await reloadConfiguration(config);
 
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor.options.tabSize = Globals.mockConfiguration.tabstop;
-  activeTextEditor.options.insertSpaces = Globals.mockConfiguration.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
   if (!newFile) {
     assert.ok(
@@ -192,7 +191,9 @@ export async function cleanUpWorkspace(): Promise<void> {
   assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
 }
 
-export async function reloadConfiguration() {
+export async function reloadConfiguration(config: IConfiguration) {
+  Globals.mockConfiguration = config;
+
   const validatorResults = await (
     await import('../src/configuration/configuration')
   ).configuration.load();
