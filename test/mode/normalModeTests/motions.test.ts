@@ -1,6 +1,6 @@
-import { setupWorkspace } from './../../testUtils';
 import { Mode } from '../../../src/mode/mode';
 import { newTest, newTestSkip } from '../../testSimplifier';
+import { setupWorkspace } from './../../testUtils';
 
 suite('Motions in Normal Mode', () => {
   suiteSetup(setupWorkspace);

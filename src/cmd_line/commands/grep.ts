@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
+import { optWhitespace, Parser, seq, whitespace } from 'parsimmon';
 import { VimError } from '../../error';
-import { Pattern, SearchDirection } from '../../vimscript/pattern';
 import { ExCommand } from '../../vimscript/exCommand';
-import { Parser, seq, optWhitespace, whitespace } from 'parsimmon';
 import { fileNameParser } from '../../vimscript/parserUtils';
+import { Pattern, SearchDirection } from '../../vimscript/pattern';
 
 // Still missing:
 // When a number is put before the command this is used

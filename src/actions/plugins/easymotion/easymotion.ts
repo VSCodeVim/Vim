@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { Position } from 'vscode';
 import { Mode } from '../../../mode/mode';
 import { configuration } from './../../../configuration/configuration';
-import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction, IEasyMotion, Marker, Match, SearchOptions } from './types';
 
 export class EasyMotion implements IEasyMotion {

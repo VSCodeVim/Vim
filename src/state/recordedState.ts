@@ -1,9 +1,9 @@
+import { IBaseAction, IBaseCommand, IBaseOperator } from '../actions/types';
 import { configuration } from '../configuration/configuration';
 import { Mode, isVisualMode } from '../mode/mode';
+import { SpecialKeys } from '../util/specialKeys';
 import { PositionDiff } from './../common/motion/position';
 import { Transformer } from './../transformations/transformer';
-import { SpecialKeys } from '../util/specialKeys';
-import { IBaseAction, IBaseOperator, IBaseCommand } from '../actions/types';
 
 const ESCAPE_REGEX = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
 const BUFFERED_KEYS_REGEX = new RegExp(SpecialKeys.TimeoutFinished, 'g');

@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 import { Position, TextDocument } from 'vscode';
+import { Cursor } from '../../common/motion/cursor';
 import { laterOf, PositionDiff, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
+import { VimError } from '../../error';
 import { isVisualMode, Mode } from '../../mode/mode';
-import { Register, RegisterMode, IRegisterContent } from '../../register/register';
+import { IRegisterContent, Register, RegisterMode } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
 import { TextEditor } from '../../textEditor';
+import { Transformation } from '../../transformations/transformations';
 import { reportLinesChanged } from '../../util/statusBarTextUtils';
 import { BaseCommand, RegisterAction } from '../base';
-import { StatusBar } from '../../statusBar';
-import { VimError } from '../../error';
-import { Cursor } from '../../common/motion/cursor';
-import { Transformation } from '../../transformations/transformations';
 
 function firstNonBlankChar(text: string): number {
   return text.match(/\S/)?.index ?? 0;

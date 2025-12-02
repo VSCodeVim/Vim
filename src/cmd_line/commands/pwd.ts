@@ -1,7 +1,7 @@
-import { ExCommand } from '../../vimscript/exCommand';
+import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
-import * as vscode from 'vscode';
+import { ExCommand } from '../../vimscript/exCommand';
 
 /**
  * Implements the :pwd command, which prints the current working directory.

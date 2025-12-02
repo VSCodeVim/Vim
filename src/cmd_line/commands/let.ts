@@ -1,5 +1,7 @@
 // eslint-disable-next-line id-denylist
 import { all, alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
+import { VimError } from '../../error';
+import { Register } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -13,6 +15,7 @@ import {
   subtract,
   toExpr,
 } from '../../vimscript/expression/build';
+import { displayValue } from '../../vimscript/expression/displayValue';
 import { EvaluationContext, toInt, toString } from '../../vimscript/expression/evaluate';
 import {
   envVariableParser,
@@ -30,10 +33,7 @@ import {
   Value,
   VariableExpression,
 } from '../../vimscript/expression/types';
-import { displayValue } from '../../vimscript/expression/displayValue';
-import { VimError } from '../../error';
 import { bangParser } from '../../vimscript/parserUtils';
-import { Register } from '../../register/register';
 
 type Unpack = {
   type: 'unpack';

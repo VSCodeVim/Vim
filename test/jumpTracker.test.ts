@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 
-import { Jump } from './../src/jumps/jump';
-import { JumpTracker } from '../src/jumps/jumpTracker';
-import { setupWorkspace } from './testUtils';
 import { Position } from 'vscode';
+import { JumpTracker } from '../src/jumps/jumpTracker';
+import { Jump } from './../src/jumps/jump';
 import { ITestObject, newTest, newTestSkip } from './testSimplifier';
+import { setupWorkspace } from './testUtils';
 
 suite('Record and navigate jumps', () => {
   suiteSetup(setupWorkspace);

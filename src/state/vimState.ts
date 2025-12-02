@@ -150,7 +150,7 @@ export class VimState implements vscode.Disposable {
   /**
    * The position of every cursor. Will never be empty.
    */
-  private _cursors: Cursor[] = [new Cursor(new Position(0, 0), new Position(0, 0))];
+  private _cursors: Cursor[] = [Cursor.atPosition(new Position(0, 0))];
 
   public get cursors(): Cursor[] {
     return this._cursors;

@@ -1,13 +1,13 @@
+import { Position, Range } from 'vscode';
+import { PositionDiff } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
+import { VimError } from '../../error';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
 import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
-import { StatusBar } from '../../statusBar';
-import { VimError } from '../../error';
-import { Position, Range } from 'vscode';
-import { PositionDiff } from '../../common/motion/position';
 
 @RegisterAction
 class ReplaceOperator extends BaseOperator {

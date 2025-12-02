@@ -3,7 +3,7 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.32.1",
+  "version": "1.32.2",
   "publisher": "vscodevim",
   "sponsor": {
     "url": "https://github.com/sponsors/J-Fields"
@@ -1259,7 +1259,8 @@
     "minimist": "1.2.8",
     "mocha": "11.7.2",
     "plugin-error": "2.0.1",
-    "prettier": "3.6.2",
+    "prettier": "3.7.3",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "sinon": "20.0.0",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",

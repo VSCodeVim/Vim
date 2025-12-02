@@ -1,5 +1,26 @@
 # Change Log
 
+## [v1.32.2](https://github.com/vscodevim/vim/tree/v1.32.2) (2025-11-30)
+
+### Fixed
+
+- Improved multi-cursor support ([@J-Fields](https://github.com/J-Fields)).
+  - `j` and `k` no longer force cursors to same column.
+  - Fix recording and executing macros with multi-cursor.
+  - `u` no longer cancels multi-cursor.
+  - Fixed several actions in VisualBlock mode.
+  - Fixed several actions incorrectly being executed once per cursor.
+
+- Fix several bugs in `:bd[elete]` ([@J-Fields](https://github.com/J-Fields)).
+  - `bd!` suppresses unsaved changes warning.
+  - `bd {bufname}` closes the specified buffer.
+  - Fixed `bd {N}` with high index.
+  - Better error handling.
+
+- Fix cursor rendering when `cursorStylePerMode.visual` is set ([@jheroy](https://github.com/jheroy)).
+
+- Fix an infinite loop ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.32.1](https://github.com/vscodevim/vim/tree/v1.32.1) (2025-11-9)
 
 ### Fixed

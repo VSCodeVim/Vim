@@ -1,8 +1,8 @@
-import { BaseAction } from './base';
+import { Position } from 'vscode';
 import { Mode } from '../mode/mode';
 import { VimState } from '../state/vimState';
 import { clamp } from '../util/util';
-import { Position } from 'vscode';
+import { BaseAction } from './base';
 
 export function isIMovement(o: IMovement | Position): o is IMovement {
   return (o as IMovement).start !== undefined && (o as IMovement).stop !== undefined;

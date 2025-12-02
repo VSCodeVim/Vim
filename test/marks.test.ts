@@ -17,13 +17,12 @@ suite('Marks', () => {
 
   suiteTeardown(cleanUpWorkspace);
 
-  const jumpToNewFile = async (content?: string) => {
+  const jumpToNewFile = async () => {
     await setupWorkspace({
       config: {
         tabstop: 4,
         expandtab: false,
       },
-      newFileContent: content,
       forceNewFile: true,
       disableCleanUp: true,
     });

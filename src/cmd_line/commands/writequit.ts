@@ -1,4 +1,4 @@
-import { optWhitespace, Parser, regexp, seq } from 'parsimmon';
+import { optWhitespace, Parser, seq } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';

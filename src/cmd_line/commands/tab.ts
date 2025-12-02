@@ -2,7 +2,9 @@
 import { all, alt, optWhitespace, seq, string, whitespace } from 'parsimmon';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
+import { findTabInActiveTabGroup } from '../../util/util';
 import { ExCommand } from '../../vimscript/exCommand';
 import {
   FileCmd,
@@ -13,8 +15,6 @@ import {
   fileOptParser,
   numberParser,
 } from '../../vimscript/parserUtils';
-import { VimError } from '../../error';
-import { findTabInActiveTabGroup } from '../../util/util';
 
 export enum TabCommandType {
   Next,

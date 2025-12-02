@@ -1,11 +1,11 @@
 import assert from 'assert';
 import { Position, Selection, TextDocument, window, workspace } from 'vscode';
+import { failedMovement } from '../../src/actions/baseMotion';
 import { BaseMarkMovement, MarkMovement, MarkMovementBOL } from '../../src/actions/motion';
 import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Cursor } from '../../src/common/motion/cursor';
 import { VimState } from '../../src/state/vimState';
-import { cleanUpWorkspace, replaceContent, setupWorkspace } from '../testUtils';
-import { failedMovement } from '../../src/actions/baseMotion';
+import { replaceContent, setupWorkspace } from '../testUtils';
 
 class Location {
   public position: Position;
@@ -51,10 +51,6 @@ suite('mark movement', () => {
     documentA = await workspace.openTextDocument({
       content: `line 1\n    line 2 with 4 spaces of indentation\nline 3\n`,
     });
-  });
-
-  teardown(async () => {
-    await cleanUpWorkspace();
   });
 
   const newMarkTests = (

@@ -9,11 +9,11 @@ import { VimError } from '../../error';
 import { Register } from '../../register/register';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
+import { EvaluationContext, toString } from '../../vimscript/expression/evaluate';
+import { expressionParser } from '../../vimscript/expression/parser';
+import { Expression } from '../../vimscript/expression/types';
 import { LineRange } from '../../vimscript/lineRange';
 import { bangParser } from '../../vimscript/parserUtils';
-import { Expression } from '../../vimscript/expression/types';
-import { expressionParser } from '../../vimscript/expression/parser';
-import { EvaluationContext, toString } from '../../vimscript/expression/evaluate';
 
 export interface IPutCommandArguments {
   bang: boolean;

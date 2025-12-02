@@ -4,9 +4,9 @@ import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace, reloadConfiguration } from './../testUtils';
-import { Globals } from '../../src/globals';
+import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
+import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
 
 suite('Mode Insert', () => {
   let modeHandler: ModeHandler;
@@ -479,10 +479,7 @@ suite('Mode Insert', () => {
   });
 
   test('Can handle custom digraph insert', async () => {
-    Globals.mockConfiguration.digraphs = {
-      'R!': ['🚀', [55357, 56960]],
-    };
-    await reloadConfiguration();
+    await reloadConfiguration(new Configuration({ digraphs: { 'R!': ['🚀', [55357, 56960]] } }));
     await modeHandler.handleMultipleKeyEvents(['i', '<C-k>', 'R', '!', '<C-k>', '!', 'R']);
     assertEqualLines(['🚀🚀']);
   });
