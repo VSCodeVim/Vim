@@ -52,6 +52,19 @@ suite('Marks', () => {
     });
 
     newTest({
+      title: "'< set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`<',
+      end: ['one', 't|wo', 'three'],
+    });
+    newTest({
+      title: "'> set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`>',
+      end: ['one', 'two', 'th|ree'],
+    });
+
+    newTest({
       title: "'< set by m<",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm<' + 'gg' + '`<',
