@@ -168,7 +168,7 @@ export function statusBarText(vimState: VimState) {
   const cursorChar =
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
-      : '|';
+      : configuration.statusBarCursor;
   switch (vimState.modeData.mode) {
     case Mode.Normal:
       return '-- NORMAL --';
