@@ -611,15 +611,17 @@ export class HistoryTracker {
     // First, handle "special" marks
     let position: Position | undefined;
     if (name === '<') {
-      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
-      position = linewise
-        ? this.vimState.lastVisualSelection?.start.with({ character: 0 })
-        : this.vimState.lastVisualSelection?.start;
+      const lvs = this.vimState.lastVisualSelection;
+      const linewise = lvs?.mode === Mode.VisualLine;
+      // If start is after end, prefer end (handles inverted visual selections)
+      const base = lvs?.start.isAfter(lvs.end) ? lvs.end : lvs?.start;
+      position = linewise ? base?.with({ character: 0 }) : base;
     } else if (name === '>') {
-      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
-      position = linewise
-        ? this.vimState.lastVisualSelection?.end.getLineEnd()
-        : this.vimState.lastVisualSelection?.end.getLeft();
+      const lvs = this.vimState.lastVisualSelection;
+      const linewise = lvs?.mode === Mode.VisualLine;
+      // If start is after end, prefer start (handles inverted visual selections)
+      const base = lvs?.start.isAfter(lvs.end) ? lvs.start : lvs?.end.getLeft();
+      position = linewise ? base?.getLineEnd() : base;
     } else if (name === '[') {
       position = this.getLastChangeStartPosition();
     } else if (name === ']') {
