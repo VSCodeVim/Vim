@@ -30,7 +30,7 @@ export class JumpTracker {
   /**
    * All recorded jumps, in the order of occurrence.
    */
-  public get jumps(): Jump[] {
+  public get jumps(): readonly Jump[] {
     return this._jumps;
   }
 
@@ -45,8 +45,8 @@ export class JumpTracker {
   /**
    * Current jump in the list of jumps.
    */
-  public get currentJump(): Jump {
-    return this._jumps[this._currentJumpNumber] || null;
+  public get currentJump(): Jump | undefined {
+    return this._jumps.at(this._currentJumpNumber);
   }
 
   /**
@@ -59,8 +59,8 @@ export class JumpTracker {
   /**
    * Last jump in list of jumps.
    */
-  public get end(): Jump | null {
-    return this._jumps[this._jumps.length - 1];
+  public get end(): Jump | undefined {
+    return this._jumps.at(-1);
   }
 
   /**
@@ -92,7 +92,7 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public handleFileJump(from: Jump | null, to: Jump) {
+  public handleFileJump(from: Jump | undefined, to: Jump) {
     if (this.isJumpingThroughHistory) {
       this.isJumpingThroughHistory = false;
       return;
@@ -149,14 +149,14 @@ export class JumpTracker {
    * Jump forward, possibly resulting in a file jump
    */
   public async jumpForward(position: Position, vimState: VimState): Promise<void> {
-    await this.jumpThroughHistory(this.recordJumpForward.bind(this), position, vimState);
+    await this.jumpThroughHistory((jump) => this.recordJumpForward(jump), position, vimState);
   }
 
   /**
    * Jump back, possibly resulting in a file jump
    */
   public async jumpBack(position: Position, vimState: VimState): Promise<void> {
-    await this.jumpThroughHistory(this.recordJumpBack.bind(this), position, vimState);
+    await this.jumpThroughHistory((jump) => this.recordJumpBack(jump), position, vimState);
   }
 
   private async jumpThroughHistory(
@@ -246,7 +246,7 @@ export class JumpTracker {
     // just showing where the text was added.
     const distance = text.split('').filter((c) => c === '\n').length;
 
-    this._jumps.forEach((jump, i) => {
+    for (const [i, jump] of this._jumps.entries()) {
       const jumpIsAfterAddedText =
         jump.fileName === document.fileName && jump.position.line > range.start.line;
 
@@ -255,7 +255,7 @@ export class JumpTracker {
 
         this.changePositionForJumpNumber(i, jump, newPosition);
       }
-    });
+    }
   }
 
   /**
@@ -307,7 +307,7 @@ export class JumpTracker {
     this._currentJumpNumber = 0;
   }
 
-  private pushJump(from: Jump | null, to?: Jump) {
+  private pushJump(from: Jump | undefined, to: Jump | undefined) {
     if (from) {
       this.clearJumpsOnSameLine(from);
     }
