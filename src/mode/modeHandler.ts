@@ -106,7 +106,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   ): Promise<ModeHandler> {
     const modeHandler = new ModeHandler(handlerMap, textEditor);
     await modeHandler.vimState.load();
-    await modeHandler.setCurrentMode(configuration.startInInsertMode ? Mode.Insert : Mode.Normal);
+
+    // Check if this editor's URI scheme should start in Insert mode
+    const scheme = textEditor.document.uri.scheme;
+    const shouldStartInsert =
+      configuration.startInInsertMode || configuration.startInInsertModeSchemes.includes(scheme);
+
+    await modeHandler.setCurrentMode(shouldStartInsert ? Mode.Insert : Mode.Normal);
     modeHandler.syncCursors();
     return modeHandler;
   }
