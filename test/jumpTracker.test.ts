@@ -5,11 +5,8 @@ import { Position } from 'vscode';
 import { JumpTracker } from '../src/jumps/jumpTracker';
 import { Jump } from './../src/jumps/jump';
 import { ITestObject, newTest, newTestSkip } from './testSimplifier';
-import { setupWorkspace } from './testUtils';
 
 suite('Record and navigate jumps', () => {
-  suiteSetup(setupWorkspace);
-
   const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
     return newTest({
       title: `Can track jumps for keys: ${options.keysPressed.replace(/\n/g, '<CR>')}`,

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('insertLineBefore', () => {
   let modeHandler: ModeHandler;
@@ -17,8 +17,6 @@ suite('insertLineBefore', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  suiteTeardown(cleanUpWorkspace);
 
   test('tabs are added to match previous line even if line above does not match', async () => {
     // Setup the test
