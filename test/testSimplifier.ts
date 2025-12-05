@@ -13,10 +13,10 @@ import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { Register } from '../src/register/register';
 import { globalState } from '../src/state/globalState';
+import { VimState } from '../src/state/vimState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
 import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
-import { VimState } from '../src/state/vimState';
 
 function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   testObj: T,
@@ -32,8 +32,13 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
     try {
       if (testObj.config) {
         Object.assign(Globals.mockConfiguration, testObj.config);
-        await reloadConfiguration();
+        await reloadConfiguration(Globals.mockConfiguration);
       }
+
+      if (vscode.window.activeTextEditor === undefined) {
+        await setupWorkspace();
+      }
+
       await innerTest(testObj);
     } catch (reason) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -41,8 +46,7 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
       throw reason;
     } finally {
       if (testObj.config) {
-        Globals.mockConfiguration = prevConfig;
-        await reloadConfiguration();
+        await reloadConfiguration(prevConfig);
       }
     }
   });
@@ -229,13 +233,7 @@ function assertDocState(vimState: VimState, docState: DocState): void {
   );
 }
 
-async function testIt(testObj: ITestObject): Promise<ModeHandler> {
-  if (vscode.window.activeTextEditor === undefined) {
-    await setupWorkspace({
-      config: testObj.config,
-    });
-  }
-
+export async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
@@ -343,34 +341,34 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
   ModeHandlerMap.clear();
   const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
 
+  const config = Globals.mockConfiguration;
+
   // Change remappings
   if (testObj.remaps) {
     if (!(testObj.remaps instanceof Array)) {
-      Globals.mockConfiguration.normalModeKeyBindings = testObj.remaps?.normalModeKeyBindings ?? [];
-      Globals.mockConfiguration.normalModeKeyBindingsNonRecursive =
+      config.normalModeKeyBindings = testObj.remaps?.normalModeKeyBindings ?? [];
+      config.normalModeKeyBindingsNonRecursive =
         testObj.remaps?.normalModeKeyBindingsNonRecursive ?? [];
-      Globals.mockConfiguration.insertModeKeyBindings = testObj.remaps?.insertModeKeyBindings ?? [];
-      Globals.mockConfiguration.insertModeKeyBindingsNonRecursive =
+      config.insertModeKeyBindings = testObj.remaps?.insertModeKeyBindings ?? [];
+      config.insertModeKeyBindingsNonRecursive =
         testObj.remaps?.insertModeKeyBindingsNonRecursive ?? [];
-      Globals.mockConfiguration.visualModeKeyBindings = testObj.remaps?.visualModeKeyBindings ?? [];
-      Globals.mockConfiguration.visualModeKeyBindingsNonRecursive =
+      config.visualModeKeyBindings = testObj.remaps?.visualModeKeyBindings ?? [];
+      config.visualModeKeyBindingsNonRecursive =
         testObj.remaps?.visualModeKeyBindingsNonRecursive ?? [];
-      Globals.mockConfiguration.operatorPendingModeKeyBindings =
-        testObj.remaps?.operatorPendingModeKeyBindings ?? [];
-      Globals.mockConfiguration.operatorPendingModeKeyBindingsNonRecursive =
+      config.operatorPendingModeKeyBindings = testObj.remaps?.operatorPendingModeKeyBindings ?? [];
+      config.operatorPendingModeKeyBindingsNonRecursive =
         testObj.remaps?.operatorPendingModeKeyBindingsNonRecursive ?? [];
     } else {
       await parseVimRCMappings(testObj.remaps);
     }
   }
 
-  const timeout = Globals.mockConfiguration.timeout;
+  const timeout = config.timeout;
   const timeoutOffset = timeout / 2;
-  // Globals.mockConfiguration.timeout = timeout;
 
-  await reloadConfiguration();
+  await reloadConfiguration(config);
 
-  for (const { step, index } of testObj.steps.map((value, i) => ({ step: value, index: i }))) {
+  for (const [index, step] of testObj.steps.entries()) {
     const resolvedStep = (() => {
       let start: DocState;
       if (index === 0) {
@@ -553,5 +551,4 @@ async function parseVimRCMappings(lines: string[]): Promise<void> {
   }
 }
 
-export { testIt };
 export type { ITestObject };

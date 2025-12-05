@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './../../configuration/configuration';
-import { TextEditor } from './../../textEditor';
-import { clamp } from '../../util/util';
+import { Position } from 'vscode';
 import { getSentenceBegin, getSentenceEnd } from '../../textobject/sentence';
 import {
   WordType,
   nextWordEnd,
+  nextWordStart,
   prevWordEnd,
   prevWordStart,
-  nextWordStart,
 } from '../../textobject/word';
-import { Position } from 'vscode';
+import { clamp } from '../../util/util';
+import { configuration } from './../../configuration/configuration';
+import { TextEditor } from './../../textEditor';
 
 /**
  * Controls how a PositionDiff affects the Position it's applied to.

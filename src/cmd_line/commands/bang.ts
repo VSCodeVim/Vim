@@ -1,9 +1,9 @@
-import { VimState } from '../../state/vimState';
-import { PositionDiff } from '../../common/motion/position';
-import { externalCommand } from '../../util/externalCommand';
-import { LineRange } from '../../vimscript/lineRange';
-import { ExCommand } from '../../vimscript/exCommand';
 import { all, Parser } from 'parsimmon';
+import { PositionDiff } from '../../common/motion/position';
+import { VimState } from '../../state/vimState';
+import { externalCommand } from '../../util/externalCommand';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
 export interface IBangCommandArguments {
   command: string;

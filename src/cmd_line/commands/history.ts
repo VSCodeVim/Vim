@@ -1,9 +1,6 @@
 // eslint-disable-next-line id-denylist
 import { Parser, alt, optWhitespace, string } from 'parsimmon';
-import {
-  CommandShowCommandHistory,
-  CommandShowSearchHistory,
-} from '../../actions/commands/actions';
+import { ShowCommandHistory, ShowSearchHistory } from '../../actions/commands/actions';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { nameAbbrevParser } from '../../vimscript/parserUtils';
@@ -47,10 +44,10 @@ export class HistoryCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     switch (this.arguments.type) {
       case HistoryCommandType.Cmd:
-        await new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
+        await new ShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
         break;
       case HistoryCommandType.Search:
-        await new CommandShowSearchHistory(SearchDirection.Forward).exec(
+        await new ShowSearchHistory(SearchDirection.Forward).exec(
           vimState.cursorStopPosition,
           vimState,
         );

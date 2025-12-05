@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './configuration/configuration';
-import { VimState } from './state/vimState';
-import { visualBlockGetTopLeftPosition, visualBlockGetBottomRightPosition } from './mode/mode';
-import { Cursor } from './common/motion/cursor';
 import { Position } from 'vscode';
+import { Cursor } from './common/motion/cursor';
+import { configuration } from './configuration/configuration';
+import { visualBlockGetBottomRightPosition, visualBlockGetTopLeftPosition } from './mode/mode';
+import { VimState } from './state/vimState';
 import { Logger } from './util/logger';
 import { clamp } from './util/util';
 

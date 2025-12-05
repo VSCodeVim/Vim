@@ -1,26 +1,26 @@
 import * as assert from 'assert';
+import { VimError } from '../../src/error';
 import {
+  add,
+  blob,
+  bool,
+  dictionary,
+  float,
+  funcCall,
   int,
+  lambda,
+  list,
+  listExpr,
+  multiply,
   negative,
   positive,
-  listExpr,
-  funcCall,
-  multiply,
-  add,
   str,
-  lambda,
   variable,
-  float,
-  bool,
-  list,
-  dictionary,
-  blob,
 } from '../../src/vimscript/expression/build';
+import { displayValue } from '../../src/vimscript/expression/displayValue';
 import { EvaluationContext } from '../../src/vimscript/expression/evaluate';
 import { expressionParser } from '../../src/vimscript/expression/parser';
 import { Expression, Value } from '../../src/vimscript/expression/types';
-import { displayValue } from '../../src/vimscript/expression/displayValue';
-import { VimError } from '../../src/error';
 
 function removeIds(value: Value): unknown {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

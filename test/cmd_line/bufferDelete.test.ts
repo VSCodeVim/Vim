@@ -4,15 +4,15 @@ import * as vscode from 'vscode';
 import { join } from 'path';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
+import { VimError } from '../../src/error';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import * as t from '../testUtils';
-import { VimError } from '../../src/error';
 
 suite('Buffer delete', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
-    await t.setupWorkspace();
+    await t.setupWorkspace({ forceNewFile: true });
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 

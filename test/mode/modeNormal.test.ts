@@ -17,7 +17,6 @@ suite('Mode Normal', () => {
     });
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-  suiteTeardown(cleanUpWorkspace);
 
   test('Can be activated', async () => {
     const activationKeys = ['<Esc>', '<C-[>'];

@@ -1,10 +1,10 @@
 import { all, optWhitespace, Parser, seq } from 'parsimmon';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
+import { EvaluationContext } from '../../vimscript/expression/evaluate';
 import { expressionParser, functionCallParser } from '../../vimscript/expression/parser';
 import { Expression } from '../../vimscript/expression/types';
-import { EvaluationContext } from '../../vimscript/expression/evaluate';
-import { VimError } from '../../error';
 
 export class EvalCommand extends ExCommand {
   public static argParser: Parser<EvalCommand> = optWhitespace

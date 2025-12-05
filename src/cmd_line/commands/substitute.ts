@@ -3,7 +3,6 @@ import {
   alt,
   // eslint-disable-next-line id-denylist
   any,
-  eof,
   noneOf,
   oneOf,
   optWhitespace,
@@ -26,14 +25,14 @@ import { StatusBar } from '../../statusBar';
 import { SearchDecorations, ensureVisible, formatDecorationText } from '../../util/decorationUtils';
 import { escapeCSSIcons } from '../../util/statusBarTextUtils';
 import { ExCommand } from '../../vimscript/exCommand';
+import { str } from '../../vimscript/expression/build';
+import { displayValue } from '../../vimscript/expression/displayValue';
+import { EvaluationContext } from '../../vimscript/expression/evaluate';
+import { expressionParser } from '../../vimscript/expression/parser';
+import { Expression } from '../../vimscript/expression/types';
 import { Address, LineRange } from '../../vimscript/lineRange';
 import { numberParser } from '../../vimscript/parserUtils';
 import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
-import { Expression } from '../../vimscript/expression/types';
-import { EvaluationContext, toString } from '../../vimscript/expression/evaluate';
-import { displayValue } from '../../vimscript/expression/displayValue';
-import { expressionParser } from '../../vimscript/expression/parser';
-import { str } from '../../vimscript/expression/build';
 
 type ReplaceStringComponent =
   | { type: 'string'; value: string }

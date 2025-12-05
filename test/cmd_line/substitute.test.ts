@@ -1,6 +1,6 @@
-import { Globals } from '../../src/globals';
-import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
+import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
+import { reloadConfiguration, setupWorkspace } from './../testUtils';
 
 function sub(
   pattern: string,
@@ -15,7 +15,6 @@ function sub(
 
 suite('Basic substitute', () => {
   setup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Replace single word once',
@@ -247,8 +246,7 @@ suite('Basic substitute', () => {
 
   suite('Effects of gdefault=true', () => {
     setup(async () => {
-      Globals.mockConfiguration.gdefault = true;
-      await reloadConfiguration();
+      await reloadConfiguration(new Configuration({ gdefault: true }));
     });
 
     newTest({

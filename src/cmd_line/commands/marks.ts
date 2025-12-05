@@ -56,7 +56,7 @@ export class MarksCommand extends ExCommand {
         canPickMany: false,
       });
       if (item) {
-        vimState.cursors = [new Cursor(item.mark.position, item.mark.position)];
+        vimState.cursors = [Cursor.atPosition(item.mark.position)];
       }
     } else {
       void window.showInformationMessage('No marks set');

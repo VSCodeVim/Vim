@@ -251,7 +251,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         const mh = await getAndUpdateModeHandler(true);
         if (mh) {
           globalState.jumpTracker.handleFileJump(
-            lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
+            lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : undefined,
             Jump.fromStateNow(mh.vimState),
           );
         }

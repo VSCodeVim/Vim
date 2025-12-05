@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { Globals } from '../../src/globals';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
 import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
 
@@ -1055,8 +1055,7 @@ suite('Mode Visual', () => {
 
   suite('visualstar', () => {
     setup(async () => {
-      Globals.mockConfiguration.visualstar = true;
-      await reloadConfiguration();
+      await reloadConfiguration(new Configuration({ visualstar: true }));
     });
 
     newTest({

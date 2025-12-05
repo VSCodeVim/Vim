@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Cursor } from '../common/motion/cursor';
-import { VimState } from '../state/vimState';
 import { VimError } from '../error';
+import { VimState } from '../state/vimState';
 
 /**
  * We used to have an issue where we would do something like execute a VSCode

@@ -14,7 +14,8 @@ export type IWriteCommandArguments = {
   opt: FileOpt;
   bgWrite: boolean;
   file?: string;
-} & ({ cmd: string } | object);
+  cmd?: string;
+};
 
 //
 //  Implements :write

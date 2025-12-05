@@ -3,9 +3,9 @@ import * as vscode from 'vscode';
 
 import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
+import { findTabInActiveTabGroup } from '../../util/util';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser, fileNameParser, numberParser } from '../../vimscript/parserUtils';
-import { findTabInActiveTabGroup } from '../../util/util';
 
 interface IBufferDeleteCommandArguments {
   bang: boolean;

@@ -4,46 +4,46 @@ import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
 import { DeleteCommand } from '../../src/cmd_line/commands/delete';
 import { DigraphsCommand } from '../../src/cmd_line/commands/digraph';
+import { EchoCommand } from '../../src/cmd_line/commands/echo';
+import { EvalCommand } from '../../src/cmd_line/commands/eval';
 import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
+import { GrepCommand } from '../../src/cmd_line/commands/grep';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
 import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
 import { LetCommand } from '../../src/cmd_line/commands/let';
-import { DeleteMarksCommand, MarksCommand, MarkCommand } from '../../src/cmd_line/commands/marks';
+import { DeleteMarksCommand, MarkCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
-import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import { RegisterCommand } from '../../src/cmd_line/commands/register';
+import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import { SetCommand } from '../../src/cmd_line/commands/set';
+import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 import { SortCommand } from '../../src/cmd_line/commands/sort';
 import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute';
-import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab';
+import { TabCommand, TabCommandType } from '../../src/cmd_line/commands/tab';
+import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
 import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
+import { VimError } from '../../src/error';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
 import {
   add,
-  int,
-  str,
-  variable,
-  funcCall,
-  list,
-  toExpr,
   dictionary,
+  funcCall,
+  int,
+  list,
   listExpr,
+  str,
+  toExpr,
+  variable,
 } from '../../src/vimscript/expression/build';
+import { Expression } from '../../src/vimscript/expression/types';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
-import { ShiftCommand } from '../../src/cmd_line/commands/shift';
-import { GrepCommand } from '../../src/cmd_line/commands/grep';
-import { VimError } from '../../src/error';
-import { EvalCommand } from '../../src/cmd_line/commands/eval';
-import { EchoCommand } from '../../src/cmd_line/commands/echo';
-import { Expression } from '../../src/vimscript/expression/types';
-import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
 
 function exParseTest(input: string, parsed: ExCommand) {
   test(input, () => {
