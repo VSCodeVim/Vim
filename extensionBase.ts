@@ -17,6 +17,7 @@ import { Logger } from './src/util/logger';
 import { SpecialKeys } from './src/util/specialKeys';
 import { VSCodeContext } from './src/util/vscodeContext';
 import { exCommandParser } from './src/vimscript/exCommandParser';
+import { registerTextObjects } from './src/textobject/externalCommandTextObject';
 
 let extensionContext: vscode.ExtensionContext;
 let previousActiveEditorUri: vscode.Uri | undefined;
@@ -88,6 +89,7 @@ export async function loadConfiguration() {
       }
     }
   }
+  registerTextObjects(configuration.textObjects);
 }
 
 /**
