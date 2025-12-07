@@ -1558,7 +1558,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         for (const { stop: cursorStop } of this.vimState.cursors) {
           if (cursorStop.isLineEnd(this.vimState.document)) {
             iModeVirtualCharDecorationOptions.push({
-              range: new vscode.Range(cursorStop, cursorStop.getLineEndIncludingEOL()),
+              range: new vscode.Range(cursorStop, cursorStop.getLineEnd()),
               renderOptions: eolRenderOptions,
             });
           } else {
