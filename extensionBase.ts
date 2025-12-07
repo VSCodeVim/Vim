@@ -42,26 +42,16 @@ export async function getAndUpdateModeHandler(
 
   curHandler.vimState.editor = activeTextEditor;
 
-  const isEditorChange =
+  if (
     forceSyncAndUpdate ||
     !previousActiveEditorUri ||
-    previousActiveEditorUri !== activeTextEditor.document.uri;
-
-  if (isEditorChange) {
+    previousActiveEditorUri !== activeTextEditor.document.uri
+  ) {
     // We sync the cursors here because ModeHandler is specific to a document, not an editor, so we
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
     curHandler.updateView({ drawSelection: false, revealRange: false });
-  }
-
-  // For existing editors (not newly created), check if we should switch to Insert mode
-  // based on the document's URI scheme when focus changes to this editor
-  if (!isNew && isEditorChange) {
-    const scheme = activeTextEditor.document.uri.scheme;
-    if (configuration.startInInsertModeSchemes.includes(scheme)) {
-      await curHandler.vimState.setCurrentMode(Mode.Insert);
-    }
   }
 
   previousActiveEditorUri = activeTextEditor.document.uri;
