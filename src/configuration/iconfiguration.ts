@@ -33,6 +33,11 @@ export interface IAutoSwitchInputMethod {
   obtainIMCmd: string;
 }
 
+export interface IMapIMEComposition {
+  enable: boolean;
+  map: Record<string, string>;
+}
+
 export interface IHighlightedYankConfiguration {
   /**
    * Boolean indicating whether yank highlighting should be enabled.
@@ -447,4 +452,9 @@ export interface IConfiguration {
   shell: string;
 
   langmap: string;
+
+  /**
+   * MapIMEComposition
+   */
+  mapIMEComposition: IMapIMEComposition;
 }

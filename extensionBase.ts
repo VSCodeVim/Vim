@@ -15,6 +15,7 @@ import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { Logger } from './src/util/logger';
 import { SpecialKeys } from './src/util/specialKeys';
+import { interruptIMEComposition } from './src/util/util';
 import { VSCodeContext } from './src/util/vscodeContext';
 import { exCommandParser } from './src/vimscript/exCommandParser';
 
@@ -335,11 +336,19 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   const compositionState = new CompositionState();
 
   // Override VSCode commands
-  overrideCommand(context, 'type', async (args: { text: string }) => {
+  overrideCommand(context, 'type', (args: { text: string }) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
-        if (compositionState.isInComposition) {
+        if (configuration.mapIMEComposition.enable && mh.vimState.currentMode !== Mode.Insert) {
+          for (let key of args.text) {
+            if (key in configuration.mapIMEComposition.map) {
+              compositionState.reset();
+              key = configuration.mapIMEComposition.map[key];
+            }
+            await mh.handleKeyEvent(key);
+          }
+        } else if (compositionState.isInComposition) {
           compositionState.composingText += args.text;
           if (mh.vimState.currentMode === Mode.Insert) {
             compositionState.insertedText = true;
@@ -355,7 +364,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   overrideCommand(
     context,
     'replacePreviousChar',
-    async (args: { replaceCharCnt: number; text: string }) => {
+    (args: { replaceCharCnt: number; text: string }) => {
       taskQueue.enqueueTask(async () => {
         const mh = await getAndUpdateModeHandler();
         if (mh) {
@@ -384,13 +393,17 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     },
   );
 
-  overrideCommand(context, 'compositionStart', async () => {
+  overrideCommand(context, 'compositionStart', () => {
     taskQueue.enqueueTask(async () => {
+      const mh = await getAndUpdateModeHandler();
+      if (configuration.mapIMEComposition.enable && mh && mh.vimState.currentMode !== Mode.Insert) {
+        await interruptIMEComposition();
+      }
       compositionState.isInComposition = true;
     });
   });
 
-  overrideCommand(context, 'compositionEnd', async () => {
+  overrideCommand(context, 'compositionEnd', () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
@@ -432,7 +445,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     }
   });
 
-  registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
+  registerCommand(context, 'vim.remap', (args: ICodeKeybinding) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh === undefined) {
@@ -468,7 +481,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     });
   });
 
-  registerCommand(context, 'toggleVim', async () => {
+  registerCommand(context, 'toggleVim', () => {
     configuration.disableExtension = !configuration.disableExtension;
     void toggleExtension(configuration.disableExtension, compositionState);
   });
@@ -487,7 +500,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
             await mh.handleKeyEvent(`${boundKey.key}`);
           }
         };
-    registerCommand(context, boundKey.command, async () => {
+    registerCommand(context, boundKey.command, () => {
       taskQueue.enqueueTask(command);
     });
   }
@@ -551,7 +564,7 @@ function overrideCommand(
   command: string,
   callback: (...args: any[]) => any,
 ) {
-  const disposable = vscode.commands.registerCommand(command, async (args) => {
+  const disposable = vscode.commands.registerCommand(command, (args) => {
     if (configuration.disableExtension) {
       return vscode.commands.executeCommand('default:' + command, args);
     }
@@ -578,7 +591,7 @@ export function registerCommand(
   callback: (...args: any[]) => any,
   requiresActiveEditor: boolean = true,
 ) {
-  const disposable = vscode.commands.registerCommand(command, async (args) => {
+  const disposable = vscode.commands.registerCommand(command, (args) => {
     if (requiresActiveEditor && !vscode.window.activeTextEditor) {
       return;
     }
