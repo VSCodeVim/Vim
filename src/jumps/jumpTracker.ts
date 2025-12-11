@@ -237,18 +237,25 @@ export class JumpTracker {
    * Update existing jumps when lines were added to a document.
    *
    * @param document - Document that was changed, typically a vscode.TextDocument.
-   * @param range - Location where the text was added.
+   * @param position - Location where the text was added.
    * @param text - Text containing one or more newline characters.
    */
-  public handleTextAdded(document: { fileName: string }, range: vscode.Range, text: string): void {
+  public handleTextAdded(
+    document: { fileName: string },
+    position: vscode.Position,
+    text: string,
+  ): void {
     // Get distance from newlines in the text added.
     // Unlike handleTextDeleted, the range parameter distance between start/end is generally zero,
     // just showing where the text was added.
     const distance = text.split('').filter((c) => c === '\n').length;
+    if (distance === 0) {
+      return;
+    }
 
     for (const [i, jump] of this._jumps.entries()) {
       const jumpIsAfterAddedText =
-        jump.fileName === document.fileName && jump.position.line > range.start.line;
+        jump.fileName === document.fileName && jump.position.line > position.line;
 
       if (jumpIsAfterAddedText) {
         const newPosition = new Position(jump.position.line + distance, jump.position.character);

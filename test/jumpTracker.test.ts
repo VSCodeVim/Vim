@@ -440,5 +440,7 @@ suite('Record and navigate jumps', () => {
         jumps: ['start', 'end'],
       });
     });
+
+    // TODO: Test that jumps are adjusted properly when document is modified externally
   });
 });
