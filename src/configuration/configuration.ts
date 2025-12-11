@@ -328,6 +328,8 @@ class Configuration implements IConfiguration {
     replace: ['#000000', '#ffffff'],
   };
 
+  statusBarCursor = '|';
+
   searchHighlightColor = '';
   searchHighlightTextColor = '';
 

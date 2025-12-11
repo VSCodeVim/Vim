@@ -252,6 +252,7 @@ export interface IConfiguration {
    * Status bar colors to change to based on mode
    */
   statusBarColors: IModeSpecificStrings<string | string[]>;
+  statusBarCursor: string;
 
   /**
    * Color of search highlights.
