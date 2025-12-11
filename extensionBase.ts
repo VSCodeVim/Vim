@@ -160,23 +160,14 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // TODO: In this case, we should probably loop over the content changes...
     }
 
-    // Change from VSCode editor should set document.isDirty to true but they initially don't!
-    // There is a timing issue in VSCode codebase between when the isDirty flag is set and
-    // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
-    const contentChangeHandler = (modeHandler: ModeHandler) => {
-      if (modeHandler.vimState.currentMode === Mode.Insert) {
-        if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
-          modeHandler.vimState.historyTracker.currentContentChanges = [];
-        }
-
-        modeHandler.vimState.historyTracker.currentContentChanges =
-          modeHandler.vimState.historyTracker.currentContentChanges.concat(event.contentChanges);
-      }
-    };
-
     const mh = ModeHandlerMap.get(event.document.uri);
     if (mh) {
-      contentChangeHandler(mh);
+      // Change from VSCode editor should set document.isDirty to true but they initially don't!
+      // There is a timing issue in VSCode codebase between when the isDirty flag is set and
+      // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
+      if (mh.vimState.currentMode === Mode.Insert) {
+        mh.vimState.historyTracker.currentContentChanges.push(...event.contentChanges);
+      }
     }
   });
 

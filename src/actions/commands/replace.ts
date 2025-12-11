@@ -271,10 +271,9 @@ class BackspaceInReplaceMode extends BaseCommand {
       if (before === '') {
         // We've gone beyond the originally existing text; just backspace.
         // TODO: should this use a 'deleteLeft' transformation?
-        vimState.recordedState.transformer.addTransformation({
-          type: 'deleteRange',
-          range: new Range(position.getLeftThroughLineBreaks(), position),
-        });
+        vimState.recordedState.transformer.delete(
+          new Range(position.getLeftThroughLineBreaks(), position),
+        );
       } else {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
