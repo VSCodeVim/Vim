@@ -70,6 +70,23 @@ export async function getAndUpdateModeHandler(
 }
 
 /**
+ * A synchronous and quick way to check the current vim mode.
+ */
+export function peek_mode(): Mode | undefined {
+  const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor === undefined || activeTextEditor.document.isClosed) {
+    return undefined;
+  }
+
+  const editorId = activeTextEditor.document.uri;
+  const curHandler = ModeHandlerMap.get(editorId);
+  if (curHandler == null) {
+    return undefined;
+  }
+  return curHandler.vimState.currentMode;
+}
+
+/**
  * Loads and validates the user's configuration
  */
 export async function loadConfiguration() {
@@ -394,11 +411,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   );
 
   overrideCommand(context, 'compositionStart', () => {
+    const mode = peek_mode();
+    if (configuration.mapIMEComposition.enable && mode !== Mode.Insert) {
+      void interruptIMEComposition();
+    }
     taskQueue.enqueueTask(async () => {
-      const mh = await getAndUpdateModeHandler();
-      if (configuration.mapIMEComposition.enable && mh && mh.vimState.currentMode !== Mode.Insert) {
-        await interruptIMEComposition();
-      }
       compositionState.isInComposition = true;
     });
   });
