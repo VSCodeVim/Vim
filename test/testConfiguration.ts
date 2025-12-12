@@ -74,7 +74,7 @@ export class Configuration implements IConfiguration {
   incsearch = true;
   inccommand = '' as const;
   startInInsertMode = false;
-  startInInsertModeSchemes: string[] = [];
+  startInInsertModeSchemes = ['comment'];
   statusBarColorControl = false;
   statusBarColors: IModeSpecificStrings<string | string[]> = {
     normal: ['#8FBCBB', '#434C5E'],

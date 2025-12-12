@@ -818,7 +818,9 @@
           "items": {
             "type": "string"
           },
-          "default": [],
+          "default": [
+            "comment"
+          ],
           "markdownDescription": "List of document URI schemes that should automatically start in Insert mode. For example, use `[\"comment\"]` for GitHub PR comment editors, or `[\"comment\", \"gitlens\"]` for multiple schemes."
         },
         "vim.handleKeys": {
