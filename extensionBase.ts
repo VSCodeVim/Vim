@@ -69,6 +69,23 @@ export async function getAndUpdateModeHandler(
 }
 
 /**
+ * A synchronous and quick way to check the current vim mode.
+ */
+export function peek_mode(): Mode | undefined {
+  const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor === undefined || activeTextEditor.document.isClosed) {
+    return undefined;
+  }
+
+  const editorId = activeTextEditor.document.uri;
+  const curHandler = ModeHandlerMap.get(editorId);
+  if (curHandler == null) {
+    return undefined;
+  }
+  return curHandler.vimState.currentMode;
+}
+
+/**
  * Loads and validates the user's configuration
  */
 export async function loadConfiguration() {
@@ -319,84 +336,80 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   const compositionState = new CompositionState();
 
   // Override VSCode commands
-  overrideCommand(context, 'type', async (args: { text: string }) => {
-    taskQueue.enqueueTask(async () => {
-      const mh = await getAndUpdateModeHandler();
-      if (mh) {
-        if (compositionState.isInComposition) {
-          compositionState.composingText += args.text;
-          if (mh.vimState.currentMode === Mode.Insert) {
-            compositionState.insertedText = true;
-            void vscode.commands.executeCommand('default:type', { text: args.text });
-          }
-        } else {
+  overrideCommand(context, 'type', (args: { text: string }) => {
+    if (compositionState.isInComposition) {
+      compositionState.composingText = args.text;
+      if (peek_mode() === Mode.Insert) {
+        compositionState.insertedText = true;
+        void vscode.commands.executeCommand('default:type', { text: args.text });
+      }
+    } else {
+      taskQueue.enqueueTask(async () => {
+        const mh = await getAndUpdateModeHandler();
+        if (mh) {
           await mh.handleKeyEvent(args.text);
         }
-      }
-    });
+      });
+    }
   });
 
   overrideCommand(
     context,
     'replacePreviousChar',
-    async (args: { replaceCharCnt: number; text: string }) => {
-      taskQueue.enqueueTask(async () => {
-        const mh = await getAndUpdateModeHandler();
-        if (mh) {
-          if (compositionState.isInComposition) {
-            compositionState.composingText =
-              compositionState.composingText.substr(
-                0,
-                compositionState.composingText.length - args.replaceCharCnt,
-              ) + args.text;
-          }
-          if (compositionState.insertedText) {
-            await vscode.commands.executeCommand('default:replacePreviousChar', {
-              text: args.text,
-              replaceCharCnt: args.replaceCharCnt,
-            });
-            mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
-            mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
-          }
-        } else {
-          await vscode.commands.executeCommand('default:replacePreviousChar', {
-            text: args.text,
-            replaceCharCnt: args.replaceCharCnt,
-          });
-        }
-      });
+    (args: { replaceCharCnt: number; text: string }) => {
+      if (compositionState.isInComposition) {
+        compositionState.composingText =
+          compositionState.composingText.slice(
+            0,
+            compositionState.composingText.length - args.replaceCharCnt,
+          ) + args.text;
+      }
+      if (peek_mode() === Mode.Insert) {
+        void vscode.commands.executeCommand('default:replacePreviousChar', {
+          text: args.text,
+          replaceCharCnt: args.replaceCharCnt,
+        });
+      }
     },
   );
 
-  overrideCommand(context, 'compositionStart', async () => {
-    taskQueue.enqueueTask(async () => {
-      compositionState.isInComposition = true;
-    });
+  overrideCommand(context, 'compositionStart', () => {
+    compositionState.isInComposition = true;
   });
 
-  overrideCommand(context, 'compositionEnd', async () => {
-    taskQueue.enqueueTask(async () => {
-      const mh = await getAndUpdateModeHandler();
-      if (mh) {
-        if (compositionState.insertedText) {
-          mh.internalSelectionsTracker.startIgnoringIntermediateSelections();
-          await vscode.commands.executeCommand('default:replacePreviousChar', {
-            text: '',
-            replaceCharCnt: compositionState.composingText.length,
-          });
-          mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
-          mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
-          mh.internalSelectionsTracker.stopIgnoringIntermediateSelections();
+  overrideCommand(context, 'compositionEnd', () => {
+    if (peek_mode() === Mode.Insert && compositionState.insertedText) {
+      const text = compositionState.composingText;
+      void vscode.commands.executeCommand('default:replacePreviousChar', {
+        text,
+        replaceCharCnt: text.length,
+      });
+    } else {
+      const localCompositionState = compositionState.clone();
+      taskQueue.enqueueTask(async () => {
+        const mh = await getAndUpdateModeHandler();
+        if (mh) {
+          if (localCompositionState.insertedText) {
+            mh.internalSelectionsTracker.startIgnoringIntermediateSelections();
+            await vscode.commands.executeCommand('default:replacePreviousChar', {
+              text: '',
+              replaceCharCnt: localCompositionState.composingText.length,
+            });
+            mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
+            mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
+            mh.internalSelectionsTracker.stopIgnoringIntermediateSelections();
+          }
+          const text = localCompositionState.composingText;
+          if (localCompositionState.insertedText) {
+            await mh.handleMultipleKeyEvents([text]);
+          } else {
+            await mh.handleMultipleKeyEvents(text.split(''));
+          }
         }
-        const text = compositionState.composingText;
-        if (compositionState.insertedText) {
-          await mh.handleMultipleKeyEvents([text]);
-        } else {
-          await mh.handleMultipleKeyEvents(text.split(''));
-        }
-      }
-      compositionState.reset();
-    });
+      });
+    }
+
+    compositionState.reset();
   });
 
   // Register extension commands
