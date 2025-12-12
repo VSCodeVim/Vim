@@ -317,7 +317,7 @@ class Configuration implements IConfiguration {
 
   startInInsertMode = false;
 
-  startInInsertModeSchemes: string[] = [];
+  startInInsertModeSchemes: string[] = ['comment'];
 
   statusBarColorControl = false;
 
