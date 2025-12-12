@@ -202,8 +202,6 @@ export abstract class BaseCommand extends BaseAction {
       return;
     }
 
-    const resultingCursors: Cursor[] = [];
-
     const cursorsToIterateOver = [...vimState.cursors].sort((a, b) =>
       a.start.line > b.start.line ||
       (a.start.line === b.start.line && a.start.character > b.start.character)
@@ -211,9 +209,10 @@ export abstract class BaseCommand extends BaseAction {
         : -1,
     );
 
-    let cursorIndex = 0;
-    for (const { start, stop } of cursorsToIterateOver) {
-      this.multicursorIndex = cursorIndex++;
+    const resultingCursors: Cursor[] = [];
+
+    for (const [index, { start, stop }] of cursorsToIterateOver.entries()) {
+      this.multicursorIndex = index;
 
       vimState.cursorStopPosition = stop;
       vimState.cursorStartPosition = start;

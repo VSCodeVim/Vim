@@ -25,7 +25,7 @@ class ReplaceOperator extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range =
       vimState.currentRegisterMode === RegisterMode.LineWise
-        ? new Range(start.getLineBegin(), end.getLineEndIncludingEOL())
+        ? new Range(start.getLineBegin(), end.getLineEnd())
         : new Range(start, end.getRight());
 
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);

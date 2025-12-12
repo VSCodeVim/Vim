@@ -5,7 +5,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { getCompletionsForCurrentLine } from '../../src/completion/lineCompletionProvider';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { VimState } from '../../src/state/vimState';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('Provide line completions', () => {
   let modeHandler: ModeHandler;
@@ -16,7 +16,6 @@ suite('Provide line completions', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
     vimState = modeHandler.vimState;
   });
-  suiteTeardown(cleanUpWorkspace);
 
   const setupTestWithLines = async (lines: string[]) => {
     vimState.cursorStopPosition = new Position(0, 0);

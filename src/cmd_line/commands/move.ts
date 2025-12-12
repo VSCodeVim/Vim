@@ -69,7 +69,7 @@ export class MoveCommand extends ExCommand {
     }
     // delete
     let start = new Position(sourceStart, 0);
-    let end = new Position(sourceEnd, 0).getLineEndIncludingEOL();
+    let end = new Position(sourceEnd, 0).getLineEnd();
 
     if (sourceEnd < vimState.document.lineCount - 1) {
       end = end.getRightThroughLineBreaks();

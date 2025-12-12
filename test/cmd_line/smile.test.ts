@@ -15,7 +15,7 @@ suite('Smile command', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  test(':smile creates new tab', async () => {
+  test(':smile creates new tab containing smile', async () => {
     await new ExCommandLine('smile', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     await waitForTabChange();
 
@@ -24,13 +24,7 @@ suite('Smile command', () => {
       1,
       ':smile did not create a new untitled file',
     );
-  });
 
-  test(':smile editor contains smile text', async () => {
-    await new ExCommandLine('smile', modeHandler.vimState.currentMode).run(modeHandler.vimState);
-    await waitForTabChange();
-    const textArray = SmileCommand.smileText.split('\n');
-
-    assertEqualLines(textArray);
+    assertEqualLines(SmileCommand.smileText.split('\n'));
   });
 });

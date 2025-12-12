@@ -283,9 +283,7 @@ export class ExitInsertMode extends BaseCommand {
       }
     }
 
-    if (vimState.historyTracker.currentContentChanges.length > 0) {
-      vimState.historyTracker.currentContentChanges = [];
-    }
+    vimState.historyTracker.currentContentChanges = [];
 
     if (vimState.isFakeMultiCursor) {
       vimState.cursors = [vimState.cursors[0]];

@@ -1,6 +1,6 @@
 import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, reloadConfiguration, setupWorkspace } from './../testUtils';
+import { reloadConfiguration, setupWorkspace } from './../testUtils';
 
 function sub(
   pattern: string,
@@ -15,7 +15,6 @@ function sub(
 
 suite('Basic substitute', () => {
   setup(setupWorkspace);
-  suiteTeardown(cleanUpWorkspace);
 
   newTest({
     title: 'Replace single word once',

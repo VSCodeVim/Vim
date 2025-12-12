@@ -5,7 +5,7 @@ import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { newTest, newTestSkip } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('Marks', () => {
   let modeHandler: ModeHandler;
@@ -14,8 +14,6 @@ suite('Marks', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  suiteTeardown(cleanUpWorkspace);
 
   const jumpToNewFile = async () => {
     await setupWorkspace({
@@ -48,6 +46,19 @@ suite('Marks', () => {
       title: "'> set by Visual mode",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'vjl<Esc>' + 'gg' + '`>',
+      end: ['one', 'two', 'th|ree'],
+    });
+
+    newTest({
+      title: "'< set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`<',
+      end: ['one', 't|wo', 'three'],
+    });
+    newTest({
+      title: "'> set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 'th|ree'],
     });
 

@@ -212,11 +212,6 @@ declare module 'vscode' {
     getLineEnd(): Position;
 
     /**
-     * @returns a new Position at the end of this Position's line, including the invisible newline character.
-     */
-    getLineEndIncludingEOL(): Position;
-
-    /**
      * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
      */
     getLeftIfEOL(): Position;
@@ -480,14 +475,6 @@ Position.prototype.getLineBeginRespectingIndent = function (
  */
 Position.prototype.getLineEnd = function (this: Position): Position {
   return new Position(this.line, TextEditor.getLineLength(this.line));
-};
-
-/**
- * @returns a new Position at the end of this Position's line, including the invisible newline character.
- */
-Position.prototype.getLineEndIncludingEOL = function (this: Position): Position {
-  // TODO: isn't this one too far?
-  return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
 };
 
 /**
