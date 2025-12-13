@@ -1,10 +1,10 @@
 {
-  "name": "vim",
-  "displayName": "Vim",
-  "description": "Vim emulation for Visual Studio Code",
+  "name": "vim-rufus",
+  "displayName": "Vim-Rufus",
+  "description": "Vim emulation for Visual Studio Code with Rufus' customizations",
   "icon": "images/icon.png",
   "version": "1.28.1",
-  "publisher": "vscodevim",
+  "publisher": "RufusWong",
   "galleryBanner": {
     "color": "#e3f4ff",
     "theme": "light"
@@ -17,11 +17,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/VSCodeVim/Vim.git"
+    "url": "https://github.com/rcywongaa/Vim.git"
   },
-  "homepage": "https://github.com/VSCodeVim/Vim",
+  "homepage": "https://github.com/rcywongaa/Vim",
   "bugs": {
-    "url": "https://github.com/VSCodeVim/Vim/issues"
+    "url": "https://github.com/rcywongaa/Vim/issues"
   },
   "engines": {
     "vscode": "^1.74.0"
