@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { ExCommandLine, SearchCommandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
+import { isLiteralMode } from './src/configuration/langmap';
 import { Notation } from './src/configuration/notation';
 import { Globals } from './src/globals';
 import { Jump } from './src/jumps/jump';
@@ -357,7 +358,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
-        if (configuration.mapIMEComposition.enable && mh.vimState.currentMode !== Mode.Insert) {
+        if (configuration.mapIMEComposition.enable && !isLiteralMode(mh.vimState.currentMode)) {
           for (let key of args.text) {
             if (key in configuration.mapIMEComposition.map) {
               compositionState.reset();
@@ -412,7 +413,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   overrideCommand(context, 'compositionStart', () => {
     const mode = peek_mode();
-    if (configuration.mapIMEComposition.enable && mode !== Mode.Insert) {
+    if (configuration.mapIMEComposition.enable && mode != null && !isLiteralMode(mode)) {
       void interruptIMEComposition();
     }
     taskQueue.enqueueTask(async () => {
