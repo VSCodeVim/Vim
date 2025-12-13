@@ -14,6 +14,7 @@ import {
   IConfiguration,
   IHighlightedYankConfiguration,
   IKeyRemapping,
+  IMapIMEComposition,
   IModeSpecificStrings,
   ITargetsConfiguration,
 } from './iconfiguration';
@@ -514,6 +515,12 @@ class Configuration implements IConfiguration {
     }
     return result;
   }
+
+  // mapIMEComposition
+  mapIMEComposition: IMapIMEComposition = {
+    enable: false,
+    map: {},
+  };
 }
 
 // handle mapped settings between vscode to vim
