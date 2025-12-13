@@ -155,7 +155,7 @@ export class VimState implements vscode.Disposable {
   public get cursors(): Cursor[] {
     return this._cursors;
   }
-  public set cursors(value: Cursor[]) {
+  public set cursors(value: readonly Cursor[]) {
     if (value.length === 0) {
       Logger.warn('Tried to set VimState.cursors to an empty array');
       return;

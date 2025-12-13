@@ -24,8 +24,6 @@ class ActionJoin extends BaseCommand {
   ): Promise<void> {
     count = count - 1 || 1;
 
-    const joinspaces = configuration.joinspaces;
-
     let startLineNumber: number;
     let endLineNumber: number;
 
@@ -55,14 +53,14 @@ class ActionJoin extends BaseCommand {
         if (trimmedLinesContent === '' || trimmedLinesContent.endsWith('\t')) {
           insertSpace = '';
         } else if (
-          joinspaces &&
+          configuration.joinspaces &&
           (trimmedLinesContent.endsWith('.') ||
             trimmedLinesContent.endsWith('!') ||
             trimmedLinesContent.endsWith('?'))
         ) {
           insertSpace = '  ';
         } else if (
-          joinspaces &&
+          configuration.joinspaces &&
           (trimmedLinesContent.endsWith('. ') ||
             trimmedLinesContent.endsWith('! ') ||
             trimmedLinesContent.endsWith('? '))

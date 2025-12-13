@@ -365,12 +365,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // start visual mode?
       if (
         selection.anchor.line === selection.active.line &&
-        selection.anchor.character >= newPosition.getLineEnd().character &&
-        selection.active.character >= newPosition.getLineEnd().character
+        Math.min(selection.active.character, selection.anchor.character) >=
+          newPosition.getLineEnd().character
       ) {
         // This prevents you from selecting EOL
       } else if (!selection.anchor.isEqual(selection.active)) {
-        let selectionStart = new Position(selection.anchor.line, selection.anchor.character);
+        let selectionStart = selection.anchor;
 
         if (selectionStart.character > selectionStart.getLineEnd().character) {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
@@ -459,12 +459,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
 
       if (key === '<C-c>' && process.platform !== 'darwin') {
-        if (
-          !configuration.useCtrlKeys ||
-          this.vimState.currentMode === Mode.Visual ||
-          this.vimState.currentMode === Mode.VisualBlock ||
-          this.vimState.currentMode === Mode.VisualLine
-        ) {
+        if (!configuration.useCtrlKeys || isVisualMode(this.vimState.currentMode)) {
           key = '<copy>';
         }
       }
@@ -824,10 +819,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // We don't want to record a repeatable action when exiting from these modes
     // by pressing <Esc>
     if (
-      (prevMode === Mode.Visual ||
-        prevMode === Mode.VisualBlock ||
-        prevMode === Mode.VisualLine ||
-        prevMode === Mode.CommandlineInProgress) &&
+      (isVisualMode(prevMode) || prevMode === Mode.CommandlineInProgress) &&
       action.keysPressed[0] === '<Esc>'
     ) {
       ranRepeatableAction = false;
