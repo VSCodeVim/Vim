@@ -286,7 +286,6 @@ export class ExitInsertMode extends BaseCommand {
     vimState.historyTracker.currentContentChanges = [];
 
     if (vimState.isFakeMultiCursor) {
-      vimState.cursors = [vimState.cursors[0]];
       vimState.isFakeMultiCursor = false;
     }
   }
