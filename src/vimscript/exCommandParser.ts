@@ -33,6 +33,7 @@ import { QuitCommand } from '../cmd_line/commands/quit';
 import { ReadCommand } from '../cmd_line/commands/read';
 import { RedoCommand } from '../cmd_line/commands/redo';
 import { RegisterCommand } from '../cmd_line/commands/register';
+import { ResizeCommand } from '../cmd_line/commands/resize';
 import { RetabCommand } from '../cmd_line/commands/retab';
 import { SetCommand } from '../cmd_line/commands/set';
 import { ShCommand } from '../cmd_line/commands/sh';
@@ -43,6 +44,7 @@ import { SubstituteCommand } from '../cmd_line/commands/substitute';
 import { TabCommand } from '../cmd_line/commands/tab';
 import { TerminalCommand } from '../cmd_line/commands/terminal';
 import { UndoCommand } from '../cmd_line/commands/undo';
+import { VerticalCommand } from '../cmd_line/commands/vertical';
 import { VsCodeCommand } from '../cmd_line/commands/vscode';
 import { WallCommand } from '../cmd_line/commands/wall';
 import { WriteCommand } from '../cmd_line/commands/write';
@@ -446,7 +448,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['redraws', 'tatus'], undefined],
   [['redrawt', 'abline'], undefined],
   [['reg', 'isters'], RegisterCommand.argParser],
-  [['res', 'ize'], undefined],
+  [['res', 'ize'], ResizeCommand.argParser],
   [['ret', 'ab'], RetabCommand.argParser],
   [['retu', 'rn'], undefined],
   [['rew', 'ind'], undefined],
@@ -577,7 +579,8 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['v', 'global'], undefined],
   [['ve', 'rsion'], undefined],
   [['verb', 'ose'], undefined],
-  [['vert', 'ical'], undefined],
+  [['vert', 'ical'], VerticalCommand.argParser.general],
+  [['vertical-resize', ''], VerticalCommand.argParser.resize],
   [['vi', 'sual'], undefined],
   [['vie', 'w'], undefined],
   [['vim', 'grep'], GrepCommand.argParser],
