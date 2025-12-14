@@ -322,7 +322,7 @@ class UndoStack {
     return step?.marks ?? this.initialMarks;
   }
 
-  public removeMarks(marks?: string[]): void {
+  public removeMarks(marks?: readonly string[]): void {
     const step = this.getCurrentHistoryStep();
     if (marks === undefined) {
       if (step) {
@@ -345,10 +345,7 @@ class ChangeList {
   private index: number | undefined;
 
   public addChangePosition(position: Position) {
-    if (
-      this.changeLocations.length > 0 &&
-      this.changeLocations[this.changeLocations.length - 1].line === position.line
-    ) {
+    if (this.changeLocations.at(-1)?.line === position.line) {
       this.changeLocations[this.changeLocations.length - 1] = position;
     } else {
       this.changeLocations.push(position);
@@ -363,13 +360,12 @@ class ChangeList {
         return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
-      return this.changeLocations[this.index];
     } else if (this.index < this.changeLocations.length - 1) {
       this.index++;
-      return this.changeLocations[this.index];
     } else {
       return VimError.AtEndOfChangeList();
     }
+    return this.changeLocations[this.index];
   }
 
   public prevChangePosition(): Position | VimError {
@@ -378,24 +374,23 @@ class ChangeList {
         return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
-      return this.changeLocations[this.index];
     } else if (this.index > 0) {
       this.index--;
-      return this.changeLocations[this.index];
     } else {
       return VimError.AtStartOfChangeList();
     }
+    return this.changeLocations[this.index];
   }
 }
 
 export class HistoryTracker {
-  public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
+  public currentContentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
   private nextStepCursorsAtStart: readonly Cursor[] | undefined;
 
-  private readonly undoStack: UndoStack;
+  private readonly undoStack = new UndoStack();
 
-  private readonly changeList: ChangeList;
+  private readonly changeList = new ChangeList();
 
   /**
    * The state of the document the last time HistoryTracker.addChange() or HistoryTracker.ignoreChange() was called.
@@ -410,13 +405,10 @@ export class HistoryTracker {
 
   constructor(vimState: VimState) {
     this.vimState = vimState;
-    this.undoStack = new UndoStack();
-    this.changeList = new ChangeList();
     this.previousDocumentState = {
       text: this.getDocumentText(),
       versionNumber: this.getDocumentVersion(),
     };
-    this.currentContentChanges = [];
   }
 
   private getDocumentText(): string {
@@ -653,7 +645,7 @@ export class HistoryTracker {
   /**
    * Removes all marks matching from either the global or local array.
    */
-  public removeMarks(markNames: string[]): void {
+  public removeMarks(markNames: readonly string[]): void {
     if (markNames.length === 0) {
       return;
     }
@@ -669,18 +661,18 @@ export class HistoryTracker {
    * Gets all local marks.  I.e., marks that are specific for the current
    * editor.
    */
-  public getLocalMarks(): ILocalMark[] {
-    return [...this.undoStack.getCurrentMarkList().filter((mark) => !mark.isUppercaseMark)];
+  public getLocalMarks(): readonly ILocalMark[] {
+    return this.undoStack.getCurrentMarkList().filter((mark) => !mark.isUppercaseMark);
   }
 
   /**
    * Gets all global marks.  I.e., marks that are shared among all editors.
    */
-  public getGlobalMarks(): IMark[] {
-    return [...HistoryStep.globalMarks];
+  public getGlobalMarks(): readonly IMark[] {
+    return HistoryStep.globalMarks;
   }
 
-  public getMarks(): IMark[] {
+  public getMarks(): readonly IMark[] {
     return [...this.getLocalMarks(), ...HistoryStep.globalMarks];
   }
 
@@ -960,18 +952,7 @@ export class HistoryTracker {
    * the most recent text change.
    */
   public getLastChangeEndPosition(): Position | undefined {
-    const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
-    if (currentHistoryStep === undefined) {
-      return undefined;
-    }
-
-    const lastChangeIndex = currentHistoryStep.changes.length;
-    if (lastChangeIndex === 0) {
-      return undefined;
-    }
-
-    const lastChange = currentHistoryStep.changes[lastChangeIndex - 1];
-    return lastChange.afterRange.end;
+    return this.undoStack.getCurrentHistoryStep()?.changes.at(-1)?.afterRange.end;
   }
 
   public getLastHistoryStartPosition(): Position | undefined {
@@ -979,17 +960,7 @@ export class HistoryTracker {
   }
 
   private getLastChangeStartPosition(): Position | undefined {
-    const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
-    if (currentHistoryStep === undefined) {
-      return undefined;
-    }
-
-    const changes = currentHistoryStep.changes;
-    if (changes.length === 0) {
-      return undefined;
-    }
-
-    return changes[changes.length - 1].start;
+    return this.undoStack.getCurrentHistoryStep()?.changes.at(-1)?.start;
   }
 
   /**
