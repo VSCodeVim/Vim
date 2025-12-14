@@ -714,6 +714,8 @@ export class HistoryTracker {
     // multiple changes in different places simultaneously. For those, we could require
     // them to call addChange manually, I guess...
 
+    // Couldn't we also ditch this diffing approach entirely and just use `TextDocumentContentChangeEvent`s?
+
     const diffs = diffEngine.diff_main(this.previousDocumentState.text, newText);
     diffEngine.diff_cleanupEfficiency(diffs);
 
