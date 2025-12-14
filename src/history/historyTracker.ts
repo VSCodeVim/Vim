@@ -798,10 +798,11 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to undo
    */
-  public async goBackHistoryStep(): Promise<Cursor[] | undefined> {
+  public async goBackHistoryStep(): Promise<void> {
     const step = this.undoStack.stepBackward();
     if (step === undefined) {
-      return undefined;
+      StatusBar.setText(this.vimState, 'Already at oldest change');
+      return;
     }
 
     for (const change of step.changes.slice(0).reverse()) {
@@ -819,9 +820,12 @@ export class HistoryTracker {
       }  ${step.howLongAgo()}`,
     );
 
-    return step.cursorsAtStart?.map((c) => {
+    const newCursors = step.cursorsAtStart?.map((c) => {
       return Cursor.atPosition(earlierOf(c.start, c.stop));
     });
+    if (newCursors) {
+      this.vimState.cursors = newCursors;
+    }
   }
 
   /**
@@ -829,10 +833,11 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to redo
    */
-  public async goForwardHistoryStep(): Promise<Cursor[] | undefined> {
+  public async goForwardHistoryStep(): Promise<void> {
     const step = this.undoStack.stepForward();
     if (step === undefined) {
-      return undefined;
+      StatusBar.setText(this.vimState, 'Already at newest change');
+      return;
     }
 
     // TODO: do these transformations in a batch
@@ -848,9 +853,12 @@ export class HistoryTracker {
       `${changes}; after #${this.undoStack.getCurrentHistoryStepIndex()}  ${step.howLongAgo()}`,
     );
 
-    return step.cursorsAtStart?.map((c) => {
+    const newCursors = step.cursorsAtStart?.map((c) => {
       return Cursor.atPosition(earlierOf(c.start, c.stop));
     });
+    if (newCursors) {
+      this.vimState.cursors = newCursors;
+    }
   }
 
   /**
@@ -870,10 +878,10 @@ export class HistoryTracker {
    * This worst-case scenario tends to offset line values and make it harder to
    * determine the line of the change, so this behavior is also compensated.
    */
-  public async goBackHistoryStepsOnLine(): Promise<Position | undefined> {
+  public async goBackHistoryStepsOnLine(): Promise<void> {
     const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
     if (currentHistoryStep === undefined) {
-      return undefined;
+      return;
     }
 
     let done: boolean = false;
@@ -940,7 +948,9 @@ export class HistoryTracker {
      * Since this function reverses change-by-change, rather than step-by-step,
      * the cursor position is based on the start of the last change that is undone.
      */
-    return lastChange?.start;
+    if (lastChange) {
+      this.vimState.cursors = [Cursor.atPosition(lastChange.start)];
+    }
   }
 
   /**
