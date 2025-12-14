@@ -681,9 +681,9 @@ export class HistoryTracker {
    *
    * Determines what changed by diffing the document against what it used to look like.
    */
-  public addChange(force: boolean = false): void {
+  public addChange(force: boolean = false): boolean {
     if (this.getDocumentVersion() === this.previousDocumentState.versionNumber) {
-      return;
+      return false;
     }
 
     if (this.nextStepCursorsAtStart === undefined) {
@@ -698,12 +698,12 @@ export class HistoryTracker {
       // We can ignore changes while we're in insert/replace mode, since we can't interact with them (via undo, etc.) until we're back to normal mode
       // This allows us to avoid a little bit of work per keystroke, but more importantly, it means we'll get bigger contiguous edit chunks to merge.
       // This is particularly impactful when there are multiple cursors, which are otherwise difficult to optimize.
-      return;
+      return false;
     }
 
     const newText = this.getDocumentText();
     if (newText === this.previousDocumentState.text) {
-      return;
+      return false;
     }
 
     // TODO: This is actually pretty stupid! Since we already have the cursorPosition,
@@ -741,6 +741,8 @@ export class HistoryTracker {
       text: newText,
       versionNumber: this.getDocumentVersion(),
     };
+
+    return true;
   }
 
   /**
