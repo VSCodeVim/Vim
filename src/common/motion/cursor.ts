@@ -16,8 +16,8 @@ export class Cursor {
   /**
    * Create a Cursor from a VSCode selection.
    */
-  public static FromVSCodeSelection(sel: Selection): Cursor {
-    return new Cursor(sel.start, sel.end);
+  public static fromSelection(sel: Selection): Cursor {
+    return new Cursor(sel.anchor, sel.active);
   }
 
   public isValid(textEditor: TextEditor) {
