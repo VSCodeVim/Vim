@@ -247,8 +247,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
               Logger.trace('Updating Visual Selection!');
-              this.vimState.cursorStopPosition = selection.active;
-              this.vimState.cursorStartPosition = selection.anchor;
+              this.vimState.cursors[0] = Cursor.fromSelection(selection);
               this.updateView({ drawSelection: false, revealRange: false });
 
               // Store selection for commands like gv
@@ -260,8 +259,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
               Logger.trace('Creating Visual Selection from command!');
-              this.vimState.cursorStopPosition = selection.active;
-              this.vimState.cursorStartPosition = selection.anchor;
+              this.vimState.cursors[0] = Cursor.fromSelection(selection);
               await this.setCurrentMode(Mode.Visual);
               this.updateView({ drawSelection: false, revealRange: false });
 
@@ -324,8 +322,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             selection.active
           }`,
         );
-        this.vimState.cursorStopPosition = selection.active;
-        this.vimState.cursorStartPosition = selection.anchor;
+        this.vimState.cursors[0] = Cursor.fromSelection(selection);
         this.vimState.desiredColumn = selection.active.character;
         this.updateView({ drawSelection: false, revealRange: false });
       }
