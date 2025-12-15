@@ -1,8 +1,6 @@
 import { Position } from 'vscode';
-import { Cursor } from '../../common/motion/cursor';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { StatusBar } from '../../statusBar';
 import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
@@ -16,13 +14,7 @@ export class Undo extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const cursors = await vimState.historyTracker.goBackHistoryStep();
-
-    if (cursors === undefined) {
-      StatusBar.setText(vimState, 'Already at oldest change');
-    } else {
-      vimState.cursors = cursors;
-    }
+    await vimState.historyTracker.goBackHistoryStep();
   }
 }
 
@@ -35,11 +27,7 @@ class UndoOnLine extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const newPosition = await vimState.historyTracker.goBackHistoryStepsOnLine();
-
-    if (newPosition !== undefined) {
-      vimState.cursors = [Cursor.atPosition(newPosition)];
-    }
+    await vimState.historyTracker.goBackHistoryStepsOnLine();
   }
 }
 
@@ -52,12 +40,6 @@ export class Redo extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const cursors = await vimState.historyTracker.goForwardHistoryStep();
-
-    if (cursors === undefined) {
-      StatusBar.setText(vimState, 'Already at newest change');
-    } else {
-      vimState.cursors = cursors;
-    }
+    await vimState.historyTracker.goForwardHistoryStep();
   }
 }

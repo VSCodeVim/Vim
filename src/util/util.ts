@@ -12,7 +12,7 @@ import { VimState } from '../state/vimState';
  * @deprecated Calls to this should probably be replaced with calls to `ModeHandler::syncCursors()` or something...
  */
 export function getCursorsAfterSync(editor: vscode.TextEditor): Cursor[] {
-  return editor.selections.map((x) => Cursor.FromVSCodeSelection(x));
+  return editor.selections.map((x) => Cursor.fromSelection(x));
 }
 
 export function clamp(num: number, min: number, max: number) {

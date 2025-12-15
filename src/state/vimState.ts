@@ -125,32 +125,47 @@ export class VimState implements vscode.Disposable {
   public postponedCodeViewChanges: ViewChange[] = [];
 
   /**
-   * The cursor position (start, stop) when this action finishes.
+   * @deprecated Use cursor.start instead
    */
   public get cursorStartPosition(): Position {
-    return this.cursors[0].start;
+    return this.cursor.start;
   }
   public set cursorStartPosition(value: Position) {
     if (!value.isValid(this.editor)) {
       Logger.warn(`invalid cursor start position. ${value.toString()}.`);
     }
-    this.cursors[0] = this.cursors[0].withNewStart(value);
+    this.cursor = this.cursor.withNewStart(value);
   }
 
+  /**
+   * @deprecated Use cursor.stop instead
+   */
   public get cursorStopPosition(): Position {
-    return this.cursors[0].stop;
+    return this.cursor.stop;
   }
   public set cursorStopPosition(value: Position) {
     if (!value.isValid(this.editor)) {
       Logger.warn(`invalid cursor stop position. ${value.toString()}.`);
     }
-    this.cursors[0] = this.cursors[0].withNewStop(value);
+    this.cursor = this.cursor.withNewStop(value);
   }
 
   /**
    * The position of every cursor. Will never be empty.
    */
   private _cursors: Cursor[] = [Cursor.atPosition(new Position(0, 0))];
+
+  /**
+   * The 'primary' or 'active' cursor.
+   * What this means is somewhat context dependent, but generally it's safe to
+   * use this when you only care about a single cursor.
+   */
+  public get cursor(): Cursor {
+    return this._cursors[0];
+  }
+  public set cursor(value: Cursor) {
+    this._cursors[0] = value;
+  }
 
   public get cursors(): Cursor[] {
     return this._cursors;
