@@ -213,7 +213,7 @@ export class TextEditor {
   ): Iterable<{ line: string; start: Position; end: Position }> {
     const { reverse } = options;
 
-    cursor ??= vimState.cursors[0];
+    cursor ??= vimState.cursor;
 
     const topLeft = visualBlockGetTopLeftPosition(cursor.start, cursor.stop);
     const bottomRight = visualBlockGetBottomRightPosition(cursor.start, cursor.stop);

@@ -153,7 +153,7 @@ export async function executeTransformations(
     switch (transformation.type) {
       case 'insertTextVSCode':
         await TextEditor.insert(vimState.editor, transformation.text);
-        vimState.cursors[0] = Cursor.fromSelection(vimState.editor.selection);
+        vimState.cursor = Cursor.fromSelection(vimState.editor.selection);
         break;
 
       case 'replayRecordedState':

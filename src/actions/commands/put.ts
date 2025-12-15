@@ -50,7 +50,7 @@ abstract class BasePutCommand extends BaseCommand {
       vimState.currentMode === Mode.CommandlineInProgress ? Mode.Normal : vimState.currentMode;
     const registerMode = this.getRegisterMode(register);
 
-    const replaceRange = this.getReplaceRange(mode, vimState.cursors[0], registerMode);
+    const replaceRange = this.getReplaceRange(mode, vimState.cursor, registerMode);
 
     let text = this.getRegisterText(mode, register, count);
     if (this.shouldAdjustIndent(mode, registerMode)) {

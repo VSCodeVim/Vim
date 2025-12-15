@@ -79,7 +79,7 @@ suite('mark movement', () => {
           selection,
         });
 
-        vimState.cursors[0] = Cursor.fromSelection(selection);
+        vimState.cursor = Cursor.fromSelection(selection);
         vimState.editor = editor;
 
         const markToUse = markName || 'a';

@@ -159,7 +159,7 @@ class CommandEsc extends BaseCommand {
       vimState.surround = undefined;
 
       if (vimState.isMultiCursor) {
-        vimState.cursors = [vimState.cursors[0]];
+        vimState.cursors = [vimState.cursor];
       } else {
         // If there's nothing to do on the vim side, we might as well call some
         // of vscode's default "close notification" actions. I think we should
