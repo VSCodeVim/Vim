@@ -1,8 +1,8 @@
 {
   "name": "vim-rufus",
   "displayName": "Vim-Rufus",
-  "description": "Vim emulation for Visual Studio Code with Rufus' customizations",
-  "icon": "images/icon.png",
+  "description": "Fork of VSCodeVim with Rufus' customizations",
+  "icon": "",
   "version": "1.28.1",
   "publisher": "RufusWong",
   "galleryBanner": {
@@ -38,9 +38,9 @@
     "onStartupFinished",
     "onCommand:type"
   ],
-  "qna": "https://vscodevim.herokuapp.com/",
   "main": "./out/extension",
   "browser": "./out/extensionWeb",
+  "qna": "",
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": true
