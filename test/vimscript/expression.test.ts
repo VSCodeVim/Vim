@@ -858,7 +858,12 @@ suite('Vimscript expressions', () => {
       exprTest('range(0, 2, -1)', { error: VimError.StartPastEnd() });
     });
 
-    // TODO: remove()
+    suite('remove', () => {
+      exprTest('remove([1, 2, 3], 0)', { value: int(1) });
+      exprTest('remove([1, 2, 3], 1)', { value: int(2) });
+      exprTest('remove([1, 2, 3], -1)', { value: int(3) });
+      exprTest('remove(#{a:1, b:2}, "a")', { value: int(1) });
+    });
 
     suite('repeat', () => {
       exprTest('repeat(3, 5)', { display: '33333' });
@@ -962,8 +967,12 @@ suite('Vimscript expressions', () => {
     });
 
     suite('uniq', () => {
-      // exprTest("uniq([1,2,1,1,1,'1',3,2,2,3])", { display: "[1, 2, 1, '1', 3, 2, 3]" });
-      // TODO
+      exprTest('uniq([1, 2, 3])', { display: '[1, 2, 3]' });
+      exprTest('uniq([1, 1, 2, 2, 3, 3])', { display: '[1, 2, 3]' });
+      exprTest('uniq([1, 2, 1, 3, 2, 3])', { display: '[1, 2, 1, 3, 2, 3]' });
+      exprTest("uniq([1, '1'])", { display: "[1, '1']" });
+      exprTest("uniq(['1', 1])", { display: "['1', 1]" });
+      exprTest("uniq([1, 2, 1, 1, 1, '1', 3, 2, 2, 3])", { display: "[1, 2, 1, '1', 3, 2, 3]" });
     });
 
     suite('floor/ceil/round/trunc', () => {

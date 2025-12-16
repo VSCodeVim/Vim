@@ -3,7 +3,7 @@
 
 
 "@azu/format-text@^1.0.1", "@azu/format-text@^1.0.2":
-  version "1.0.3"
+  version "1.0.4"
   resolved "https://registry.yarnpkg.com/@azu/format-text/-/format-text-1.0.2.tgz#abd46dab2422e312bd1bfe36f0d427ab6039825d"
   integrity sha512-Swi4N7Edy1Eqq82GxgEECXSSLyn6GOb5htRFPzBDdUkECGXtlf12ynO5oJSpWKPwCaUssOu7NfhDcCWpIC6Ywg==
 

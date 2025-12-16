@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.32.4](https://github.com/vscodevim/vim/tree/v1.32.4) (2025-12-14)
+
+### Fixed
+
+- Improved undo behavior after document is changed by an external process ([@J-Fields](https://github.com/J-Fields)).
+- Fixed spurious `Already at oldest change` message ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.32.3](https://github.com/vscodevim/vim/tree/v1.32.3) (2025-12-10)
 
 ### Fixed
