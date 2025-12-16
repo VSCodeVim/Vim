@@ -3,7 +3,7 @@
   "displayName": "Vim-Rufus",
   "description": "Fork of VSCodeVim with Rufus' customizations",
   "icon": "",
-  "version": "1.28.1",
+  "version": "1.28.2",
   "publisher": "RufusWong",
   "galleryBanner": {
     "color": "#e3f4ff",
