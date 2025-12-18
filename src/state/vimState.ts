@@ -61,8 +61,6 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public readonly documentUri: vscode.Uri;
-
   public editor: vscode.TextEditor;
 
   public get document(): vscode.TextDocument {
@@ -324,7 +322,6 @@ export class VimState implements vscode.Disposable {
 
   public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
-    this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
   }
