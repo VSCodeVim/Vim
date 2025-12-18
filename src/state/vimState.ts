@@ -131,7 +131,7 @@ export class VimState implements vscode.Disposable {
     return this.cursor.start;
   }
   public set cursorStartPosition(value: Position) {
-    if (!value.isValid(this.editor)) {
+    if (!value.isValid(this.document)) {
       Logger.warn(`invalid cursor start position. ${value.toString()}.`);
     }
     this.cursor = this.cursor.withNewStart(value);
@@ -144,7 +144,7 @@ export class VimState implements vscode.Disposable {
     return this.cursor.stop;
   }
   public set cursorStopPosition(value: Position) {
-    if (!value.isValid(this.editor)) {
+    if (!value.isValid(this.document)) {
       Logger.warn(`invalid cursor stop position. ${value.toString()}.`);
     }
     this.cursor = this.cursor.withNewStop(value);
@@ -178,8 +178,8 @@ export class VimState implements vscode.Disposable {
 
     const map = new Map<string, Cursor>();
     for (const cursor of value) {
-      if (!cursor.isValid(this.editor)) {
-        Logger.warn(`invalid cursor position. ${cursor.toString()}.`);
+      if (!cursor.isValid(this.document)) {
+        Logger.warn(`Invalid cursor position: ${cursor.toString()}`);
       }
 
       // use a map to ensure no two cursors are at the same location.
