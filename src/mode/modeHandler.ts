@@ -40,7 +40,7 @@ import {
   InsertPreviousText,
   TypeInInsertMode,
 } from './../actions/commands/insert';
-import { earlierOf, laterOf } from './../common/motion/position';
+import { earlierOf, laterOf, sorted } from './../common/motion/position';
 import { ForceStopRemappingError, VimError } from './../error';
 import { Register, RegisterMode } from './../register/register';
 import { RecordedState } from './../state/recordedState';
@@ -1323,11 +1323,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             break;
 
           case Mode.VisualLine:
-            if (start.isBeforeOrEqual(stop)) {
-              selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
-            } else {
-              selections.push(new vscode.Selection(start.getLineEnd(), stop.getLineBegin()));
-            }
+            [start, stop] = sorted(start, stop);
+            selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
             break;
 
           case Mode.VisualBlock:
