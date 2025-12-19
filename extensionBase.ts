@@ -144,39 +144,23 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       Logger.trace(`\t-${x.rangeLength}, +'${x.text}'`);
     }
 
-    if (event.contentChanges.length === 1) {
-      const change = event.contentChanges[0];
-
-      const anyLinesDeleted = change.range.start.line !== change.range.end.line;
-
-      if (anyLinesDeleted && change.text === '') {
+    for (const change of event.contentChanges) {
+      if (change.rangeLength > 0) {
         globalState.jumpTracker.handleTextDeleted(event.document, change.range);
-      } else if (!anyLinesDeleted && change.text.includes('\n')) {
-        globalState.jumpTracker.handleTextAdded(event.document, change.range, change.text);
-      } else {
-        // TODO: What to do here?
       }
-    } else {
-      // TODO: In this case, we should probably loop over the content changes...
+      if (change.text.length > 0) {
+        globalState.jumpTracker.handleTextAdded(event.document, change.range.start, change.text);
+      }
     }
-
-    // Change from VSCode editor should set document.isDirty to true but they initially don't!
-    // There is a timing issue in VSCode codebase between when the isDirty flag is set and
-    // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
-    const contentChangeHandler = (modeHandler: ModeHandler) => {
-      if (modeHandler.vimState.currentMode === Mode.Insert) {
-        if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
-          modeHandler.vimState.historyTracker.currentContentChanges = [];
-        }
-
-        modeHandler.vimState.historyTracker.currentContentChanges =
-          modeHandler.vimState.historyTracker.currentContentChanges.concat(event.contentChanges);
-      }
-    };
 
     const mh = ModeHandlerMap.get(event.document.uri);
     if (mh) {
-      contentChangeHandler(mh);
+      // Change from VSCode editor should set document.isDirty to true but they initially don't!
+      // There is a timing issue in VSCode codebase between when the isDirty flag is set and
+      // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
+      if (mh.vimState.currentMode === Mode.Insert) {
+        mh.vimState.historyTracker.currentContentChanges.push(...event.contentChanges);
+      }
     }
   });
 

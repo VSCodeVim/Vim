@@ -40,7 +40,7 @@ import {
   InsertPreviousText,
   TypeInInsertMode,
 } from './../actions/commands/insert';
-import { earlierOf, laterOf } from './../common/motion/position';
+import { earlierOf, laterOf, sorted } from './../common/motion/position';
 import { ForceStopRemappingError, VimError } from './../error';
 import { Register, RegisterMode } from './../register/register';
 import { RecordedState } from './../state/recordedState';
@@ -253,8 +253,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
               Logger.trace('Updating Visual Selection!');
-              this.vimState.cursorStopPosition = selection.active;
-              this.vimState.cursorStartPosition = selection.anchor;
+              this.vimState.cursor = Cursor.fromSelection(selection);
               this.updateView({ drawSelection: false, revealRange: false });
 
               // Store selection for commands like gv
@@ -266,8 +265,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
               Logger.trace('Creating Visual Selection from command!');
-              this.vimState.cursorStopPosition = selection.active;
-              this.vimState.cursorStartPosition = selection.anchor;
+              this.vimState.cursor = Cursor.fromSelection(selection);
               await this.setCurrentMode(Mode.Visual);
               this.updateView({ drawSelection: false, revealRange: false });
 
@@ -330,8 +328,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             selection.active
           }`,
         );
-        this.vimState.cursorStopPosition = selection.active;
-        this.vimState.cursorStartPosition = selection.anchor;
+        this.vimState.cursor = Cursor.fromSelection(selection);
         this.vimState.desiredColumn = selection.active.character;
         this.updateView({ drawSelection: false, revealRange: false });
       }
@@ -371,12 +368,12 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // start visual mode?
       if (
         selection.anchor.line === selection.active.line &&
-        selection.anchor.character >= newPosition.getLineEnd().character &&
-        selection.active.character >= newPosition.getLineEnd().character
+        Math.min(selection.active.character, selection.anchor.character) >=
+          newPosition.getLineEnd().character
       ) {
         // This prevents you from selecting EOL
       } else if (!selection.anchor.isEqual(selection.active)) {
-        let selectionStart = new Position(selection.anchor.line, selection.anchor.character);
+        let selectionStart = selection.anchor;
 
         if (selectionStart.character > selectionStart.getLineEnd().character) {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
@@ -465,12 +462,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
 
       if (key === '<C-c>' && process.platform !== 'darwin') {
-        if (
-          !configuration.useCtrlKeys ||
-          this.vimState.currentMode === Mode.Visual ||
-          this.vimState.currentMode === Mode.VisualBlock ||
-          this.vimState.currentMode === Mode.VisualLine
-        ) {
+        if (!configuration.useCtrlKeys || isVisualMode(this.vimState.currentMode)) {
           key = '<copy>';
         }
       }
@@ -624,7 +616,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     // Catch any text change not triggered by us (example: tab completion).
-    this.vimState.historyTracker.addChange();
+    const changeAdded = this.vimState.historyTracker.addChange();
+    if (changeAdded) {
+      this.vimState.historyTracker.finishCurrentStep();
+    }
 
     const recordedState = this.vimState.recordedState;
     recordedState.actionKeys.push(key);
@@ -830,10 +825,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // We don't want to record a repeatable action when exiting from these modes
     // by pressing <Esc>
     if (
-      (prevMode === Mode.Visual ||
-        prevMode === Mode.VisualBlock ||
-        prevMode === Mode.VisualLine ||
-        prevMode === Mode.CommandlineInProgress) &&
+      (isVisualMode(prevMode) || prevMode === Mode.CommandlineInProgress) &&
       action.keysPressed[0] === '<Esc>'
     ) {
       ranRepeatableAction = false;
@@ -1337,11 +1329,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             break;
 
           case Mode.VisualLine:
-            if (start.isBeforeOrEqual(stop)) {
-              selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
-            } else {
-              selections.push(new vscode.Selection(start.getLineEnd(), stop.getLineBegin()));
-            }
+            [start, stop] = sorted(start, stop);
+            selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
             break;
 
           case Mode.VisualBlock:
@@ -1448,7 +1437,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (isLastCursorTracked) {
         cursorToTrack = this.vimState.cursors.at(-1)!;
       } else {
-        cursorToTrack = this.vimState.cursors[0];
+        cursorToTrack = this.vimState.cursor;
       }
 
       const isCursorAboveRange = (visibleRange: vscode.Range): boolean =>
@@ -1564,7 +1553,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         for (const { stop: cursorStop } of this.vimState.cursors) {
           if (cursorStop.isLineEnd(this.vimState.document)) {
             iModeVirtualCharDecorationOptions.push({
-              range: new vscode.Range(cursorStop, cursorStop.getLineEndIncludingEOL()),
+              range: new vscode.Range(cursorStop, cursorStop.getLineEnd()),
               renderOptions: eolRenderOptions,
             });
           } else {

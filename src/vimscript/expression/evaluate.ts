@@ -1174,7 +1174,6 @@ export class EvaluationContext {
         const guard: never = reg.registerMode;
         return str('');
       }
-      // TODO: gettext()
       case 'gettext': {
         const [s] = getArgs(1);
         return str(toString(s!));
@@ -1280,11 +1279,7 @@ export class EvaluationContext {
           if (Array.isArray(x)) {
             return list(x.map(fromJSObj));
           } else if (typeof x === 'number') {
-            if (isInteger(x)) {
-              return int(x);
-            } else {
-              return float(x);
-            }
+            return isInteger(x) ? int(x) : float(x);
           } else if (typeof x === 'string') {
             return str(x);
           } else {
@@ -1774,7 +1769,7 @@ export class EvaluationContext {
           let prev: Value = l!.items[0];
           for (let i = 1; i < l!.items.length; ) {
             const val = l!.items[i];
-            if (this.evaluateComparison('==', true, prev, val)) {
+            if (prev.type === val.type && this.evaluateComparison('==', true, prev, val)) {
               l!.items.splice(i, 1);
             } else {
               prev = val;

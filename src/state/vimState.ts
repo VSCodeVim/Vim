@@ -61,8 +61,6 @@ export class VimState implements vscode.Disposable {
 
   public easyMotion: IEasyMotion;
 
-  public readonly documentUri: vscode.Uri;
-
   public editor: vscode.TextEditor;
 
   public get document(): vscode.TextDocument {
@@ -125,26 +123,29 @@ export class VimState implements vscode.Disposable {
   public postponedCodeViewChanges: ViewChange[] = [];
 
   /**
-   * The cursor position (start, stop) when this action finishes.
+   * @deprecated Use cursor.start instead
    */
   public get cursorStartPosition(): Position {
-    return this.cursors[0].start;
+    return this.cursor.start;
   }
   public set cursorStartPosition(value: Position) {
-    if (!value.isValid(this.editor)) {
+    if (!value.isValid(this.document)) {
       Logger.warn(`invalid cursor start position. ${value.toString()}.`);
     }
-    this.cursors[0] = this.cursors[0].withNewStart(value);
+    this.cursor = this.cursor.withNewStart(value);
   }
 
+  /**
+   * @deprecated Use cursor.stop instead
+   */
   public get cursorStopPosition(): Position {
-    return this.cursors[0].stop;
+    return this.cursor.stop;
   }
   public set cursorStopPosition(value: Position) {
-    if (!value.isValid(this.editor)) {
+    if (!value.isValid(this.document)) {
       Logger.warn(`invalid cursor stop position. ${value.toString()}.`);
     }
-    this.cursors[0] = this.cursors[0].withNewStop(value);
+    this.cursor = this.cursor.withNewStop(value);
   }
 
   /**
@@ -152,10 +153,22 @@ export class VimState implements vscode.Disposable {
    */
   private _cursors: Cursor[] = [Cursor.atPosition(new Position(0, 0))];
 
+  /**
+   * The 'primary' or 'active' cursor.
+   * What this means is somewhat context dependent, but generally it's safe to
+   * use this when you only care about a single cursor.
+   */
+  public get cursor(): Cursor {
+    return this._cursors[0];
+  }
+  public set cursor(value: Cursor) {
+    this._cursors[0] = value;
+  }
+
   public get cursors(): Cursor[] {
     return this._cursors;
   }
-  public set cursors(value: Cursor[]) {
+  public set cursors(value: readonly Cursor[]) {
     if (value.length === 0) {
       Logger.warn('Tried to set VimState.cursors to an empty array');
       return;
@@ -163,8 +176,8 @@ export class VimState implements vscode.Disposable {
 
     const map = new Map<string, Cursor>();
     for (const cursor of value) {
-      if (!cursor.isValid(this.editor)) {
-        Logger.warn(`invalid cursor position. ${cursor.toString()}.`);
+      if (!cursor.isValid(this.document)) {
+        Logger.warn(`Invalid cursor position: ${cursor.toString()}`);
       }
 
       // use a map to ensure no two cursors are at the same location.
@@ -309,7 +322,6 @@ export class VimState implements vscode.Disposable {
 
   public constructor(editor: vscode.TextEditor, easyMotion: IEasyMotion) {
     this.editor = editor;
-    this.documentUri = editor?.document.uri ?? vscode.Uri.file(''); // TODO: this is needed for some badly written tests
     this.historyTracker = new HistoryTracker(this);
     this.easyMotion = easyMotion;
   }

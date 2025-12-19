@@ -134,13 +134,13 @@ class InsertAbove extends BaseCommand {
     }
 
     vimState.cursors = getCursorsAfterSync(vimState.editor);
-    const endPos = vimState.cursors[0].start.character;
+    const endPos = vimState.cursor.start.character;
     const indentAmt = charPos - endPos;
 
     for (let i = 0; i < count; i++) {
-      const newPos = new Position(vimState.cursors[0].start.line + i, charPos);
+      const newPos = new Position(vimState.cursor.start.line + i, charPos);
       if (i === 0) {
-        vimState.cursors[0] = Cursor.atPosition(newPos);
+        vimState.cursor = Cursor.atPosition(newPos);
       } else {
         vimState.cursors.push(Cursor.atPosition(newPos));
       }
@@ -283,12 +283,10 @@ export class ExitInsertMode extends BaseCommand {
       }
     }
 
-    if (vimState.historyTracker.currentContentChanges.length > 0) {
-      vimState.historyTracker.currentContentChanges = [];
-    }
+    vimState.historyTracker.currentContentChanges = [];
 
     if (vimState.isFakeMultiCursor) {
-      vimState.cursors = [vimState.cursors[0]];
+      vimState.cursors = [vimState.cursor];
       vimState.isFakeMultiCursor = false;
     }
   }

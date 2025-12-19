@@ -212,11 +212,6 @@ declare module 'vscode' {
     getLineEnd(): Position;
 
     /**
-     * @returns a new Position at the end of this Position's line, including the invisible newline character.
-     */
-    getLineEndIncludingEOL(): Position;
-
-    /**
      * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
      */
     getLeftIfEOL(): Position;
@@ -252,7 +247,7 @@ declare module 'vscode' {
      */
     obeyStartOfLine(document: vscode.TextDocument): Position;
 
-    isValid(textEditor: vscode.TextEditor): boolean;
+    isValid(document: vscode.TextDocument): boolean;
   }
 }
 
@@ -483,14 +478,6 @@ Position.prototype.getLineEnd = function (this: Position): Position {
 };
 
 /**
- * @returns a new Position at the end of this Position's line, including the invisible newline character.
- */
-Position.prototype.getLineEndIncludingEOL = function (this: Position): Position {
-  // TODO: isn't this one too far?
-  return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
-};
-
-/**
  * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
  */
 Position.prototype.getLeftIfEOL = function (this: Position): Position {
@@ -572,17 +559,13 @@ Position.prototype.obeyStartOfLine = function (
     : this;
 };
 
-Position.prototype.isValid = function (this: Position, textEditor: vscode.TextEditor): boolean {
+Position.prototype.isValid = function (this: Position, document: vscode.TextDocument): boolean {
   try {
-    // line
-    // TODO: this `|| 1` seems dubious...
-    const lineCount = TextEditor.getLineCount(textEditor) || 1;
-    if (this.line >= lineCount) {
+    if (this.line >= document.lineCount) {
       return false;
     }
 
-    // char
-    const charCount = TextEditor.getLineLength(this.line);
+    const charCount = document.lineAt(this.line).range.end.character;
     if (this.character > charCount + 1) {
       return false;
     }

@@ -1,4 +1,4 @@
-import { Position, Selection, TextDocument, TextEditor } from 'vscode';
+import { Position, Selection, TextDocument } from 'vscode';
 
 export class Cursor {
   public readonly start: Position;
@@ -16,12 +16,12 @@ export class Cursor {
   /**
    * Create a Cursor from a VSCode selection.
    */
-  public static FromVSCodeSelection(sel: Selection): Cursor {
-    return new Cursor(sel.start, sel.end);
+  public static fromSelection(sel: Selection): Cursor {
+    return new Cursor(sel.anchor, sel.active);
   }
 
-  public isValid(textEditor: TextEditor) {
-    return this.start.isValid(textEditor) && this.stop.isValid(textEditor);
+  public isValid(document: TextDocument) {
+    return this.start.isValid(document) && this.stop.isValid(document);
   }
 
   public equals(other: Cursor): boolean {

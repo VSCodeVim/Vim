@@ -147,7 +147,7 @@ suite('Marks', () => {
     });
 
     teardown(async () => {
-      ModeHandlerMap.delete(otherModeHandler.vimState.documentUri);
+      ModeHandlerMap.delete(otherModeHandler.vimState.document.uri);
     });
 
     newTest({
@@ -155,7 +155,7 @@ suite('Marks', () => {
       start: ['|'],
       keysPressed: "'A",
       end: ['|'],
-      endFsPath: () => modeHandler.vimState.documentUri.fsPath,
+      endFsPath: () => modeHandler.vimState.document.uri.fsPath,
     });
   });
 });
