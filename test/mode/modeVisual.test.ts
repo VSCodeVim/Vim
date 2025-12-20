@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { Globals } from '../../src/globals';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
 import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
 
@@ -1055,8 +1055,7 @@ suite('Mode Visual', () => {
 
   suite('visualstar', () => {
     setup(async () => {
-      Globals.mockConfiguration.visualstar = true;
-      await reloadConfiguration();
+      await reloadConfiguration(new Configuration({ visualstar: true }));
     });
 
     newTest({
@@ -1171,7 +1170,7 @@ suite('Mode Visual', () => {
       title: 'normal selection',
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$C',
-      end: ['this is', '|', 'the world'],
+      end: ['this is', '', '|the world'],
     });
   });
 
@@ -1187,7 +1186,7 @@ suite('Mode Visual', () => {
       title: 'normal selection',
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$R',
-      end: ['this is', '|', 'the world'],
+      end: ['this is', '', '|the world'],
     });
   });
 
@@ -1534,21 +1533,21 @@ suite('Mode Visual', () => {
       title: 'multiline insert from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkI_',
-      end: ['111', '2_|22', '_333', '_444', '555'],
+      end: ['111', '2_|22', '_|333', '_|444', '555'],
     });
 
     newTest({
       title: 'multiline insert from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjI_',
-      end: ['111', '2_|22', '_333', '_444', '555'],
+      end: ['111', '2_|22', '_|333', '_|444', '555'],
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjI_',
-      end: ['111', '2_|22', ' ', '_444', '555'],
+      end: ['111', '2_|22', ' ', '_|444', '555'],
     });
   });
 
@@ -1557,21 +1556,21 @@ suite('Mode Visual', () => {
       title: 'multiline append from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkA_',
-      end: ['111', '222_|', '333_', '44_4', '555'],
+      end: ['111', '222_|', '333_|', '44_|4', '555'],
     });
 
     newTest({
       title: 'multiline append from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjA_',
-      end: ['111', '222_|', '333_', '44_4', '555'],
+      end: ['111', '222_|', '333_|', '44_|4', '555'],
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjA_',
-      end: ['111', '222_|', ' ', '44_4', '555'],
+      end: ['111', '222_|', ' ', '44_|4', '555'],
     });
   });
 
@@ -1699,6 +1698,25 @@ suite('Mode Visual', () => {
     endMode: Mode.Normal,
   });
 
+  suite('Can handle o', () => {
+    newTest({
+      title: 'Can select the space after the last character',
+      start: ['ab', 'ab|c', 'abcd'],
+      keysPressed: 'vkd',
+      end: ['a|b', 'abcd'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title:
+        'After executing o twice, can keep the selection of the space after the last character',
+      start: ['ab', 'ab|c', 'abcd'],
+      keysPressed: 'vkood',
+      end: ['a|b', 'abcd'],
+      endMode: Mode.Normal,
+    });
+  });
+
   suite('C, R, and S', () => {
     for (const command of ['C', 'R', 'S']) {
       newTest({
@@ -1743,7 +1761,7 @@ suite('Mode Visual', () => {
       end: [
         `"vim.normalModeKeyBindingsNonRecursive": [`,
         `  {`,
-        `    "|before": ["j"],`,
+        `    "before|": ["j"],`,
         `    "after": ["g", "j"],`,
         `  },`,
         `]`,

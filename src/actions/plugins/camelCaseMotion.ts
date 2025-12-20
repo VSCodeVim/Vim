@@ -1,12 +1,12 @@
-import { TextObject } from '../../textobject/textobject';
-import { RegisterAction } from '../base';
+import { Position } from 'vscode';
+import { configuration } from '../../configuration/configuration';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
-import { IMovement, BaseMovement } from '../baseMotion';
-import { configuration } from '../../configuration/configuration';
-import { ChangeOperator } from '../operator';
+import { TextObject } from '../../textobject/textobject';
 import { WordType } from '../../textobject/word';
-import { Position } from 'vscode';
+import { RegisterAction } from '../base';
+import { BaseMovement, IMovement } from '../baseMotion';
+import { ChangeOperator } from '../operator';
 
 abstract class CamelCaseBaseMovement extends BaseMovement {
   public override doesActionApply(vimState: VimState, keysPressed: string[]) {

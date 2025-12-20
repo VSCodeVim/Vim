@@ -12,9 +12,10 @@ suite('Remaps', () => {
     // failing when they shouldn't. I ran this test successfully with this timeout as low as 50ms, but
     // lower than that I start getting some issues. I still set this a little bit higher because it
     // might change from machine to machine.
+    // Edit: Let's try 100ms because we're rebellious and have places to be
     await setupWorkspace({
       config: {
-        timeout: 200,
+        timeout: 100,
         leader: ' ',
       },
     });

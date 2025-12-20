@@ -37,7 +37,6 @@ type AddBreakpoint =
   | AddBreakpointExpr;
 
 class AddBreakpointCommand extends ExCommand {
-  public override isRepeatableWithDot: boolean = false;
   private readonly addBreakpoint: AddBreakpoint;
 
   constructor(addBreakpoint: AddBreakpoint) {
@@ -92,7 +91,6 @@ type DelBreakpoint =
   | DelBreakpointHere;
 
 class DeleteBreakpointCommand extends ExCommand {
-  public override isRepeatableWithDot: boolean = false;
   private readonly delBreakpoint: DelBreakpoint;
 
   constructor(delBreakpoint: DelBreakpoint) {
@@ -153,8 +151,6 @@ class DeleteBreakpointCommand extends ExCommand {
  * List Breakpoints Command
  */
 class ListBreakpointsCommand extends ExCommand {
-  public override isRepeatableWithDot: boolean = false;
-
   async execute(vimState: VimState): Promise<void> {
     const breakpoints = vscode.debug.breakpoints;
     type BreakpointQuickPick = { breakpointId: string } & vscode.QuickPickItem;
@@ -177,8 +173,9 @@ class ListBreakpointsCommand extends ExCommand {
         const id = selected.breakpointId;
         const breakpoint = breakpoints.find((b) => b.id === id);
         if (breakpoint && isSourceBreakpoint(breakpoint)) {
-          await vscode.window.showTextDocument(breakpoint.location.uri).then(() => {
-            vimState.cursorStopPosition = breakpoint.location.range.start;
+          const pos = breakpoint.location.range.start;
+          await vscode.window.showTextDocument(breakpoint.location.uri, {
+            selection: new vscode.Range(pos, pos),
           });
         }
       }

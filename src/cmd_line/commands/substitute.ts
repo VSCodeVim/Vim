@@ -1,10 +1,21 @@
-// eslint-disable-next-line id-denylist
-import { Parser, alt, any, noneOf, oneOf, optWhitespace, regexp, seq, string } from 'parsimmon';
+import {
+  Parser,
+  alt,
+  // eslint-disable-next-line id-denylist
+  any,
+  noneOf,
+  oneOf,
+  optWhitespace,
+  regexp,
+  seq,
+  // eslint-disable-next-line id-denylist
+  string,
+} from 'parsimmon';
 import { CancellationTokenSource, DecorationOptions, Position, Range, window } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
 import { decoration } from '../../configuration/decoration';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Jump } from '../../jumps/jump';
 import { globalState } from '../../state/globalState';
 import { SearchState } from '../../state/searchState';
@@ -14,6 +25,11 @@ import { StatusBar } from '../../statusBar';
 import { SearchDecorations, ensureVisible, formatDecorationText } from '../../util/decorationUtils';
 import { escapeCSSIcons } from '../../util/statusBarTextUtils';
 import { ExCommand } from '../../vimscript/exCommand';
+import { str } from '../../vimscript/expression/build';
+import { displayValue } from '../../vimscript/expression/displayValue';
+import { EvaluationContext } from '../../vimscript/expression/evaluate';
+import { expressionParser } from '../../vimscript/expression/parser';
+import { Expression } from '../../vimscript/expression/types';
 import { Address, LineRange } from '../../vimscript/lineRange';
 import { numberParser } from '../../vimscript/parserUtils';
 import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
@@ -22,6 +38,7 @@ type ReplaceStringComponent =
   | { type: 'string'; value: string }
   | { type: 'capture_group'; group: number | '&' }
   | { type: 'prev_replace_string' }
+  | { type: 'expression'; expression: Expression }
   | { type: 'change_case'; case: 'upper' | 'lower'; duration: 'char' | 'until_end' }
   | { type: 'change_case_end' };
 
@@ -40,6 +57,8 @@ export class ReplaceString {
           return component.group === '&' ? '&' : `\\${component.group}`;
         } else if (component.type === 'prev_replace_string') {
           return '~';
+        } else if (component.type === 'expression') {
+          return '\\='; // TODO
         } else if (component.type === 'change_case') {
           if (component.case === 'upper') {
             return component.duration === 'char' ? '\\u' : '\\U';
@@ -56,7 +75,7 @@ export class ReplaceString {
       .join('');
   }
 
-  public resolve(matches: string[]): string {
+  public resolve(vimState: VimState, matches: string[]): string {
     let result = '';
     let changeCase: 'upper' | 'lower' | undefined;
     let changeCaseChar: 'upper' | 'lower' | undefined;
@@ -70,6 +89,22 @@ export class ReplaceString {
         _result = matches[group] ?? '';
       } else if (component.type === 'prev_replace_string') {
         _result = globalState.substituteState?.replaceString.toString() ?? '';
+      } else if (component.type === 'expression') {
+        const ctx = new EvaluationContext(vimState);
+        const value = (() => {
+          try {
+            return ctx.evaluate(component.expression);
+          } catch (e) {
+            return str(''); // TODO: Is this right?
+          }
+        })();
+        if (value.type === 'list') {
+          for (const item of value.items) {
+            _result += displayValue(item) + '\n';
+          }
+        } else {
+          _result = displayValue(value);
+        }
       } else if (component.type === 'change_case') {
         if (component.duration === 'until_end') {
           changeCase = component.case;
@@ -148,51 +183,53 @@ export interface SubstituteFlags {
 }
 
 // TODO: `:help sub-replace-special`
-// TODO: `:help sub-replace-expression`
 const replaceStringParser = (delimiter: string): Parser<ReplaceString> =>
-  alt<ReplaceStringComponent>(
-    string('\\').then(
-      // eslint-disable-next-line id-denylist
-      any.fallback(undefined).map<ReplaceStringComponent>((escaped) => {
-        if (escaped === undefined || escaped === '\\') {
-          return { type: 'string', value: '\\' };
-        } else if (escaped === '/') {
-          return { type: 'string', value: '/' };
-        } else if (escaped === 'b') {
-          return { type: 'string', value: '\b' };
-        } else if (escaped === 'r') {
-          return { type: 'string', value: '\r' };
-        } else if (escaped === 'n') {
-          return { type: 'string', value: '\n' };
-        } else if (escaped === 't') {
-          return { type: 'string', value: '\t' };
-        } else if (escaped === '&') {
-          return { type: 'string', value: '&' };
-        } else if (escaped === '~') {
-          return { type: 'string', value: '~' };
-        } else if (/[0-9]/.test(escaped)) {
-          return { type: 'capture_group', group: Number.parseInt(escaped, 10) };
-        } else if (escaped === 'u') {
-          return { type: 'change_case', case: 'upper', duration: 'char' };
-        } else if (escaped === 'l') {
-          return { type: 'change_case', case: 'lower', duration: 'char' };
-        } else if (escaped === 'U') {
-          return { type: 'change_case', case: 'upper', duration: 'until_end' };
-        } else if (escaped === 'L') {
-          return { type: 'change_case', case: 'lower', duration: 'until_end' };
-        } else if (escaped === 'e' || escaped === 'E') {
-          return { type: 'change_case_end' };
-        } else {
-          return { type: 'string', value: `\\${escaped}` };
-        }
-      }),
-    ),
-    string('&').result({ type: 'capture_group', group: '&' }),
-    string('~').result({ type: 'prev_replace_string' }),
-    noneOf(delimiter).map((value) => ({ type: 'string', value })),
-  )
-    .many()
-    .map((components) => new ReplaceString(components));
+  alt<ReplaceStringComponent[]>(
+    string('\\=')
+      .then(expressionParser)
+      .map((expr) => [{ type: 'expression', expression: expr }]),
+    alt<ReplaceStringComponent>(
+      string('\\').then(
+        // eslint-disable-next-line id-denylist
+        any.fallback(undefined).map<ReplaceStringComponent>((escaped) => {
+          if (escaped === undefined || escaped === '\\') {
+            return { type: 'string', value: '\\' };
+          } else if (escaped === '/') {
+            return { type: 'string', value: '/' };
+          } else if (escaped === 'b') {
+            return { type: 'string', value: '\b' };
+          } else if (escaped === 'r') {
+            return { type: 'string', value: '\r' };
+          } else if (escaped === 'n') {
+            return { type: 'string', value: '\n' };
+          } else if (escaped === 't') {
+            return { type: 'string', value: '\t' };
+          } else if (escaped === '&') {
+            return { type: 'string', value: '&' };
+          } else if (escaped === '~') {
+            return { type: 'string', value: '~' };
+          } else if (/[0-9]/.test(escaped)) {
+            return { type: 'capture_group', group: Number.parseInt(escaped, 10) };
+          } else if (escaped === 'u') {
+            return { type: 'change_case', case: 'upper', duration: 'char' };
+          } else if (escaped === 'l') {
+            return { type: 'change_case', case: 'lower', duration: 'char' };
+          } else if (escaped === 'U') {
+            return { type: 'change_case', case: 'upper', duration: 'until_end' };
+          } else if (escaped === 'L') {
+            return { type: 'change_case', case: 'lower', duration: 'until_end' };
+          } else if (escaped === 'e' || escaped === 'E') {
+            return { type: 'change_case_end' };
+          } else {
+            return { type: 'string', value: `\\${escaped}` };
+          }
+        }),
+      ),
+      string('&').result({ type: 'capture_group', group: '&' }),
+      string('~').result({ type: 'prev_replace_string' }),
+      noneOf(delimiter).map((value) => ({ type: 'string', value })),
+    ).many(),
+  ).map((components) => new ReplaceString(components));
 
 const substituteFlagsParser: Parser<SubstituteFlags> = seq(
   string('&').fallback(undefined),
@@ -349,7 +386,7 @@ export class SubstituteCommand extends ExCommand {
       lines.add(match.range.start.line);
       if (showReplacements) {
         const contentText = formatDecorationText(
-          replace.resolve(match.groups),
+          replace.resolve(vimState, match.groups),
           vimState.editor.options.tabSize as number,
         );
 
@@ -360,7 +397,7 @@ export class SubstituteCommand extends ExCommand {
           },
         });
       } else {
-        searchHighlight.push(ensureVisible(match.range));
+        searchHighlight.push(ensureVisible(match.range, vimState.document));
       }
     }
     return { substitutionAppend, substitutionReplace, searchHighlight };
@@ -378,7 +415,7 @@ export class SubstituteCommand extends ExCommand {
       return 0;
     }
 
-    const replaceText = this.arguments.replace.resolve(match.groups);
+    const replaceText = this.arguments.replace.resolve(vimState, match.groups);
 
     if (this.arguments.flags.confirmEach) {
       if (await this.confirmReplacement(vimState, match, replaceText)) {
@@ -416,7 +453,9 @@ export class SubstituteCommand extends ExCommand {
 
     vimState.editor.revealRange(new Range(match.range.start.line, 0, match.range.start.line, 0));
     vimState.editor.setDecorations(decoration.searchHighlight, newConfirmationSearchHighlights);
-    vimState.editor.setDecorations(decoration.searchMatch, [ensureVisible(match.range)]);
+    vimState.editor.setDecorations(decoration.searchMatch, [
+      ensureVisible(match.range, vimState.document),
+    ]);
     vimState.editor.setDecorations(
       decoration.confirmedSubstitution,
       this.confirmedSubstitutions ?? [],
@@ -482,7 +521,7 @@ export class SubstituteCommand extends ExCommand {
         prevSubstituteState.searchPattern.patternString === ''
       ) {
         if (throwErrors) {
-          throw VimError.fromCode(ErrorCode.NoPreviousSubstituteRegularExpression);
+          throw VimError.NoPreviousSubstituteRegularExpression();
         }
       } else {
         pattern = prevSubstituteState.searchPattern;
@@ -495,7 +534,7 @@ export class SubstituteCommand extends ExCommand {
         const prevSearchState = globalState.searchState;
         if (prevSearchState === undefined || prevSearchState.searchString === '') {
           if (throwErrors) {
-            throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
+            throw VimError.NoPreviousRegularExpression();
           }
         } else {
           pattern = prevSearchState.pattern;
@@ -561,7 +600,9 @@ export class SubstituteCommand extends ExCommand {
         this.confirmedSubstitutions = [];
       }
       if (configuration.incsearch) {
-        this.cSearchHighlights = replaceableMatches.map((match) => ensureVisible(match.range));
+        this.cSearchHighlights = replaceableMatches.map((match) =>
+          ensureVisible(match.range, vimState.document),
+        );
       }
     }
 
@@ -617,7 +658,7 @@ export class SubstituteCommand extends ExCommand {
     if (substitutions === 0) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.PatternNotFound, this.arguments.pattern?.patternString),
+        VimError.PatternNotFound(this.arguments.pattern?.patternString),
       );
     } else if (this.arguments.flags.printCount) {
       StatusBar.setText(

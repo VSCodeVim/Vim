@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { configuration } from '../configuration/configuration';
-import { ErrorCode, ForceStopRemappingError, VimError } from '../error';
+import { ForceStopRemappingError, VimError } from '../error';
 import { Mode } from '../mode/mode';
 import { ModeHandler } from '../mode/modeHandler';
 import { StatusBar } from '../statusBar';
@@ -79,7 +79,7 @@ export class Remapper implements IRemapper {
    * there was a potential remap that never came or was broken, so we can
    * resend the keys again without allowing for a potential remap on the first
    * key, which means we won't get to the same state because the first key
-   * will be handled as an action (in this case a 'CommandInsertAfterCursor')
+   * will be handled as an action (in this case an 'Insert')
    */
   private hasPotentialRemap = false;
 
@@ -111,7 +111,7 @@ export class Remapper implements IRemapper {
 
     const userDefinedRemappings = configuration[this.configKey] as Map<string, IKeyRemapping>;
 
-    if (keys[keys.length - 1] === SpecialKeys.TimeoutFinished) {
+    if (keys.at(-1) === SpecialKeys.TimeoutFinished) {
       // Timeout finished. Don't let an ambiguous or potential remap start another timeout again
       keys = keys.slice(0, keys.length - 1);
       allowBufferingKeys = false;
@@ -341,7 +341,7 @@ export class Remapper implements IRemapper {
       try {
         // Check maxMapDepth
         if (remapState.mapDepth >= configuration.maxmapdepth) {
-          const vimError = VimError.fromCode(ErrorCode.RecursiveMapping);
+          const vimError = VimError.RecursiveMapping();
           StatusBar.displayError(vimState, vimError);
           throw ForceStopRemappingError.fromVimError(vimError);
         }
@@ -422,7 +422,7 @@ export class Remapper implements IRemapper {
             // If there was a performing remap that finished waiting for timeout then only the remaining keys
             // that are not part of that remap were typed by the user.
             let specialKey: string | undefined = '';
-            if (remainingKeys[remainingKeys.length - 1] === SpecialKeys.TimeoutFinished) {
+            if (remainingKeys.at(-1) === SpecialKeys.TimeoutFinished) {
               specialKey = remainingKeys.pop();
             }
             const lastRemap = remapState.wasPerformingRemapThatFinishedWaitingForTimeout.after!;
@@ -514,7 +514,7 @@ export class Remapper implements IRemapper {
                 await result.value.command.execute(vimState);
               }
             } else {
-              throw VimError.fromCode(ErrorCode.NotAnEditorCommand, commandString);
+              throw VimError.NotAnEditorCommand(commandString);
             }
             modeHandler.updateView();
           } else {
