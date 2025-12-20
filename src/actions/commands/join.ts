@@ -7,7 +7,7 @@ import { RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
 import { isTextTransformation } from '../../transformations/transformations';
-import { RegisterAction, BaseCommand } from '../base';
+import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
 class ActionJoin extends BaseCommand {
@@ -23,8 +23,6 @@ class ActionJoin extends BaseCommand {
     count: number,
   ): Promise<void> {
     count = count - 1 || 1;
-
-    const joinspaces = configuration.joinspaces;
 
     let startLineNumber: number;
     let endLineNumber: number;
@@ -55,14 +53,14 @@ class ActionJoin extends BaseCommand {
         if (trimmedLinesContent === '' || trimmedLinesContent.endsWith('\t')) {
           insertSpace = '';
         } else if (
-          joinspaces &&
+          configuration.joinspaces &&
           (trimmedLinesContent.endsWith('.') ||
             trimmedLinesContent.endsWith('!') ||
             trimmedLinesContent.endsWith('?'))
         ) {
           insertSpace = '  ';
         } else if (
-          joinspaces &&
+          configuration.joinspaces &&
           (trimmedLinesContent.endsWith('. ') ||
             trimmedLinesContent.endsWith('! ') ||
             trimmedLinesContent.endsWith('? '))
@@ -114,14 +112,12 @@ class ActionJoin extends BaseCommand {
   }
 
   public override async execCount(position: Position, vimState: VimState): Promise<void> {
-    const cursorsToIterateOver = vimState.cursors
-      .map((x) => new Cursor(x.start, x.stop))
-      .sort((a, b) =>
-        a.start.line > b.start.line ||
-        (a.start.line === b.start.line && a.start.character > b.start.character)
-          ? 1
-          : -1,
-      );
+    const cursorsToIterateOver = [...vimState.cursors].sort((a, b) =>
+      a.start.line > b.start.line ||
+      (a.start.line === b.start.line && a.start.character > b.start.character)
+        ? 1
+        : -1,
+    );
 
     const resultingCursors: Cursor[] = [];
     for (const [idx, { start, stop }] of cursorsToIterateOver.entries()) {

@@ -1,5 +1,7 @@
 // eslint-disable-next-line id-denylist
-import { alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
+import { all, alt, optWhitespace, Parser, sepBy, seq, seqMap, string, whitespace } from 'parsimmon';
+import { VimError } from '../../error';
+import { Register } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -11,7 +13,9 @@ import {
   modulo,
   multiply,
   subtract,
+  toExpr,
 } from '../../vimscript/expression/build';
+import { displayValue } from '../../vimscript/expression/displayValue';
 import { EvaluationContext, toInt, toString } from '../../vimscript/expression/evaluate';
 import {
   envVariableParser,
@@ -29,8 +33,6 @@ import {
   Value,
   VariableExpression,
 } from '../../vimscript/expression/types';
-import { displayValue } from '../../vimscript/expression/displayValue';
-import { ErrorCode, VimError } from '../../error';
 import { bangParser } from '../../vimscript/parserUtils';
 
 type Unpack = {
@@ -129,16 +131,23 @@ export class LetCommand extends ExCommand {
             letVarParser,
           ),
           operationParser.trim(optWhitespace),
-          expressionParser,
-        ).map(
-          ([variable, operation, expression]) =>
-            new LetCommand({
-              operation,
-              variable,
-              expression,
-              lock,
-            }),
-        ),
+          expressionParser.fallback(undefined),
+          all,
+        ).map(([variable, operation, expression, trailing]) => {
+          trailing = trailing.trim();
+          if (expression === undefined) {
+            throw VimError.InvalidExpression(trailing);
+          }
+          if (trailing) {
+            throw VimError.TrailingCharacters(trailing);
+          }
+          return new LetCommand({
+            operation,
+            variable,
+            expression,
+            lock,
+          });
+        }),
       ),
       // `:let`
       // `:let {var-name} ...`
@@ -154,7 +163,7 @@ export class LetCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const context = new EvaluationContext();
+    const context = new EvaluationContext(vimState);
     if (this.args.operation === 'print') {
       if (this.args.variables.length === 0) {
         // TODO
@@ -169,51 +178,107 @@ export class LetCommand extends ExCommand {
 
       if (this.args.lock) {
         if (this.args.operation !== '=') {
-          throw VimError.fromCode(ErrorCode.CannotModifyExistingVariable);
-        } else if (variable.type !== 'variable') {
-          // TODO: this error message should vary by type
-          throw VimError.fromCode(ErrorCode.CannotLockARegister);
+          throw VimError.CannotModifyExistingVariable();
+        }
+        if (variable.type !== 'variable') {
+          if (variable.type === 'register') {
+            throw VimError.CannotLock('a register');
+          }
+          if (variable.type === 'option') {
+            throw VimError.CannotLock('an option');
+          }
+          if (variable.type === 'env_variable') {
+            throw VimError.CannotLock('an environment variable');
+          }
+          if (variable.type === 'slice') {
+            throw VimError.CannotLock('a range');
+          }
+          throw VimError.CannotLock('a list or dict');
         }
       }
 
       const value = context.evaluate(this.args.expression);
       const newValue = (_var: Expression, _value: Value) => {
         if (this.args.operation === '+=') {
-          return context.evaluate(add(_var, _value));
+          return context.evaluate(add(_var, toExpr(_value)));
         } else if (this.args.operation === '-=') {
-          return context.evaluate(subtract(_var, _value));
+          return context.evaluate(subtract(_var, toExpr(_value)));
         } else if (this.args.operation === '*=') {
-          return context.evaluate(multiply(_var, _value));
+          return context.evaluate(multiply(_var, toExpr(_value)));
         } else if (this.args.operation === '/=') {
-          return context.evaluate(divide(_var, _value));
+          return context.evaluate(divide(_var, toExpr(_value)));
         } else if (this.args.operation === '%=') {
-          return context.evaluate(modulo(_var, _value));
+          return context.evaluate(modulo(_var, toExpr(_value)));
         } else if (this.args.operation === '.=') {
-          return context.evaluate(concat(_var, _value));
+          return context.evaluate(concat(_var, toExpr(_value)));
         } else if (this.args.operation === '..=') {
-          return context.evaluate(concat(_var, _value));
+          return context.evaluate(concat(_var, toExpr(_value)));
         }
         return _value;
       };
 
       if (variable.type === 'variable') {
+        if (
+          variable.namespace === 'v' &&
+          variable.name in
+            [
+              'count',
+              'false',
+              'key',
+              'null',
+              'operator',
+              'prevcount',
+              'progname',
+              'progpath',
+              'servername',
+              'shell_error',
+              'swapname',
+              't_bool',
+              't_dict',
+              't_float',
+              't_func',
+              't_list',
+              't_number',
+              't_string',
+              't_blob',
+              'true',
+              'val',
+              'version',
+              'vim_did_enter',
+            ]
+        ) {
+          throw VimError.CannotChangeReadOnlyVariable(`v:${variable.name}`);
+        }
         context.setVariable(variable, newValue(variable, value), this.args.lock);
       } else if (variable.type === 'register') {
-        // TODO
+        if (this.args.operation === '=') {
+          vimState.recordedState.registerName = variable.name;
+          Register.put(vimState, toString(value));
+        } else if (this.args.operation === '.=' || this.args.operation === '..=') {
+          throw VimError.WrongVariableType(this.args.operation); // TODO
+        } else {
+          throw VimError.WrongVariableType(this.args.operation);
+        }
       } else if (variable.type === 'option') {
         // TODO
       } else if (variable.type === 'env_variable') {
-        // TODO
+        if (this.args.operation === '=') {
+          process.env[variable.name] = toString(value);
+        } else if (this.args.operation === '.=' || this.args.operation === '..=') {
+          process.env[variable.name] = (process.env[variable.name] ?? '') + toString(value);
+        } else {
+          throw VimError.WrongVariableType(this.args.operation);
+        }
       } else if (variable.type === 'unpack') {
         // TODO: Support :let [a, b; rest] = ["aval", "bval", 3, 4]
         if (value.type !== 'list') {
-          throw VimError.fromCode(ErrorCode.ListRequired);
+          throw VimError.ListRequired();
         }
         if (variable.names.length < value.items.length) {
-          throw VimError.fromCode(ErrorCode.LessTargetsThanListItems);
+          throw VimError.LessTargetsThanListItems();
         }
         if (variable.names.length > value.items.length) {
-          throw VimError.fromCode(ErrorCode.MoreTargetsThanListItems);
+          throw VimError.MoreTargetsThanListItems();
         }
         for (const [i, name] of variable.names.entries()) {
           const item: VariableExpression = { type: 'variable', namespace: undefined, name };
@@ -233,7 +298,7 @@ export class LetCommand extends ExCommand {
           );
           varValue.items[idx] = newItem;
           context.setVariable(variable.variable, varValue, this.args.lock);
-        } else if (varValue.type === 'dict_val') {
+        } else if (varValue.type === 'dictionary') {
           const key = toString(context.evaluate(variable.index));
           const newItem = newValue(
             {
@@ -247,21 +312,21 @@ export class LetCommand extends ExCommand {
           context.setVariable(variable.variable, varValue, this.args.lock);
         } else {
           // TODO: Support blobs
-          throw VimError.fromCode(ErrorCode.CanOnlyIndexAListDictionaryOrBlob);
+          throw VimError.CanOnlyIndexAListDictionaryOrBlob();
         }
       } else if (variable.type === 'slice') {
         // TODO: Operations other than `=`?
         // TODO: Support blobs
         const varValue = context.evaluate(variable.variable);
         if (varValue.type !== 'list' || value.type !== 'list') {
-          throw VimError.fromCode(ErrorCode.CanOnlyIndexAListDictionaryOrBlob);
+          throw VimError.CanOnlyIndexAListDictionaryOrBlob();
         }
         if (value.type !== 'list') {
-          throw VimError.fromCode(ErrorCode.SliceRequiresAListOrBlobValue);
+          throw VimError.SliceRequiresAListOrBlobValue();
         }
         const start = variable.start ? toInt(context.evaluate(variable.start)) : 0;
         if (start > varValue.items.length - 1) {
-          throw VimError.fromCode(ErrorCode.ListIndexOutOfRange, start.toString());
+          throw VimError.ListIndexOutOfRange(start);
         }
         // NOTE: end is inclusive, unlike in JS
         const end = variable.end
@@ -269,10 +334,10 @@ export class LetCommand extends ExCommand {
           : varValue.items.length - 1;
         const slots = end - start + 1;
         if (slots > value.items.length) {
-          throw VimError.fromCode(ErrorCode.ListValueHasNotEnoughItems);
+          throw VimError.ListValueHasNotEnoughItems();
         } else if (slots < value.items.length) {
           // TODO: Allow this when going past end of list and end === undefined
-          throw VimError.fromCode(ErrorCode.ListValueHasMoreItemsThanTarget);
+          throw VimError.ListValueHasMoreItemsThanTarget();
         }
         let i = start;
         for (const item of value.items) {
@@ -291,7 +356,7 @@ export class UnletCommand extends ExCommand {
     whitespace.then(variableParser.sepBy(whitespace)),
     (bang, variables) => {
       if (variables.length === 0) {
-        throw VimError.fromCode(ErrorCode.ArgumentRequired);
+        throw VimError.ArgumentRequired();
       }
       return new UnletCommand(variables, bang);
     },
@@ -306,12 +371,14 @@ export class UnletCommand extends ExCommand {
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const ctx = new EvaluationContext();
+    const ctx = new EvaluationContext(vimState);
     for (const variable of this.variables) {
       const store = ctx.getVariableStore(variable.namespace);
       const existed = store?.delete(variable.name);
       if (!existed && !this.bang) {
-        throw VimError.fromCode(ErrorCode.NoSuchVariable, `"${variable.name}"`);
+        throw VimError.NoSuchVariable(
+          variable.namespace ? `${variable.namespace}:${variable.name}` : variable.name,
+        );
       }
     }
   }

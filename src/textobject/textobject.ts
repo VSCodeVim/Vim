@@ -1,24 +1,24 @@
-import { Cursor } from '../common/motion/cursor';
-import { Mode } from '../mode/mode';
-import { RegisterMode } from '../register/register';
-import { VimState } from '../state/vimState';
-import { TextEditor } from '../textEditor';
+import { Position, TextDocument } from 'vscode';
 import { RegisterAction } from '../actions/base';
 import { BaseMovement, IMovement, failedMovement } from '../actions/baseMotion';
 import {
+  ExpandingSelection,
+  MoveAroundBacktick,
+  MoveAroundCurlyBrace,
   MoveAroundDoubleQuotes,
   MoveAroundParentheses,
   MoveAroundSingleQuotes,
   MoveAroundSquareBracket,
-  MoveAroundBacktick,
   MoveAroundTag,
-  ExpandingSelection,
-  MoveAroundCurlyBrace,
 } from '../actions/motion';
 import { ChangeOperator } from '../actions/operator';
+import { Cursor } from '../common/motion/cursor';
 import { configuration } from '../configuration/configuration';
+import { Mode } from '../mode/mode';
+import { RegisterMode } from '../register/register';
+import { VimState } from '../state/vimState';
+import { TextEditor } from '../textEditor';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
-import { Position, TextDocument } from 'vscode';
 import { WordType } from './word';
 
 export abstract class TextObject extends BaseMovement {
@@ -595,8 +595,6 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObject {
 }
 
 abstract class IndentObjectMatch extends TextObject {
-  override setsDesiredColumnToEOL = true;
-
   protected includeLineAbove = false;
   protected includeLineBelow = false;
 

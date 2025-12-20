@@ -4,27 +4,44 @@ import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
 import { DeleteCommand } from '../../src/cmd_line/commands/delete';
 import { DigraphsCommand } from '../../src/cmd_line/commands/digraph';
+import { EchoCommand } from '../../src/cmd_line/commands/echo';
+import { EvalCommand } from '../../src/cmd_line/commands/eval';
 import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
+import { GrepCommand } from '../../src/cmd_line/commands/grep';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
 import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
 import { LetCommand } from '../../src/cmd_line/commands/let';
-import { DeleteMarksCommand, MarksCommand, MarkCommand } from '../../src/cmd_line/commands/marks';
+import { DeleteMarksCommand, MarkCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
-import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import { RegisterCommand } from '../../src/cmd_line/commands/register';
+import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import { SetCommand } from '../../src/cmd_line/commands/set';
+import { ShiftCommand } from '../../src/cmd_line/commands/shift';
 import { SortCommand } from '../../src/cmd_line/commands/sort';
 import { ReplaceString, SubstituteCommand } from '../../src/cmd_line/commands/substitute';
-import { TabCommandType, TabCommand } from '../../src/cmd_line/commands/tab';
+import { TabCommand, TabCommandType } from '../../src/cmd_line/commands/tab';
+import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
 import { WriteCommand } from '../../src/cmd_line/commands/write';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
+import { VimError } from '../../src/error';
 import { ExCommand } from '../../src/vimscript/exCommand';
 import { exCommandParser, NoOpCommand } from '../../src/vimscript/exCommandParser';
-import { add, int, str, variable, funcCall, list } from '../../src/vimscript/expression/build';
+import {
+  add,
+  dictionary,
+  funcCall,
+  int,
+  list,
+  listExpr,
+  str,
+  toExpr,
+  variable,
+} from '../../src/vimscript/expression/build';
+import { Expression } from '../../src/vimscript/expression/types';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
@@ -38,15 +55,16 @@ function exParseTest(input: string, parsed: ExCommand) {
   });
 }
 
-function exParseFails(input: string) {
+function exParseFails(input: string, error: VimError) {
   test(input, () => {
-    assert.throws(() => exCommandParser.tryParse(input));
+    assert.throws(() => exCommandParser.tryParse(input), error);
   });
 }
 
 suite('Ex command parsing', () => {
   suite('Unknown command', () => {
-    exParseFails(':fakecmd');
+    exParseFails(':fakecmd', VimError.NotAnEditorCommand('fakecmd'));
+    exParseFails(':^', VimError.NotAnEditorCommand('^'));
   });
 
   suite(':[range]', () => {
@@ -57,6 +75,11 @@ suite('Ex command parsing', () => {
     exParseTest(':.+,.+-+3', new GotoLineCommand());
     exParseTest(':,5', new GotoLineCommand());
     exParseTest(':,', new GotoLineCommand());
+  });
+
+  suite(':"', () => {
+    exParseTest(':"', new NoOpCommand());
+    exParseTest(':"I am a comment', new NoOpCommand());
   });
 
   suite(':!', () => {
@@ -223,14 +246,14 @@ suite('Ex command parsing', () => {
       ]),
     );
 
-    exParseFails(':delm'); // TODO: Should throw `E471: Argument required`
+    exParseFails(':delm', VimError.ArgumentRequired());
 
-    exParseFails(':delm -'); // TODO: Should throw `E475: Invalid argument: -`
-    exParseFails(':delm a-'); // TODO: Should throw `E475: Invalid argument: a-`
-    exParseFails(':delm -z'); // TODO: Should throw `E475: Invalid argument: -z`
-    exParseFails(':delm a-Z'); // TODO: Should throw `E475: Invalid argument: a-Z`
+    exParseFails(':delm -', VimError.TrailingCharacters('-')); // TODO: Should throw `E475: Invalid argument: -`
+    exParseFails(':delm a-', VimError.TrailingCharacters('-')); // TODO: Should throw `E475: Invalid argument: a-`
+    exParseFails(':delm -z', VimError.TrailingCharacters('-z')); // TODO: Should throw `E475: Invalid argument: -z`
+    exParseFails(':delm a-Z', VimError.TrailingCharacters('-Z')); // TODO: Should throw `E475: Invalid argument: a-Z`
 
-    exParseFails(':delm! a'); // TODO: Should throw `E475: Invalid argument`
+    exParseFails(':delm! a', VimError.TrailingCharacters('a')); // TODO: Should throw `E474: Invalid argument`
   });
 
   suite(':dig[raphs]', () => {
@@ -245,7 +268,18 @@ suite('Ex command parsing', () => {
       }),
     );
 
-    exParseFails(':dig e:');
+    exParseFails(':dig e:', VimError.TrailingCharacters('e:')); // TODO: Should throw `E39: Number expected`
+  });
+
+  suite(':ec[ho]', () => {
+    const echo = (exprs: Expression[]) => new EchoCommand({ sep: ' ', error: false }, exprs);
+    exParseTest(':echo', echo([]));
+    exParseTest(':echo []{}', echo([listExpr([]), toExpr(dictionary(new Map()))]));
+    exParseTest(':echo 5 + 5', echo([add(int(5), int(5))]));
+    exParseTest(':echo 5 + 5 5', echo([add(int(5), int(5)), int(5)]));
+
+    exParseFails(':echo 5 (', VimError.InvalidExpression('('));
+    // TODO: exParseFails(':echo 5 6abc', VimError.InvalidExpression('6abc'));
   });
 
   suite(':e[dit]', () => {
@@ -284,6 +318,14 @@ suite('Ex command parsing', () => {
   suite(':ene[w]', () => {
     exParseTest(':enew', new FileCommand({ name: 'enew', bang: false }));
     exParseTest(':enew!', new FileCommand({ name: 'enew', bang: true }));
+  });
+
+  suite(':eval', () => {
+    exParseTest(':eval 2 + 2', new EvalCommand(add(int(2), int(2))));
+
+    exParseFails(':eval', VimError.InvalidExpression(''));
+    // TODO: exParseFails(':eval 6abc', VimError.InvalidExpression('6abc'));
+    exParseFails(':eval 1 1', VimError.TrailingCharacters('1'));
   });
 
   suite(':go[to]', () => {
@@ -375,7 +417,7 @@ suite('Ex command parsing', () => {
       new LetCommand({
         operation: '=',
         variable: { type: 'unpack', names: ['a', 'b', 'c'] },
-        expression: list([int(1), int(2), int(3)]),
+        expression: toExpr(list([int(1), int(2), int(3)])),
         lock: false,
       }),
     );
@@ -404,7 +446,7 @@ suite('Ex command parsing', () => {
           start: { type: 'variable', namespace: undefined, name: 'start' },
           end: { type: 'variable', namespace: undefined, name: 'end' },
         },
-        expression: list([int(1), int(2), int(3)]),
+        expression: toExpr(list([int(1), int(2), int(3)])),
         lock: false,
       }),
     );
@@ -415,6 +457,10 @@ suite('Ex command parsing', () => {
     );
 
     // TODO
+
+    exParseFails(':let x = ', VimError.InvalidExpression(''));
+    // TODO: exParseFails(':let x = 6abc', VimError.InvalidExpression('6abc'));
+    exParseFails(':let x = 6 abc', VimError.TrailingCharacters('abc'));
   });
 
   suite(':marks', () => {
@@ -426,6 +472,8 @@ suite('Ex command parsing', () => {
   suite(':mark', () => {
     exParseTest(':mark a', new MarkCommand('a'));
     exParseTest(':mark `', new MarkCommand('`'));
+
+    exParseFails(':mark', VimError.ArgumentRequired());
   });
 
   suite(':p[rint]', () => {
@@ -443,7 +491,7 @@ suite('Ex command parsing', () => {
     exParseTest(':put!"', new PutExCommand({ bang: true, register: '"' }));
 
     // No space, alpha register
-    exParseFails(':putx');
+    exParseFails(':putx', VimError.NotAnEditorCommand('putx'));
     exParseTest(':put!x', new PutExCommand({ bang: true, register: 'x' }));
 
     // Expression register
@@ -455,8 +503,11 @@ suite('Ex command parsing', () => {
     );
     exParseTest(
       ':put!=[1,2,3]',
-      new PutExCommand({ bang: true, fromExpression: list([int(1), int(2), int(3)]) }),
+      new PutExCommand({ bang: true, fromExpression: toExpr(list([int(1), int(2), int(3)])) }),
     );
+    exParseFails(':put=)', VimError.InvalidExpression(')'));
+    // TODO: exParseFails(':put=1+', VimError.InvalidExpression('1+'));
+    exParseFails(':put=1 1', VimError.TrailingCharacters('1'));
   });
 
   suite(':q[uit] and :qa[ll]', () => {
@@ -666,6 +717,17 @@ suite('Ex command parsing', () => {
       }),
     );
 
+    exParseTest(
+      ':s/a/\\=x+1',
+      new SubstituteCommand({
+        pattern: pattern.tryParse('a/'),
+        replace: new ReplaceString([
+          { type: 'expression', expression: add(variable('x'), int(1)) },
+        ]),
+        flags: {},
+        count: undefined,
+      }),
+    );
     // TODO
   });
 
@@ -699,16 +761,15 @@ suite('Ex command parsing', () => {
       new TabCommand({ type: TabCommandType.Move, count: 10, direction: 'left' }),
     );
 
-    // TODO: these should throw E474; not clear that's the parser's job though
-    // exParseFails(':tabm +0');
-    // exParseFails(':tabm -0');
-    exParseFails(':tabm ++');
-    exParseFails(':tabm --');
-    exParseFails(':tabm 1+');
-    exParseFails(':tabm 1-');
-    exParseFails(':tabm x');
-    exParseFails(':tabm 1x');
-    exParseFails(':tabm x1');
+    exParseFails(':tabm +0', VimError.InvalidArgument475('+0'));
+    exParseFails(':tabm -0', VimError.InvalidArgument475('-0'));
+    exParseFails(':tabm ++', VimError.InvalidArgument475('++'));
+    exParseFails(':tabm --', VimError.InvalidArgument475('--'));
+    exParseFails(':tabm 1+', VimError.InvalidArgument475('1+'));
+    exParseFails(':tabm 1-', VimError.InvalidArgument475('1-'));
+    exParseFails(':tabm x', VimError.InvalidArgument475('x'));
+    exParseFails(':tabm 1x', VimError.InvalidArgument475('1x'));
+    exParseFails(':tabm x1', VimError.InvalidArgument475('x1'));
   });
 
   suite(':tabo[nly]', () => {
@@ -746,6 +807,14 @@ suite('Ex command parsing', () => {
         files: ['foo.txt', 'bar.txt', 'baz.txt'],
       }),
     );
+  });
+
+  suite(':vscode', () => {
+    exParseTest(
+      ':vscode editor.action.commentLine',
+      new VsCodeCommand('editor.action.commentLine'),
+    );
+    exParseFails(':vscode', VimError.ArgumentRequired());
   });
 
   suite(':y[ank]', () => {

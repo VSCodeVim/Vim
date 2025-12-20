@@ -1,13 +1,13 @@
+import { Position, Range } from 'vscode';
+import { PositionDiff } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
+import { VimError } from '../../error';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
 import { BaseOperator } from '../operator';
 import { RegisterAction } from './../base';
-import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
-import { Position, Range } from 'vscode';
-import { PositionDiff } from '../../common/motion/position';
 
 @RegisterAction
 class ReplaceOperator extends BaseOperator {
@@ -25,14 +25,14 @@ class ReplaceOperator extends BaseOperator {
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     const range =
       vimState.currentRegisterMode === RegisterMode.LineWise
-        ? new Range(start.getLineBegin(), end.getLineEndIncludingEOL())
+        ? new Range(start.getLineBegin(), end.getLineEnd())
         : new Range(start, end.getRight());
 
     const register = await Register.get(vimState.recordedState.registerName, this.multicursorIndex);
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
+        VimError.NothingInRegister(vimState.recordedState.registerName),
       );
       return;
     }

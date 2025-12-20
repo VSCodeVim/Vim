@@ -1,7 +1,3 @@
-interface IErrorMessage {
-  [index: number]: string;
-}
-
 export enum ErrorCode {
   InvalidAddress = 14,
   InvalidExpression = 15,
@@ -14,6 +10,7 @@ export enum ErrorCode {
   NoPreviousCommand = 34,
   NoPreviousRegularExpression = 35,
   NoWriteSinceLastChange = 37,
+  CannotChangeReadOnlyVariable = 46,
   MultipleMatches = 93,
   NoMatchingBuffer = 94,
   NoSuchVariable = 108,
@@ -46,7 +43,7 @@ export enum ErrorCode {
   AtEndOfChangeList = 663,
   ChangeListIsEmpty = 664,
   ListIndexOutOfRange = 684,
-  ArgumentOfSortMustBeAList = 686,
+  ArgumentMustBeAList = 686,
   LessTargetsThanListItems = 687,
   MoreTargetsThanListItems = 688,
   CanOnlyIndexAListDictionaryOrBlob = 689,
@@ -61,7 +58,7 @@ export enum ErrorCode {
   SliceRequiresAListOrBlobValue = 709,
   ListValueHasMoreItemsThanTarget = 710,
   ListValueHasNotEnoughItems = 711,
-  ArgumentOfMaxMustBeAListOrDictionary = 712, // TODO: This should be different for min(), count()
+  ArgumentOfFuncMustBeAListOrDictionary = 712,
   ListRequired = 714,
   DictionaryRequired = 715,
   KeyNotPresentInDictionary = 716,
@@ -73,6 +70,7 @@ export enum ErrorCode {
   UsingListAsAString = 730,
   UsingFuncrefAsAString = 729,
   UsingDictionaryAsAString = 731,
+  WrongVariableType = 734,
   CanOnlyCompareDictionaryWithDictionary = 735,
   InvalidOperationForDictionary = 736,
   ValueIsLocked = 741,
@@ -87,112 +85,23 @@ export enum ErrorCode {
   MaxDepthMustBeANonNegativeNumber = 900,
   ExpectedADict = 922,
   SecondArgumentOfFunction = 923,
+  PositiveCountRequired = 939,
   BlobLiteralShouldHaveAnEvenNumberOfHexCharacters = 973,
   UsingABlobAsANumber = 974,
   CanOnlyCompareBlobWithBlob = 977,
   InvalidOperationForBlob = 978,
   CannotModifyExistingVariable = 995,
-  CannotLockARegister = 996,
+  CannotLock = 996,
   ListRequiredForArgument = 1211,
 }
-
-export const ErrorMessage: IErrorMessage = {
-  14: 'Invalid address',
-  15: 'Invalid expression',
-  16: 'Invalid range',
-  20: 'Mark not set',
-  23: 'No alternate file',
-  29: 'No inserted text yet',
-  32: 'No file name',
-  33: 'No previous substitute regular expression',
-  34: 'No previous command',
-  35: 'No previous regular expression',
-  37: 'No write since last change (add ! to override)',
-  93: 'More than one match',
-  94: 'No matching buffer',
-  108: 'No such variable',
-  114: 'Missing quote',
-  117: 'Unknown function',
-  118: 'Too many arguments for function',
-  119: 'Not enough arguments for function',
-  121: 'Undefined variable',
-  208: 'Error writing to file',
-  211: 'File no longer available', // TODO: Should be `File "[file_name]" no longer available`
-  223: 'Recursive mapping',
-  348: 'No string under cursor',
-  353: 'Nothing in register',
-  354: 'Invalid register name',
-  384: 'Search hit TOP without match for',
-  385: 'Search hit BOTTOM without match for',
-  444: 'Cannot close last window',
-  447: 'Can\'t find file "{FILE_NAME}" in path',
-  471: 'Argument required',
-  474: 'Invalid argument',
-  475: 'Invalid argument',
-  481: 'No range allowed',
-  486: 'Pattern not found',
-  488: 'Trailing characters',
-  492: 'Not an editor command',
-  516: 'No buffers were deleted',
-  518: 'Unknown option',
-  521: 'Number required after =',
-  662: 'At start of changelist',
-  663: 'At end of changelist',
-  664: 'changelist is empty',
-  684: 'list index out of range',
-  686: 'Argument of sort() must be a List',
-  687: 'Less targets than List items',
-  688: 'More targets than List items',
-  689: 'Can only index a List, Dictionary or Blob',
-  691: 'Can only compare List with List',
-  692: 'Invalid operation for List',
-  694: 'Invalid operation for Funcrefs',
-  695: 'Cannot index a Funcref',
-  700: 'Unknown function',
-  701: 'Invalid type for len()',
-  703: 'Using a Funcref as a Number',
-  704: 'Funcref variable name must start with a capital',
-  709: '[:] requires a List or Blob value',
-  710: 'List value has more items than target',
-  711: 'List value has not enough items',
-  712: 'Argument of max() must be a List or Dictionary',
-  714: 'List required',
-  715: 'Dictionary required',
-  716: 'Key not present in Dictionary',
-  719: 'Cannot use [:] with a Dictionary',
-  721: 'Duplicate key in Dictionary',
-  726: 'Stride is zero',
-  727: 'Start past end',
-  728: 'Using a Dictionary as a Number',
-  729: 'using Funcref as a String',
-  730: 'Using List as a String',
-  731: 'Using Dictionary as a String',
-  735: 'Can only compare Dictionary with Dictionary',
-  736: 'Invalid operation for Dictionary',
-  741: 'Value is locked',
-  745: 'Using a List as a Number',
-  748: 'No previously used register',
-  804: "Cannot use '%' with Float",
-  805: 'Using a Float as a Number',
-  806: 'Using Float as a String',
-  808: 'Number or Float required',
-  896: 'Argument of map() must be a List, Dictionary or Blob',
-  897: 'List or Blob required',
-  900: 'maxdepth must be a non-negative number',
-  922: 'expected a dict',
-  923: 'Second argument of function() must be a list or a dict',
-  973: 'Blob literal should have an even number of hex characters',
-  974: 'Using a Blob as a Number',
-  977: 'Can only compare Blob with Blob',
-  978: 'Invalid operation for Blob',
-  995: 'Cannot modify existing variable',
-  996: 'Cannot lock a register',
-  1211: 'List required for argument {IDX}',
-};
 
 export class VimError extends Error {
   public readonly code: ErrorCode;
   public override readonly message: string;
+
+  override toString(): string {
+    return `E${this.code}: ${this.message}`;
+  }
 
   private constructor(code: ErrorCode, message: string) {
     super();
@@ -200,34 +109,349 @@ export class VimError extends Error {
     this.message = message;
   }
 
-  static fromCode(code: ErrorCode, extraValue?: string): VimError {
-    let message = ErrorMessage[code];
-    if (message) {
-      // TODO: Come up with a more elegant solution
-      if (extraValue) {
-        if (code === ErrorCode.NothingInRegister) {
-          extraValue = ` ${extraValue}`;
-        } else if (code === ErrorCode.NoMatchingBuffer || code === ErrorCode.MultipleMatches) {
-          extraValue = ` for ${extraValue}`;
-        } else if (code === ErrorCode.CantFindFileInPath) {
-          message = message.replace('{FILE_NAME}', extraValue);
-          extraValue = '';
-        } else if (code === ErrorCode.ListRequiredForArgument) {
-          message = message.replace('{IDX}', extraValue);
-          extraValue = '';
-        } else {
-          extraValue = `: ${extraValue}`;
-        }
-      }
-
-      return new VimError(code, message + (extraValue ?? ''));
-    }
-
-    throw new Error('unknown error code: ' + code);
+  static InvalidAddress(): VimError {
+    return new VimError(ErrorCode.InvalidAddress, 'Invalid address');
   }
-
-  override toString(): string {
-    return `E${this.code}: ${this.message}`;
+  static InvalidExpression(expr: string): VimError {
+    return new VimError(ErrorCode.InvalidExpression, `Invalid expression: "${expr}"`);
+  }
+  static InvalidRange(): VimError {
+    return new VimError(ErrorCode.InvalidRange, 'Invalid range');
+  }
+  static MarkNotSet(): VimError {
+    return new VimError(ErrorCode.MarkNotSet, 'Mark not set');
+  }
+  static NoAlternateFile(): VimError {
+    return new VimError(ErrorCode.NoAlternateFile, 'No alternate file');
+  }
+  static NoInsertedTextYet(): VimError {
+    return new VimError(ErrorCode.NoInsertedTextYet, 'No inserted text yet');
+  }
+  static NoFileName(): VimError {
+    return new VimError(ErrorCode.NoFileName, 'No file name');
+  }
+  static NoPreviousSubstituteRegularExpression(): VimError {
+    return new VimError(
+      ErrorCode.NoPreviousSubstituteRegularExpression,
+      'No previous substitute regular expression',
+    );
+  }
+  static NoPreviousCommand(): VimError {
+    return new VimError(ErrorCode.NoPreviousCommand, 'No previous command');
+  }
+  static NoPreviousRegularExpression(): VimError {
+    return new VimError(ErrorCode.NoPreviousRegularExpression, 'No previous regular expression');
+  }
+  static NoWriteSinceLastChange(): VimError {
+    return new VimError(
+      ErrorCode.NoWriteSinceLastChange,
+      'No write since last change (add ! to override)',
+    );
+  }
+  static CannotChangeReadOnlyVariable(variable: string): VimError {
+    return new VimError(
+      ErrorCode.CannotChangeReadOnlyVariable,
+      `Cannot change read-only variable "${variable}"`,
+    );
+  }
+  static MultipleMatches(pattern: string): VimError {
+    return new VimError(ErrorCode.MultipleMatches, `More than one match for ${pattern}`);
+  }
+  static NoMatchingBuffer(bufferName: string): VimError {
+    return new VimError(ErrorCode.NoMatchingBuffer, `No matching buffer for ${bufferName}`);
+  }
+  static NoSuchVariable(name: string): VimError {
+    return new VimError(ErrorCode.NoSuchVariable, `No such variable: "${name}"`);
+  }
+  static MissingQuote(): VimError {
+    return new VimError(ErrorCode.MissingQuote, 'Missing quote');
+  }
+  static UnknownFunction_call(func: string): VimError {
+    return new VimError(ErrorCode.UnknownFunction_call, `Unknown function: ${func}`);
+  }
+  static TooManyArgs(func: string): VimError {
+    return new VimError(ErrorCode.TooManyArgs, `Too many arguments for function: ${func}`);
+  }
+  static NotEnoughArgs(func: string): VimError {
+    return new VimError(ErrorCode.NotEnoughArgs, `Not enough arguments for function: ${func}`);
+  }
+  static UndefinedVariable(name: string): VimError {
+    return new VimError(ErrorCode.UndefinedVariable, `Undefined variable: ${name}`);
+  }
+  static ErrorWritingToFile(): VimError {
+    return new VimError(ErrorCode.ErrorWritingToFile, 'Error writing to file');
+  }
+  static FileNoLongerAvailable(): VimError {
+    return new VimError(ErrorCode.FileNoLongerAvailable, 'File no longer available');
+  }
+  static RecursiveMapping(): VimError {
+    return new VimError(ErrorCode.RecursiveMapping, 'Recursive mapping');
+  }
+  static NoStringUnderCursor(): VimError {
+    return new VimError(ErrorCode.NoStringUnderCursor, 'No string under cursor');
+  }
+  static NothingInRegister(register: string): VimError {
+    return new VimError(ErrorCode.NothingInRegister, `Nothing in register ${register}`);
+  }
+  static InvalidRegisterName(register: string): VimError {
+    return new VimError(ErrorCode.InvalidRegisterName, `Invalid register name: '${register}'`);
+  }
+  static SearchHitTop(pattern: string): VimError {
+    return new VimError(ErrorCode.SearchHitTop, `Search hit TOP without match for: ${pattern}`);
+  }
+  static SearchHitBottom(pattern: string): VimError {
+    return new VimError(
+      ErrorCode.SearchHitBottom,
+      `Search hit BOTTOM without match for: ${pattern}`,
+    );
+  }
+  static CannotCloseLastWindow(): VimError {
+    return new VimError(ErrorCode.CannotCloseLastWindow, 'Cannot close last window');
+  }
+  static CantFindFileInPath(fileName: string): VimError {
+    return new VimError(ErrorCode.CantFindFileInPath, `Can't find file "${fileName}" in path`);
+  }
+  static ArgumentRequired(): VimError {
+    return new VimError(ErrorCode.ArgumentRequired, 'Argument required');
+  }
+  static InvalidArgument474(arg?: string): VimError {
+    return new VimError(
+      ErrorCode.InvalidArgument474,
+      arg !== undefined ? `Invalid argument: ${arg}` : 'Invalid argument',
+    );
+  }
+  static InvalidArgument475(arg: string): VimError {
+    return new VimError(ErrorCode.InvalidArgument475, `Invalid argument: ${arg}`);
+  }
+  static NoRangeAllowed(): VimError {
+    return new VimError(ErrorCode.NoRangeAllowed, 'No range allowed');
+  }
+  static PatternNotFound(pattern: string | undefined): VimError {
+    return new VimError(
+      ErrorCode.PatternNotFound,
+      pattern !== undefined ? `Pattern not found: ${pattern}` : 'Pattern not found',
+    );
+  }
+  static TrailingCharacters(chars?: string): VimError {
+    return new VimError(
+      ErrorCode.TrailingCharacters,
+      chars !== undefined ? `Trailing characters: ${chars}` : 'Trailing characters',
+    );
+  }
+  static NotAnEditorCommand(command: string): VimError {
+    return new VimError(ErrorCode.NotAnEditorCommand, `Not an editor command: ${command}`);
+  }
+  static NoBuffersDeleted(): VimError {
+    return new VimError(ErrorCode.NoBuffersDeleted, 'No buffers were deleted');
+  }
+  static UnknownOption(option: string): VimError {
+    return new VimError(ErrorCode.UnknownOption, `Unknown option: ${option}`);
+  }
+  static NumberRequiredAfterEqual(what: string): VimError {
+    return new VimError(ErrorCode.NumberRequiredAfterEqual, `Number required after =: ${what}`);
+  }
+  static AtStartOfChangeList(): VimError {
+    return new VimError(ErrorCode.AtStartOfChangeList, 'At start of changelist');
+  }
+  static AtEndOfChangeList(): VimError {
+    return new VimError(ErrorCode.AtEndOfChangeList, 'At end of changelist');
+  }
+  static ChangeListIsEmpty(): VimError {
+    return new VimError(ErrorCode.ChangeListIsEmpty, 'changelist is empty');
+  }
+  static ListIndexOutOfRange(idx: number): VimError {
+    return new VimError(ErrorCode.ListIndexOutOfRange, `list index out of range: ${idx}`);
+  }
+  static ArgumentMustBeAList(func: string): VimError {
+    return new VimError(ErrorCode.ArgumentMustBeAList, `Argument of ${func} must be a List`);
+  }
+  static LessTargetsThanListItems(): VimError {
+    return new VimError(ErrorCode.LessTargetsThanListItems, 'Less targets than List items');
+  }
+  static MoreTargetsThanListItems(): VimError {
+    return new VimError(ErrorCode.MoreTargetsThanListItems, 'More targets than List items');
+  }
+  static CanOnlyIndexAListDictionaryOrBlob(): VimError {
+    return new VimError(
+      ErrorCode.CanOnlyIndexAListDictionaryOrBlob,
+      'Can only index a List, Dictionary or Blob',
+    );
+  }
+  static CanOnlyCompareListWithList(): VimError {
+    return new VimError(ErrorCode.CanOnlyCompareListWithList, 'Can only compare List with List');
+  }
+  static InvalidOperationForList(): VimError {
+    return new VimError(ErrorCode.InvalidOperationForList, 'Invalid operation for List');
+  }
+  static InvalidOperationForFuncrefs(): VimError {
+    return new VimError(ErrorCode.InvalidOperationForFuncrefs, 'Invalid operation for Funcrefs');
+  }
+  static CannotIndexAFuncref(): VimError {
+    return new VimError(ErrorCode.CannotIndexAFuncref, 'Cannot index a Funcref');
+  }
+  static UnknownFunction_funcref(): VimError {
+    return new VimError(ErrorCode.UnknownFunction_funcref, 'Unknown function');
+  }
+  static InvalidTypeForLen(): VimError {
+    return new VimError(ErrorCode.InvalidTypeForLen, 'Invalid type for len()');
+  }
+  static UsingAFuncrefAsANumber(): VimError {
+    return new VimError(ErrorCode.UsingAFuncrefAsANumber, 'Using a Funcref as a Number');
+  }
+  static FuncrefVariableNameMustStartWithACapital(name: string): VimError {
+    return new VimError(
+      ErrorCode.FuncrefVariableNameMustStartWithACapital,
+      `Funcref variable name must start with a capital: ${name}`,
+    );
+  }
+  static SliceRequiresAListOrBlobValue(): VimError {
+    return new VimError(
+      ErrorCode.SliceRequiresAListOrBlobValue,
+      '[:] requires a List or Blob value',
+    );
+  }
+  static ListValueHasMoreItemsThanTarget(): VimError {
+    return new VimError(
+      ErrorCode.ListValueHasMoreItemsThanTarget,
+      'List value has more items than target',
+    );
+  }
+  static ListValueHasNotEnoughItems(): VimError {
+    return new VimError(ErrorCode.ListValueHasNotEnoughItems, 'List value has not enough items');
+  }
+  static ArgumentOfFuncMustBeAListOrDictionary(func: string): VimError {
+    return new VimError(
+      ErrorCode.ArgumentOfFuncMustBeAListOrDictionary,
+      `Argument of ${func} must be a List or Dictionary`,
+    );
+  }
+  static ListRequired(): VimError {
+    return new VimError(ErrorCode.ListRequired, 'List required');
+  }
+  static DictionaryRequired(): VimError {
+    return new VimError(ErrorCode.DictionaryRequired, 'Dictionary required');
+  }
+  static KeyNotPresentInDictionary(key: string): VimError {
+    return new VimError(
+      ErrorCode.KeyNotPresentInDictionary,
+      `Key not present in Dictionary: ${key}`,
+    );
+  }
+  static CannotUseSliceWithADictionary(): VimError {
+    return new VimError(
+      ErrorCode.CannotUseSliceWithADictionary,
+      'Cannot use [:] with a Dictionary',
+    );
+  }
+  static DuplicateKeyInDictionary(key: string): VimError {
+    return new VimError(ErrorCode.DuplicateKeyInDictionary, `Duplicate key in Dictionary: ${key}`);
+  }
+  static StrideIsZero(): VimError {
+    return new VimError(ErrorCode.StrideIsZero, 'Stride is zero');
+  }
+  static StartPastEnd(): VimError {
+    return new VimError(ErrorCode.StartPastEnd, 'Start past end');
+  }
+  static UsingADictionaryAsANumber(): VimError {
+    return new VimError(ErrorCode.UsingADictionaryAsANumber, 'Using a Dictionary as a Number');
+  }
+  static UsingFuncrefAsAString(): VimError {
+    return new VimError(ErrorCode.UsingFuncrefAsAString, 'using Funcref as a String');
+  }
+  static UsingListAsAString(): VimError {
+    return new VimError(ErrorCode.UsingListAsAString, 'Using List as a String');
+  }
+  static UsingDictionaryAsAString(): VimError {
+    return new VimError(ErrorCode.UsingDictionaryAsAString, 'Using Dictionary as a String');
+  }
+  static WrongVariableType(operation: string): VimError {
+    return new VimError(ErrorCode.WrongVariableType, `Wrong variable type for ${operation}`);
+  }
+  static CanOnlyCompareDictionaryWithDictionary(): VimError {
+    return new VimError(
+      ErrorCode.CanOnlyCompareDictionaryWithDictionary,
+      'Can only compare Dictionary with Dictionary',
+    );
+  }
+  static InvalidOperationForDictionary(): VimError {
+    return new VimError(
+      ErrorCode.InvalidOperationForDictionary,
+      'Invalid operation for Dictionary',
+    );
+  }
+  static ValueIsLocked(name: string): VimError {
+    return new VimError(ErrorCode.ValueIsLocked, `Value is locked: ${name}`);
+  }
+  static UsingAListAsANumber(): VimError {
+    return new VimError(ErrorCode.UsingAListAsANumber, 'Using a List as a Number');
+  }
+  static NoPreviouslyUsedRegister(): VimError {
+    return new VimError(ErrorCode.NoPreviouslyUsedRegister, 'No previously used register');
+  }
+  static CannotUseModuloWithFloat(): VimError {
+    return new VimError(ErrorCode.CannotUseModuloWithFloat, "Cannot use '%' with Float");
+  }
+  static UsingAFloatAsANumber(): VimError {
+    return new VimError(ErrorCode.UsingAFloatAsANumber, 'Using a Float as a Number');
+  }
+  static UsingFloatAsAString(): VimError {
+    return new VimError(ErrorCode.UsingFloatAsAString, 'Using Float as a String');
+  }
+  static NumberOrFloatRequired(): VimError {
+    return new VimError(ErrorCode.NumberOrFloatRequired, 'Number or Float required');
+  }
+  static ArgumentOfMapMustBeAListDictionaryOrBlob(): VimError {
+    return new VimError(
+      ErrorCode.ArgumentOfMapMustBeAListDictionaryOrBlob,
+      'Argument of map() must be a List, Dictionary or Blob',
+    );
+  }
+  static ListOrBlobRequired(): VimError {
+    return new VimError(ErrorCode.ListOrBlobRequired, 'List or Blob required');
+  }
+  static MaxDepthMustBeANonNegativeNumber(): VimError {
+    return new VimError(
+      ErrorCode.MaxDepthMustBeANonNegativeNumber,
+      'maxdepth must be a non-negative number',
+    );
+  }
+  static ExpectedADict(): VimError {
+    return new VimError(ErrorCode.ExpectedADict, 'expected a dict');
+  }
+  static SecondArgumentOfFunction(): VimError {
+    return new VimError(
+      ErrorCode.SecondArgumentOfFunction,
+      'Second argument of function() must be a list or a dict',
+    );
+  }
+  static PositiveCountRequired(): VimError {
+    return new VimError(ErrorCode.PositiveCountRequired, 'Positive count required');
+  }
+  static BlobLiteralShouldHaveAnEvenNumberOfHexCharacters(): VimError {
+    return new VimError(
+      ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters,
+      'Blob literal should have an even number of hex characters',
+    );
+  }
+  static UsingABlobAsANumber(): VimError {
+    return new VimError(ErrorCode.UsingABlobAsANumber, 'Using a Blob as a Number');
+  }
+  static CanOnlyCompareBlobWithBlob(): VimError {
+    return new VimError(ErrorCode.CanOnlyCompareBlobWithBlob, 'Can only compare Blob with Blob');
+  }
+  static InvalidOperationForBlob(): VimError {
+    return new VimError(ErrorCode.InvalidOperationForBlob, 'Invalid operation for Blob');
+  }
+  static CannotModifyExistingVariable(): VimError {
+    return new VimError(ErrorCode.CannotModifyExistingVariable, 'Cannot modify existing variable');
+  }
+  static CannotLock(
+    what: 'a range' | 'an option' | 'a list or dict' | 'an environment variable' | 'a register',
+  ): VimError {
+    return new VimError(ErrorCode.CannotLock, `Cannot lock ${what}`);
+  }
+  static ListRequiredForArgument(idx: number): VimError {
+    return new VimError(ErrorCode.ListRequiredForArgument, `List required for argument ${idx}`);
   }
 }
 

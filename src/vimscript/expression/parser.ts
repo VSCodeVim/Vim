@@ -1,19 +1,19 @@
 import {
+  alt,
+  // eslint-disable-next-line id-denylist
+  any,
+  lazy,
+  noneOf,
+  optWhitespace,
   Parser,
   regexp,
   seq,
-  alt,
   // eslint-disable-next-line id-denylist
   string,
-  lazy,
-  // eslint-disable-next-line id-denylist
-  any,
-  optWhitespace,
   takeWhile,
-  noneOf,
 } from 'parsimmon';
-import { ErrorCode, VimError } from '../../error';
-import { binary, float, lambda, listExpr, int, str, blob } from './build';
+import { VimError } from '../../error';
+import { binary, blob, float, int, lambda, listExpr, str } from './build';
 import {
   BinaryOp,
   BlobValue,
@@ -42,7 +42,7 @@ const blobParser: Parser<BlobValue> = regexp(/0[z]/i).then(
     .map<BlobValue>((bytes) => {
       const lastByte = bytes.at(-1);
       if (lastByte && lastByte.length !== 2) {
-        throw VimError.fromCode(ErrorCode.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters);
+        throw VimError.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters();
       }
       const data = new Uint8Array(new ArrayBuffer(bytes.length));
       let i = 0;
@@ -107,7 +107,7 @@ const stringParser: Parser<StringValue> = alt(
     .map((escaped) => {
       // TODO: handle other special chars (:help expr-quote)
       if (escaped === undefined) {
-        throw VimError.fromCode(ErrorCode.MissingQuote); // TODO: parameter
+        throw VimError.MissingQuote(); // TODO: parameter
       } else if (escaped === '\\') {
         return '\\';
       } else if (escaped === '"') {
@@ -210,7 +210,7 @@ export const variableParser: Parser<VariableExpression> = seq(
 });
 
 export const envVariableParser: Parser<EnvVariableExpression> = string('$')
-  .then(regexp(/[a-z]+/))
+  .then(regexp(/[a-z]+/i))
   .desc('$ENV')
   .map((name) => {
     return { type: 'env_variable', name };
@@ -388,8 +388,8 @@ const expr4Parser: Parser<Expression> = alt<Expression>(
         string('<='),
         string('=~'),
         string('!~'),
-        string('is'),
         string('isnot'),
+        string('is'),
       ),
       regexp(/[#\?]?/),
     ).trim(optWhitespace),

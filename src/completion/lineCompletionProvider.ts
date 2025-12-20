@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 
-import { TextEditor } from './../textEditor';
-import { VimState } from '../state/vimState';
 import { Position } from 'vscode';
+import { VimState } from '../state/vimState';
+import { TextEditor } from './../textEditor';
 
 /**
  * Return open text documents, with a given file at the top of the list.

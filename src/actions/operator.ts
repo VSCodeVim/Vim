@@ -542,7 +542,7 @@ class IndentOperatorVisualBlock extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursors = [new Cursor(start, start)];
+    vimState.cursors = [Cursor.atPosition(start)];
   }
 }
 @RegisterAction
@@ -653,7 +653,7 @@ class OutdentOperatorVisualBlock extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursors = [new Cursor(start, start)];
+    vimState.cursors = [Cursor.atPosition(start)];
   }
 }
 

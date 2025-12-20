@@ -265,21 +265,14 @@ export class Register {
   }
 
   /**
-   * Gets content from a register. If no register is specified, uses `vimState.recordedState.registerName`.
+   * @returns content of the given register
    */
   public static async get(
     register: string,
     multicursorIndex = 0,
   ): Promise<IRegisterContent | undefined> {
-    if (!Register.isValidRegister(register)) {
-      throw new Error(`Invalid register ${register}`);
-    }
-
-    register = register.toLowerCase();
-
-    const contentByCursor = Register.registers.get(register);
-
     if (Register.isClipboardRegister(register)) {
+      const contentByCursor = Register.registers.get(register);
       const clipboardContent = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
       const currentRegisterContent = (contentByCursor?.[0]?.text as string)?.replace(/\r\n/g, '\n');
       if (currentRegisterContent !== clipboardContent) {
@@ -289,17 +282,39 @@ export class Register {
           registerMode: RegisterMode.CharacterWise,
         };
         Register.registers.set(register, [registerContent]);
-        return registerContent;
       }
     }
 
-    // Default to the first cursor.
-    if (contentByCursor?.[multicursorIndex] === undefined) {
-      // If multicursorIndex is too high, try the first cursor
-      multicursorIndex = 0;
+    return Register._get(register, multicursorIndex);
+  }
+
+  /**
+   * @returns content of the given register
+   *
+   * NOTE: The clipboard register is silently converted to the unnamed register
+   */
+  public static getSync(register: string, multicursorIndex = 0): IRegisterContent | undefined {
+    if (Register.isClipboardRegister(register)) {
+      register = '"';
     }
 
-    return contentByCursor?.[multicursorIndex];
+    return Register._get(register, multicursorIndex);
+  }
+
+  private static _get(register: string, multicursorIndex: number): IRegisterContent | undefined {
+    if (!Register.isValidRegister(register)) {
+      throw new Error(`Invalid register ${register}`);
+    }
+
+    register = register.toLowerCase();
+
+    const contentByCursor = Register.registers.get(register);
+    if (contentByCursor === undefined) {
+      return undefined;
+    }
+
+    // Default to first cursor if the requested multicursor index doesn't exist
+    return contentByCursor[multicursorIndex] ?? contentByCursor[0];
   }
 
   public static has(register: string): boolean {
