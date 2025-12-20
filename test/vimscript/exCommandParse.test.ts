@@ -44,8 +44,6 @@ import {
 import { Expression } from '../../src/vimscript/expression/types';
 import { Address } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
-import { ShiftCommand } from '../../src/cmd_line/commands/shift';
-import { GrepCommand } from '../../src/cmd_line/commands/grep';
 import { GlobalCommand } from '../../src/cmd_line/commands/global';
 
 function exParseTest(input: string, parsed: ExCommand) {
