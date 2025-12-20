@@ -14,7 +14,6 @@ import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 import { ExploreCommand } from '../cmd_line/commands/explore';
 import { FileCommand } from '../cmd_line/commands/file';
 import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
-import { EchoCommand } from '../cmd_line/commands/echo';
 import { GlobalCommand } from '../cmd_line/commands/global';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
