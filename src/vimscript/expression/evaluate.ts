@@ -1,22 +1,29 @@
+import { escapeRegExp, isInteger } from 'lodash';
 import { all, alt } from 'parsimmon';
-import { displayValue } from './displayValue';
+import { Position } from 'vscode';
 import { configuration } from '../../configuration/configuration';
 import { VimError } from '../../error';
+import { Mode } from '../../mode/mode';
+import { Register, RegisterMode } from '../../register/register';
 import { globalState } from '../../state/globalState';
+import { RecordedState } from '../../state/recordedState';
+import { VimState } from '../../state/vimState';
+import { Pattern, SearchDirection } from '../pattern';
 import {
-  bool,
-  float,
-  funcref,
-  int,
-  str,
-  list,
-  funcCall,
   blob,
+  bool,
   dictionary,
+  float,
+  funcCall,
+  funcref,
   funcrefCall,
+  int,
+  list,
+  str,
   toExpr,
   variable,
 } from './build';
+import { displayValue } from './displayValue';
 import { expressionParser, floatParser, numberParser } from './parser';
 import {
   BinaryOp,
@@ -32,11 +39,6 @@ import {
   Value,
   VariableExpression,
 } from './types';
-import { Pattern, SearchDirection } from '../pattern';
-import { escapeRegExp, isInteger } from 'lodash';
-import { VimState } from '../../state/vimState';
-import { Position } from 'vscode';
-import { Mode } from '../../mode/mode';
 
 // ID of next lambda; incremented each time one is created
 let lambdaNumber = 1;
@@ -202,7 +204,11 @@ export class EvaluationContext {
       case 'variable':
         return this.evaluateVariable(expression);
       case 'register':
-        return str(''); // TODO
+        const reg = Register.getSync(expression.name);
+        if (reg === undefined || reg.text instanceof RecordedState) {
+          return str(''); // TODO: Handle RecordedState?
+        }
+        return str(reg.text);
       case 'option':
         return str(''); // TODO
       case 'env_variable':
@@ -993,6 +999,9 @@ export class EvaluationContext {
             return bool(false);
         }
       }
+      case 'environ': {
+        return dictionary(new Map(Object.entries(process.env).map(([k, v]) => [k, str(v ?? '')])));
+      }
       case 'escape': {
         const [s, chars] = getArgs(2);
         return str(
@@ -1058,7 +1067,15 @@ export class EvaluationContext {
         const [x, y] = getArgs(2);
         return float(toFloat(x!) % toFloat(y!));
       }
-      // TODO: fullcommand()
+      // TODO: Fix circular dependency
+      // case 'fullcommand': {
+      //   const [name] = getArgs(1);
+      //   try {
+      //     return str(exCommandParser.tryParse(toString(name!)).name);
+      //   } catch {
+      //     return str('');
+      //   }
+      // }
       case 'function': {
         const [name, arglist, dict] = getArgs(1, 3);
         if (arglist) {
@@ -1087,6 +1104,10 @@ export class EvaluationContext {
         return funcref({ name: toString(name!), arglist, dict });
       }
       // TODO: funcref()
+      case 'garbagecollect': {
+        const [atexit] = getArgs(0, 1);
+        return int(0); // No-op
+      }
       case 'get': {
         const [_haystack, _idx, _default] = getArgs(2, 3);
         const haystack: Value = _haystack!;
@@ -1123,6 +1144,9 @@ export class EvaluationContext {
         }
         return list(lines.map(str));
       }
+      case 'getpid': {
+        return int(process.pid);
+      }
       case 'getpos': {
         const [s] = getArgs(1);
         const { bufnum, lnum, col, off } = getpos(toString(s!));
@@ -1130,8 +1154,26 @@ export class EvaluationContext {
       }
       // TODO: getreg()
       // TODO: getreginfo()
-      // TODO: getregtype()
-      // TODO: gettext()
+      case 'getregtype': {
+        const [regname] = getArgs(1);
+        const reg = Register.getSync(toString(regname!));
+        if (reg === undefined) {
+          return str('');
+        }
+        if (reg.registerMode === RegisterMode.CharacterWise) {
+          return str('v');
+        } else if (reg.registerMode === RegisterMode.LineWise) {
+          return str('V');
+        } else if (reg.registerMode === RegisterMode.BlockWise) {
+          const text = reg.text as string;
+          const idx = text.indexOf('\n');
+          const width = idx === -1 ? text.length : idx;
+          const ctrlV = '\x16';
+          return str(`${ctrlV}${width}`);
+        }
+        const guard: never = reg.registerMode;
+        return str('');
+      }
       case 'gettext': {
         const [s] = getArgs(1);
         return str(toString(s!));
@@ -1237,11 +1279,7 @@ export class EvaluationContext {
           if (Array.isArray(x)) {
             return list(x.map(fromJSObj));
           } else if (typeof x === 'number') {
-            if (isInteger(x)) {
-              return int(x);
-            } else {
-              return float(x);
-            }
+            return isInteger(x) ? int(x) : float(x);
           } else if (typeof x === 'string') {
             return str(x);
           } else {
@@ -1731,7 +1769,7 @@ export class EvaluationContext {
           let prev: Value = l!.items[0];
           for (let i = 1; i < l!.items.length; ) {
             const val = l!.items[i];
-            if (this.evaluateComparison('==', true, prev, val)) {
+            if (prev.type === val.type && this.evaluateComparison('==', true, prev, val)) {
               l!.items.splice(i, 1);
             } else {
               prev = val;

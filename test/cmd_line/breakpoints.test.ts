@@ -5,7 +5,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { exCommandParser } from '../../src/vimscript/exCommandParser';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 function clearBreakpoints() {
   vscode.debug.removeBreakpoints(vscode.debug.breakpoints);
@@ -18,7 +18,6 @@ suite('Breakpoints command', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-  suiteTeardown(cleanUpWorkspace);
 
   test('`:breaka` adds breakpoint', async () => {
     clearBreakpoints();

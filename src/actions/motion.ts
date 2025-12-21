@@ -4,7 +4,6 @@ import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { Notation } from '../configuration/notation';
 import { VimError } from '../error';
-import { ModeDataFor } from '../mode/modeData';
 import { globalState } from '../state/globalState';
 import { StatusBar } from '../statusBar';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
@@ -22,7 +21,6 @@ import { VimState } from './../state/vimState';
 import { CursorMoveByUnit, CursorMovePosition, TextEditor } from './../textEditor';
 import { RegisterAction } from './base';
 import { BaseMovement, failedMovement, IMovement, isIMovement, SelectionType } from './baseMotion';
-import { CommandInsertAtCursor } from './commands/actions';
 import { PythonDocument } from './languages/python/motion';
 import { ChangeOperator, DeleteOperator, YankOperator } from './operator';
 import { SneakBackward, SneakForward } from './plugins/sneak';
@@ -171,6 +169,11 @@ class MoveUpByScreenLine extends MoveByScreenLine {
   movementType: CursorMovePosition = 'up';
   override by: CursorMoveByUnit = 'wrappedLine';
   override value = 1;
+
+  constructor(multicursorIndex: number) {
+    super();
+    this.multicursorIndex = multicursorIndex;
+  }
 }
 
 class MoveDownByScreenLine extends MoveByScreenLine {
@@ -178,6 +181,11 @@ class MoveDownByScreenLine extends MoveByScreenLine {
   movementType: CursorMovePosition = 'down';
   override by: CursorMoveByUnit = 'wrappedLine';
   override value = 1;
+
+  constructor(multicursorIndex: number) {
+    super();
+    this.multicursorIndex = multicursorIndex;
+  }
 }
 
 abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
@@ -260,28 +268,30 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement = position;
-    let prevLine: number = position.line;
-    let prevChar: number = position.character;
-    const moveDownByScreenLine = new MoveDownByScreenLine();
-    do {
+    let prev: Position = position;
+    const moveDownByScreenLine = new MoveDownByScreenLine(this.multicursorIndex ?? 0);
+    while (true) {
       t = await moveDownByScreenLine.execAction(t, vimState);
       t = t instanceof Position ? t : t.stop;
-      const lineChanged = prevLine !== t.line;
+      const lineChanged = prev.line !== t.line;
       // wrappedLine movement goes to eol character only when at the last line
       // thus a column change on wrappedLine movement represents a visual last line
-      const colChanged = prevChar !== t.character;
+      const colChanged = prev.character !== t.character;
       if (lineChanged || !colChanged) {
         break;
       }
-      prevChar = t.character;
-      prevLine = t.line;
-    } while (t.line === position.line);
-    return t.with({ character: vimState.desiredColumn });
+      prev = t;
+    }
+    return adjustForDesiredColumn({
+      position: t,
+      desiredColumn: vimState.desiredColumn,
+      multicursorIndex: this.multicursorIndex,
+    });
   }
 }
 
 @RegisterAction
-class MoveDown extends BaseMovement {
+export class MoveDown extends BaseMovement {
   keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
   override preservesDesiredColumn = true;
 
@@ -338,7 +348,7 @@ class MoveDown extends BaseMovement {
 }
 
 @RegisterAction
-class MoveUp extends BaseMovement {
+export class MoveUp extends BaseMovement {
   keys = [['k'], ['<up>'], ['<C-p>']];
   override preservesDesiredColumn = true;
 
@@ -356,14 +366,19 @@ class MoveUp extends BaseMovement {
     }
 
     if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
-      return new MoveUpFoldFix().execAction(position, vimState);
+      const moveUpFoldFix = new MoveUpFoldFix();
+      moveUpFoldFix.multicursorIndex = this.multicursorIndex;
+      return moveUpFoldFix.execAction(position, vimState);
     }
 
     if (position.line > 0) {
-      return position.with({ character: vimState.desiredColumn }).getUp();
-    } else {
-      return position;
+      return adjustForDesiredColumn({
+        position,
+        desiredColumn: vimState.desiredColumn,
+        multicursorIndex: this.multicursorIndex,
+      }).getUp();
     }
+    return position;
   }
 
   public override async execActionForOperator(
@@ -426,84 +441,23 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       return position;
     }
     let t: Position | IMovement;
-    const moveUpByScreenLine = new MoveUpByScreenLine();
-    do {
+    let prev: Position = position;
+    const moveUpByScreenLine = new MoveUpByScreenLine(this.multicursorIndex ?? 0);
+    while (true) {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
-    } while (t.line === position.line);
-    return t.with({ character: vimState.desiredColumn });
-  }
-}
-
-@RegisterAction
-export class ArrowsInInsertMode extends BaseMovement {
-  override modes = [Mode.Insert];
-  keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
-
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    // Moving with the arrow keys in Insert mode "resets" our insertion for the purpose of repeating with dot or `<C-a>`.
-    // No matter how we got into Insert mode, repeating will now be done as if we started with `i`.
-    // Note that this does not affect macros, which re-construct a list of actions based on keypresses.
-    // TODO: ACTUALLY, we should reset this only after something is typed (`Axyz<Left><Esc>.` does repeat the insertion)
-    // TODO: This also should mark an "insertion end" for the purpose of `<C-a>` (try `ixyz<Right><C-a>`)
-    vimState.recordedState.actionsRun = [new CommandInsertAtCursor()];
-
-    // Force an undo point to be created
-    vimState.historyTracker.addChange(true);
-    vimState.historyTracker.finishCurrentStep();
-
-    let newPosition: Position;
-    switch (this.keysPressed[0]) {
-      case '<up>':
-        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
+      const lineChanged = prev.line !== t.line;
+      const colChanged = prev.character !== t.character;
+      if (lineChanged || !colChanged) {
         break;
-      case '<down>':
-        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<left>':
-        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<right>':
-        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
-        break;
-      default:
-        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
+      }
+      prev = t;
     }
-    return newPosition;
-  }
-}
-
-@RegisterAction
-class ArrowsInReplaceMode extends BaseMovement {
-  override modes = [Mode.Replace];
-  keys = [['<up>'], ['<down>'], ['<left>'], ['<right>']];
-
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    // Force an undo point to be created
-    vimState.historyTracker.addChange(true);
-    vimState.historyTracker.finishCurrentStep();
-
-    let newPosition: Position = position;
-    switch (this.keysPressed[0]) {
-      case '<up>':
-        newPosition = await new MoveUp(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<down>':
-        newPosition = await new MoveDown(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<left>':
-        newPosition = await new MoveLeft(this.keysPressed).execAction(position, vimState);
-        break;
-      case '<right>':
-        newPosition = await new MoveRight(this.keysPressed).execAction(position, vimState);
-        break;
-      default:
-        throw new Error(`Unexpected 'arrow' key: ${this.keys[0]}`);
-    }
-    (vimState.modeData as ModeDataFor<Mode.Replace>).replaceState.resetChanges(
-      this.multicursorIndex ?? 0,
-    );
-    return newPosition;
+    return adjustForDesiredColumn({
+      position: t,
+      desiredColumn: vimState.desiredColumn,
+      multicursorIndex: this.multicursorIndex,
+    });
   }
 }
 
@@ -749,7 +703,7 @@ class PrevMarkLinewise extends BaseMovement {
 }
 
 @RegisterAction
-class MoveLeft extends BaseMovement {
+export class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -845,7 +799,7 @@ class MoveLeft extends BaseMovement {
 }
 
 @RegisterAction
-class MoveRight extends BaseMovement {
+export class MoveRight extends BaseMovement {
   keys = [['l'], ['<right>'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1213,9 +1167,8 @@ class MoveRepeatReversed extends BaseMovement {
 }
 
 @RegisterAction
-class MoveLineEnd extends BaseMovement {
+export class MoveLineEnd extends BaseMovement {
   keys = [['$'], ['<End>'], ['<D-right>']];
-  override setsDesiredColumnToEOL = true;
 
   public override async execActionWithCount(
     position: Position,
@@ -1356,10 +1309,13 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
     vimState: VimState,
   ): Promise<Position | IMovement> {
     if (position.line > 0) {
-      return position.with({ character: vimState.desiredColumn }).getUp();
-    } else {
-      return position;
+      return adjustForDesiredColumn({
+        position,
+        desiredColumn: vimState.desiredColumn,
+        multicursorIndex: this.multicursorIndex,
+      }).getUp();
     }
+    return position;
   }
 
   public override async execActionForOperator(
@@ -1385,10 +1341,13 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
     vimState: VimState,
   ): Promise<Position | IMovement> {
     if (position.line < vimState.document.lineCount - 1) {
-      return position.with({ character: vimState.desiredColumn }).getDown();
-    } else {
-      return position;
+      return adjustForDesiredColumn({
+        position,
+        desiredColumn: vimState.desiredColumn,
+        multicursorIndex: this.multicursorIndex,
+      }).getDown();
     }
+    return position;
   }
 
   public override async execActionForOperator(

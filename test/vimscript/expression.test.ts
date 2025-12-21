@@ -1,26 +1,26 @@
 import * as assert from 'assert';
+import { VimError } from '../../src/error';
 import {
+  add,
+  blob,
+  bool,
+  dictionary,
+  float,
+  funcCall,
   int,
+  lambda,
+  list,
+  listExpr,
+  multiply,
   negative,
   positive,
-  listExpr,
-  funcCall,
-  multiply,
-  add,
   str,
-  lambda,
   variable,
-  float,
-  bool,
-  list,
-  dictionary,
-  blob,
 } from '../../src/vimscript/expression/build';
+import { displayValue } from '../../src/vimscript/expression/displayValue';
 import { EvaluationContext } from '../../src/vimscript/expression/evaluate';
 import { expressionParser } from '../../src/vimscript/expression/parser';
 import { Expression, Value } from '../../src/vimscript/expression/types';
-import { displayValue } from '../../src/vimscript/expression/displayValue';
-import { ErrorCode, VimError } from '../../src/error';
 
 function removeIds(value: Value): unknown {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -467,6 +467,7 @@ suite('Vimscript expressions', () => {
       exprTest("4 is '4'", { value: bool(false) });
       exprTest('0 is []', { value: bool(false) });
       exprTest('0 is {}', { value: bool(false) });
+      exprTest('0 isnot 0', { value: bool(false) });
       exprTest('[4] == ["4"]', { value: bool(false) });
       exprTest('3.2 > 3', { value: bool(true) });
       exprTest('5 == [5]', { error: VimError.CanOnlyCompareListWithList() });
@@ -696,6 +697,14 @@ suite('Vimscript expressions', () => {
       exprTest('fmod(-4.2, -1.0)', { display: '-0.2' });
     });
 
+    // TODO: Re-enable after we fix circular dependency
+    suite.skip('fullcommand', () => {
+      for (const cmd of ['s', 'sub', ':%substitute']) {
+        exprTest(`fullcommand('${cmd}')`, { value: str('substitute') });
+      }
+      exprTest(`fullcommand('notarealthing')`, { value: str('') });
+    });
+
     suite('get', () => {
       exprTest('get([2,4,6], 1)', { value: int(4) });
       exprTest('get([2,4,6], -1)', { value: int(6) });
@@ -849,7 +858,12 @@ suite('Vimscript expressions', () => {
       exprTest('range(0, 2, -1)', { error: VimError.StartPastEnd() });
     });
 
-    // TODO: remove()
+    suite('remove', () => {
+      exprTest('remove([1, 2, 3], 0)', { value: int(1) });
+      exprTest('remove([1, 2, 3], 1)', { value: int(2) });
+      exprTest('remove([1, 2, 3], -1)', { value: int(3) });
+      exprTest('remove(#{a:1, b:2}, "a")', { value: int(1) });
+    });
 
     suite('repeat', () => {
       exprTest('repeat(3, 5)', { display: '33333' });
@@ -953,8 +967,12 @@ suite('Vimscript expressions', () => {
     });
 
     suite('uniq', () => {
-      // exprTest("uniq([1,2,1,1,1,'1',3,2,2,3])", { display: "[1, 2, 1, '1', 3, 2, 3]" });
-      // TODO
+      exprTest('uniq([1, 2, 3])', { display: '[1, 2, 3]' });
+      exprTest('uniq([1, 1, 2, 2, 3, 3])', { display: '[1, 2, 3]' });
+      exprTest('uniq([1, 2, 1, 3, 2, 3])', { display: '[1, 2, 1, 3, 2, 3]' });
+      exprTest("uniq([1, '1'])", { display: "[1, '1']" });
+      exprTest("uniq(['1', 1])", { display: "['1', 1]" });
+      exprTest("uniq([1, 2, 1, 1, 1, '1', 3, 2, 2, 3])", { display: "[1, 2, 1, '1', 3, 2, 3]" });
     });
 
     suite('floor/ceil/round/trunc', () => {

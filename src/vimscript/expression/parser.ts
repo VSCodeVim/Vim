@@ -1,19 +1,19 @@
 import {
+  alt,
+  // eslint-disable-next-line id-denylist
+  any,
+  lazy,
+  noneOf,
+  optWhitespace,
   Parser,
   regexp,
   seq,
-  alt,
   // eslint-disable-next-line id-denylist
   string,
-  lazy,
-  // eslint-disable-next-line id-denylist
-  any,
-  optWhitespace,
   takeWhile,
-  noneOf,
 } from 'parsimmon';
 import { VimError } from '../../error';
-import { binary, float, lambda, listExpr, int, str, blob } from './build';
+import { binary, blob, float, int, lambda, listExpr, str } from './build';
 import {
   BinaryOp,
   BlobValue,
@@ -210,7 +210,7 @@ export const variableParser: Parser<VariableExpression> = seq(
 });
 
 export const envVariableParser: Parser<EnvVariableExpression> = string('$')
-  .then(regexp(/[a-z]+/))
+  .then(regexp(/[a-z]+/i))
   .desc('$ENV')
   .map((name) => {
     return { type: 'env_variable', name };
@@ -388,8 +388,8 @@ const expr4Parser: Parser<Expression> = alt<Expression>(
         string('<='),
         string('=~'),
         string('!~'),
-        string('is'),
         string('isnot'),
+        string('is'),
       ),
       regexp(/[#\?]?/),
     ).trim(optWhitespace),

@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest, newTestOnly } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
@@ -446,21 +446,21 @@ suite('Mode Visual Line', () => {
       title: 'multiline insert from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'VkkI_',
-      end: ['111', '_|222', '_333', '_444', '555'],
+      end: ['111', '_|222', '_|333', '_|444', '555'],
     });
 
     newTest({
       title: 'multiline insert from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'VjjI_',
-      end: ['111', '_|222', '_333', '_444', '555'],
+      end: ['111', '_|222', '_|333', '_|444', '555'],
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'VjjI_',
-      end: ['111', '_|222', ' ', '_444', '555'],
+      end: ['111', '_|222', ' ', '_|444', '555'],
     });
   });
 
@@ -469,21 +469,21 @@ suite('Mode Visual Line', () => {
       title: 'multiline append from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'VkkA_',
-      end: ['111', '222_|', '333_', '444_', '555'],
+      end: ['111', '222_|', '333_|', '444_|', '555'],
     });
 
     newTest({
       title: 'multiline append from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'VjjA_',
-      end: ['111', '222_|', '333_', '444_', '555'],
+      end: ['111', '222_|', '333_|', '444_|', '555'],
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'VjjA_',
-      end: ['111', '222_|', ' ', '444_', '555'],
+      end: ['111', '222_|', ' ', '444_|', '555'],
     });
 
     newTest({

@@ -1,6 +1,10 @@
 import { Value } from './types';
 
-export function displayValue(value: Value, topLevel = true): string {
+export function displayValue(value: Value): string {
+  return _displayValue(value, true);
+}
+
+function _displayValue(value: Value, topLevel = false): string {
   switch (value.type) {
     case 'number':
       return value.value.toString();
@@ -15,24 +19,24 @@ export function displayValue(value: Value, topLevel = true): string {
     case 'string':
       return topLevel ? value.value : `'${value.value.replace("'", "''")}'`;
     case 'list':
-      return `[${value.items.map((v) => displayValue(v, false)).join(', ')}]`;
+      return `[${value.items.map((v) => _displayValue(v, false)).join(', ')}]`;
     case 'dictionary':
       return `{${[...value.items]
-        .map(([k, v]) => `'${k}': ${displayValue(v, false)}`)
+        .map(([k, v]) => `'${k}': ${_displayValue(v, false)}`)
         .join(', ')}}`;
     case 'funcref':
       if (!value.arglist?.items.length) {
         if (value.dict) {
-          return `function('${value.name}', ${displayValue(value.dict)})`;
+          return `function('${value.name}', ${_displayValue(value.dict)})`;
         }
         return value.name;
       } else {
         if (value.dict) {
-          return `function('${value.name}', ${displayValue(value.arglist)}, ${displayValue(
+          return `function('${value.name}', ${_displayValue(value.arglist)}, ${_displayValue(
             value.dict,
           )})`;
         }
-        return `function('${value.name}', ${displayValue(value.arglist)})`;
+        return `function('${value.name}', ${_displayValue(value.arglist)})`;
       }
     case 'blob':
       return (

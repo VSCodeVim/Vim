@@ -12,16 +12,17 @@
 import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
+import { Position } from 'vscode';
+import { Cursor } from '../common/motion/cursor';
+import { earlierOf } from '../common/motion/position';
+import { VimError } from '../error';
+import { Jump } from '../jumps/jump';
+import { Mode } from '../mode/mode';
+import { globalState } from '../state/globalState';
+import { StatusBar } from '../statusBar';
+import { Logger } from '../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
-import { StatusBar } from '../statusBar';
-import { Position } from 'vscode';
-import { Jump } from '../jumps/jump';
-import { globalState } from '../state/globalState';
-import { Mode } from '../mode/mode';
-import { VimError } from '../error';
-import { Logger } from '../util/logger';
-import { earlierOf } from '../common/motion/position';
 
 const diffEngine = new DiffMatchPatch.diff_match_patch();
 diffEngine.Diff_Timeout = 1; // 1 second
@@ -134,9 +135,9 @@ class HistoryStep {
 
   /**
    * The cursor position at the start of this history step.
-   * Restored by `u`. Currently, only one cursor is remembered.
+   * Restored by `u`.
    */
-  public cursorStart: Position | undefined;
+  public cursorsAtStart: readonly Cursor[] | undefined;
 
   /**
    * The position of every mark at the start of this history step.
@@ -321,7 +322,7 @@ class UndoStack {
     return step?.marks ?? this.initialMarks;
   }
 
-  public removeMarks(marks?: string[]): void {
+  public removeMarks(marks?: readonly string[]): void {
     const step = this.getCurrentHistoryStep();
     if (marks === undefined) {
       if (step) {
@@ -344,10 +345,7 @@ class ChangeList {
   private index: number | undefined;
 
   public addChangePosition(position: Position) {
-    if (
-      this.changeLocations.length > 0 &&
-      this.changeLocations[this.changeLocations.length - 1].line === position.line
-    ) {
+    if (this.changeLocations.at(-1)?.line === position.line) {
       this.changeLocations[this.changeLocations.length - 1] = position;
     } else {
       this.changeLocations.push(position);
@@ -362,13 +360,12 @@ class ChangeList {
         return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
-      return this.changeLocations[this.index];
     } else if (this.index < this.changeLocations.length - 1) {
       this.index++;
-      return this.changeLocations[this.index];
     } else {
       return VimError.AtEndOfChangeList();
     }
+    return this.changeLocations[this.index];
   }
 
   public prevChangePosition(): Position | VimError {
@@ -377,24 +374,23 @@ class ChangeList {
         return VimError.ChangeListIsEmpty();
       }
       this.index = this.changeLocations.length - 1;
-      return this.changeLocations[this.index];
     } else if (this.index > 0) {
       this.index--;
-      return this.changeLocations[this.index];
     } else {
       return VimError.AtStartOfChangeList();
     }
+    return this.changeLocations[this.index];
   }
 }
 
 export class HistoryTracker {
-  public currentContentChanges: vscode.TextDocumentContentChangeEvent[];
+  public currentContentChanges: vscode.TextDocumentContentChangeEvent[] = [];
 
-  private nextStepStartPosition: Position | undefined;
+  private nextStepCursorsAtStart: readonly Cursor[] | undefined;
 
-  private readonly undoStack: UndoStack;
+  private readonly undoStack = new UndoStack();
 
-  private readonly changeList: ChangeList;
+  private readonly changeList = new ChangeList();
 
   /**
    * The state of the document the last time HistoryTracker.addChange() or HistoryTracker.ignoreChange() was called.
@@ -409,13 +405,10 @@ export class HistoryTracker {
 
   constructor(vimState: VimState) {
     this.vimState = vimState;
-    this.undoStack = new UndoStack();
-    this.changeList = new ChangeList();
     this.previousDocumentState = {
       text: this.getDocumentText(),
       versionNumber: this.getDocumentVersion(),
     };
-    this.currentContentChanges = [];
   }
 
   private getDocumentText(): string {
@@ -610,15 +603,17 @@ export class HistoryTracker {
     // First, handle "special" marks
     let position: Position | undefined;
     if (name === '<') {
-      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
-      position = linewise
-        ? this.vimState.lastVisualSelection?.start.with({ character: 0 })
-        : this.vimState.lastVisualSelection?.start;
+      const lvs = this.vimState.lastVisualSelection;
+      const linewise = lvs?.mode === Mode.VisualLine;
+      // If start is after end, prefer end (handles inverted visual selections)
+      const base = lvs?.start.isAfter(lvs.end) ? lvs.end : lvs?.start;
+      position = linewise ? base?.with({ character: 0 }) : base;
     } else if (name === '>') {
-      const linewise = this.vimState.lastVisualSelection?.mode === Mode.VisualLine;
-      position = linewise
-        ? this.vimState.lastVisualSelection?.end.getLineEnd()
-        : this.vimState.lastVisualSelection?.end.getLeft();
+      const lvs = this.vimState.lastVisualSelection;
+      const linewise = lvs?.mode === Mode.VisualLine;
+      // If start is after end, prefer start (handles inverted visual selections)
+      const base = lvs?.start.isAfter(lvs.end) ? lvs.start : lvs?.end.getLeft();
+      position = linewise ? base?.getLineEnd() : base;
     } else if (name === '[') {
       position = this.getLastChangeStartPosition();
     } else if (name === ']') {
@@ -650,7 +645,7 @@ export class HistoryTracker {
   /**
    * Removes all marks matching from either the global or local array.
    */
-  public removeMarks(markNames: string[]): void {
+  public removeMarks(markNames: readonly string[]): void {
     if (markNames.length === 0) {
       return;
     }
@@ -666,18 +661,18 @@ export class HistoryTracker {
    * Gets all local marks.  I.e., marks that are specific for the current
    * editor.
    */
-  public getLocalMarks(): ILocalMark[] {
-    return [...this.undoStack.getCurrentMarkList().filter((mark) => !mark.isUppercaseMark)];
+  public getLocalMarks(): readonly ILocalMark[] {
+    return this.undoStack.getCurrentMarkList().filter((mark) => !mark.isUppercaseMark);
   }
 
   /**
    * Gets all global marks.  I.e., marks that are shared among all editors.
    */
-  public getGlobalMarks(): IMark[] {
-    return [...HistoryStep.globalMarks];
+  public getGlobalMarks(): readonly IMark[] {
+    return HistoryStep.globalMarks;
   }
 
-  public getMarks(): IMark[] {
+  public getMarks(): readonly IMark[] {
     return [...this.getLocalMarks(), ...HistoryStep.globalMarks];
   }
 
@@ -686,15 +681,14 @@ export class HistoryTracker {
    *
    * Determines what changed by diffing the document against what it used to look like.
    */
-  public addChange(force: boolean = false): void {
+  public addChange(force: boolean = false): boolean {
     if (this.getDocumentVersion() === this.previousDocumentState.versionNumber) {
-      return;
+      return false;
     }
 
-    if (this.nextStepStartPosition === undefined) {
-      const cursor = this.vimState.cursorsInitialState[0];
-      this.nextStepStartPosition = earlierOf(cursor.start, cursor.stop);
-      Logger.debug(`Set nextStepStartPosition to ${this.nextStepStartPosition}`);
+    if (this.nextStepCursorsAtStart === undefined) {
+      this.nextStepCursorsAtStart = this.vimState.cursorsInitialState;
+      Logger.debug(`Set nextStepCursorsAtStart to ${this.nextStepCursorsAtStart}`);
     }
 
     if (
@@ -704,12 +698,12 @@ export class HistoryTracker {
       // We can ignore changes while we're in insert/replace mode, since we can't interact with them (via undo, etc.) until we're back to normal mode
       // This allows us to avoid a little bit of work per keystroke, but more importantly, it means we'll get bigger contiguous edit chunks to merge.
       // This is particularly impactful when there are multiple cursors, which are otherwise difficult to optimize.
-      return;
+      return false;
     }
 
     const newText = this.getDocumentText();
     if (newText === this.previousDocumentState.text) {
-      return;
+      return false;
     }
 
     // TODO: This is actually pretty stupid! Since we already have the cursorPosition,
@@ -719,6 +713,8 @@ export class HistoryTracker {
     // The difficulty is with a few rare commands like :%s/one/two/g that make
     // multiple changes in different places simultaneously. For those, we could require
     // them to call addChange manually, I guess...
+
+    // Couldn't we also ditch this diffing approach entirely and just use `TextDocumentContentChangeEvent`s?
 
     const diffs = diffEngine.diff_main(this.previousDocumentState.text, newText);
     diffEngine.diff_cleanupEfficiency(diffs);
@@ -747,6 +743,8 @@ export class HistoryTracker {
       text: newText,
       versionNumber: this.getDocumentVersion(),
     };
+
+    return true;
   }
 
   /**
@@ -772,8 +770,10 @@ export class HistoryTracker {
       currentHistoryStep.isFinished = true;
       currentHistoryStep.timestamp = new Date();
 
-      currentHistoryStep.cursorStart ??= this.nextStepStartPosition;
-      this.nextStepStartPosition = undefined;
+      if (this.nextStepCursorsAtStart !== undefined) {
+        currentHistoryStep.cursorsAtStart ??= this.nextStepCursorsAtStart;
+        this.nextStepCursorsAtStart = undefined;
+      }
 
       currentHistoryStep.merge(this.vimState.document);
 
@@ -794,10 +794,11 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to undo
    */
-  public async goBackHistoryStep(): Promise<Position | undefined> {
+  public async goBackHistoryStep(): Promise<void> {
     const step = this.undoStack.stepBackward();
     if (step === undefined) {
-      return undefined;
+      StatusBar.setText(this.vimState, 'Already at oldest change');
+      return;
     }
 
     for (const change of step.changes.slice(0).reverse()) {
@@ -815,7 +816,12 @@ export class HistoryTracker {
       }  ${step.howLongAgo()}`,
     );
 
-    return step.cursorStart;
+    const newCursors = step.cursorsAtStart?.map((c) => {
+      return Cursor.atPosition(earlierOf(c.start, c.stop));
+    });
+    if (newCursors) {
+      this.vimState.cursors = newCursors;
+    }
   }
 
   /**
@@ -823,10 +829,11 @@ export class HistoryTracker {
    *
    * @returns the new cursor positions, or undefined if there are no steps to redo
    */
-  public async goForwardHistoryStep(): Promise<Position | undefined> {
+  public async goForwardHistoryStep(): Promise<void> {
     const step = this.undoStack.stepForward();
     if (step === undefined) {
-      return undefined;
+      StatusBar.setText(this.vimState, 'Already at newest change');
+      return;
     }
 
     // TODO: do these transformations in a batch
@@ -842,7 +849,12 @@ export class HistoryTracker {
       `${changes}; after #${this.undoStack.getCurrentHistoryStepIndex()}  ${step.howLongAgo()}`,
     );
 
-    return step.cursorStart;
+    const newCursors = step.cursorsAtStart?.map((c) => {
+      return Cursor.atPosition(earlierOf(c.start, c.stop));
+    });
+    if (newCursors) {
+      this.vimState.cursors = newCursors;
+    }
   }
 
   /**
@@ -862,10 +874,10 @@ export class HistoryTracker {
    * This worst-case scenario tends to offset line values and make it harder to
    * determine the line of the change, so this behavior is also compensated.
    */
-  public async goBackHistoryStepsOnLine(): Promise<Position | undefined> {
+  public async goBackHistoryStepsOnLine(): Promise<void> {
     const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
     if (currentHistoryStep === undefined) {
-      return undefined;
+      return;
     }
 
     let done: boolean = false;
@@ -918,7 +930,7 @@ export class HistoryTracker {
         changes: changesToUndo.map((change) => change.reversed()).reverse(),
         cameFromU: true,
       });
-      this.nextStepStartPosition = lastChange.start;
+      this.nextStepCursorsAtStart = [Cursor.atPosition(lastChange.start)];
       this.undoStack.pushHistoryStep(newStep);
 
       this.finishCurrentStep();
@@ -932,7 +944,9 @@ export class HistoryTracker {
      * Since this function reverses change-by-change, rather than step-by-step,
      * the cursor position is based on the start of the last change that is undone.
      */
-    return lastChange?.start;
+    if (lastChange) {
+      this.vimState.cursors = [Cursor.atPosition(lastChange.start)];
+    }
   }
 
   /**
@@ -942,36 +956,15 @@ export class HistoryTracker {
    * the most recent text change.
    */
   public getLastChangeEndPosition(): Position | undefined {
-    const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
-    if (currentHistoryStep === undefined) {
-      return undefined;
-    }
-
-    const lastChangeIndex = currentHistoryStep.changes.length;
-    if (lastChangeIndex === 0) {
-      return undefined;
-    }
-
-    const lastChange = currentHistoryStep.changes[lastChangeIndex - 1];
-    return lastChange.afterRange.end;
+    return this.undoStack.getCurrentHistoryStep()?.changes.at(-1)?.afterRange.end;
   }
 
   public getLastHistoryStartPosition(): Position | undefined {
-    return this.undoStack.getCurrentHistoryStep()?.cursorStart;
+    return this.undoStack.getCurrentHistoryStep()?.cursorsAtStart?.[0]?.start;
   }
 
   private getLastChangeStartPosition(): Position | undefined {
-    const currentHistoryStep = this.undoStack.getCurrentHistoryStep();
-    if (currentHistoryStep === undefined) {
-      return undefined;
-    }
-
-    const changes = currentHistoryStep.changes;
-    if (changes.length === 0) {
-      return undefined;
-    }
-
-    return changes[changes.length - 1].start;
+    return this.undoStack.getCurrentHistoryStep()?.changes.at(-1)?.start;
   }
 
   /**

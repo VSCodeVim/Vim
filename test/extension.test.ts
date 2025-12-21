@@ -4,8 +4,8 @@ import * as vscode from 'vscode';
 import * as srcConfiguration from '../src/configuration/configuration';
 import * as testConfiguration from './testConfiguration';
 
-import * as packagejson from '../package.json';
 import { IConfiguration } from 'src/configuration/iconfiguration';
+import * as packagejson from '../package.json';
 
 suite('package.json', () => {
   test('all keys have handlers', async () => {

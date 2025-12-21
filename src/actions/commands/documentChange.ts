@@ -5,6 +5,8 @@ import { VimState } from '../../state/vimState';
 import { Transformation } from '../../transformations/transformations';
 import { BaseCommand } from '../base';
 
+type Change = vscode.TextDocumentContentChangeEvent;
+
 /**
  * A very special snowflake.
  *
@@ -25,9 +27,9 @@ export class DocumentContentChangeAction extends BaseCommand {
     this.cursorEnd = cursorStart;
   }
 
-  private contentChanges: vscode.TextDocumentContentChangeEvent[] = [];
+  private contentChanges: Change[] = [];
 
-  public addChanges(changes: vscode.TextDocumentContentChangeEvent[], cursorPosition: Position) {
+  public addChanges(changes: Change[], cursorPosition: Position) {
     this.contentChanges = [...this.contentChanges, ...changes];
     this.compressChanges();
     this.cursorEnd = cursorPosition;
@@ -108,10 +110,7 @@ export class DocumentContentChangeAction extends BaseCommand {
   }
 
   private compressChanges(): void {
-    const merge = (
-      first: vscode.TextDocumentContentChangeEvent,
-      second: vscode.TextDocumentContentChangeEvent,
-    ): vscode.TextDocumentContentChangeEvent | undefined => {
+    const merge = (first: Change, second: Change): Change | undefined => {
       if (first.rangeOffset + first.text.length === second.rangeOffset) {
         // Simple concatenation
         return {
@@ -142,8 +141,8 @@ export class DocumentContentChangeAction extends BaseCommand {
       }
     };
 
-    const compressed: vscode.TextDocumentContentChangeEvent[] = [];
-    let prev: vscode.TextDocumentContentChangeEvent | undefined;
+    const compressed: Change[] = [];
+    let prev: Change | undefined;
     for (const change of this.contentChanges) {
       if (prev === undefined) {
         prev = change;

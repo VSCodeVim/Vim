@@ -10,7 +10,7 @@ export abstract class ExCommand {
     return false;
   }
 
-  public readonly isRepeatableWithDot: boolean = true;
+  public readonly isRepeatableWithDot: boolean = false;
 
   abstract execute(vimState: VimState): Promise<void>;
 

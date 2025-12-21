@@ -1,5 +1,64 @@
 # Change Log
 
+## [v1.32.4](https://github.com/vscodevim/vim/tree/v1.32.4) (2025-12-14)
+
+### Fixed
+
+- Improved undo behavior after document is changed by an external process ([@J-Fields](https://github.com/J-Fields)).
+- Fixed spurious `Already at oldest change` message ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.32.3](https://github.com/vscodevim/vim/tree/v1.32.3) (2025-12-10)
+
+### Fixed
+
+- Fixed jump tracking when document is changed by an external process ([@J-Fields](https://github.com/J-Fields)).
+- Fixed `<` and `>` marks after backward selection in Visual mode ([@paakmau](https://github.com/paakmau)).
+
+## [v1.32.2](https://github.com/vscodevim/vim/tree/v1.32.2) (2025-11-30)
+
+### Fixed
+
+- Improved multi-cursor support ([@J-Fields](https://github.com/J-Fields)).
+  - `j` and `k` no longer force cursors to same column.
+  - Fix recording and executing macros with multi-cursor.
+  - `u` no longer cancels multi-cursor.
+  - Fixed several actions in VisualBlock mode.
+  - Fixed several actions incorrectly being executed once per cursor.
+
+- Fix several bugs in `:bd[elete]` ([@J-Fields](https://github.com/J-Fields)).
+  - `bd!` suppresses unsaved changes warning.
+  - `bd {bufname}` closes the specified buffer.
+  - Fixed `bd {N}` with high index.
+  - Better error handling.
+
+- Fix cursor rendering when `cursorStylePerMode.visual` is set ([@jheroy](https://github.com/jheroy)).
+
+- Fix an infinite loop ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.32.1](https://github.com/vscodevim/vim/tree/v1.32.1) (2025-11-9)
+
+### Fixed
+
+- Fixed clipboard register, which was broken in `v1.32.0` ([@J-Fields](https://github.com/J-Fields)).
+
+## [v1.32.0](https://github.com/vscodevim/vim/tree/v1.32.0) (2025-11-8)
+
+### Added
+
+- Improved expression support ([@J-Fields](https://github.com/J-Fields)).
+- `:let` can now set registers and environment variables ([@J-Fields](https://github.com/J-Fields)).
+- `:s[ubstitute]` can now replace instances with the value of an expression ([@J-Fields](https://github.com/J-Fields)).
+
+### Fixed
+
+- Fixed `:qa!` prompting about unsaved changes ([@hirokiokada77](https://github.com/hirokiokada77)).
+- Fixed Ex commands being repeatable with `.` ([@coxxny](https://github.com/coxxny)).
+- Fixed bug that would freeze editor if `.` was pressed twice after a non-repeatable action at startup ([@coxxny](https://github.com/coxxny)).
+- Fixed some motions like `[{` when executed with a high count ([@brasswood](https://github.com/brasswood)).
+- Fixed `j` and `k` with multiple cursors and `vim.foldfix` enabled ([@dandn9](https://github.com/dandn9)).
+- Fixed `showTextDocument` being executed for non-preview tabs on `:w[rite]` ([@mccheesy](https://github.com/mccheesy)).
+- Fixed various Ex command error messages ([@J-Fields](https://github.com/J-Fields)).
+
 ## [v1.31.0](https://github.com/vscodevim/vim/tree/v1.31.0) (2025-10-5)
 
 ### Added
