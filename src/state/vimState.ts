@@ -245,13 +245,17 @@ export class VimState implements vscode.Disposable {
       globalState.searchState = modeData.commandLine.getSearchState();
     }
 
+    this.setTextEditorLineNumbersStyle(modeData.mode);
+
+    this.modeData = modeData;
+  }
+
+  public setTextEditorLineNumbersStyle(mode: Mode): void {
     if (configuration.smartRelativeLine) {
-      this.editor.options.lineNumbers = [Mode.Insert, Mode.Disabled].includes(modeData.mode)
+      this.editor.options.lineNumbers = [Mode.Insert, Mode.Disabled].includes(mode)
         ? vscode.TextEditorLineNumbersStyle.On
         : vscode.TextEditorLineNumbersStyle.Relative;
     }
-
-    this.modeData = modeData;
   }
 
   public async setCurrentMode(mode: Mode): Promise<void> {
