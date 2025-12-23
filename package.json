@@ -687,7 +687,7 @@
         },
         "vim.smartRelativeLine": {
           "type": "boolean",
-          "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert mode, relative otherwise.",
+          "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert or disabled mode, relative otherwise.",
           "default": false
         },
         "vim.targets.enable": {

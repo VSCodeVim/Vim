@@ -246,10 +246,9 @@ export class VimState implements vscode.Disposable {
     }
 
     if (configuration.smartRelativeLine) {
-      this.editor.options.lineNumbers =
-        modeData.mode === Mode.Insert
-          ? vscode.TextEditorLineNumbersStyle.On
-          : vscode.TextEditorLineNumbersStyle.Relative;
+      this.editor.options.lineNumbers = [Mode.Insert, Mode.Disabled].includes(modeData.mode)
+        ? vscode.TextEditorLineNumbersStyle.On
+        : vscode.TextEditorLineNumbersStyle.Relative;
     }
 
     this.modeData = modeData;
