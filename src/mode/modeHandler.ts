@@ -40,7 +40,7 @@ import {
   InsertPreviousText,
   TypeInInsertMode,
 } from './../actions/commands/insert';
-import { earlierOf, laterOf } from './../common/motion/position';
+import { earlierOf, laterOf, sorted } from './../common/motion/position';
 import { ForceStopRemappingError, VimError } from './../error';
 import { Register, RegisterMode } from './../register/register';
 import { RecordedState } from './../state/recordedState';
@@ -106,7 +106,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   ): Promise<ModeHandler> {
     const modeHandler = new ModeHandler(handlerMap, textEditor);
     await modeHandler.vimState.load();
-    await modeHandler.setCurrentMode(configuration.startInInsertMode ? Mode.Insert : Mode.Normal);
+
+    // Check if this editor's URI scheme should start in Insert mode
+    const scheme = textEditor.document.uri.scheme;
+    const shouldStartInsert =
+      configuration.startInInsertMode || configuration.startInInsertModeSchemes.includes(scheme);
+
+    await modeHandler.setCurrentMode(shouldStartInsert ? Mode.Insert : Mode.Normal);
     modeHandler.syncCursors();
     return modeHandler;
   }
@@ -1323,11 +1329,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             break;
 
           case Mode.VisualLine:
-            if (start.isBeforeOrEqual(stop)) {
-              selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
-            } else {
-              selections.push(new vscode.Selection(start.getLineEnd(), stop.getLineBegin()));
-            }
+            [start, stop] = sorted(start, stop);
+            selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
             break;
 
           case Mode.VisualBlock:

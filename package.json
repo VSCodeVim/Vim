@@ -813,6 +813,16 @@
           "type": "boolean",
           "description": "Start in Insert mode."
         },
+        "vim.startInInsertModeSchemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "comment"
+          ],
+          "markdownDescription": "List of document URI schemes that should automatically start in Insert mode. For example, use `[\"comment\"]` for GitHub PR comment editors, or `[\"comment\", \"gitlens\"]` for multiple schemes."
+        },
         "vim.handleKeys": {
           "type": "object",
           "description": "Delegate certain key combinations back to VS Code to be handled natively.",
@@ -1239,7 +1249,7 @@
     "sinon": "20.0.0",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
-    "webpack": "5.103.0",
+    "webpack": "5.104.0",
     "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1"
   },
