@@ -4,11 +4,11 @@ import { configuration } from './configuration';
 
 const nonMatchable = /<(any|leader|number|alpha|character|register|macro)>/;
 const literalKeys = /<(any|number|alpha|character)>/; // do not treat <register> or <macro> as literal!
-const literalModesMap = new Map<Mode, boolean>([
-  [Mode.Insert, true],
-  [Mode.Replace, true],
-  [Mode.CommandlineInProgress, true],
-  [Mode.SearchInProgressMode, true],
+const literalModes = new Set<Mode>([
+  Mode.Insert,
+  Mode.Replace,
+  Mode.CommandlineInProgress,
+  Mode.SearchInProgressMode,
 ]);
 
 let lastLangmapString = '';
@@ -77,7 +77,7 @@ function parseLangmap(langmapString: string): {
 }
 
 export function isLiteralMode(mode: Mode): boolean {
-  return literalModesMap.get(mode) === true;
+  return literalModes.has(mode);
 }
 
 function map(langmap: Map<string, string>, key: string): string {
