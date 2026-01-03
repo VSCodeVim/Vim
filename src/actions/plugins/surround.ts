@@ -670,11 +670,7 @@ class SurroundHelper {
               ? PositionDiff.offset({ character: -leftFixed.length })
               : undefined,
         });
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: rightFixed,
-          range: rightEdge,
-        });
+        vimState.recordedState.transformer.replace(rightEdge, rightFixed);
       }
     }
 

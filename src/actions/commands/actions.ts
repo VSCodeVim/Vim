@@ -1010,12 +1010,11 @@ class ToggleCaseAndMoveForward extends BaseCommand {
         : position.getRight(count),
     );
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
+    vimState.recordedState.transformer.replace(
       range,
-      text: this.toggleCase(vimState.document.getText(range)),
-      diff: PositionDiff.exactPosition(range.end),
-    });
+      this.toggleCase(vimState.document.getText(range)),
+      PositionDiff.exactPosition(range.end),
+    );
   }
 }
 

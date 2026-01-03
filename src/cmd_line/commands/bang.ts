@@ -53,11 +53,6 @@ export class BangCommand extends ExCommand {
     // place cursor at the start of the replaced text and first non-whitespace character
     const diff = this.getReplaceDiff(output);
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      text: output,
-      range: resolvedRange,
-      diff,
-    });
+    vimState.recordedState.transformer.replace(resolvedRange, output, diff);
   }
 }
