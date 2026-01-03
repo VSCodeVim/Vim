@@ -380,12 +380,11 @@ abstract class ChangeCaseOperator extends BaseOperator {
 
       const range = new vscode.Range(startPos, new Position(endPos.line, endPos.character + 1));
 
-      vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
+      vimState.recordedState.transformer.replace(
         range,
-        text: this.transformText(vimState.document.getText(range)),
-        diff: PositionDiff.exactPosition(startPos),
-      });
+        this.transformText(vimState.document.getText(range)),
+        PositionDiff.exactPosition(startPos),
+      );
     }
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -1126,13 +1125,12 @@ class ActionVisualReflowParagraph extends BaseOperator {
     let textToReflow = vimState.document.getText(new vscode.Range(start, end));
     textToReflow = this.reflowParagraph(textToReflow);
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      text: textToReflow,
-      range: new vscode.Range(start, end),
+    vimState.recordedState.transformer.replace(
+      new vscode.Range(start, end),
+      textToReflow,
       // Move cursor to front of line to realign the view
-      diff: PositionDiff.exactCharacter({ character: 0 }),
-    });
+      PositionDiff.exactCharacter({ character: 0 }),
+    );
 
     await vimState.setCurrentMode(Mode.Normal);
   }
