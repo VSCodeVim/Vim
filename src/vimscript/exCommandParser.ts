@@ -14,6 +14,7 @@ import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 import { ExploreCommand } from '../cmd_line/commands/explore';
 import { FileCommand } from '../cmd_line/commands/file';
 import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
+import { GlobalCommand } from '../cmd_line/commands/global';
 import { GotoCommand } from '../cmd_line/commands/goto';
 import { GotoLineCommand } from '../cmd_line/commands/gotoLine';
 import { GrepCommand } from '../cmd_line/commands/grep';
@@ -249,7 +250,8 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['foldo', 'pen'], undefined],
   [['for', ''], undefined],
   [['fu', 'nction'], undefined],
-  [['g', 'lobal'], undefined],
+  [['g', 'lobal'], GlobalCommand.argParser],
+  [['g!', ''], GlobalCommand.vArgParser],
   [['go', 'to'], GotoCommand.argParser],
   [['gr', 'ep'], GrepCommand.argParser],
   [['grepa', 'dd'], undefined],
@@ -574,7 +576,8 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['unme', 'nu'], undefined],
   [['uns', 'ilent'], undefined],
   [['up', 'date'], WriteCommand.argParser],
-  [['v', 'global'], undefined],
+  [['v', 'global'], GlobalCommand.vArgParser],
+  [['vglobal', ''], GlobalCommand.vArgParser],
   [['ve', 'rsion'], undefined],
   [['verb', 'ose'], undefined],
   [['vert', 'ical'], undefined],
