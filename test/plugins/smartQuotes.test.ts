@@ -34,6 +34,18 @@ suite('smartQuotes plugin', () => {
       end: ['aaa "bbb" c \'|\' '],
     });
     newTest({
+      title: 'dollar sign - 1',
+      start: ['|aaa "bbb" c $d$ '],
+      keysPressed: 'di$',
+      end: ['aaa "bbb" c $|$ '],
+    });
+    newTest({
+      title: 'dollar sign - 2',
+      start: ['aaa "bbb" |c $d$ '],
+      keysPressed: 'di$',
+      end: ['aaa "bbb" c $|$ '],
+    });
+    newTest({
       title: 'backtick - 1',
       start: ['|aaa "bbb" c `d` '],
       keysPressed: 'di`',
@@ -62,6 +74,19 @@ suite('smartQuotes plugin', () => {
       start: ['  \'aaa\' "bbb" |c `d` '],
       keysPressed: 'diq',
       end: ['  \'aaa\' "bbb" c `|` '],
+    });
+    newTest({
+      title: 'any-quote - 4',
+      start: ['  \'aaa\' "bbb" c| $d$ '],
+      keysPressed: 'diq',
+      end: ['  \'aaa\' "|" c $d$ '],
+    });
+    // Dollar signs should not be recognized as being inside quotes
+    newTest({
+      title: 'any-quote - 5',
+      start: ['|$aaa$'],
+      keysPressed: 'diq',
+      end: ['|$aaa$'],
     });
     // test basic usage
     newTest({
