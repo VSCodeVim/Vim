@@ -96,14 +96,13 @@ export class SortCommand extends ExCommand {
 
     const sortedContent = sortedLines.join('\n');
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      range: new vscode.Range(startLine, 0, endLine, lastLineLength),
-      text: sortedContent,
-      diff: PositionDiff.exactPosition(
+    vimState.recordedState.transformer.replace(
+      new vscode.Range(startLine, 0, endLine, lastLineLength),
+      sortedContent,
+      PositionDiff.exactPosition(
         new vscode.Position(startLine, sortedLines[0].match(/\S/)?.index ?? 0),
       ),
-    });
+    );
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {

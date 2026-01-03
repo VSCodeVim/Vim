@@ -440,6 +440,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const printableKey = Notation.printableKey(key, configuration.leader);
     Logger.debug(`Handling key: ${printableKey}`);
 
+    if (key === SpecialKeys.ExtensionEnable.valueOf()) {
+      this.vimState.setTextEditorLineNumbersStyle(this.currentMode);
+    }
+
     if (
       // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       (key === SpecialKeys.TimeoutFinished ||

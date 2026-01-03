@@ -39,12 +39,11 @@ class ReplaceOperator extends BaseOperator {
 
     const replaceWith = register.text as string;
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
+    vimState.recordedState.transformer.replace(
       range,
-      text: replaceWith,
-      diff: PositionDiff.exactPosition(getCursorPosition(vimState, range, replaceWith)),
-    });
+      replaceWith,
+      PositionDiff.exactPosition(getCursorPosition(vimState, range, replaceWith)),
+    );
 
     await vimState.setCurrentMode(Mode.Normal);
   }
