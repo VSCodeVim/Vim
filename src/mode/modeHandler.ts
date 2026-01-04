@@ -253,8 +253,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
               const isEol =
-                e.textEditor.document &&
-                e.textEditor.document.lineAt(selection.active.line).text.length ===
+                e.textEditor.document?.lineAt(selection.active.line).text.length ===
                   selection.active.character;
               const lastSelection = this.vimState.lastVisualSelection;
               const previousVisualSelectionIsFromLastCharToEol =
