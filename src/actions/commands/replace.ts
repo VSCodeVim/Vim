@@ -275,12 +275,11 @@ class BackspaceInReplaceMode extends BaseCommand {
           new Range(position.getLeftThroughLineBreaks(), position),
         );
       } else {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: before,
-          range: new Range(position.getLeft(), position),
-          diff: PositionDiff.offset({ character: -1 }),
-        });
+        vimState.recordedState.transformer.replace(
+          new Range(position.getLeft(), position),
+          before,
+          PositionDiff.offset({ character: -1 }),
+        );
       }
     }
   }
@@ -314,12 +313,11 @@ class ReplaceInReplaceMode extends BaseCommand {
 
     let before = vimState.document.getText(replaceRange);
     if (!position.isLineEnd(vimState.document) && !isNewLineOrTab) {
-      vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
-        text: char,
-        range: replaceRange,
-        diff: PositionDiff.offset({ character: 1 }),
-      });
+      vimState.recordedState.transformer.replace(
+        replaceRange,
+        char,
+        PositionDiff.offset({ character: 1 }),
+      );
     } else if (char === '<tab>') {
       vimState.recordedState.transformer.delete(replaceRange);
       vimState.recordedState.transformer.vscodeCommand('tab');
