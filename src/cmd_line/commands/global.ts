@@ -252,9 +252,7 @@ export class GlobalCommand extends ExCommand {
   }
 
   private positionCursorAtLine(vimState: VimState, lineNumber: number): void {
-    const position = new Position(lineNumber, 0);
-    vimState.cursorStopPosition = position;
-    vimState.cursorStartPosition = position;
+    vimState.cursor = Cursor.atPosition(new Position(lineNumber, 0));
     vimState.editor.selection = new vscode.Selection(position, position);
   }
 
