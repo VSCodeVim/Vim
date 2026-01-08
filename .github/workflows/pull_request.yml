@@ -13,12 +13,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout VSCodeVim
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: yarn
 
       - name: Install dependencies
@@ -31,9 +31,9 @@ jobs:
         run: yarn lint
 
       - name: Build
-        run: gulp webpack
+        run: yarn build
 
       - name: Test
         run: |
-          gulp prepare-test
+          yarn build-test
           xvfb-run -a yarn test

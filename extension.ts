@@ -11,10 +11,11 @@ import './src/actions/include-plugins';
  */
 
 import './src/configuration/validators/inputMethodSwitcherValidator';
-import './src/configuration/validators/remappingValidator';
 import './src/configuration/validators/neovimValidator';
+import './src/configuration/validators/remappingValidator';
 import './src/configuration/validators/vimrcValidator';
 
+import * as path from 'path';
 import * as vscode from 'vscode';
 import {
   activate as activateFunc,
@@ -22,10 +23,9 @@ import {
   registerCommand,
   registerEventListener,
 } from './extensionBase';
+import { vimrc } from './src/configuration/vimrc';
 import { Globals } from './src/globals';
 import { Register } from './src/register/register';
-import { vimrc } from './src/configuration/vimrc';
-import * as path from 'path';
 import { Logger } from './src/util/logger';
 
 export { getAndUpdateModeHandler } from './extensionBase';

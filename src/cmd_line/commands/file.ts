@@ -1,11 +1,10 @@
+import { optWhitespace, seq } from 'parsimmon';
+import { doesFileExist } from 'platform/fs';
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
+import { VimState } from '../../state/vimState';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
-import { doesFileExist } from 'platform/fs';
-// TODO:
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import untildify = require('untildify');
-import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import {
   bangParser,
@@ -15,8 +14,9 @@ import {
   FileOpt,
   fileOptParser,
 } from '../../vimscript/parserUtils';
-import { optWhitespace, regexp, seq } from 'parsimmon';
-import { Position } from 'vscode';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import untildify = require('untildify');
 
 export enum FilePosition {
   NewWindowVerticalSplit,

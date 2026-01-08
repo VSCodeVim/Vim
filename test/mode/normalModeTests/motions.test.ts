@@ -1,6 +1,6 @@
-import { setupWorkspace } from './../../testUtils';
 import { Mode } from '../../../src/mode/mode';
 import { newTest, newTestSkip } from '../../testSimplifier';
+import { setupWorkspace } from './../../testUtils';
 
 suite('Motions in Normal Mode', () => {
   suiteSetup(setupWorkspace);
@@ -134,6 +134,13 @@ suite('Motions in Normal Mode', () => {
   });
 
   newTest({
+    title: 'Can handle 99[{ (past start of file)',
+    start: ['{{{|()}}}'],
+    keysPressed: '99[{',
+    end: ['|{{{()}}}'],
+  });
+
+  newTest({
     title: 'Can handle ]}',
     start: ['{(|)}'],
     keysPressed: ']}',
@@ -159,6 +166,13 @@ suite('Motions in Normal Mode', () => {
     start: ['{{()|}}'],
     keysPressed: ']}',
     end: ['{{()}|}'],
+  });
+
+  newTest({
+    title: 'Can handle 99]} (past end of file)',
+    start: ['{{{|()}}}'],
+    keysPressed: '99]}',
+    end: ['{{{()}}|}'],
   });
 
   newTest({

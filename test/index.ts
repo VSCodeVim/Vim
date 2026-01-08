@@ -26,7 +26,7 @@ export function run(): Promise<void> {
   const mocha = new Mocha({
     ui: 'tdd',
     color: true,
-    timeout: 10000,
+    timeout: 5000,
     grep: mochaGrep,
   });
 

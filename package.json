@@ -3,8 +3,11 @@
   "displayName": "Vim",
   "description": "Vim emulation for Visual Studio Code",
   "icon": "images/icon.png",
-  "version": "1.30.1",
+  "version": "1.32.4",
   "publisher": "vscodevim",
+  "sponsor": {
+    "url": "https://github.com/sponsors/J-Fields"
+  },
   "galleryBanner": {
     "color": "#e3f4ff",
     "theme": "light"
@@ -684,7 +687,7 @@
         },
         "vim.smartRelativeLine": {
           "type": "boolean",
-          "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert mode, relative otherwise.",
+          "markdownDescription": "`#editor.lineNumbers#` is determined by the active Vim mode, absolute when in insert or disabled mode, relative otherwise.",
           "default": false
         },
         "vim.targets.enable": {
@@ -809,6 +812,16 @@
         "vim.startInInsertMode": {
           "type": "boolean",
           "description": "Start in Insert mode."
+        },
+        "vim.startInInsertModeSchemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "comment"
+          ],
+          "markdownDescription": "List of document URI schemes that should automatically start in Insert mode. For example, use `[\"comment\"]` for GitHub PR comment editors, or `[\"comment\", \"gitlens\"]` for multiple schemes."
         },
         "vim.handleKeys": {
           "type": "object",
@@ -1285,15 +1298,16 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "gulp build",
-    "build": "gulp build",
-    "build-dev": "gulp build-dev",
+    "vscode:prepublish": "yarn build",
+    "build": "webpack -c webpack.config.js && npm run commit-hash",
+    "build-dev": "webpack -c webpack.dev.js && npm run commit-hash",
     "build-test": "gulp prepare-test",
+    "commit-hash": "git rev-parse HEAD > out/version.txt",
     "test": "node ./out/test/runTest.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prettier": "prettier --write .",
-    "prettier:check": "prettier --check .",
+    "prettier": "npx prettier --write .",
+    "prettier:check": "npx prettier --check .",
     "watch": "webpack -c webpack.dev.js --watch",
     "package": "yarn run vsce package --yarn --allow-star-activation",
     "prepare": "husky"
@@ -1301,7 +1315,7 @@
   "dependencies": {
     "diff-match-patch": "1.0.5",
     "lodash": "^4.17.21",
-    "neovim": "5.3.0",
+    "neovim": "5.4.0",
     "os-browserify": "0.3.0",
     "parsimmon": "^1.18.0",
     "path-browserify": "1.0.1",
@@ -1311,45 +1325,43 @@
     "util": "0.12.5"
   },
   "devDependencies": {
-    "@types/diff": "8.0.0",
     "@types/diff-match-patch": "1.0.36",
-    "@types/glob": "8.1.0",
     "@types/lodash": "4.17.17",
     "@types/mocha": "10.0.10",
-    "@types/node": "20.17.50",
+    "@types/node": "22.19.1",
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "17.0.4",
     "@types/vscode": "1.74.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vscode/test-electron": "2.5.2",
+    "@vscode/vsce": "^3.6.2",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-jsdoc": "^50.0.0",
+    "eslint-plugin-jsdoc": "^61.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "9.1.0",
     "gulp": "5.0.1",
     "gulp-bump": "3.2.0",
-    "gulp-git": "2.11.0",
+    "gulp-shell": "^0.8.0",
     "gulp-tag-version": "1.3.1",
     "gulp-typescript": "5.0.1",
     "husky": "^9.0.0",
     "lint-staged": "^16.0.0",
     "minimist": "1.2.8",
-    "mocha": "11.3.0",
+    "mocha": "11.7.5",
     "plugin-error": "2.0.1",
-    "prettier": "3.5.3",
+    "prettier": "3.7.4",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "sinon": "20.0.0",
-    "ts-loader": "9.5.2",
-    "typescript": "5.8.3",
-    "vsce": "2.15.0",
-    "webpack": "5.100.1",
+    "ts-loader": "9.5.4",
+    "typescript": "5.9.3",
+    "webpack": "5.104.0",
     "webpack-cli": "6.0.1",
-    "webpack-merge": "6.0.1",
-    "webpack-stream": "7.0.0"
+    "webpack-merge": "6.0.1"
   },
   "lint-staged": {
     "*.{ts,js,json,md,yml}": "prettier --write",

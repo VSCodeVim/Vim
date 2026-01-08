@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as srcConfiguration from '../src/configuration/configuration';
 import * as testConfiguration from './testConfiguration';
 
+import { IConfiguration } from 'src/configuration/iconfiguration';
 import * as packagejson from '../package.json';
 
 suite('package.json', () => {
@@ -27,15 +28,40 @@ suite('package.json', () => {
     assert.ok(pkgConfigurations);
     const keys = Object.keys(pkgConfigurations);
     assert.notStrictEqual(keys.length, 0);
+    assert.ok(keys.every((key) => key.startsWith('vim.')));
+
+    const isUnhandled = (configuration: IConfiguration, key: string): boolean => {
+      const keyFirstSegment = key.split('.')[1]; // Extract the first segment without the `vim.` prefix from `key`, e.g. get `foo` from 'vim.foo.bar.baz'.
+
+      const handlers = Object.keys(configuration);
+      const propertyExists = handlers.includes(keyFirstSegment);
+      if (propertyExists) {
+        return false;
+      }
+
+      // If the property doesn't exist, check the possibility that the field is implemented as a get proxy by calling it.
+      if (configuration[keyFirstSegment]) {
+        return false;
+      }
+
+      return true;
+    };
 
     // configuration
-    let handlers = Object.keys(srcConfiguration.configuration);
-    let unhandled = keys.filter((k) => handlers.includes(k));
-    assert.strictEqual(unhandled.length, 0, 'Missing src handlers for ' + unhandled.join(','));
+    const srcUnhandled = keys.filter(isUnhandled.bind(null, srcConfiguration.configuration));
+    assert.strictEqual(
+      srcUnhandled.length,
+      0,
+      'Missing src handlers for ' + srcUnhandled.join(','),
+    );
 
     // test configuration
-    handlers = Object.keys(new testConfiguration.Configuration());
-    unhandled = keys.filter((k) => handlers.includes(k));
-    assert.strictEqual(unhandled.length, 0, 'Missing test handlers for ' + unhandled.join(','));
+    const testConfigurationInstance = new testConfiguration.Configuration();
+    const testUnhandled = keys.filter(isUnhandled.bind(null, testConfigurationInstance));
+    assert.strictEqual(
+      testUnhandled.length,
+      0,
+      'Missing test handlers for ' + testUnhandled.join(','),
+    );
   });
 });

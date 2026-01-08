@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 
 import { CommandLine, ExCommandLine, SearchCommandLine } from '../../cmd_line/commandLine';
-import { ErrorCode, VimError } from '../../error';
+import { ChangeCommand } from '../../cmd_line/commands/change';
+import { VimError } from '../../error';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
@@ -152,6 +153,11 @@ class ExCommandLineEnter extends CommandLineAction {
 
   protected override async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
     await commandLine.run(vimState);
+
+    if (commandLine instanceof ExCommandLine && commandLine.getCommand() instanceof ChangeCommand) {
+      return;
+    }
+
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
@@ -299,7 +305,7 @@ class CommandInsertRegisterContentInCommandLine extends CommandLineAction {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
+        VimError.NothingInRegister(vimState.recordedState.registerName),
       );
       return;
     }

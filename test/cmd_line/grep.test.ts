@@ -3,9 +3,9 @@ import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { GrepCommand } from '../../src/cmd_line/commands/grep';
-import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 import { Mode } from '../../src/mode/mode';
-import { createFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
+import { createFile, setupWorkspace } from '../testUtils';
 
 function grep(pattern: Pattern, files: string[]): GrepCommand {
   return new GrepCommand({ pattern, files });
