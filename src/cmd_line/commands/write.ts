@@ -8,6 +8,7 @@ import { StatusBar } from '../../statusBar';
 import { Logger } from '../../util/logger';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
+import { configuration } from './../../configuration/configuration';
 
 export type IWriteCommandArguments = {
   bang: boolean;
@@ -136,6 +137,14 @@ export class WriteCommand extends ExCommand {
   private async save(vimState: VimState): Promise<void> {
     if (this.shouldShowDocument(vimState.document.uri)) {
       await vscode.window.showTextDocument(vimState.document, { preview: false });
+    }
+
+    // Fixes https://github.com/VSCodeVim/Vim/issues/9883
+    const shouldRunFormatDocSinceExpectedAndWontBeDoneBySave =
+      !vimState.document.isDirty &&
+      configuration?.getConfiguration('editor')?.get<boolean>('formatOnSave');
+    if (shouldRunFormatDocSinceExpectedAndWontBeDoneBySave) {
+      await vscode.commands.executeCommand('editor.action.formatDocument');
     }
 
     await this.background(
