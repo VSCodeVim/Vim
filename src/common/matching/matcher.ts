@@ -33,8 +33,15 @@ export class PairMatcher {
     '"': { match: '"', isNextMatchForward: false, directionless: true },
     "'": { match: "'", isNextMatchForward: false, directionless: true },
     '`': { match: '`', isNextMatchForward: false, directionless: true },
-    $: { match: '$', isNextMatchForward: false, directionless: true },
   };
+
+  static getPairing(char: string): {
+    match: string;
+    isNextMatchForward: boolean;
+    directionless?: boolean;
+  } {
+    return this.pairings[char] ?? { match: char, isNextMatchForward: false, directionless: true };
+  }
 
   private static findPairedChar(
     position: Position,
@@ -153,9 +160,9 @@ export class PairMatcher {
      * PRs welcomed! (TODO)
      * Though ideally VSC implements https://github.com/Microsoft/vscode/issues/7177
      */
-    const pairing = this.pairings[charToMatch];
+    const pairing = this.getPairing(charToMatch);
 
-    if (pairing === undefined || pairing.directionless) {
+    if (pairing.directionless) {
       return undefined;
     }
 
