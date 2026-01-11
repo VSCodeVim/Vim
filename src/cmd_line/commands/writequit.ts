@@ -1,4 +1,4 @@
-import { optWhitespace, Parser, regexp, seq } from 'parsimmon';
+import { optWhitespace, Parser, seq } from 'parsimmon';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
@@ -21,8 +21,6 @@ export class WriteQuitCommand extends ExCommand {
     fileOptParser.skip(optWhitespace),
     fileNameParser.fallback(undefined),
   ).map(([bang, opt, file]) => new WriteQuitCommand(file ? { bang, opt, file } : { bang, opt }));
-
-  public override isRepeatableWithDot = false;
 
   private readonly args: IWriteQuitCommandArguments;
   constructor(args: IWriteQuitCommandArguments) {

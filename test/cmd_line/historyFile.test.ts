@@ -1,10 +1,10 @@
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
-import { HistoryFile } from '../../src/history/historyFile';
-import { rndName, TestExtensionContext } from '../testUtils';
 import { configuration } from '../../src/configuration/configuration';
 import { Globals } from '../../src/globals';
+import { HistoryFile } from '../../src/history/historyFile';
+import { rndName, TestExtensionContext } from '../testUtils';
 
 suite('HistoryFile', () => {
   let history: HistoryFile;

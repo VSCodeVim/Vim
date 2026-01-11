@@ -1,5 +1,4 @@
-import { Position } from 'vscode';
-import { TextDocument } from 'vscode';
+import { Position, TextDocument } from 'vscode';
 import { configuration } from '../../../configuration/configuration';
 
 type Quote = '"' | "'" | '`' | '$';

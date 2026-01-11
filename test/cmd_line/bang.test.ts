@@ -1,6 +1,6 @@
-import { newTest } from '../../test/testSimplifier';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { newTest } from '../../test/testSimplifier';
 import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 // TODO(#4844): this fails on Windows

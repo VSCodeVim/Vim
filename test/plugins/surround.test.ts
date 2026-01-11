@@ -1,9 +1,9 @@
-import { setupWorkspace } from './../testUtils';
-import { newTest } from '../testSimplifier';
 import {
   CommandSurroundAddSurroundingFunction,
   CommandSurroundAddSurroundingTag,
 } from '../../src/actions/plugins/surround';
+import { newTest } from '../testSimplifier';
+import { setupWorkspace } from './../testUtils';
 
 suite('surround plugin', () => {
   suiteSetup(async () => {
@@ -457,6 +457,18 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: 'change surround with tags with kebab case names',
+    start: ['<custom-tag>|</custom-tag>'],
+    keysPressed: 'cstt',
+    end: ['<h1>|</h1>'],
+    stub: {
+      stubClass: CommandSurroundAddSurroundingTag,
+      methodName: 'readTag',
+      returnValue: 'h1',
+    },
+  });
+
+  newTest({
     title: 'change surround with tags that contain an attribute and remove them',
     start: ['<h2 test class="foo">b|ar</h2>'],
     keysPressed: 'cstt',
@@ -582,48 +594,48 @@ suite('surround plugin', () => {
     },
   });
 
-  // multi cursor tests
+  suite('multicursor', () => {
+    newTest({
+      title: 'visual surround with multicursor',
+      start: ['one |two three, one two three'],
+      keysPressed: 'gbgb' + 'S)' + '<esc>' + '0', // 0: fix cursor pos, see above
+      end: ['|one (two) three, one (two) three'],
+    });
 
-  newTest({
-    title: 'visual surround with multicursor',
-    start: ['one |two three, one two three'],
-    keysPressed: 'gbgb' + 'S)' + '<esc>' + '0', // 0: fix cursor pos, see above
-    end: ['|one (two) three, one (two) three'],
-  });
+    newTest({
+      title: 'yank surround with multicursor',
+      start: ['one |two three, one two three'],
+      // gbgbv results in two cursors in normal mode
+      keysPressed: 'gbgbv' + 'ysiw)' + '<esc>',
+      end: ['one |(two) three, one |(two) three'],
+    });
 
-  newTest({
-    title: 'yank surround with multicursor',
-    start: ['one |two three, one two three'],
-    // gbgbv results in two cursors in normal mode
-    keysPressed: 'gbgbv' + 'ysiw)' + '<esc>',
-    end: ['one |(two) three, one (two) three'],
-  });
+    newTest({
+      title: 'yank surround with multicursor and repeat',
+      start: ['one |two three, one two three'],
+      keysPressed: 'gbgbv' + 'ysiw)' + 'W.' + '<esc>',
+      end: ['one (two) |(three), one (two) |(three)'],
+    });
 
-  newTest({
-    title: 'yank surround with multicursor and repeat',
-    start: ['one |two three, one two three'],
-    keysPressed: 'gbgbv' + 'ysiw)' + 'W.' + '<esc>',
-    end: ['one (two) |(three), one (two) (three)'],
-  });
+    newTest({
+      title: 'delete surround with multicursor',
+      start: ['one (tw|o) three, one (two) three'],
+      keysPressed: 'gbgbv' + 'ds)' + '<esc>',
+      end: ['one tw|o three, one tw|o three'],
+    });
 
-  newTest({
-    title: 'delete surround with multicursor',
-    start: ['one (tw|o) three, one (two) three'],
-    keysPressed: 'gbgbv' + 'ds)' + '<esc>',
-    end: ['one tw|o three, one two three'],
-  });
+    newTest({
+      title: 'delete surround with multicursor and repeat',
+      start: ['one (tw|o) (three), one (two) (three)'],
+      keysPressed: 'gbgbv' + 'ds)' + 'W.' + '<esc>',
+      end: ['one two |three, one two |three'],
+    });
 
-  newTest({
-    title: 'delete surround with multicursor and repeat',
-    start: ['one (tw|o) (three), one (two) (three)'],
-    keysPressed: 'gbgbv' + 'ds)' + 'W.' + '<esc>',
-    end: ['one two |three, one two three'],
-  });
-
-  newTest({
-    title: 'change surround with multicursor',
-    start: ['one (tw|o) three, one (two) three'],
-    keysPressed: 'gbgbv' + 'cs)[' + '<esc>',
-    end: ['one [ tw|o ] three, one [ two ] three'],
+    newTest({
+      title: 'change surround with multicursor',
+      start: ['one (tw|o) three, one (two) three'],
+      keysPressed: 'gbgbv' + 'cs)[' + '<esc>',
+      end: ['one [ tw|o ] three, one [ tw|o ] three'],
+    });
   });
 });

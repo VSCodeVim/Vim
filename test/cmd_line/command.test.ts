@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { setupWorkspace, assertStatusBarEqual } from '../testUtils';
+import { assertStatusBarEqual, setupWorkspace } from '../testUtils';
 
 suite('cmd_line/search command', () => {
   let modeHandler: ModeHandler;

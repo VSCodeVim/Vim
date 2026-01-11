@@ -1,8 +1,10 @@
 // eslint-disable-next-line id-denylist
-import { alt, optWhitespace, regexp, seq, string, whitespace } from 'parsimmon';
+import { all, alt, optWhitespace, seq, string, whitespace } from 'parsimmon';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
+import { findTabInActiveTabGroup } from '../../util/util';
 import { ExCommand } from '../../vimscript/exCommand';
 import {
   FileCmd,
@@ -13,7 +15,6 @@ import {
   fileOptParser,
   numberParser,
 } from '../../vimscript/parserUtils';
-import { VimError, ErrorCode } from '../../error';
 
 export enum TabCommandType {
   Next,
@@ -128,13 +129,22 @@ export class TabCommand extends ExCommand {
     tabmove: optWhitespace
       .then(
         seq(
-          alt<'right' | 'left'>(string('+').result('right'), string('-').result('left')).fallback(
-            undefined,
-          ),
+          alt(string('+'), string('-')).fallback(undefined),
           numberParser.fallback(undefined),
+          all,
         ),
       )
-      .map(([direction, count]) => new TabCommand({ type: TabCommandType.Move, direction, count })),
+      .map(([plusminus, count, trailing]) => {
+        if (trailing || (plusminus && count === 0)) {
+          throw VimError.InvalidArgument475((plusminus ?? '') + (count ?? '') + trailing);
+        }
+        const direction = plusminus === '+' ? 'right' : plusminus === '-' ? 'left' : undefined;
+        return new TabCommand({
+          type: TabCommandType.Move,
+          direction,
+          count,
+        });
+      }),
   };
 
   public readonly arguments: ITabCommandArguments;
@@ -162,23 +172,7 @@ export class TabCommand extends ExCommand {
             this.arguments.buf - 1,
           );
         } else if (this.arguments.buf !== undefined && typeof this.arguments.buf === 'string') {
-          const tabGroup = vscode.window.tabGroups.activeTabGroup;
-          const searchTerm = this.arguments.buf;
-          const foundBuffers = [];
-          for (const t of tabGroup.tabs) {
-            if (t.label.includes(searchTerm)) {
-              foundBuffers.push(t);
-            }
-            if (foundBuffers.length > 1) {
-              break;
-            }
-          }
-          if (foundBuffers.length === 0) {
-            throw VimError.fromCode(ErrorCode.NoMatchingBuffer, searchTerm);
-          } else if (foundBuffers.length > 1) {
-            throw VimError.fromCode(ErrorCode.MultipleMatches, searchTerm);
-          }
-          const tab = foundBuffers[0];
+          const [idx, tab] = findTabInActiveTabGroup(this.arguments.buf);
           if ((tab.input as vscode.TextDocument).uri !== undefined) {
             const uri = (tab.input as vscode.TextDocument).uri;
             await vscode.commands.executeCommand('vscode.open', uri);
