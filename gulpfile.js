@@ -157,4 +157,4 @@ gulp.task(
     createGitTag,
   ),
 );
-gulp.task('default', shell.task('yarn build-dev'));
+gulp.task('build-dev', shell.task('yarn build-dev'));
