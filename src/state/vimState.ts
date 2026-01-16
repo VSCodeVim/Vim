@@ -201,7 +201,6 @@ export class VimState implements vscode.Disposable {
   /**
    * Stores last visual mode as well as what was selected for `gv`
    */
-
   public lastVisualSelection:
     | {
         mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock;
