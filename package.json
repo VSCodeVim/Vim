@@ -1204,7 +1204,7 @@
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "neovim": "5.4.0",
     "os-browserify": "0.3.0",
     "parsimmon": "^1.18.0",
