@@ -209,6 +209,14 @@ export class VimState implements vscode.Disposable {
       }
     | undefined = undefined;
 
+  public nextSelectionToUseForVisualGv:
+    | {
+        mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock;
+        start: Position;
+        end: Position;
+      }
+    | undefined = undefined;
+
   /**
    * The current mode and its associated state.
    */
