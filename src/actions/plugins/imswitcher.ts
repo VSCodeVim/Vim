@@ -42,6 +42,21 @@ export class InputMethodSwitcher {
     const isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
     const isNewModeInsertLike = this.isInsertLikeMode(newMode);
     if (isPrevModeInsertLike !== isNewModeInsertLike) {
+      // 获取当前输入法
+      let currentIM = '';
+      try {
+        currentIM = (await this.execute(configuration.autoSwitchInputMethod.obtainIMCmd)).trim();
+      } catch (e) {
+        Logger.error(`Error obtaining current IM. err=${e}`);
+      }
+
+      const defaultIM = configuration.autoSwitchInputMethod.defaultIM;
+
+      // 如果当前输入法已经是默认输入法，则不执行切换命令
+      if (currentIM === defaultIM) {
+        return;
+      }
+
       if (isNewModeInsertLike) {
         // await this.resumeIM();
         await this.execute(configuration.autoSwitchInputMethod.insertIMCmd);
