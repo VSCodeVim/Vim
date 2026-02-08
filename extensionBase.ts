@@ -161,6 +161,18 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (mh.vimState.currentMode === Mode.Insert) {
         mh.vimState.historyTracker.currentContentChanges.push(...event.contentChanges);
       }
+
+      // Fix for #2007: When a document change arrives while we are NOT processing a user
+      // keystroke, it must be an external change (format-on-save, Prettier, IntelliSense,
+      // AI suggestions, etc.). Force-track it and create a separate undo boundary so that
+      // pressing 'u' only undoes the user's last action, not external changes merged with it.
+      if (!mh.isHandlingKey) {
+        const added = mh.vimState.historyTracker.addChange(true);
+        if (added) {
+          mh.vimState.historyTracker.finishCurrentStep();
+          Logger.debug('External change detected — created undo boundary');
+        }
+      }
     }
   });
 
