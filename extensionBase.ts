@@ -166,7 +166,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // keystroke, it must be an external change (format-on-save, Prettier, IntelliSense,
       // AI suggestions, etc.). Force-track it and create a separate undo boundary so that
       // pressing 'u' only undoes the user's last action, not external changes merged with it.
-      if (!mh.isHandlingKey) {
+      if (!mh.isHandlingKey && !mh.vimState.historyTracker.isApplyingChange) {
         const added = mh.vimState.historyTracker.addChange(true);
         if (added) {
           mh.vimState.historyTracker.finishCurrentStep();
