@@ -33,17 +33,8 @@ export class ReplaceCharacter extends BaseCommand {
       return;
     }
 
-    let endPos = new Position(position.line, position.character + timesToRepeat);
-
-    // Return if tried to repeat longer than linelength
-    if (endPos.character > vimState.document.lineAt(endPos).text.length) {
-      return;
-    }
-
-    // If last char (not EOL char), add 1 so that replace selection is complete
-    if (endPos.character > vimState.document.lineAt(endPos).text.length) {
-      endPos = new Position(endPos.line, endPos.character + 1);
-    }
+    const line = vimState.document.lineAt(position.line).text;
+    const endPos = position.getSurrogateAwareRight(line, timesToRepeat);
 
     if (toReplace === '<tab>') {
       vimState.recordedState.transformer.delete(new Range(position, endPos));

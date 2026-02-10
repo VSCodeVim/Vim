@@ -55,7 +55,9 @@ export class Append extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vimState.setCurrentMode(Mode.Insert);
-    vimState.cursorStopPosition = vimState.cursorStartPosition = position.getRight();
+    const line = vimState.document.lineAt(position.line).text;
+    vimState.cursorStopPosition = vimState.cursorStartPosition =
+      position.getSurrogateAwareRight(line);
   }
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {

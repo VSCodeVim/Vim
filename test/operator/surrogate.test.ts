@@ -49,4 +49,95 @@ suite('surrogate-pair', () => {
     keysPressed: 'jlllkh',
     end: ['|𩸽🐕', 'text'],
   });
+
+  // === Append (a) ===
+  newTest({
+    title: 'append after surrogate pair character',
+    start: ['|𩸽text'],
+    keysPressed: 'a!<Esc>',
+    end: ['𩸽|!text'],
+  });
+
+  newTest({
+    title: 'append after emoji',
+    start: ['|😄text'],
+    keysPressed: 'a!<Esc>',
+    end: ['😄|!text'],
+  });
+
+  newTest({
+    title: 'append after surrogate pair at end of line',
+    start: ['text|😄'],
+    keysPressed: 'a!<Esc>',
+    end: ['text😄|!'],
+  });
+
+  // === Replace (r) ===
+  newTest({
+    title: 'replace surrogate pair character with ASCII',
+    start: ['|😄text'],
+    keysPressed: 'ra',
+    end: ['|atext'],
+  });
+
+  newTest({
+    title: 'replace ASCII char before surrogate pair',
+    start: ['a|bc😄'],
+    keysPressed: 'rx',
+    end: ['a|xc😄'],
+  });
+
+  // === Toggle case (~) ===
+  newTest({
+    title: 'toggle case advances past surrogate pair',
+    start: ['|😄abc'],
+    keysPressed: '~',
+    end: ['😄|abc'],
+  });
+
+  // === Change char (s) ===
+  newTest({
+    title: 'change surrogate pair character',
+    start: ['|😄text'],
+    keysPressed: 'sx<Esc>',
+    end: ['|xtext'],
+  });
+
+  // === Delete char (x/X) - regression tests ===
+  newTest({
+    title: 'delete surrogate pair with x',
+    start: ['|😄text'],
+    keysPressed: 'x',
+    end: ['|text'],
+  });
+
+  newTest({
+    title: 'delete char before surrogate pair with X',
+    start: ['a|😄text'],
+    keysPressed: 'X',
+    end: ['|😄text'],
+  });
+
+  // === Mathematical symbols — surrogate pairs in U+1D400 block (#8321) ===
+  newTest({
+    title: 'replace math symbol with ASCII',
+    start: ['|𝒟text'],
+    keysPressed: 'rD',
+    end: ['|Dtext'],
+  });
+
+  newTest({
+    title: 'append after math symbol',
+    start: ['|𝔸text'],
+    keysPressed: 'a!<Esc>',
+    end: ['𝔸|!text'],
+  });
+
+  // === Vertical movement (j/k) with surrogate pairs (#8321) ===
+  newTest({
+    title: 'move down and up with surrogate pairs',
+    start: ['😄🐕|𩸽', '😄🐕𩸽'],
+    keysPressed: 'jk',
+    end: ['😄🐕|𩸽', '😄🐕𩸽'],
+  });
 });
