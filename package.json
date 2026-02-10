@@ -1217,6 +1217,7 @@
   "devDependencies": {
     "@types/diff-match-patch": "1.0.36",
     "@types/lodash": "4.17.17",
+    "@types/minimatch": "5.1.2",
     "@types/mocha": "10.0.10",
     "@types/node": "22.19.1",
     "@types/parsimmon": "1.10.9",
