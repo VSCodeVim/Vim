@@ -1070,6 +1070,14 @@ export class ActionOverrideCmdD extends BaseCommand {
   }
   override runsOnceForEachCountPrefix = true;
 
+  public override async execCount(position: Position, vimState: VimState): Promise<void> {
+    await super.execCount(position, vimState);
+    // Reset count so it doesn't persist for subsequent `gb` calls without a count.
+    // Since `gb` enters Visual mode, the RecordedState is not reset between invocations,
+    // which would cause a previous count (e.g. `5gb`) to apply to the next `gb`.
+    vimState.recordedState.count = 0;
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     await vscode.commands.executeCommand('editor.action.addSelectionToNextFindMatch');
     vimState.cursors = getCursorsAfterSync(vimState.editor);
