@@ -369,7 +369,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['mkv', 'imrc'], undefined],
   [['mkvie', 'w'], undefined],
   [['mod', 'e'], undefined],
-  [['n', 'ext'], undefined],
+  [['n', 'ext'], TabCommand.argParsers.next],
   [['new', ''], FileCommand.argParsers.new],
   [['nm', 'ap'], undefined],
   [['nmapc', 'lear'], undefined],
