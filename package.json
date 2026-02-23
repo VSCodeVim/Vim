@@ -1230,7 +1230,7 @@
     "clean-webpack-plugin": "4.0.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-jsdoc": "^61.0.0",
+    "eslint-plugin-jsdoc": "^62.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "9.1.0",
