@@ -1166,6 +1166,16 @@
         "vim.langmap": {
           "type": "string",
           "description": "Language map for alternate keyboard layouts. When you are typing text in Insert (or Replace, etc.) mode, the characters are inserted derectly. Otherwise, they are translated based on the provided map."
+        },
+        "vim.mapIMEComposition.enable": {
+          "type": "boolean",
+          "markdownDescription": "If enabled, In all modes outside of insert mode, the composition input of the IME is mapped based on the `#vim.mapIMEComposition.map#`.",
+          "default": false
+        },
+        "vim.mapIMEComposition.map": {
+          "type": "object",
+          "markdownDescription": "The IME composition to ASCII map. `#vim.mapIMEComposition.enable#` must be enabled.",
+          "default": {}
         }
       }
     },
