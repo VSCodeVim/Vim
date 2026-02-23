@@ -1216,7 +1216,7 @@
   },
   "devDependencies": {
     "@types/diff-match-patch": "1.0.36",
-    "@types/lodash": "4.17.17",
+    "@types/lodash": "4.17.23",
     "@types/mocha": "10.0.10",
     "@types/node": "22.19.1",
     "@types/parsimmon": "1.10.9",
@@ -1230,7 +1230,7 @@
     "clean-webpack-plugin": "4.0.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-jsdoc": "^61.0.0",
+    "eslint-plugin-jsdoc": "^62.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "event-stream": "4.0.1",
     "fork-ts-checker-webpack-plugin": "9.1.0",
@@ -1249,7 +1249,7 @@
     "sinon": "20.0.0",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
-    "webpack": "5.104.0",
+    "webpack": "5.104.1",
     "webpack-cli": "6.0.1",
     "webpack-merge": "6.0.1"
   },
