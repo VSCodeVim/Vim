@@ -106,6 +106,7 @@ export class Configuration implements IConfiguration {
   matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
+  mouseSelectionGoesIntoVisualModeFromInsert = false;
   changeWordIncludesWhitespace = false;
   foldfix = false;
   disableExtension = false;
