@@ -146,6 +146,7 @@ These settings are specific to VSCodeVim.
 | vim.highlightedyank.enable       | Enable highlighting when yanking                                                                                                                                                                                                                                                                                                                                                                                                   | Boolean | false                                                         |
 | vim.highlightedyank.color        | Set the color of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                   | String  | rgba(250, 240, 170, 0.5)                                      |
 | vim.highlightedyank.duration     | Set the duration of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                | Number  | 200                                                           |
+| vim.textObjects                  | Configure external command text objects. An array of objects with `keys` and `command` properties.                                                                                                                                                                                                                                                                                                                                 | Array   | []                                                            |
 
 ### Neovim Integration
 
@@ -764,6 +765,46 @@ Usage examples:
 | vim.argumentObjectOpeningDelimiters | A list of opening delimiters | String list | ["(", "["]    |
 | vim.argumentObjectClosingDelimiters | A list of closing delimiters | String list | [")", "]"]    |
 | vim.argumentObjectSeparators        | A list of object separators  | String list | [","]         |
+
+### External Command Text Objects
+
+This feature allows you to define custom text objects using external commands. Configure them via the `vim.textObjects` setting.
+
+Example configuration:
+
+```json
+"vim.textObjects": [
+  {
+    "keys": ["i", "f"],
+    "command": "myExtension.textObjectCommand"
+  }
+]
+```
+
+- `keys`: An array of strings representing the key sequence for the text object (e.g., `["i", "f"]` for `if`).
+- `command`: The VS Code command identifier that will be executed to compute the text object range.
+
+The external command will receive arguments in the form of:
+
+```typescript
+{
+  position: Position;
+  mode: 'visual' | 'normal' | 'insert';
+}
+```
+
+Where `Position` is an object with `line` and `character` properties.
+
+The command should return a result object:
+
+```typescript
+{
+  start: Position;
+  stop: Position;
+}
+```
+
+or `undefined` if the text object cannot be determined.
 
 ## 🎩 VSCodeVim tricks!
 
