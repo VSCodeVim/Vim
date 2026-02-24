@@ -11,7 +11,7 @@ export class QuoteMatcher {
 
   private readonly quoteMap: QuoteMatch[] = [];
 
-  constructor(quote: '"' | "'" | '`', corpus: string) {
+  constructor(quote: string, corpus: string) {
     let openingQuote = true;
     // Loop over corpus, marking quotes and respecting escape characters.
     for (let i = 0; i < corpus.length; i++) {

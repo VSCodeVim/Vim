@@ -9,6 +9,7 @@ import { StatusBar } from '../statusBar';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
 import { WordType } from '../textobject/word';
 import { reportSearch } from '../util/statusBarTextUtils';
+import { SYMMETRIC_PAIR_REGEX } from '../util/symmetricPairs';
 import { clamp, isHighSurrogate, isLowSurrogate } from '../util/util';
 import { SearchDirection } from '../vimscript/pattern';
 import { PairMatcher } from './../common/matching/matcher';
@@ -1866,7 +1867,7 @@ export abstract class MoveInsideCharacter extends ExpandingSelection {
     firstIteration: boolean,
     lastIteration: boolean,
   ): Promise<IMovement> {
-    const closingChar = PairMatcher.pairings[this.charToMatch].match;
+    const closingChar = PairMatcher.getPairing(this.charToMatch).match;
     const [selStart, selEnd] = sorted(vimState.cursorStartPosition, position);
 
     // First, search backwards for the opening character of the sequence
@@ -2223,6 +2224,115 @@ export abstract class MoveQuoteMatch extends BaseMovement {
     }
     return result;
   }
+}
+
+/**
+ * Base class for symmetric pair text object movements.
+ * Handles arbitrary delimiters like /, _, #, $, etc.
+ * Also used dynamically by surround plugin for non-standard characters.
+ */
+abstract class MoveSymmetricPairBase extends BaseMovement {
+  override modes = [Mode.Normal, Mode.Visual, Mode.VisualBlock];
+  override isJump = true;
+
+  protected charToMatch: string | undefined;
+  protected abstract readonly includeDelimiters: boolean;
+
+  constructor(charToMatch: string | undefined = undefined) {
+    super();
+    this.charToMatch = charToMatch;
+  }
+
+  public override async execAction(position: Position, vimState: VimState): Promise<IMovement> {
+    // If a special character to match was passed during construction of the
+    // instance, we use that. Otherwise, we use what character was last input in
+    // invoking the motion
+    this.charToMatch ??=
+      vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1];
+
+    if (useSmartQuotes()) {
+      return this.execWithSmartQuotes(position, vimState);
+    } else {
+      return this.execWithBasicQuotes(position, vimState);
+    }
+  }
+
+  private async execWithSmartQuotes(position: Position, vimState: VimState): Promise<IMovement> {
+    const quoteMatcher = new SmartQuoteMatcher(this.charToMatch!, vimState.document);
+    const res = quoteMatcher.smartSurroundingQuotes(position, 'current');
+
+    if (res === undefined) {
+      return failedMovement(vimState);
+    }
+
+    let { start, stop } = res;
+
+    if (!this.includeDelimiters) {
+      start = start.translate({ characterDelta: 1 });
+      stop = stop.translate({ characterDelta: -1 });
+    }
+
+    if (!isVisualMode(vimState.currentMode) && position.isBefore(start)) {
+      vimState.recordedState.operatorPositionDiff = start.subtract(position);
+    }
+
+    vimState.cursorStartPosition = start;
+    return { start, stop };
+  }
+
+  private async execWithBasicQuotes(position: Position, vimState: VimState): Promise<IMovement> {
+    const text = vimState.document.lineAt(position).text;
+    const quoteMatcher = new QuoteMatcher(this.charToMatch!, text);
+    const quoteIndices = quoteMatcher.surroundingQuotes(position.character);
+
+    if (quoteIndices === undefined) {
+      return failedMovement(vimState);
+    }
+
+    let [start, end] = quoteIndices;
+
+    if (!this.includeDelimiters) {
+      start++;
+      end--;
+    }
+
+    const startPos = new Position(position.line, start);
+    const endPos = new Position(position.line, end);
+
+    if (!isVisualMode(vimState.currentMode) && position.isBefore(startPos)) {
+      vimState.recordedState.operatorPositionDiff = startPos.subtract(position);
+    }
+
+    return { start: startPos, stop: endPos };
+  }
+
+  public override async execActionForOperator(
+    position: Position,
+    vimState: VimState,
+  ): Promise<Position | IMovement> {
+    const result = await this.execAction(position, vimState);
+    if (isIMovement(result)) {
+      if (result.failed) {
+        vimState.recordedState.hasRunOperator = false;
+        vimState.recordedState.actionsRun = [];
+      } else {
+        result.stop = result.stop.getRight();
+      }
+    }
+    return result;
+  }
+}
+
+@RegisterAction
+export class MoveAroundSymmetricPair extends MoveSymmetricPairBase {
+  keys = ['a', SYMMETRIC_PAIR_REGEX];
+  protected readonly includeDelimiters = true;
+}
+
+@RegisterAction
+export class MoveInsideSymmetricPair extends MoveSymmetricPairBase {
+  keys = ['i', SYMMETRIC_PAIR_REGEX];
+  protected readonly includeDelimiters = false;
 }
 
 @RegisterAction
