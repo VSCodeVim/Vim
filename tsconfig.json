@@ -12,13 +12,15 @@
     "strict": true,
     "useUnknownInCatchVariables": false,
     "experimentalDecorators": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "platform/*": ["src/platform/node/*"]
     },
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
     // "isolatedModules": true,
   },
   "exclude": ["node_modules", "!node_modules/@types"]
