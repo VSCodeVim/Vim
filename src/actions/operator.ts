@@ -671,6 +671,24 @@ export class ChangeOperator extends BaseOperator {
       end = end.getRight();
     }
 
+    // Correct surrogate pair boundaries (match DeleteOperator/YankOperator pattern)
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(end.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      end.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(end.character)) &&
+      isHighSurrogate(eLine.charCodeAt(end.character - 1))
+    ) {
+      end = end.getRight();
+    }
+
     const deleteRange = new vscode.Range(start, end);
 
     Register.put(vimState, vimState.document.getText(deleteRange), this.multicursorIndex, true);
