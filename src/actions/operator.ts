@@ -902,6 +902,12 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
       for (const type of ActionVisualReflowParagraph.CommentTypes) {
         if (trimmedLine.startsWith(type.start)) {
+          // Special handling for '*' to avoid treating Markdown italic/bold as comments
+          // Only treat '*' as a comment if it's followed by a space (bullet list)
+          if (type.start === '*' && trimmedLine.length > 1 && trimmedLine[1] !== ' ') {
+            continue;
+          }
+
           commentType = type;
 
           break;
