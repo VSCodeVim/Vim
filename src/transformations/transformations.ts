@@ -1,6 +1,7 @@
 import { Position, Range, TextDocumentContentChangeEvent } from 'vscode';
 import { RecordedState } from '../state/recordedState';
 import { LineRange } from '../vimscript/lineRange';
+import { Pattern } from '../vimscript/pattern';
 import { PositionDiff } from './../common/motion/position';
 
 /**
@@ -193,6 +194,14 @@ export interface ExecuteNormalTransformation {
   range?: LineRange;
 }
 
+export interface ExecuteGlobalTransformation {
+  type: 'executeGlobal';
+  pattern: Pattern;
+  invert: boolean;
+  commandText: string;
+  range: LineRange;
+}
+
 export type Transformation =
   | InsertTextTransformation
   | InsertTextVSCodeTransformation
@@ -203,6 +212,7 @@ export type Transformation =
   | Macro
   | ContentChangeTransformation
   | ExecuteNormalTransformation
+  | ExecuteGlobalTransformation
   | VSCodeCommandTransformation;
 
 /**
