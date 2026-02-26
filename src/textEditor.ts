@@ -302,4 +302,4 @@ export type CursorMovePosition =
 /**
  * Units for Cursor move 'by' argument
  */
-export type CursorMoveByUnit = 'line' | 'wrappedLine' | 'character' | 'halfLine';
+export type CursorMoveByUnit = 'line' | 'wrappedLine' | 'character' | 'halfLine' | 'foldedLine';
