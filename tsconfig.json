@@ -12,9 +12,9 @@
     "strict": true,
     "useUnknownInCatchVariables": false,
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
-      "platform/*": ["src/platform/node/*"]
+      "platform/*": ["./src/platform/node/*"],
+      "src/*": ["./src/*"]
     },
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
