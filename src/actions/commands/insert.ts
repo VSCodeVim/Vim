@@ -293,6 +293,66 @@ export class ExitInsertMode extends BaseCommand {
 }
 
 @RegisterAction
+export class BackspaceInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = [['<BS>'], ['<C-h>']];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.recordedState.transformer.vscodeCommand('deleteLeft');
+  }
+}
+
+@RegisterAction
+export class TypeInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<character>'];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const char = this.keysPressed.at(-1)!;
+
+    let text = char;
+
+    if (char.length === 1) {
+      const prevHighSurrogate =
+        vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : undefined;
+
+      if (isHighSurrogate(char.charCodeAt(0))) {
+        await vimState.setModeData({
+          mode: Mode.Insert,
+          highSurrogate: char,
+        });
+
+        if (prevHighSurrogate === undefined) return;
+        text = prevHighSurrogate;
+      } else {
+        if (isLowSurrogate(char.charCodeAt(0)) && prevHighSurrogate !== undefined) {
+          text = prevHighSurrogate + char;
+        }
+
+        await vimState.setModeData({
+          mode: Mode.Insert,
+          highSurrogate: undefined,
+        });
+      }
+    }
+
+    vimState.recordedState.transformer.addTransformation({
+      type: 'insertTextVSCode',
+      text,
+      isMultiCursor: vimState.isMultiCursor,
+    });
+  }
+
+  public override toString(): string {
+    return this.keysPressed.at(-1)!;
+  }
+}
+
+@RegisterAction
 export class InsertPreviousText extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<C-a>'];
@@ -378,20 +438,6 @@ class DecreaseIndent extends IndentCommand {
 }
 
 @RegisterAction
-export class BackspaceInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = [['<BS>'], ['<C-h>']];
-
-  override runsOnceForEveryCursor() {
-    return false;
-  }
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.recordedState.transformer.vscodeCommand('deleteLeft');
-  }
-}
-
-@RegisterAction
 class DeleteInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
   keys = ['<Del>'];
@@ -402,52 +448,6 @@ class DeleteInInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.transformer.vscodeCommand('deleteRight');
-  }
-}
-
-@RegisterAction
-export class TypeInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
-  keys = ['<character>'];
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const char = this.keysPressed.at(-1)!;
-
-    let text = char;
-
-    if (char.length === 1) {
-      const prevHighSurrogate =
-        vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : undefined;
-
-      if (isHighSurrogate(char.charCodeAt(0))) {
-        await vimState.setModeData({
-          mode: Mode.Insert,
-          highSurrogate: char,
-        });
-
-        if (prevHighSurrogate === undefined) return;
-        text = prevHighSurrogate;
-      } else {
-        if (isLowSurrogate(char.charCodeAt(0)) && prevHighSurrogate !== undefined) {
-          text = prevHighSurrogate + char;
-        }
-
-        await vimState.setModeData({
-          mode: Mode.Insert,
-          highSurrogate: undefined,
-        });
-      }
-    }
-
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertTextVSCode',
-      text,
-      isMultiCursor: vimState.isMultiCursor,
-    });
-  }
-
-  public override toString(): string {
-    return this.keysPressed.at(-1)!;
   }
 }
 
