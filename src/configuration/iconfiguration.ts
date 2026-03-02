@@ -86,6 +86,11 @@ export interface ITargetsConfiguration {
   smartQuotes: ISmartQuotesConfiguration;
 }
 
+export interface ITextObjectConfig {
+  keys: string[];
+  command: string;
+}
+
 export interface IConfiguration {
   [key: string]: any;
 
@@ -378,6 +383,11 @@ export interface IConfiguration {
    * InputMethodSwicher
    */
   autoSwitchInputMethod: IAutoSwitchInputMethod;
+
+  /**
+   * External text objects powered by VSCode commands
+   */
+  textObjects: ITextObjectConfig[];
 
   /**
    * Keybindings
