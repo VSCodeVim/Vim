@@ -9,7 +9,7 @@ import {
   prevWordEnd,
   prevWordStart,
 } from '../../textobject/word';
-import { clamp } from '../../util/util';
+import { clamp, isHighSurrogate, isLowSurrogate } from '../../util/util';
 import { configuration } from './../../configuration/configuration';
 import { TextEditor } from './../../textEditor';
 
@@ -150,6 +150,17 @@ declare module 'vscode' {
      * @returns the Position `count` lines up from this Position
      */
     getUp(count?: number): Position;
+
+    /**
+     * Like getRight(), but skips past surrogate pairs so the cursor never
+     * lands between the high and low surrogate of an emoji.
+     */
+    getSurrogateAwareRight(line: string, count?: number): Position;
+    /**
+     * Like getLeft(), but skips past surrogate pairs so the cursor never
+     * lands between the high and low surrogate of an emoji.
+     */
+    getSurrogateAwareLeft(line: string, count?: number): Position;
 
     getLeftThroughLineBreaks(includeEol?: boolean): Position;
     getRightThroughLineBreaks(includeEol?: boolean): Position;
@@ -315,6 +326,47 @@ Position.prototype.getRight = function (this: Position, count = 1): Position {
     this.line,
     Math.min(this.character + count, TextEditor.getLineLength(this.line)),
   );
+};
+
+Position.prototype.getSurrogateAwareRight = function (
+  this: Position,
+  line: string,
+  count = 1,
+): Position {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  let pos: Position = this;
+  for (let i = 0; i < count; i++) {
+    const prev = pos;
+    pos = pos.getRight();
+    if (
+      pos.character < line.length &&
+      isLowSurrogate(line.charCodeAt(pos.character)) &&
+      isHighSurrogate(line.charCodeAt(prev.character))
+    ) {
+      pos = pos.getRight();
+    }
+  }
+  return pos;
+};
+
+Position.prototype.getSurrogateAwareLeft = function (
+  this: Position,
+  line: string,
+  count = 1,
+): Position {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  let pos: Position = this;
+  for (let i = 0; i < count; i++) {
+    pos = pos.getLeft();
+    if (
+      pos.character > 0 &&
+      isLowSurrogate(line.charCodeAt(pos.character)) &&
+      isHighSurrogate(line.charCodeAt(pos.character - 1))
+    ) {
+      pos = pos.getLeft();
+    }
+  }
+  return pos;
 };
 
 /**
