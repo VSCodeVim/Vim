@@ -1228,7 +1228,7 @@
     "@vscode/vsce": "^3.6.2",
     "circular-dependency-plugin": "^5.2.2",
     "clean-webpack-plugin": "4.0.0",
-    "eslint": "^8.52.0",
+    "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-jsdoc": "^62.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
