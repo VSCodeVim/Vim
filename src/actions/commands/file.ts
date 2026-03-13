@@ -79,35 +79,44 @@ class OpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const fileUri: Uri = await (async () => {
-        const pathStr = fileInfo[1];
-        if (path.isAbsolute(pathStr)) {
-          return Uri.file(pathStr);
-        } else {
-          let uri = Uri.file(path.resolve(path.dirname(vimState.document.uri.fsPath), pathStr));
-          if (!(await doesFileExist(uri))) {
-            const workspaceRoot = workspace.getWorkspaceFolder(vimState.document.uri)?.uri;
-            if (workspaceRoot) {
-              uri = Uri.file(path.join(workspaceRoot.fsPath, pathStr));
-              if (!(await doesFileExist(uri))) {
-                throw VimError.CantFindFileInPath(pathStr);
-              }
-            }
-          }
-          return uri;
-        }
-      })();
+      const filePath = await this.GetExistingFilePath(fileInfo, vimState);
 
       const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
         name: 'edit',
         bang: false,
         opt: [],
-        file: fileUri.fsPath,
+        file: filePath,
         cmd: isNaN(line) ? undefined : { type: 'line_number', line: line - 1 },
         createFileIfNotExists: false,
       });
       void fileCommand.execute(vimState);
     }
+  }
+
+  async GetExistingFilePath(fileInfo: string[], vimState: VimState): Promise<string> {
+    const pathStr = fileInfo[1];
+    if (path.isAbsolute(pathStr)) {
+      return Uri.file(pathStr).fsPath;
+    }
+    let uri = Uri.file(path.resolve(path.dirname(vimState.document.uri.fsPath), pathStr));
+    if (await doesFileExist(uri)) {
+      return uri.fsPath;
+    }
+    const workspaceRoot = workspace.getWorkspaceFolder(vimState.document.uri)?.uri;
+    if (!workspaceRoot) {
+      throw VimError.CantFindFileInPath(pathStr);
+    }
+    uri = Uri.file(path.join(workspaceRoot.fsPath, pathStr));
+    if (await doesFileExist(uri)) {
+      return uri.fsPath;
+    }
+    const pathStrSegments = pathStr.split(/[\\/]/).filter(Boolean);
+    uri = Uri.joinPath(workspaceRoot, ...pathStrSegments);
+    if (await doesFileExist(uri)) {
+      // fixes https://github.com/VSCodeVim/Vim/issues/9902
+      return uri.path;
+    }
+    throw VimError.CantFindFileInPath(pathStr);
   }
 }
