@@ -93,6 +93,8 @@ export enum ErrorCode {
   CannotModifyExistingVariable = 995,
   CannotLock = 996,
   ListRequiredForArgument = 1211,
+  FolddRequiredArgument = 1212,
+  FolddUnsupportArgument = 1213,
 }
 
 export class VimError extends Error {
@@ -452,6 +454,15 @@ export class VimError extends Error {
   }
   static ListRequiredForArgument(idx: number): VimError {
     return new VimError(ErrorCode.ListRequiredForArgument, `List required for argument ${idx}`);
+  }
+  static FolddRequiredArgument(vimExCommand: string) {
+    return new VimError(ErrorCode.FolddRequiredArgument, `${vimExCommand} require argument`);
+  }
+  static FolddUnsupportArgument(vimExCommand: string, inner: string): VimError {
+    return new VimError(
+      ErrorCode.FolddUnsupportArgument,
+      `${vimExCommand} not support ${inner} yet`,
+    );
   }
 }
 
