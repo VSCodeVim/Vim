@@ -69,17 +69,37 @@ type RangePoint = {
 
 const folddCommandWhiteList = [SubstituteCommand, NormalCommand];
 
-export class ExFolddoopenCommand extends ExCommand {
-  public static readonly argParser: Parser<ExFolddoopenCommand> = optWhitespace
-    .then(all)
-    .map((inner) => new ExFolddoopenCommand(inner.trim()));
-
-  private readonly inner: string;
+abstract class AbstractExFolddCommand extends ExCommand {
+  abstract folddType: 'folddoopen' | 'folddoclosed';
+  readonly inner: string;
   private readonly commandName = 'vscode.executeFoldingRangeProvider';
 
-  constructor(innerCommand: string) {
+  constructor(inner: string) {
     super();
-    this.inner = innerCommand;
+    this.inner = inner;
+  }
+
+  private isLineVisible(editor: vscode.TextEditor, line: number): boolean {
+    return editor.visibleRanges.some((r) => r.start.line <= line && line <= r.end.line);
+  }
+
+  /**
+   * Heuristic (provider folds only): treat fold as "open" if its body line (start+1)
+   * is visible after ensuring the header line is in the viewport.
+   */
+  private async isProviderFoldOpen(editor: vscode.TextEditor, range: RangePoint): Promise<boolean> {
+    const headerLine = range.start;
+    const bodyLine = Math.min(range.start + 1, range.end);
+
+    editor.revealRange(
+      new vscode.Range(headerLine, 0, headerLine, 0),
+      vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+    );
+
+    // allow visibleRanges to update
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    return this.isLineVisible(editor, bodyLine);
   }
 
   private async getFold(vimState: VimState): Promise<RangePoint[]> {
@@ -98,17 +118,33 @@ export class ExFolddoopenCommand extends ExCommand {
 
   override async execute(vimState: VimState): Promise<void> {
     if (this.inner === undefined || this.inner === '') {
-      throw VimError.FolddRequiredArgument('folddoopen');
+      throw VimError.FolddRequiredArgument(this.folddType);
     }
     try {
       const { command } = ExCommandLine.parser.tryParse(this.inner);
       // command type check
       const isWhitelisted = folddCommandWhiteList.some((Cmd) => command instanceof Cmd);
       if (!isWhitelisted) {
-        throw VimError.FolddUnsupportArgument('folddoopen', this.inner);
+        throw VimError.FolddUnsupportArgument(this.folddType, this.inner);
       }
+      // Record cursor(s) so we can restore after running inner command(s)
+      const previousCursors = [...vimState.cursors];
       const rangePoints = await this.getFold(vimState);
       for (const range of rangePoints) {
+        // only apply to "open" provider folds (ignore manual folds)
+        const isOpen = await this.isProviderFoldOpen(vimState.editor, range);
+
+        // For `folddoopen`: only apply the inner command to folds that are currently open.
+        // If this fold is closed, skip it.
+        if (this.folddType === 'folddoopen' && !isOpen) {
+          continue;
+        }
+        // For `folddoclosed`: only apply the inner command to folds that are currently closed.
+        // If this fold is open, skip it.
+        if (this.folddType === 'folddoclosed' && isOpen) {
+          continue;
+        }
+
         // pass every fold area to line range
         await command.executeWithRange(
           vimState,
@@ -119,9 +155,33 @@ export class ExFolddoopenCommand extends ExCommand {
           ),
         );
       }
+      // Restore cursor(s)
+      vimState.cursors = previousCursors;
     } catch (err) {
-      throw VimError.FolddUnsupportArgument('folddoopen', this.inner);
+      throw VimError.FolddUnsupportArgument(this.folddType, this.inner);
     }
     return Promise.resolve();
+  }
+}
+
+export class ExFolddoopenCommand extends AbstractExFolddCommand {
+  override folddType: 'folddoopen' | 'folddoclosed' = 'folddoopen';
+  public static readonly argParser: Parser<ExFolddoopenCommand> = optWhitespace
+    .then(all)
+    .map((inner) => new ExFolddoopenCommand(inner.trim()));
+
+  constructor(innerCommand: string) {
+    super(innerCommand);
+  }
+}
+
+export class ExFolddoclosedCommand extends AbstractExFolddCommand {
+  override folddType: 'folddoopen' | 'folddoclosed' = 'folddoclosed';
+  public static readonly argParser: Parser<ExFolddoclosedCommand> = optWhitespace
+    .then(all)
+    .map((inner) => new ExFolddoclosedCommand(inner.trim()));
+
+  constructor(innerCommand: string) {
+    super(innerCommand);
   }
 }

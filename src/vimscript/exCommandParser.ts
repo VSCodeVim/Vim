@@ -14,6 +14,7 @@ import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
 import {
   ExFoldcloseCommand,
   ExFoldCommand,
+  ExFolddoclosedCommand,
   ExFolddoopenCommand,
   ExFoldopenCommand,
 } from '../cmd_line/commands/exFold';
@@ -251,7 +252,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['fo', 'ld'], succeed(new ExFoldCommand())],
   [['foldc', 'lose'], succeed(new ExFoldcloseCommand())],
   [['foldd', 'oopen'], ExFolddoopenCommand.argParser],
-  [['folddoc', 'losed'], undefined],
+  [['folddoc', 'losed'], ExFolddoclosedCommand.argParser],
   [['foldo', 'pen'], succeed(new ExFoldopenCommand())],
   [['for', ''], undefined],
   [['fu', 'nction'], undefined],
