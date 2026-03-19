@@ -92,15 +92,12 @@ abstract class AbstractExFolddCommand extends ExCommand {
   private async isProviderFoldOpen(editor: vscode.TextEditor, range: RangePoint): Promise<boolean> {
     const headerLine = range.start;
     const bodyLine = Math.min(range.start + 1, range.end);
-
     editor.revealRange(
       new vscode.Range(headerLine, 0, headerLine, 0),
       vscode.TextEditorRevealType.InCenterIfOutsideViewport,
     );
-
     // allow visibleRanges to update
     await new Promise((resolve) => setTimeout(resolve, 0));
-
     return this.isLineVisible(editor, bodyLine);
   }
 
