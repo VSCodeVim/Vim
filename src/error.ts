@@ -94,7 +94,7 @@ export enum ErrorCode {
   CannotLock = 996,
   ListRequiredForArgument = 1211,
   FolddRequiredArgument = 1212,
-  FolddUnsupportArgument = 1213,
+  FolddUnsupportedArgument = 1213,
 }
 
 export class VimError extends Error {
@@ -455,13 +455,16 @@ export class VimError extends Error {
   static ListRequiredForArgument(idx: number): VimError {
     return new VimError(ErrorCode.ListRequiredForArgument, `List required for argument ${idx}`);
   }
-  static FolddRequiredArgument(vimExCommand: string) {
-    return new VimError(ErrorCode.FolddRequiredArgument, `${vimExCommand} require argument`);
+  static FoldRequiredRange(vimExCommand: string = 'fold'): VimError {
+    return new VimError(ErrorCode.ArgumentRequired, `${vimExCommand} requires a range`);
   }
-  static FolddUnsupportArgument(vimExCommand: string, inner: string): VimError {
+  static FolddRequiredArgument(vimExCommand: string) {
+    return new VimError(ErrorCode.FolddRequiredArgument, `${vimExCommand} requires an argument`);
+  }
+  static FolddUnsupportedArgument(vimExCommand: string, inner: string): VimError {
     return new VimError(
-      ErrorCode.FolddUnsupportArgument,
-      `${vimExCommand} not support ${inner} yet`,
+      ErrorCode.FolddUnsupportedArgument,
+      `${vimExCommand} does not support ${inner}`,
     );
   }
 }

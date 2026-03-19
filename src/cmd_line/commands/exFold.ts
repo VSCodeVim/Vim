@@ -13,10 +13,11 @@ import { SubstituteCommand } from './substitute';
 
 abstract class AbstractExFoldCommand extends ExCommand {
   abstract commandName: string;
+  abstract direction: 'up' | 'down';
 
   override async execute(vimState: VimState): Promise<void> {
     vimState.recordedState.transformer.vscodeCommand(this.commandName, {
-      direction: 'up',
+      direction: this.direction,
       levels: 1,
     });
     await vimState.setCurrentMode(Mode.Normal);
@@ -27,7 +28,7 @@ abstract class AbstractExFoldCommand extends ExCommand {
 
     vimState.recordedState.transformer.vscodeCommand(this.commandName, {
       selectionLines: Array.from({ length: end.line - start.line + 1 }, (_, i) => start.line + i),
-      direction: 'up',
+      direction: this.direction,
       levels: 1,
     });
     await vimState.setCurrentMode(Mode.Normal);
@@ -38,8 +39,7 @@ export class ExFoldCommand extends ExCommand {
   readonly commandName = 'editor.createFoldingRangeFromSelection';
 
   override execute(vimState: VimState): Promise<void> {
-    // do nothing
-    return Promise.resolve();
+    throw VimError.FoldRequiredRange();
   }
 
   override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
@@ -56,10 +56,12 @@ export class ExFoldCommand extends ExCommand {
 
 export class ExFoldcloseCommand extends AbstractExFoldCommand {
   readonly commandName = 'editor.fold';
+  readonly direction = 'up' as const;
 }
 
 export class ExFoldopenCommand extends AbstractExFoldCommand {
   readonly commandName = 'editor.unfold';
+  readonly direction = 'down' as const;
 }
 
 type RangePoint = {
@@ -120,46 +122,141 @@ abstract class AbstractExFolddCommand extends ExCommand {
     if (this.inner === undefined || this.inner === '') {
       throw VimError.FolddRequiredArgument(this.folddType);
     }
+
+    let command: ExCommand;
     try {
-      const { command } = ExCommandLine.parser.tryParse(this.inner);
-      // command type check
-      const isWhitelisted = folddCommandWhiteList.some((Cmd) => command instanceof Cmd);
-      if (!isWhitelisted) {
-        throw VimError.FolddUnsupportArgument(this.folddType, this.inner);
+      const parsed = ExCommandLine.parser.tryParse(this.inner);
+      command = parsed.command;
+    } catch (err) {
+      // Only treat parse errors as "unsupported inner command".
+      throw VimError.FolddUnsupportedArgument(this.folddType, this.inner);
+    }
+
+    // command type check (not part of parse try/catch)
+    const isWhitelisted = folddCommandWhiteList.some((Cmd) => command instanceof Cmd);
+    if (!isWhitelisted) {
+      throw VimError.FolddUnsupportedArgument(this.folddType, this.inner);
+    }
+
+    const rangePoints = await this.getFold(vimState);
+    for (const range of rangePoints) {
+      const isOpen = await this.isProviderFoldOpen(vimState.editor, range);
+
+      // For `folddoopen`: only apply the inner command to folds that are currently open.
+      // If this fold is closed, skip it.
+      if (this.folddType === 'folddoopen' && !isOpen) {
+        continue;
       }
-      // Record cursor(s) so we can restore after running inner command(s)
-      const previousCursors = [...vimState.cursors];
-      const rangePoints = await this.getFold(vimState);
-      for (const range of rangePoints) {
-        // only apply to "open" provider folds (ignore manual folds)
-        const isOpen = await this.isProviderFoldOpen(vimState.editor, range);
+      // For `folddoclosed`: only apply the inner command to folds that are currently closed.
+      // If this fold is open, skip it.
+      if (this.folddType === 'folddoclosed' && isOpen) {
+        continue;
+      }
 
-        // For `folddoopen`: only apply the inner command to folds that are currently open.
-        // If this fold is closed, skip it.
-        if (this.folddType === 'folddoopen' && !isOpen) {
-          continue;
-        }
-        // For `folddoclosed`: only apply the inner command to folds that are currently closed.
-        // If this fold is open, skip it.
-        if (this.folddType === 'folddoclosed' && isOpen) {
-          continue;
-        }
+      // pass every fold area to line range
+      await command.executeWithRange(
+        vimState,
+        new LineRange(
+          new Address({ type: 'number', num: range.start + 1 }),
+          ',',
+          new Address({ type: 'number', num: range.end + 1 }),
+        ),
+      );
+    }
+    return Promise.resolve();
+  }
 
-        // pass every fold area to line range
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    if (this.inner === undefined || this.inner === '') {
+      throw VimError.FolddRequiredArgument(this.folddType);
+    }
+
+    let command: ExCommand;
+    try {
+      const parsed = ExCommandLine.parser.tryParse(this.inner);
+      command = parsed.command;
+    } catch (err) {
+      // Only treat parse errors as "unsupported inner command".
+      throw VimError.FolddUnsupportedArgument(this.folddType, this.inner);
+    }
+
+    // command type check
+    const isWhitelisted = folddCommandWhiteList.some((Cmd) => command instanceof Cmd);
+    if (!isWhitelisted) {
+      throw VimError.FolddUnsupportedArgument(this.folddType, this.inner);
+    }
+
+    const { start: outerStart, end: outerEnd } = range.resolve(vimState);
+    if (outerStart > outerEnd) {
+      return Promise.resolve();
+    }
+
+    // Coverage diff array over [outerStart, outerEnd] (0-based, inclusive).
+    // For each eligible fold intersection [a,b], we do:
+    //   diff[a] += 1; diff[b+1] -= 1
+    // Then during the emit scan:
+    //   cover(i) = sum(diff[0..i])
+    // cover(i) > 0 means line (outerStart+i) belongs to the union of eligible intersections.
+    const len = outerEnd - outerStart + 1;
+    const diff = new Array<number>(len + 1).fill(0);
+
+    const rangePoints = await this.getFold(vimState);
+    for (const fold of rangePoints) {
+      // Quick intersect check first.
+      const interStart = Math.max(fold.start, outerStart);
+      const interEnd = Math.min(fold.end, outerEnd);
+      if (interStart > interEnd) {
+        continue;
+      }
+
+      const isOpen = await this.isProviderFoldOpen(vimState.editor, fold);
+
+      if (this.folddType === 'folddoopen' && !isOpen) {
+        continue;
+      }
+      if (this.folddType === 'folddoclosed' && isOpen) {
+        continue;
+      }
+
+      // Add this intersection [interStart, interEnd] into the union coverage.
+      diff[interStart - outerStart] += 1;
+      diff[interEnd - outerStart + 1] -= 1; // +1 makes it inclusive
+    }
+
+    // Emit merged segments (maximal contiguous ranges) where cover > 0.
+    // Each segment is executed once via command.executeWithRange.
+    let cover = 0;
+    let segStart: number | undefined;
+    for (let i = 0; i < len; i++) {
+      cover += diff[i];
+
+      if (cover > 0 && segStart === undefined) {
+        segStart = outerStart + i;
+      } else if (cover <= 0 && segStart !== undefined) {
+        const segEnd = outerStart + i - 1;
         await command.executeWithRange(
           vimState,
           new LineRange(
-            new Address({ type: 'number', num: range.start + 1 }),
+            new Address({ type: 'number', num: segStart + 1 }),
             ',',
-            new Address({ type: 'number', num: range.end + 1 }),
+            new Address({ type: 'number', num: segEnd + 1 }),
           ),
         );
+        segStart = undefined;
       }
-      // Restore cursor(s)
-      vimState.cursors = previousCursors;
-    } catch (err) {
-      throw VimError.FolddUnsupportArgument(this.folddType, this.inner);
     }
+
+    if (segStart !== undefined) {
+      await command.executeWithRange(
+        vimState,
+        new LineRange(
+          new Address({ type: 'number', num: segStart + 1 }),
+          ',',
+          new Address({ type: 'number', num: outerEnd + 1 }),
+        ),
+      );
+    }
+
     return Promise.resolve();
   }
 }
