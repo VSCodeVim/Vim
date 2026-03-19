@@ -224,11 +224,39 @@ export class ExitInsertMode extends BaseCommand {
       vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
     }
 
+    const lastActionBeforeEsc =
+      vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2];
+    const hasPendingContentChanges = vimState.historyTracker.currentContentChanges.length > 0;
+    const hasRecordedContentChange = vimState.recordedState.actionsRun.some(
+      (action) => action instanceof DocumentContentChangeAction,
+    );
+    const insertSessionHasNoRecordedEditAction =
+      lastActionBeforeEsc instanceof Insert ||
+      lastActionBeforeEsc instanceof Append ||
+      lastActionBeforeEsc instanceof InsertAtLineBegin ||
+      lastActionBeforeEsc instanceof InsertAtLineEnd ||
+      lastActionBeforeEsc instanceof InsertAfterFirstWhitespaceOnLine ||
+      lastActionBeforeEsc instanceof InsertAtLastChange ||
+      lastActionBeforeEsc instanceof InsertAbove ||
+      lastActionBeforeEsc instanceof InsertBelow;
+    if (
+      hasPendingContentChanges &&
+      !hasRecordedContentChange &&
+      insertSessionHasNoRecordedEditAction
+    ) {
+      const firstChange = vimState.historyTracker.currentContentChanges[0];
+      const contentChange = new DocumentContentChangeAction(firstChange.range.start);
+      contentChange.addChanges(
+        vimState.historyTracker.currentContentChanges,
+        vimState.cursorStopPosition,
+      );
+      vimState.recordedState.actionsRun.splice(-1, 0, contentChange);
+      vimState.historyTracker.currentContentChanges = [];
+    }
+
     // only remove leading spaces inserted by vscode.
     // vscode only inserts them when user enter a new line,
     // ie, o/O in Normal mode or \n in Insert mode.
-    const lastActionBeforeEsc =
-      vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2];
     if (
       vimState.document.languageId !== 'plaintext' &&
       (lastActionBeforeEsc instanceof InsertBelow ||
