@@ -252,6 +252,23 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
             if (this.vimState.currentMode === Mode.Visual) {
+              const isEol =
+                e.textEditor.document?.lineAt(selection.active.line).text.length ===
+                  selection.active.character;
+              const lastSelection = this.vimState.lastVisualSelection;
+              const previousVisualSelectionIsFromLastCharToEol =
+                lastSelection &&
+                lastSelection.start.character === selection.active.character - 1 &&
+                lastSelection.end.character === selection.active.character;
+              const visualModeWasEnteredByPreviousSelectionChangeAndShouldNotHaveBeen =
+                isEol && previousVisualSelectionIsFromLastCharToEol;
+              if (visualModeWasEnteredByPreviousSelectionChangeAndShouldNotHaveBeen) {
+                // Fixes mouseclick at eol when normal mode sometimes triggers
+                // visual mode. Issue https://github.com/VSCodeVim/Vim/issues/9887
+                await this.setCurrentMode(Mode.Normal);
+                return;
+              }
+
               Logger.trace('Updating Visual Selection!');
               this.vimState.cursor = Cursor.fromSelection(selection);
               this.updateView({ drawSelection: false, revealRange: false });
