@@ -16,6 +16,7 @@ import {
 } from '../vimscript/parserUtils';
 import {
   Dot,
+  ExecuteGlobalTransformation,
   ExecuteNormalTransformation,
   InsertTextVSCodeTransformation,
   TextTransformations,
@@ -243,6 +244,10 @@ export async function executeTransformations(
         await doExecuteNormal(modeHandler, transformation);
         break;
 
+      case 'executeGlobal':
+        await doExecuteGlobal(modeHandler, transformation);
+        break;
+
       case 'vscodeCommand':
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         await vscode.commands.executeCommand(transformation.command, ...transformation.args);
@@ -345,4 +350,61 @@ const doExecuteNormal = async (
     }
   }
   vimState.normalCommandState = NormalCommandState.Finished;
+};
+
+const doExecuteGlobal = async (
+  modeHandler: IModeHandler,
+  transformation: ExecuteGlobalTransformation,
+) => {
+  const vimState = modeHandler.vimState;
+  const { pattern, invert, commandText, range } = transformation;
+
+  const { start, end } = range.resolve(vimState);
+
+  // First pass: collect all matching line numbers
+  const matchingLines: number[] = [];
+  for (let line = start; line <= end; line++) {
+    const lineText = vimState.document.lineAt(line).text;
+    pattern.regex.lastIndex = 0;
+    const matches = pattern.regex.test(lineText);
+    if (matches !== invert) {
+      matchingLines.push(line);
+    }
+  }
+
+  if (matchingLines.length === 0) {
+    return;
+  }
+
+  // Default sub-command is :p (print) when none is specified
+  const cmdText = commandText.trim() || 'p';
+  const cmdKeys = (':' + cmdText + '\n').split('');
+
+  // Second pass: execute sub-command on each matching line
+  vimState.recordedState = new RecordedState();
+  await vimState.setCurrentMode(Mode.Normal);
+
+  let lineOffset = 0;
+  for (const originalLine of matchingLines) {
+    const currentLine = originalLine + lineOffset;
+    if (currentLine < 0 || currentLine >= vimState.document.lineCount) {
+      continue;
+    }
+
+    const lineCountBefore = vimState.document.lineCount;
+
+    vimState.cursorStopPosition = vimState.cursorStartPosition = new vscode.Position(
+      currentLine,
+      0,
+    );
+
+    await modeHandler.handleMultipleKeyEvents(cmdKeys);
+
+    // Ensure we return to Normal mode after each sub-command
+    if (vimState.currentMode !== Mode.Normal) {
+      await modeHandler.handleKeyEvent('<Esc>');
+    }
+
+    lineOffset += vimState.document.lineCount - lineCountBefore;
+  }
 };
