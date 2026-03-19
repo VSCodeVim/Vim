@@ -7,6 +7,7 @@ import {
   TextObject,
 } from '../../textobject/textobject';
 import { WordType } from '../../textobject/word';
+import { isValidSurroundChar } from '../../util/symmetricPairs';
 import { isIMovement } from '../baseMotion';
 import {
   MoveAroundBacktick,
@@ -16,6 +17,7 @@ import {
   MoveAroundParentheses,
   MoveAroundSingleQuotes,
   MoveAroundSquareBracket,
+  MoveAroundSymmetricPair,
   MoveAroundTag,
   MoveFullWordBegin,
   MoveInsideCharacter,
@@ -43,6 +45,21 @@ type TagReplacement = {
   tag: string;
   /** when  changing tag to tag, do we keep attributes? default: yes */
   keepAttributes: boolean;
+};
+
+type PairingBehavior = {
+  left: string;
+  right: string;
+  /** do we consume space on the edges? "(" vs ")" */
+  removeSpace: boolean;
+  movement: () =>
+    | MoveInsideCharacter
+    | MoveQuoteMatch
+    | MoveAroundTag
+    | MoveAroundSymmetricPair
+    | TextObject;
+  /** typically to extend an inner  word. with *foo*, from "foo" to "*foo*" */
+  extraChars?: number;
 };
 
 export interface SurroundState {
@@ -196,7 +213,7 @@ abstract class CommandSurround extends BaseCommand {
     return (
       configuration.surround &&
       super.doesActionApply(vimState, keysPressed) &&
-      SurroundHelper.edgePairings[target] !== undefined
+      SurroundHelper.isValidTarget(target)
     );
   }
 }
@@ -318,15 +335,20 @@ class CommandSurroundAddSurrounding extends BaseCommand {
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const replacement = this.keysPressed[this.keysPressed.length - 1];
 
-    if (!vimState.surround || !SurroundHelper.edgePairings[replacement]) {
+    if (!vimState.surround) {
+      await vimState.setCurrentMode(Mode.Normal);
+      return;
+    }
+
+    vimState.surround.replacement = replacement;
+
+    if (!SurroundHelper.getPairingBehavior(vimState.surround)) {
       // cant surround, abort.
       // this typically handles, when last keypress was wrong and not a valid surrounding
       vimState.surround = undefined;
       await vimState.setCurrentMode(Mode.Normal);
       return;
     }
-
-    vimState.surround.replacement = replacement;
 
     await SurroundHelper.ExecuteSurround(vimState);
   }
@@ -447,18 +469,14 @@ export class CommandSurroundAddSurroundingFunction extends BaseCommand {
 // following are static internal helper functions
 // top level helper is ExecuteSurround, which is called from exec and does the actual text transformations
 class SurroundHelper {
-  /** a map which holds for each target key: inserted text + implementation helper */
-  static edgePairings: {
-    [key: string]: {
-      left: string;
-      right: string;
-      /** do we consume space on the edges? "(" vs ")" */
-      removeSpace: boolean;
-      movement: () => MoveInsideCharacter | MoveQuoteMatch | MoveAroundTag | TextObject;
-      /** typically to extend an inner  word. with *foo*, from "foo" to "*foo*" */
-      extraChars?: number;
-    };
-  } = {
+  /** Check if a character is a valid target for delete/change operations (has a movement defined) */
+  public static isValidTarget(target: string): boolean {
+    return this.edgePairings[target] !== undefined || isValidSurroundChar(target);
+  }
+
+  /** a map which holds for each target key: inserted text + implementation
+   * helper */
+  private static edgePairings: { [key: string]: PairingBehavior } = {
     // helpful linter is helpful :-D
     '(': {
       left: '( ',
@@ -514,7 +532,6 @@ class SurroundHelper {
     B: { left: '{', right: '}', removeSpace: false, movement: () => new MoveAroundCurlyBrace() },
     a: { left: '<', right: '>', removeSpace: false, movement: () => new MoveAroundCaret() },
     t: { left: '', right: '', removeSpace: false, movement: () => new MoveAroundTag() },
-    _: { left: '_', right: '_', removeSpace: false, movement: () => new SelectInnerWord() },
   };
 
   /** returns two ranges (for left and right replacement) for our surround target (X in dsX, csXy) relative to position */
@@ -534,7 +551,19 @@ class SurroundHelper {
     if (!vimState.surround || !vimState.surround.target) {
       return undefined;
     }
-    const target = this.edgePairings[vimState.surround.target];
+    const targetChar = vimState.surround.target;
+    let target = this.edgePairings[targetChar];
+
+    // For non-edgePairings non-alphanumeric chars, create a symmetric pair matcher
+    if (!target && isValidSurroundChar(targetChar)) {
+      target = {
+        left: vimState.surround.replacement,
+        right: vimState.surround.replacement,
+        removeSpace: false,
+        movement: () => new MoveAroundSymmetricPair(targetChar),
+      };
+    }
+
     if (!target) {
       return undefined;
     }
@@ -616,6 +645,46 @@ class SurroundHelper {
     return vimState.surround.target === 't' ? getAdjustedRangesForTag() : getAdjustedRanges();
   }
 
+  /**
+   * Finds the relevant matching behavior for a given replacement character and
+   * operation, or throws an error if none is found.
+   *
+   * Surround behavior is decided in the following order:
+   *
+   * 1. Replacement defined in {@link SurroundHelper.edgePairings}
+   * 2. Deletion of surrounding character, regardless of it being explicitly defined
+   * 3. The {@param replacement}, if it is not alphabetic
+   * 4. No defined behavior, throw error
+   */
+  public static getPairingBehavior({
+    operator,
+    replacement,
+  }: SurroundState): PairingBehavior | undefined {
+    const definedReplacement = this.edgePairings[replacement];
+    if (definedReplacement !== undefined) {
+      return definedReplacement;
+    } else if (operator === 'delete') {
+      return undefined;
+    } else if (replacement && new RegExp(/^[^A-Za-z]$/).test(replacement)) {
+      // Vim Surround defines alphabetic characters as those matching the `\a`
+      // pattern.
+      //
+      // ref: https://github.com/tpope/vim-surround/blob/3d188ed2113431cf8dac77be61b842acb64433d9/plugin/surround.vim#L247-L249
+      //
+      // This equates to `[A-Za-z]` in ECMAScript per the VimScript
+      // documentation. See "PREDEFINED RANGES" section of:
+      // https://vimhelp.org/usr_27.txt.html#27.6
+      return {
+        left: replacement,
+        right: replacement,
+        movement: () => new MoveAroundSymmetricPair(replacement),
+        removeSpace: false,
+      };
+    } else {
+      throw new Error('replacement missing in pairs');
+    }
+  }
+
   /** executes our prepared surround changes */
   public static async ExecuteSurround(vimState: VimState): Promise<void> {
     const surroundState = vimState.surround;
@@ -623,11 +692,7 @@ class SurroundHelper {
       return;
     }
 
-    const replacement = this.edgePairings[surroundState.replacement];
-    // undefined allowed only for delete operator
-    if (!replacement && surroundState.operator !== 'delete') {
-      throw new Error('replacement missing in pairs');
-    }
+    const replacement = this.getPairingBehavior(surroundState);
     // handle special case: cstt, replace only tag name
     if (surroundState.target === 't' && surroundState.tag && surroundState.tag.keepAttributes) {
       for (const { leftTagName, rightTagName } of surroundState.edges) {
@@ -649,14 +714,14 @@ class SurroundHelper {
             ? '<' + surroundState.tag.tag + '>' + optNewline
             : surroundState.function
               ? surroundState.function + optNewline
-              : replacement.left + optNewline;
+              : replacement!.left + optNewline;
 
       const rightFixed =
         surroundState.operator === 'delete'
           ? ''
           : surroundState.tag
             ? optNewline + '</' + SurroundHelper.trimAttributes(surroundState.tag.tag) + '>'
-            : optNewline + replacement.right;
+            : optNewline + replacement!.right;
 
       for (const { leftEdge, rightEdge, cursorIndex } of surroundState.edges) {
         vimState.recordedState.transformer.addTransformation({
