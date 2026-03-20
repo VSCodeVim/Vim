@@ -207,10 +207,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (e.selections.length !== this.vimState.cursors.length || this.vimState.isMultiCursor) &&
       this.vimState.currentMode !== Mode.VisualBlock
     ) {
-      const allowedModes = [Mode.Normal];
-      if (!isSnippetSelectionChange()) {
-        allowedModes.push(Mode.Insert, Mode.Replace);
-      }
+      const allowedModes = isSnippetSelectionChange() ? [Mode.Normal] : [Mode.Normal, Mode.Replace];
+
       // Number of selections changed, make sure we know about all of them still
       this.vimState.cursors = e.textEditor.selections.map(
         (sel) =>
