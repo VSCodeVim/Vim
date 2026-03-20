@@ -5,14 +5,14 @@ import { Cursor } from '../../common/motion/cursor';
 import { lineCompletionProvider } from '../../completion/lineCompletionProvider';
 import { VimError } from '../../error';
 import { RecordedState } from '../../state/recordedState';
-import { VimState } from '../../state/vimState';
+import { QueuedInsertText, VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { getCursorsAfterSync, isHighSurrogate, isLowSurrogate } from '../../util/util';
 import { BaseMovement } from '../baseMotion';
 import { MoveDown, MoveLeft, MoveRight, MoveUp } from '../motion';
 import { PositionDiff } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
-import { Mode } from './../../mode/mode';
+import { Mode, NormalCommandState } from './../../mode/mode';
 import { Register, RegisterMode } from './../../register/register';
 import { TextEditor } from './../../textEditor';
 import { BaseCommand, RegisterAction } from './../base';
@@ -289,6 +289,19 @@ export class ExitInsertMode extends BaseCommand {
       vimState.cursors = [vimState.cursor];
       vimState.isFakeMultiCursor = false;
     }
+
+    if (vimState.normalCommandState === NormalCommandState.Queuing && vimState.queuedInsertText) {
+      const isFirst = vimState.queuedTransformations.length === 0;
+      const text = vimState.queuedInsertText.texts.join('');
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertText',
+        text,
+        position: vimState.queuedInsertText.cursorPos,
+        manuallySetCursorPositions: true,
+        diff: isFirst ? PositionDiff.offset({ line: 0, character: text.length }) : undefined,
+      });
+      vimState.queuedInsertText = undefined;
+    }
   }
 }
 
@@ -439,11 +452,19 @@ export class TypeInInsertMode extends BaseCommand {
       }
     }
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'insertTextVSCode',
-      text,
-      isMultiCursor: vimState.isMultiCursor,
-    });
+    if (vimState.normalCommandState === NormalCommandState.Queuing) {
+      if (vimState.queuedInsertText) {
+        vimState.queuedInsertText.texts.push(text);
+      } else {
+        vimState.queuedInsertText = new QueuedInsertText([text], vimState.cursorStartPosition);
+      }
+    } else {
+      vimState.recordedState.transformer.addTransformation({
+        type: 'insertTextVSCode',
+        text,
+        isMultiCursor: vimState.isMultiCursor,
+      });
+    }
   }
 
   public override toString(): string {
