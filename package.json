@@ -1219,7 +1219,7 @@
     "@types/lodash": "4.17.23",
     "@types/minimatch": "5.1.2",
     "@types/mocha": "10.0.10",
-    "@types/node": "22.19.1",
+    "@types/node": "22.19.15",
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "17.0.4",
     "@types/vscode": "1.74.0",
