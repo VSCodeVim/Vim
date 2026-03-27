@@ -76,7 +76,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public focusChanged = false;
 
-  private searchDecorationCacheKey: { searchString: string; documentVersion: number } | undefined;
+  private searchDecorationCacheKey:
+    | { searchString: string; matchIndex: number | undefined }
+    | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
   private readonly handlerMap: IModeHandlerMap;
@@ -1259,20 +1261,31 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (
           cacheKey &&
           cacheKey.searchString === globalState.searchState.searchString &&
-          cacheKey.documentVersion === this.vimState.document.version
+          cacheKey.matchIndex === globalState.searchState.nextMatchIndex
         ) {
           // The decorations are fine as-is, don't waste time re-calculating
           this.searchDecorationCacheKey = cacheKey;
           return;
         }
-        // If there are no decorations from the command line, get decorations for previous SearchState
-        decorations = getDecorationsForSearchMatchRanges(
-          globalState.searchState.getMatchRanges(this.vimState),
-          this.vimState.document,
-        );
+
+        // Update decorations highlighting the current match
+        if (globalState.searchState.nextMatchIndex !== undefined) {
+          decorations = getDecorationsForSearchMatchRanges(
+            globalState.searchState.getMatchRanges(this.vimState),
+            this.vimState.document,
+            globalState.searchState.nextMatchIndex,
+          );
+        } else {
+          // No next match defined, update decorations without a currentMatchIndex
+          decorations = getDecorationsForSearchMatchRanges(
+            globalState.searchState.getMatchRanges(this.vimState),
+            this.vimState.document,
+          );
+        }
+
         this.searchDecorationCacheKey = {
           searchString: globalState.searchState.searchString,
-          documentVersion: this.vimState.document.version,
+          matchIndex: globalState.searchState.nextMatchIndex,
         };
       }
     }
