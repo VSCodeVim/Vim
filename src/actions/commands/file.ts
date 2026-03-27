@@ -79,7 +79,7 @@ class OpenFile extends BaseCommand {
 
     const fileInfo = fullFilePath.match(/(.*?(?=:[0-9]+)|.*):?([0-9]*)$/);
     if (fileInfo) {
-      const filePath = await this.GetExistingFilePath(fileInfo, vimState);
+      const filePath = await this.getExistingFilePath(fileInfo, vimState);
 
       const line = parseInt(fileInfo[2], 10);
       const fileCommand = new FileCommand({
@@ -94,7 +94,7 @@ class OpenFile extends BaseCommand {
     }
   }
 
-  async GetExistingFilePath(fileInfo: string[], vimState: VimState): Promise<string> {
+  async getExistingFilePath(fileInfo: string[], vimState: VimState): Promise<string> {
     const pathStr = fileInfo[1];
     if (path.isAbsolute(pathStr)) {
       return Uri.file(pathStr).fsPath;
