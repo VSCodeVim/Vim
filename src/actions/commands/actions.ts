@@ -159,7 +159,7 @@ class CommandEsc extends BaseCommand {
       vimState.surround = undefined;
 
       if (vimState.isMultiCursor) {
-        vimState.cursors = [vimState.cursors[0]];
+        vimState.cursors = [vimState.cursor];
       } else {
         // If there's nothing to do on the vim side, we might as well call some
         // of vscode's default "close notification" actions. I think we should
@@ -1011,12 +1011,11 @@ class ToggleCaseAndMoveForward extends BaseCommand {
         : position.getSurrogateAwareRight(line, count),
     );
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
+    vimState.recordedState.transformer.replace(
       range,
-      text: this.toggleCase(vimState.document.getText(range)),
-      diff: PositionDiff.exactPosition(range.end),
-    });
+      this.toggleCase(vimState.document.getText(range)),
+      PositionDiff.exactPosition(range.end),
+    );
   }
 }
 

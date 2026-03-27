@@ -155,11 +155,10 @@ export class RetabCommand extends ExCommand {
     const replacedContent = replacedLines.join('\n');
     const lastLineLength = originalLines[originalLines.length - 1].length;
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      range: new Range(startLine, 0, endLine, lastLineLength),
-      text: replacedContent,
-    });
+    vimState.recordedState.transformer.replace(
+      new Range(startLine, 0, endLine, lastLineLength),
+      replacedContent,
+    );
 
     if (this.arguments.newTabstop) {
       const setTabstop = new SetCommand({

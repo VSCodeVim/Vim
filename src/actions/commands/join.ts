@@ -81,24 +81,25 @@ class ActionJoin extends BaseCommand {
       }
     }
 
-    const deleteStartPosition = new Position(startLineNumber, 0);
-    const deleteEndPosition = new Position(endLineNumber, TextEditor.getLineLength(endLineNumber));
+    const deleteRange = new Range(
+      new Position(startLineNumber, 0),
+      new Position(endLineNumber, TextEditor.getLineLength(endLineNumber)),
+    );
 
-    if (!deleteStartPosition.isEqual(deleteEndPosition)) {
+    if (!deleteRange.start.isEqual(deleteRange.end)) {
       if (startPosition.isEqual(position)) {
-        vimState.recordedState.transformer.addTransformation({
-          type: 'replaceText',
-          text: trimmedLinesContent,
-          range: new Range(deleteStartPosition, deleteEndPosition),
-          diff: PositionDiff.offset({
+        vimState.recordedState.transformer.replace(
+          new Range(deleteRange.start, deleteRange.end),
+          trimmedLinesContent,
+          PositionDiff.offset({
             character: trimmedLinesContent.length - columnDeltaOffset - position.character,
           }),
-        });
+        );
       } else {
         vimState.recordedState.transformer.addTransformation({
           type: 'replaceText',
           text: trimmedLinesContent,
-          range: new Range(deleteStartPosition, deleteEndPosition),
+          range: new Range(deleteRange.start, deleteRange.end),
           manuallySetCursorPositions: true,
         });
 
@@ -202,14 +203,13 @@ class ActionJoinNoWhitespace extends BaseCommand {
     const newCursorColumn =
       joinedText.length - vimState.document.lineAt(replaceRange.end).text.length;
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      range: replaceRange,
-      text: joinedText,
-      diff: PositionDiff.exactCharacter({
+    vimState.recordedState.transformer.replace(
+      replaceRange,
+      joinedText,
+      PositionDiff.exactCharacter({
         character: newCursorColumn,
       }),
-    });
+    );
   }
 }
 

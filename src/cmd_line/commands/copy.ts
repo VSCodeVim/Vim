@@ -61,7 +61,7 @@ export class CopyCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    const line = vimState.cursors[0].stop.line;
+    const line = vimState.cursor.stop.line;
     this.copyLines(vimState, line, line);
   }
 
