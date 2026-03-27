@@ -978,6 +978,11 @@
           "description": "If enabled, dragging with the mouse activates Visual mode.",
           "default": true
         },
+        "vim.mouseSelectionGoesIntoVisualModeFromInsert": {
+          "type": "boolean",
+          "markdownDescription": "If enabled, dragging with the mouse activates Visual mode even when starting from Insert mode. Requires `vim.mouseSelectionGoesIntoVisualMode` to be true.",
+          "default": false
+        },
         "vim.disableExtension": {
           "type": "boolean",
           "description": "Disables the VSCodeVim extension. The extension will continue to be loaded and activated, but Vim functionality will be disabled.",
