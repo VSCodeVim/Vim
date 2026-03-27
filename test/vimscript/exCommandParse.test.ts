@@ -6,6 +6,13 @@ import { DeleteCommand } from '../../src/cmd_line/commands/delete';
 import { DigraphsCommand } from '../../src/cmd_line/commands/digraph';
 import { EchoCommand } from '../../src/cmd_line/commands/echo';
 import { EvalCommand } from '../../src/cmd_line/commands/eval';
+import {
+  ExFoldcloseCommand,
+  ExFoldCommand,
+  ExFolddoclosedCommand,
+  ExFolddoopenCommand,
+  ExFoldopenCommand,
+} from '../../src/cmd_line/commands/exFold';
 import { FileCommand } from '../../src/cmd_line/commands/file';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
@@ -812,6 +819,25 @@ suite('Ex command parsing', () => {
       new VsCodeCommand('editor.action.commentLine'),
     );
     exParseFails(':vscode', VimError.ArgumentRequired());
+  });
+
+  suite(':fold', () => {
+    exParseTest(':fold', new ExFoldCommand());
+    exParseTest(':fo', new ExFoldCommand());
+
+    exParseTest(':foldclose', new ExFoldcloseCommand());
+    exParseTest(':foldc', new ExFoldcloseCommand());
+
+    exParseTest(':foldopen', new ExFoldopenCommand());
+    exParseTest(':foldo', new ExFoldopenCommand());
+  });
+
+  suite(':folddo[open|closed]', () => {
+    exParseTest(':folddoopen s/foo/bar/g', new ExFolddoopenCommand('s/foo/bar/g'));
+    exParseTest(':foldd s/foo/bar/g', new ExFolddoopenCommand('s/foo/bar/g'));
+
+    exParseTest(':folddoclosed s/foo/bar/g', new ExFolddoclosedCommand('s/foo/bar/g'));
+    exParseTest(':folddoc s/foo/bar/g', new ExFolddoclosedCommand('s/foo/bar/g'));
   });
 
   suite(':y[ank]', () => {
