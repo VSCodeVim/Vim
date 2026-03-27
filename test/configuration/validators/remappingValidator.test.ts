@@ -244,4 +244,58 @@ suite('Remapping Validator', () => {
     assert.strictEqual(configuration.commandLineModeKeyBindingsMap.size, 2);
     assert.strictEqual(configuration.operatorPendingModeKeyBindingsMap.size, 2);
   });
+
+  test('command remappings accept when clauses', async () => {
+    const testConfiguration = new Configuration();
+    testConfiguration.normalModeKeyBindings = [
+      {
+        before: ['g', 'c'],
+        commands: [
+          {
+            command: 'workbench.action.files.save',
+            when: 'vim.active && vim.mode == "Normal"',
+          },
+        ],
+      },
+    ];
+    testConfiguration.normalModeKeyBindingsNonRecursive = [];
+    testConfiguration.insertModeKeyBindings = [];
+    testConfiguration.insertModeKeyBindingsNonRecursive = [];
+    testConfiguration.visualModeKeyBindings = [];
+    testConfiguration.visualModeKeyBindingsNonRecursive = [];
+
+    const remappingValidator = new RemappingValidator();
+    const validationResult = await remappingValidator.validate(testConfiguration);
+
+    assert.strictEqual(validationResult.numErrors, 0);
+    assert.strictEqual(validationResult.hasError, false);
+    assert.strictEqual(testConfiguration.normalModeKeyBindingsMap.size, 1);
+  });
+
+  test('command remappings reject invalid when clauses', async () => {
+    const testConfiguration = new Configuration();
+    testConfiguration.normalModeKeyBindings = [
+      {
+        before: ['g', 'c'],
+        commands: [
+          {
+            command: 'workbench.action.files.save',
+            when: 'vim.active && (',
+          },
+        ],
+      },
+    ];
+    testConfiguration.normalModeKeyBindingsNonRecursive = [];
+    testConfiguration.insertModeKeyBindings = [];
+    testConfiguration.insertModeKeyBindingsNonRecursive = [];
+    testConfiguration.visualModeKeyBindings = [];
+    testConfiguration.visualModeKeyBindingsNonRecursive = [];
+
+    const remappingValidator = new RemappingValidator();
+    const validationResult = await remappingValidator.validate(testConfiguration);
+
+    assert.strictEqual(validationResult.numErrors, 1);
+    assert.strictEqual(validationResult.hasError, true);
+    assert.strictEqual(testConfiguration.normalModeKeyBindingsMap.size, 0);
+  });
 });
