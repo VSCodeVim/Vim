@@ -44,6 +44,7 @@ export type ITabCommandArguments =
       bang: boolean;
       cmd?: FileCmd;
       count?: number;
+      file?: string;
     }
   | {
       type: TabCommandType.Close | TabCommandType.Only;
@@ -126,6 +127,14 @@ export class TabCommand extends ExCommand {
         file,
       });
     }),
+    next: seq(
+      bangParser,
+      optWhitespace.then(alt<number | string>(numberParser, fileNameParser)).fallback(undefined),
+    ).map(([bang, arg]) => {
+      const count = typeof arg === 'number' ? arg : undefined;
+      const file = typeof arg === 'string' ? arg : undefined;
+      return new TabCommand({ type: TabCommandType.Next, bang, count, file });
+    }),
     tabmove: optWhitespace
       .then(
         seq(
@@ -180,6 +189,37 @@ export class TabCommand extends ExCommand {
         }
         break;
       case TabCommandType.Next:
+        if (this.arguments.file) {
+          const isAbsolute = path.isAbsolute(this.arguments.file);
+          const currentFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
+          const isInWorkspace =
+            vscode.workspace.workspaceFolders !== undefined &&
+            vscode.workspace.workspaceFolders.length > 0;
+
+          let toOpenPath: string;
+          if (isAbsolute) {
+            toOpenPath = this.arguments.file;
+          } else if (isInWorkspace) {
+            const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
+            if (currentFilePath.startsWith(workspacePath)) {
+              toOpenPath = path.join(path.dirname(currentFilePath), this.arguments.file);
+            } else {
+              toOpenPath = path.join(workspacePath, this.arguments.file);
+            }
+          } else {
+            toOpenPath = path.join(path.dirname(currentFilePath), this.arguments.file);
+          }
+
+          let uri = vscode.Uri.file(toOpenPath);
+          try {
+            await vscode.workspace.fs.stat(uri);
+          } catch {
+            uri = uri.with({ scheme: 'untitled' });
+          }
+          await vscode.commands.executeCommand('vscode.open', uri);
+          break;
+        }
+
         if (this.arguments.count !== undefined && this.arguments.count <= 0) {
           break;
         }
