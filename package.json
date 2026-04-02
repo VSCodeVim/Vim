@@ -1248,7 +1248,7 @@
     "prettier": "3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "sinon": "20.0.0",
-    "ts-loader": "9.5.4",
+    "ts-loader": "9.5.7",
     "typescript": "5.9.3",
     "webpack": "5.105.4",
     "webpack-cli": "7.0.2",
