@@ -1,17 +1,17 @@
 import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
+import { isLiteralMode, unmapLiteral } from '../configuration/langmap';
 import { Notation } from '../configuration/notation';
-import { ActionType, IBaseAction } from './types';
 import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
-import { isLiteralMode, unmapLiteral } from '../configuration/langmap';
+import { ActionType, IBaseAction } from './types';
 
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;
 
-  public name = '';
+  public readonly name: string | undefined;
 
   /**
    * If true, the cursor position will be added to the jump list on completion.
@@ -202,20 +202,17 @@ export abstract class BaseCommand extends BaseAction {
       return;
     }
 
+    const cursorsToIterateOver = [...vimState.cursors].sort((a, b) =>
+      a.start.line > b.start.line ||
+      (a.start.line === b.start.line && a.start.character > b.start.character)
+        ? 1
+        : -1,
+    );
+
     const resultingCursors: Cursor[] = [];
 
-    const cursorsToIterateOver = vimState.cursors
-      .map((x) => new Cursor(x.start, x.stop))
-      .sort((a, b) =>
-        a.start.line > b.start.line ||
-        (a.start.line === b.start.line && a.start.character > b.start.character)
-          ? 1
-          : -1,
-      );
-
-    let cursorIndex = 0;
-    for (const { start, stop } of cursorsToIterateOver) {
-      this.multicursorIndex = cursorIndex++;
+    for (const [index, { start, stop }] of cursorsToIterateOver.entries()) {
+      this.multicursorIndex = index;
 
       vimState.cursorStopPosition = stop;
       vimState.cursorStartPosition = start;

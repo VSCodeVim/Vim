@@ -1,9 +1,9 @@
-import { VimState } from '../../state/vimState';
-import { PositionDiff } from '../../common/motion/position';
-import { externalCommand } from '../../util/externalCommand';
-import { LineRange } from '../../vimscript/lineRange';
-import { ExCommand } from '../../vimscript/exCommand';
 import { all, Parser } from 'parsimmon';
+import { PositionDiff } from '../../common/motion/position';
+import { VimState } from '../../state/vimState';
+import { externalCommand } from '../../util/externalCommand';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
 export interface IBangCommandArguments {
   command: string;
@@ -53,11 +53,6 @@ export class BangCommand extends ExCommand {
     // place cursor at the start of the replaced text and first non-whitespace character
     const diff = this.getReplaceDiff(output);
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      text: output,
-      range: resolvedRange,
-      diff,
-    });
+    vimState.recordedState.transformer.replace(resolvedRange, output, diff);
   }
 }

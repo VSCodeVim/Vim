@@ -318,6 +318,8 @@ class Configuration implements IConfiguration {
 
   startInInsertMode = false;
 
+  startInInsertModeSchemes: string[] = ['comment'];
+
   statusBarColorControl = false;
 
   statusBarColors: IModeSpecificStrings<string | string[]> = {

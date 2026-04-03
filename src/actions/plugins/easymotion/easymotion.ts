@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { Position } from 'vscode';
 import { Mode } from '../../../mode/mode';
 import { configuration } from './../../../configuration/configuration';
-import { TextEditor } from './../../../textEditor';
 import { EasyMotionSearchAction, IEasyMotion, Marker, Match, SearchOptions } from './types';
 
 export class EasyMotion implements IEasyMotion {
@@ -408,7 +407,7 @@ export class EasyMotion implements IEasyMotion {
       const offsetPrevDimPos = prevDimPos.withColumn(prevDimPos.character + prevKeystroke.length);
 
       // Don't create any more dimming ranges when the last marker is at document end
-      if (!offsetPrevDimPos.isEqual(TextEditor.getDocumentEnd(editor.document))) {
+      if (!offsetPrevDimPos.isAtDocumentEnd(editor.document)) {
         dimmingZones.push({
           range: new vscode.Range(
             offsetPrevDimPos,

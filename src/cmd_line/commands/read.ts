@@ -6,9 +6,10 @@ import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
-export type IReadCommandArguments = {
-  opt: FileOpt;
-} & ({ cmd: string } | { file: string } | object);
+export type IReadCommandArguments =
+  | { opt: FileOpt; cmd: string }
+  | { opt: FileOpt; file: string }
+  | { opt: FileOpt };
 
 //
 //  Implements :read and :read!
@@ -17,21 +18,17 @@ export type IReadCommandArguments = {
 //
 export class ReadCommand extends ExCommand {
   public static readonly argParser: Parser<ReadCommand> = seq(
-    whitespace.then(fileOptParser).fallback([]),
+    whitespace.then(fileOptParser).fallback<FileOpt>([]),
     optWhitespace
       .then(
         alt<{ cmd: string } | { file: string }>(
           string('!')
             .then(all)
-            .map((cmd) => {
-              return { cmd };
-            }),
-          fileNameParser.map((file) => {
-            return { file };
-          }),
+            .map((cmd) => ({ cmd })),
+          fileNameParser.map((file) => ({ file })),
         ),
       )
-      .fallback(undefined),
+      .fallback({}),
   ).map(([opt, other]) => new ReadCommand({ opt, ...other }));
 
   private readonly arguments: IReadCommandArguments;

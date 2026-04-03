@@ -1,10 +1,10 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { createFile, setupWorkspace, cleanUpWorkspace } from '../testUtils';
+import { createFile, setupWorkspace } from '../testUtils';
 
 suite('cmd_line tab', () => {
   let modeHandler: ModeHandler;
@@ -13,8 +13,6 @@ suite('cmd_line tab', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  suiteTeardown(cleanUpWorkspace);
 
   test('tabe with no arguments when not in workspace opens an untitled file', async () => {
     const beforeEditor = vscode.window.activeTextEditor;

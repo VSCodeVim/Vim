@@ -1,8 +1,8 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, setupWorkspace } from './../testUtils';
-import * as assert from 'assert';
 import { Register, RegisterMode } from '../../src/register/register';
+import { assertEqualLines, setupWorkspace } from './../testUtils';
 
 suite('put cmd_line', () => {
   let modeHandler: ModeHandler;

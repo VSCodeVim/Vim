@@ -9,10 +9,10 @@ import * as vscode from 'vscode';
 import { ExCommandLine } from '../src/cmd_line/commandLine';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { Globals } from '../src/globals';
-import { StatusBar } from '../src/statusBar';
-import { Configuration } from './testConfiguration';
-import { TextEditor } from '../src/textEditor';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
+import { StatusBar } from '../src/statusBar';
+import { TextEditor } from '../src/textEditor';
+import { Configuration } from './testConfiguration';
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();
@@ -75,6 +75,9 @@ export async function createFile(
     contents?: string;
   } = {},
 ): Promise<string> {
+  if (args.fileExtension) {
+    assert.ok(args.fileExtension.startsWith('.'));
+  }
   args.fsPath ??= join(os.tmpdir(), rndName() + (args.fileExtension ?? ''));
   await promisify(fs.writeFile)(args.fsPath, args.contents ?? '');
   return args.fsPath;
@@ -115,7 +118,7 @@ export async function waitForEditorsToClose(numExpectedEditors: number = 0): Pro
 }
 
 export function assertEqualLines(expectedLines: string[]) {
-  assert.strictEqual(
+  assert.equal(
     vscode.window.activeTextEditor?.document.getText(),
     expectedLines.join(os.EOL),
     'Document content does not match.',
@@ -126,61 +129,69 @@ export function assertStatusBarEqual(
   expectedText: string,
   message: string = 'Status bar text does not match',
 ) {
-  assert.strictEqual(StatusBar.getText(), expectedText, message);
+  assert.equal(StatusBar.getText(), expectedText, message);
 }
 
 export async function setupWorkspace(
   args: {
     config?: Partial<IConfiguration>;
     fileExtension?: string;
+    fileContent?: string[];
+    forceNewFile?: boolean;
+    disableCleanUp?: boolean;
   } = {},
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
 
-  if (
+  const newFile =
     vscode.window.activeTextEditor === undefined ||
     vscode.window.activeTextEditor.document.isUntitled ||
     vscode.window.visibleTextEditors.length > 1 ||
     (args.fileExtension &&
-      !vscode.window.activeTextEditor.document.fileName.endsWith(args.fileExtension))
-  ) {
-    await cleanUpWorkspace();
-    const filePath = await createFile({ fileExtension: args.fileExtension });
+      !vscode.window.activeTextEditor.document.fileName.endsWith(args.fileExtension)) ||
+    args.forceNewFile;
+  const fileContent = (args.fileContent ?? []).join(os.EOL);
+
+  if (newFile) {
+    if (!args.disableCleanUp) await cleanUpWorkspace();
+    const filePath = await createFile({
+      fileExtension: args.fileExtension,
+      contents: fileContent,
+    });
     const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
     await vscode.window.showTextDocument(doc);
   }
 
-  Globals.mockConfiguration = new Configuration();
-  Object.assign(Globals.mockConfiguration, args?.config ?? {});
-  await reloadConfiguration();
+  const config = new Configuration(args?.config);
+  await reloadConfiguration(config);
 
   const activeTextEditor = vscode.window.activeTextEditor;
   assert.ok(activeTextEditor);
 
-  activeTextEditor.options.tabSize = Globals.mockConfiguration.tabstop;
-  activeTextEditor.options.insertSpaces = Globals.mockConfiguration.expandtab;
+  activeTextEditor.options.tabSize = config.tabstop;
+  activeTextEditor.options.insertSpaces = config.expandtab;
 
-  assert.ok(
-    await activeTextEditor.edit((builder) => {
-      builder.delete(
-        new vscode.Range(
-          new vscode.Position(0, 0),
-          TextEditor.getDocumentEnd(activeTextEditor.document),
-        ),
-      );
-    }),
-    'Edit failed',
-  );
-  ModeHandlerMap.clear();
+  if (!newFile) {
+    assert.ok(
+      await activeTextEditor.edit((builder) => {
+        builder.replace(TextEditor.getDocumentRange(activeTextEditor.document), fileContent);
+      }),
+      'Edit failed',
+    );
+  }
+
+  if (!args.disableCleanUp) ModeHandlerMap.clear();
 }
 
 export async function cleanUpWorkspace(): Promise<void> {
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-  assert.strictEqual(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
+  assert.equal(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
   assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
 }
 
-export async function reloadConfiguration() {
+export async function reloadConfiguration(config: IConfiguration) {
+  Globals.mockConfiguration = config;
+
   const validatorResults = await (
     await import('../src/configuration/configuration')
   ).configuration.load();
@@ -205,4 +216,15 @@ export async function waitForTabChange(): Promise<void> {
       resolve(textEditor);
     });
   });
+}
+
+export async function replaceContent(
+  document: vscode.TextDocument,
+  content: string,
+): Promise<void> {
+  const edit = new vscode.WorkspaceEdit();
+  edit.replace(document.uri, TextEditor.getDocumentRange(document), content);
+  const isApplied = await vscode.workspace.applyEdit(edit);
+
+  if (!isApplied) throw new Error(`Failed to replace content`);
 }

@@ -1,10 +1,10 @@
 import * as assert from 'assert';
+import childProcess from 'child_process';
+import fs from 'fs';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import fs from 'fs';
-import childProcess from 'child_process';
-import { Configuration } from '../../testConfiguration';
 import { NeovimValidator } from '../../../src/configuration/validators/neovimValidator';
+import { Configuration } from '../../testConfiguration';
 
 suite('Neovim Validator', () => {
   let sandbox: sinon.SinonSandbox;

@@ -8,13 +8,15 @@ import { StatusBar } from '../../statusBar';
 import { Logger } from '../../util/logger';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser, fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
+import { configuration } from './../../configuration/configuration';
 
 export type IWriteCommandArguments = {
   bang: boolean;
   opt: FileOpt;
   bgWrite: boolean;
   file?: string;
-} & ({ cmd: string } | object);
+  cmd?: string;
+};
 
 //
 //  Implements :write
@@ -36,8 +38,6 @@ export class WriteCommand extends ExCommand {
       // TODO: Support `:help :w_a` ('>>')
     ).fallback({}),
   ).map(([bang, opt, other]) => new WriteCommand({ bang, opt, bgWrite: true, ...other }));
-
-  public override isRepeatableWithDot = false;
 
   public readonly arguments: IWriteCommandArguments;
 
@@ -135,6 +135,18 @@ export class WriteCommand extends ExCommand {
   }
 
   private async save(vimState: VimState): Promise<void> {
+    if (this.shouldShowDocument(vimState.document.uri)) {
+      await vscode.window.showTextDocument(vimState.document, { preview: false });
+    }
+
+    // Fixes https://github.com/VSCodeVim/Vim/issues/9883
+    const shouldRunFormatDocSinceExpectedAndWontBeDoneBySave =
+      !vimState.document.isDirty &&
+      configuration?.getConfiguration('editor')?.get<boolean>('formatOnSave');
+    if (shouldRunFormatDocSinceExpectedAndWontBeDoneBySave) {
+      await vscode.commands.executeCommand('editor.action.formatDocument');
+    }
+
     await this.background(
       vimState.document.save().then((success) => {
         if (success) {
@@ -149,6 +161,40 @@ export class WriteCommand extends ExCommand {
           // TODO: What's the right thing to do here?
         }
       }),
+    );
+  }
+
+  /**
+   * Determines whether to call showTextDocument when saving.
+   * Avoids disrupting diff views and handles preview tab pinning.
+   */
+  private shouldShowDocument(documentUri: vscode.Uri): boolean {
+    const uriString = documentUri.toString();
+    const matchingTab = vscode.window.tabGroups.activeTabGroup.tabs.find((tab: vscode.Tab) =>
+      this.tabContainsDocument(tab, uriString),
+    );
+
+    if (matchingTab) {
+      return matchingTab.isPreview;
+    }
+
+    // No matching tab found, show it
+    return true;
+  }
+
+  /**
+   * Check if a tab contains the specified document URI.
+   * Handles regular tabs and diff tabs.
+   */
+  private tabContainsDocument(tab: vscode.Tab, uriString: string): boolean {
+    const input = tab.input as
+      | { uri?: vscode.Uri; original?: vscode.Uri; modified?: vscode.Uri }
+      | undefined;
+
+    return (
+      input?.uri?.toString() === uriString ||
+      input?.original?.toString() === uriString ||
+      input?.modified?.toString() === uriString
     );
   }
 

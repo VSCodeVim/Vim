@@ -1,7 +1,7 @@
 // eslint-disable-next-line id-denylist
 import { alt, oneOf, Parser, regexp, seq, string, whitespace } from 'parsimmon';
 import { configuration, optionAliases } from '../../configuration/configuration';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -170,7 +170,7 @@ export class SetCommand extends ExCommand {
     const option = optionAliases.get(this.operation.option) ?? this.operation.option;
     const currentValue = configuration[option] as string | number | boolean | undefined;
     if (currentValue === undefined) {
-      throw VimError.fromCode(ErrorCode.UnknownOption, option);
+      throw VimError.UnknownOption(option);
     }
     const type =
       typeof currentValue === 'boolean'
@@ -200,7 +200,7 @@ export class SetCommand extends ExCommand {
         if (type === 'boolean') {
           configuration[option] = false;
         } else {
-          throw VimError.fromCode(ErrorCode.InvalidArgument474, `no${option}`);
+          throw VimError.InvalidArgument474(`no${option}`);
         }
         break;
       }
@@ -209,7 +209,7 @@ export class SetCommand extends ExCommand {
           configuration[option] = !currentValue;
         } else {
           // TODO: Could also be {option}!
-          throw VimError.fromCode(ErrorCode.InvalidArgument474, `inv${option}`);
+          throw VimError.InvalidArgument474(`inv${option}`);
         }
         break;
       }
@@ -224,20 +224,14 @@ export class SetCommand extends ExCommand {
       case 'equal': {
         if (type === 'boolean') {
           // TODO: Could also be {option}:{value}
-          throw VimError.fromCode(
-            ErrorCode.InvalidArgument474,
-            `${option}=${this.operation.value}`,
-          );
+          throw VimError.InvalidArgument474(`${option}=${this.operation.value}`);
         } else if (type === 'string') {
           configuration[option] = this.operation.value;
         } else {
           const value = Number.parseInt(this.operation.value, 10);
           if (isNaN(value)) {
             // TODO: Could also be {option}:{value}
-            throw VimError.fromCode(
-              ErrorCode.NumberRequiredAfterEqual,
-              `${option}=${this.operation.value}`,
-            );
+            throw VimError.NumberRequiredAfterEqual(`${option}=${this.operation.value}`);
           }
           configuration[option] = value;
         }
@@ -245,19 +239,13 @@ export class SetCommand extends ExCommand {
       }
       case 'add': {
         if (type === 'boolean') {
-          throw VimError.fromCode(
-            ErrorCode.InvalidArgument474,
-            `${option}+=${this.operation.value}`,
-          );
+          throw VimError.InvalidArgument474(`${option}+=${this.operation.value}`);
         } else if (type === 'string') {
           configuration[option] = currentValue + this.operation.value;
         } else {
           const value = Number.parseInt(this.operation.value, 10);
           if (isNaN(value)) {
-            throw VimError.fromCode(
-              ErrorCode.NumberRequiredAfterEqual,
-              `${option}+=${this.operation.value}`,
-            );
+            throw VimError.NumberRequiredAfterEqual(`${option}+=${this.operation.value}`);
           }
           configuration[option] = (currentValue as number) + value;
         }
@@ -265,19 +253,13 @@ export class SetCommand extends ExCommand {
       }
       case 'multiply': {
         if (type === 'boolean') {
-          throw VimError.fromCode(
-            ErrorCode.InvalidArgument474,
-            `${option}^=${this.operation.value}`,
-          );
+          throw VimError.InvalidArgument474(`${option}^=${this.operation.value}`);
         } else if (type === 'string') {
           configuration[option] = this.operation.value + currentValue;
         } else {
           const value = Number.parseInt(this.operation.value, 10);
           if (isNaN(value)) {
-            throw VimError.fromCode(
-              ErrorCode.NumberRequiredAfterEqual,
-              `${option}^=${this.operation.value}`,
-            );
+            throw VimError.NumberRequiredAfterEqual(`${option}^=${this.operation.value}`);
           }
           configuration[option] = (currentValue as number) * value;
         }
@@ -285,19 +267,13 @@ export class SetCommand extends ExCommand {
       }
       case 'subtract': {
         if (type === 'boolean') {
-          throw VimError.fromCode(
-            ErrorCode.InvalidArgument474,
-            `${option}-=${this.operation.value}`,
-          );
+          throw VimError.InvalidArgument474(`${option}-=${this.operation.value}`);
         } else if (type === 'string') {
           configuration[option] = (currentValue as string).split(this.operation.value).join('');
         } else {
           const value = Number.parseInt(this.operation.value, 10);
           if (isNaN(value)) {
-            throw VimError.fromCode(
-              ErrorCode.NumberRequiredAfterEqual,
-              `${option}-=${this.operation.value}`,
-            );
+            throw VimError.NumberRequiredAfterEqual(`${option}-=${this.operation.value}`);
           }
           configuration[option] = (currentValue as number) - value;
         }

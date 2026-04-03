@@ -1,12 +1,14 @@
 import { Position } from 'vscode';
 import { OnlyCommand } from '../../cmd_line/commands/only';
 import { QuitCommand } from '../../cmd_line/commands/quit';
+import { TabCommand, TabCommandType } from '../../cmd_line/commands/tab';
+import { WriteQuitCommand } from '../../cmd_line/commands/writequit';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
 import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
-class CommandQuit extends BaseCommand {
+class Quit extends BaseCommand {
   modes = [Mode.Normal];
   keys = [
     ['<C-w>', 'q'],
@@ -14,6 +16,9 @@ class CommandQuit extends BaseCommand {
     ['<C-w>', 'c'],
     ['<C-w>', '<C-c>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void new QuitCommand({}).execute(vimState);
@@ -21,15 +26,65 @@ class CommandQuit extends BaseCommand {
 }
 
 @RegisterAction
-class CommandOnly extends BaseCommand {
+class WriteQuit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Z']];
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await new WriteQuitCommand({ bang: false, opt: [] }).execute(vimState);
+  }
+}
+
+@RegisterAction
+class ForceQuit extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = [['Z', 'Q']];
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    await new QuitCommand({ bang: true }).execute(vimState);
+  }
+}
+
+@RegisterAction
+class Only extends BaseCommand {
   modes = [Mode.Normal];
   keys = [
     ['<C-w>', 'o'],
     ['<C-w>', '<C-o>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     void new OnlyCommand().execute(vimState);
+  }
+}
+
+@RegisterAction
+class MoveToLeftPane extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [
+    ['<C-w>', 'h'],
+    ['<C-w>', '<left>'],
+    ['<C-w>', '<C-h>'],
+  ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+  override isJump = true;
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.navigateLeft',
+      args: {},
+    });
   }
 }
 
@@ -41,6 +96,9 @@ class MoveToRightPane extends BaseCommand {
     ['<C-w>', '<right>'],
     ['<C-w>', '<C-l>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -59,6 +117,9 @@ class MoveToLowerPane extends BaseCommand {
     ['<C-w>', '<down>'],
     ['<C-w>', '<C-j>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -77,29 +138,14 @@ class MoveToUpperPane extends BaseCommand {
     ['<C-w>', '<up>'],
     ['<C-w>', '<C-k>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
       command: 'workbench.action.navigateUp',
-      args: {},
-    });
-  }
-}
-
-@RegisterAction
-class MoveToLeftPane extends BaseCommand {
-  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-  keys = [
-    ['<C-w>', 'h'],
-    ['<C-w>', '<left>'],
-    ['<C-w>', '<C-h>'],
-  ];
-  override isJump = true;
-
-  public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.postponedCodeViewChanges.push({
-      command: 'workbench.action.navigateLeft',
       args: {},
     });
   }
@@ -112,6 +158,9 @@ class CycleThroughPanes extends BaseCommand {
     ['<C-w>', '<C-w>'],
     ['<C-w>', 'w'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
   override isJump = true;
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
@@ -129,6 +178,9 @@ class VerticalSplit extends BaseCommand {
     ['<C-w>', 'v'],
     ['<C-w>', '<C-v>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -145,6 +197,9 @@ class OrthogonalSplit extends BaseCommand {
     ['<C-w>', 's'],
     ['<C-w>', '<C-s>'],
   ];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -158,6 +213,9 @@ class OrthogonalSplit extends BaseCommand {
 class EvenPaneWidths extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '='];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -171,6 +229,9 @@ class EvenPaneWidths extends BaseCommand {
 class IncreasePaneWidth extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '>'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -184,6 +245,9 @@ class IncreasePaneWidth extends BaseCommand {
 class DecreasePaneWidth extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '<'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -197,6 +261,9 @@ class DecreasePaneWidth extends BaseCommand {
 class IncreasePaneHeight extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '+'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
@@ -210,11 +277,57 @@ class IncreasePaneHeight extends BaseCommand {
 class DecreasePaneHeight extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['<C-w>', '-'];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.postponedCodeViewChanges.push({
       command: 'workbench.action.decreaseViewHeight',
       args: {},
     });
+  }
+}
+
+@RegisterAction
+class NextTab extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['g', 't'], ['<C-pagedown>']];
+  override runsOnceForEachCountPrefix = false;
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    // gt behaves differently than gT and goes to an absolute index tab
+    // (1-based), it does NOT iterate over next tabs
+    if (vimState.recordedState.count > 0) {
+      void new TabCommand({
+        type: TabCommandType.Edit,
+        buf: vimState.recordedState.count,
+      }).execute(vimState);
+    } else {
+      void new TabCommand({
+        type: TabCommandType.Next,
+        bang: false,
+      }).execute(vimState);
+    }
+  }
+}
+
+@RegisterAction
+class PreviousTab extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['g', 'T'], ['<C-pageup>']];
+  override runsOnceForEachCountPrefix = true; // Yes, this is different from `{count}gt`
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    void new TabCommand({
+      type: TabCommandType.Previous,
+      bang: false,
+    }).execute(vimState);
   }
 }

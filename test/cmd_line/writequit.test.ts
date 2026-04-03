@@ -5,7 +5,7 @@ import { getAndUpdateModeHandler } from '../../extension';
 import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from './../testUtils';
+import { setupWorkspace, waitForEditorsToClose } from './../testUtils';
 
 suite('Basic write-quit', () => {
   let modeHandler: ModeHandler;
@@ -14,8 +14,6 @@ suite('Basic write-quit', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  suiteTeardown(cleanUpWorkspace);
 
   test('Run write and quit', async () => {
     await modeHandler.handleMultipleKeyEvents(['i', 'a', 'b', 'a', '<Esc>']);

@@ -253,6 +253,12 @@ export interface IConfiguration {
   startInInsertMode: boolean;
 
   /**
+   * List of document URI schemes that should automatically start in Insert mode.
+   * For example, ['comment'] for GitHub PR comment editors.
+   */
+  startInInsertModeSchemes: string[];
+
+  /**
    * Enable changing of the status bar color based on mode
    */
   statusBarColorControl: boolean;

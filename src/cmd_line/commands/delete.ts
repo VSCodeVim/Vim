@@ -52,7 +52,7 @@ export class DeleteCommand extends ExCommand {
    */
   private deleteRange(startLine: number, endLine: number, vimState: VimState): void {
     let start = new Position(startLine, 0);
-    let end = new Position(endLine, 0).getLineEndIncludingEOL();
+    let end = new Position(endLine, 0).getLineEnd();
 
     if (endLine < vimState.document.lineCount - 1) {
       end = end.getRightThroughLineBreaks();
@@ -69,7 +69,7 @@ export class DeleteCommand extends ExCommand {
 
     vimState.recordedState.transformer.addTransformation({
       type: 'deleteRange',
-      range: new vscode.Range(start, end),
+      range,
       manuallySetCursorPositions: true,
     });
     vimState.cursorStopPosition = start.getLineBegin();

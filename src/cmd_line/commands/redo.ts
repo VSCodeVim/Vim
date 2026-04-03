@@ -1,8 +1,8 @@
-import { VimState } from '../../state/vimState';
-import { CommandRedo } from '../../actions/commands/actions';
-import { Position } from 'vscode';
-import { ExCommand } from '../../vimscript/exCommand';
 import { optWhitespace, Parser } from 'parsimmon';
+import { Position } from 'vscode';
+import { Redo } from '../../actions/commands/undo';
+import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
 import { numberParser } from '../../vimscript/parserUtils';
 
 //
@@ -23,6 +23,6 @@ export class RedoCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     // TODO: Use `this.count`
-    await new CommandRedo().exec(new Position(0, 0), vimState);
+    await new Redo().exec(new Position(0, 0), vimState);
   }
 }

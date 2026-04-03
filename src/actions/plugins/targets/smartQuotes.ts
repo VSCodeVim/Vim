@@ -1,5 +1,5 @@
-import { RegisterAction } from '../../base';
 import { Mode } from '../../../mode/mode';
+import { RegisterAction } from '../../base';
 import { MoveQuoteMatch } from '../../motion';
 
 abstract class SmartQuotes extends MoveQuoteMatch {

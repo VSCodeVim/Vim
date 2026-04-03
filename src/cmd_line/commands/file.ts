@@ -1,11 +1,10 @@
+import { optWhitespace, seq } from 'parsimmon';
+import { doesFileExist } from 'platform/fs';
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
+import { VimState } from '../../state/vimState';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
-import { doesFileExist } from 'platform/fs';
-// TODO:
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import untildify = require('untildify');
-import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import {
   bangParser,
@@ -15,7 +14,9 @@ import {
   FileOpt,
   fileOptParser,
 } from '../../vimscript/parserUtils';
-import { optWhitespace, regexp, seq } from 'parsimmon';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import untildify = require('untildify');
 
 export enum FilePosition {
   NewWindowVerticalSplit,
@@ -233,20 +234,20 @@ export class FileCommand extends ExCommand {
     }
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    const editor = await vscode.window.showTextDocument(doc);
 
     const lineNumber =
       args.cmd?.type === 'line_number'
         ? args.cmd.line
         : args.cmd?.type === 'last_line'
-          ? vscode.window.activeTextEditor!.document.lineCount - 1
+          ? doc.lineCount - 1
           : undefined;
+    const options: vscode.TextDocumentShowOptions = {};
     if (lineNumber !== undefined && lineNumber >= 0) {
-      const pos = new vscode.Position(lineNumber, 0);
-      editor.selection = new vscode.Selection(pos, pos);
-      const range = new vscode.Range(pos, pos);
-      editor.revealRange(range);
+      const pos = new Position(lineNumber, 0);
+      options.selection = new vscode.Range(pos, pos);
     }
+    await vscode.window.showTextDocument(doc, options);
+
     await hidePreviousEditor();
   }
 }

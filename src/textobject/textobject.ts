@@ -1,24 +1,24 @@
-import { Cursor } from '../common/motion/cursor';
-import { Mode } from '../mode/mode';
-import { RegisterMode } from '../register/register';
-import { VimState } from '../state/vimState';
-import { TextEditor } from '../textEditor';
+import { Position, TextDocument } from 'vscode';
 import { RegisterAction } from '../actions/base';
 import { BaseMovement, IMovement, failedMovement } from '../actions/baseMotion';
 import {
+  ExpandingSelection,
+  MoveAroundBacktick,
+  MoveAroundCurlyBrace,
   MoveAroundDoubleQuotes,
   MoveAroundParentheses,
   MoveAroundSingleQuotes,
   MoveAroundSquareBracket,
-  MoveAroundBacktick,
   MoveAroundTag,
-  ExpandingSelection,
-  MoveAroundCurlyBrace,
 } from '../actions/motion';
 import { ChangeOperator } from '../actions/operator';
+import { Cursor } from '../common/motion/cursor';
 import { configuration } from '../configuration/configuration';
+import { Mode } from '../mode/mode';
+import { RegisterMode } from '../register/register';
+import { VimState } from '../state/vimState';
+import { TextEditor } from '../textEditor';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from './paragraph';
-import { Position, TextDocument } from 'vscode';
 import { WordType } from './word';
 
 export abstract class TextObject extends BaseMovement {
@@ -124,7 +124,7 @@ export class SelectABigWord extends TextObject {
       // Check 'aw' code for much of the reasoning behind this logic.
       const nextWord = position.nextWordStart(vimState.document, { wordType: WordType.Big });
       if (
-        (nextWord.line > position.line || nextWord.isAtDocumentEnd()) &&
+        (nextWord.line > position.line || nextWord.isAtDocumentEnd(vimState.document)) &&
         vimState.recordedState.count === 0
       ) {
         if (position.prevWordEnd(vimState.document, { wordType: WordType.Big }).isLineBeginning()) {
@@ -137,7 +137,7 @@ export class SelectABigWord extends TextObject {
         (nextWord.isEqual(
           TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, nextWord.line),
         ) ||
-          nextWord.isLineEnd()) &&
+          nextWord.isLineEnd(vimState.document)) &&
         vimState.recordedState.count === 0
       ) {
         start = position.prevWordEnd(vimState.document).getRight();
@@ -489,7 +489,10 @@ export class SelectParagraph extends TextObject {
       // The cursor is at an empty line, it can be both the start of next paragraph and the end of previous paragraph
       start = getCurrentParagraphEnd(getCurrentParagraphBeginning(position, true), true);
     } else {
-      if (currentParagraphBegin.isLineBeginning() && currentParagraphBegin.isLineEnd()) {
+      if (
+        currentParagraphBegin.isLineBeginning() &&
+        currentParagraphBegin.isLineEnd(vimState.document)
+      ) {
         start = currentParagraphBegin.getRightThroughLineBreaks();
       } else {
         start = currentParagraphBegin;
@@ -562,10 +565,8 @@ export class SelectEntire extends TextObject {
   keys = ['a', 'e'];
 
   public async execAction(position: Position, vimState: VimState): Promise<IMovement> {
-    return {
-      start: TextEditor.getDocumentBegin(),
-      stop: TextEditor.getDocumentEnd(vimState.document),
-    };
+    const range = TextEditor.getDocumentRange(vimState.document);
+    return { start: range.start, stop: range.end };
   }
 }
 
@@ -594,8 +595,6 @@ export class SelectEntireIgnoringLeadingTrailing extends TextObject {
 }
 
 abstract class IndentObjectMatch extends TextObject {
-  override setsDesiredColumnToEOL = true;
-
   protected includeLineAbove = false;
   protected includeLineBelow = false;
 
@@ -970,7 +969,7 @@ abstract class SelectArgument extends TextObject {
         openedParensCount--;
       }
 
-      if (walkingPosition.isAtDocumentEnd()) {
+      if (walkingPosition.isAtDocumentEnd(document)) {
         break;
       }
 

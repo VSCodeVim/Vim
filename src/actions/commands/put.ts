@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 import { Position, TextDocument } from 'vscode';
+import { Cursor } from '../../common/motion/cursor';
 import { laterOf, PositionDiff, sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
+import { VimError } from '../../error';
 import { isVisualMode, Mode } from '../../mode/mode';
-import { Register, RegisterMode, IRegisterContent } from '../../register/register';
+import { IRegisterContent, Register, RegisterMode } from '../../register/register';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
+import { StatusBar } from '../../statusBar';
 import { TextEditor } from '../../textEditor';
+import { Transformation } from '../../transformations/transformations';
 import { reportLinesChanged } from '../../util/statusBarTextUtils';
 import { BaseCommand, RegisterAction } from '../base';
-import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
-import { Cursor } from '../../common/motion/cursor';
-import { Transformation } from '../../transformations/transformations';
 
 function firstNonBlankChar(text: string): number {
   return text.match(/\S/)?.index ?? 0;
@@ -39,7 +39,7 @@ abstract class BasePutCommand extends BaseCommand {
     if (register === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(ErrorCode.NothingInRegister, vimState.recordedState.registerName),
+        VimError.NothingInRegister(vimState.recordedState.registerName),
       );
       return;
     }
@@ -50,7 +50,7 @@ abstract class BasePutCommand extends BaseCommand {
       vimState.currentMode === Mode.CommandlineInProgress ? Mode.Normal : vimState.currentMode;
     const registerMode = this.getRegisterMode(register);
 
-    const replaceRange = this.getReplaceRange(mode, vimState.cursors[0], registerMode);
+    const replaceRange = this.getReplaceRange(mode, vimState.cursor, registerMode);
 
     let text = this.getRegisterText(mode, register, count);
     if (this.shouldAdjustIndent(mode, registerMode)) {

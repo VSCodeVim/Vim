@@ -4,7 +4,7 @@ import { Position, Selection } from 'vscode';
 import { SearchCommandLine } from '../../cmd_line/commandLine';
 import { sorted } from '../../common/motion/position';
 import { configuration } from '../../configuration/configuration';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Mode, isVisualMode } from '../../mode/mode';
 import { Register } from '../../register/register';
 import { globalState } from '../../state/globalState';
@@ -55,7 +55,7 @@ async function searchCurrentWord(
       searchStartCursorPosition,
     });
   } else {
-    StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.NoStringUnderCursor));
+    StatusBar.displayError(vimState, VimError.NoStringUnderCursor());
   }
 }
 
@@ -130,18 +130,15 @@ async function createSearchStateAndMoveToMatch(args: {
   } else {
     StatusBar.displayError(
       vimState,
-      VimError.fromCode(
-        args.direction === SearchDirection.Forward
-          ? ErrorCode.SearchHitBottom
-          : ErrorCode.SearchHitTop,
-        globalState.searchState.searchString,
-      ),
+      args.direction === SearchDirection.Forward
+        ? VimError.SearchHitBottom(globalState.searchState.searchString)
+        : VimError.SearchHitTop(globalState.searchState.searchString),
     );
   }
 }
 
 @RegisterAction
-class CommandSearchCurrentWordExactForward extends BaseCommand {
+class SearchCurrentWordExactForward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['*'];
   override actionType = 'motion' as const;
@@ -158,7 +155,7 @@ class CommandSearchCurrentWordExactForward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchCurrentWordForward extends BaseCommand {
+class SearchCurrentWordForward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['g', '*'];
   override actionType = 'motion' as const;
@@ -171,7 +168,7 @@ class CommandSearchCurrentWordForward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchCurrentWordExactBackward extends BaseCommand {
+class SearchCurrentWordExactBackward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['#'];
   override actionType = 'motion' as const;
@@ -188,7 +185,7 @@ class CommandSearchCurrentWordExactBackward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchCurrentWordBackward extends BaseCommand {
+class SearchCurrentWordBackward extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = ['g', '#'];
   override actionType = 'motion' as const;
@@ -201,7 +198,7 @@ class CommandSearchCurrentWordBackward extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchForwards extends BaseCommand {
+class SearchForwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['/'];
   override actionType = 'motion' as const;
@@ -216,7 +213,7 @@ class CommandSearchForwards extends BaseCommand {
 }
 
 @RegisterAction
-class CommandSearchBackwards extends BaseCommand {
+class SearchBackwards extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
   keys = ['?'];
   override actionType = 'motion' as const;

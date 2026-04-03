@@ -1,8 +1,8 @@
-import { Mode } from '../mode/mode';
-import { StatusBar } from '../statusBar';
-import { VimState } from '../state/vimState';
-import { configuration } from '../configuration/configuration';
 import { Position } from 'vscode';
+import { configuration } from '../configuration/configuration';
+import { Mode } from '../mode/mode';
+import { VimState } from '../state/vimState';
+import { StatusBar } from '../statusBar';
 
 /**
  * Escapes substrings that would be interpreted as css icon markdown in certain

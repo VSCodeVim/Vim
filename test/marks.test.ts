@@ -1,10 +1,11 @@
-import * as vscode from 'vscode';
 import { strict as assert } from 'assert';
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../extensionBase';
 import { Mode } from '../src/mode/mode';
-import { newTest, newTestSkip } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
 import { ModeHandler } from '../src/mode/modeHandler';
+import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
+import { newTest, newTestSkip } from './testSimplifier';
+import { setupWorkspace } from './testUtils';
 
 suite('Marks', () => {
   let modeHandler: ModeHandler;
@@ -13,7 +14,6 @@ suite('Marks', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-  suiteTeardown(cleanUpWorkspace);
 
   const jumpToNewFile = async () => {
     await setupWorkspace({
@@ -21,22 +21,11 @@ suite('Marks', () => {
         tabstop: 4,
         expandtab: false,
       },
+      forceNewFile: true,
+      disableCleanUp: true,
     });
     return (await getAndUpdateModeHandler())!;
   };
-
-  // TODO: Skipped
-  test.skip(`Capital marks can change the editor's active document`, async () => {
-    const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
-    await modeHandler.handleMultipleKeyEvents('mA'.split(''));
-
-    const otherModeHandler = await jumpToNewFile();
-    const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
-    assert.notStrictEqual(firstDocumentName, otherDocumentName);
-
-    await otherModeHandler.handleMultipleKeyEvents(`'A`.split(''));
-    assert.strictEqual(vscode.window.activeTextEditor!.document.fileName, firstDocumentName);
-  });
 
   newTest({
     title: 'Can jump to lowercase mark',
@@ -57,6 +46,19 @@ suite('Marks', () => {
       title: "'> set by Visual mode",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'vjl<Esc>' + 'gg' + '`>',
+      end: ['one', 'two', 'th|ree'],
+    });
+
+    newTest({
+      title: "'< set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`<',
+      end: ['one', 't|wo', 'three'],
+    });
+    newTest({
+      title: "'> set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 'th|ree'],
     });
 
@@ -126,6 +128,34 @@ suite('Marks', () => {
       keysPressed: 'v<Esc>' + 'j' + 'm<' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
       endMode: Mode.Normal,
+    });
+  });
+
+  suite('global marks', () => {
+    let otherModeHandler: ModeHandler;
+
+    setup(async () => {
+      await setupWorkspace();
+      modeHandler = (await getAndUpdateModeHandler())!;
+
+      const firstDocumentName = vscode.window.activeTextEditor!.document.fileName;
+      await modeHandler.handleMultipleKeyEvents('mA'.split(''));
+      otherModeHandler = await jumpToNewFile();
+
+      const otherDocumentName = vscode.window.activeTextEditor!.document.fileName;
+      assert.notStrictEqual(firstDocumentName, otherDocumentName);
+    });
+
+    teardown(async () => {
+      ModeHandlerMap.delete(otherModeHandler.vimState.document.uri);
+    });
+
+    newTest({
+      title: 'changes the active document',
+      start: ['|'],
+      keysPressed: "'A",
+      end: ['|'],
+      endFsPath: () => modeHandler.vimState.document.uri.fsPath,
     });
   });
 });

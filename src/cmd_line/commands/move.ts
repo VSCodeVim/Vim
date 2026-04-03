@@ -1,7 +1,7 @@
 import { optWhitespace, Parser } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -25,7 +25,7 @@ export class MoveCommand extends ExCommand {
   private moveLines(vimState: VimState, sourceStart: number, sourceEnd: number) {
     const dest = this.address?.resolve(vimState, 'left', false);
     if (dest === undefined || dest < -1 || dest > vimState.document.lineCount) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidAddress));
+      StatusBar.displayError(vimState, VimError.InvalidAddress());
       return;
     }
 
@@ -37,7 +37,7 @@ export class MoveCommand extends ExCommand {
     2. not move a range to the place right below or above itself, which leads to no change.
     */
     if (dest >= sourceStart && dest <= sourceEnd) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidAddress));
+      StatusBar.displayError(vimState, VimError.InvalidAddress());
       return;
     }
 
@@ -60,19 +60,16 @@ export class MoveCommand extends ExCommand {
     let cursorPosition: Position;
     if (dest > sourceEnd) {
       // make the cursor position at the beginning of the endline.
-      cursorPosition = new Position(
-        Math.max(dest, 0),
-        lines[lines.length - 1].match(/\S/)?.index ?? 0,
-      );
+      cursorPosition = new Position(Math.max(dest, 0), lines.at(-1)!.match(/\S/)?.index ?? 0);
     } else {
       cursorPosition = new Position(
         Math.max(dest + lines.length, 0),
-        lines[lines.length - 1].match(/\S/)?.index ?? 0,
+        lines.at(-1)!.match(/\S/)?.index ?? 0,
       );
     }
     // delete
     let start = new Position(sourceStart, 0);
-    let end = new Position(sourceEnd, 0).getLineEndIncludingEOL();
+    let end = new Position(sourceEnd, 0).getLineEnd();
 
     if (sourceEnd < vimState.document.lineCount - 1) {
       end = end.getRightThroughLineBreaks();
@@ -94,7 +91,7 @@ export class MoveCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    const line = vimState.cursors[0].stop.line;
+    const line = vimState.cursor.stop.line;
     this.moveLines(vimState, line, line);
   }
 

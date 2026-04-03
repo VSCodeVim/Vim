@@ -55,7 +55,7 @@ export abstract class BaseOperator extends BaseAction {
 
   public doesRepeatedOperatorApply(vimState: VimState, keysPressed: string[]) {
     const nonCountActions = vimState.recordedState.actionsRun.filter((x) => x.name !== 'cmd_num');
-    const prevAction = nonCountActions[nonCountActions.length - 1];
+    const prevAction = nonCountActions.at(-1);
     return (
       keysPressed.length === 1 &&
       prevAction &&
@@ -380,12 +380,11 @@ abstract class ChangeCaseOperator extends BaseOperator {
 
       const range = new vscode.Range(startPos, new Position(endPos.line, endPos.character + 1));
 
-      vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
+      vimState.recordedState.transformer.replace(
         range,
-        text: this.transformText(vimState.document.getText(range)),
-        diff: PositionDiff.exactPosition(startPos),
-      });
+        this.transformText(vimState.document.getText(range)),
+        PositionDiff.exactPosition(startPos),
+      );
     }
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -542,7 +541,7 @@ class IndentOperatorVisualBlock extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursors = [new Cursor(start, start)];
+    vimState.cursors = [Cursor.atPosition(start)];
   }
 }
 @RegisterAction
@@ -653,7 +652,7 @@ class OutdentOperatorVisualBlock extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursors = [new Cursor(start, start)];
+    vimState.cursors = [Cursor.atPosition(start)];
   }
 }
 
@@ -666,7 +665,7 @@ export class ChangeOperator extends BaseOperator {
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
       start = start.getLineBegin();
       end = end.getLineEnd();
-    } else if (vimState.currentMode === Mode.Visual && end.isLineEnd()) {
+    } else if (vimState.currentMode === Mode.Visual && end.isLineEnd(vimState.document)) {
       end = end.getRightThroughLineBreaks();
     } else {
       end = end.getRight();
@@ -894,7 +893,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
     const chunksToReflow: Chunk[] = [];
 
     for (const line of s.split('\n')) {
-      let lastChunk: Chunk | undefined = chunksToReflow[chunksToReflow.length - 1];
+      let lastChunk: Chunk | undefined = chunksToReflow.at(-1);
       const trimmedLine = line.trimStart();
 
       // See what comment type they are using.
@@ -958,7 +957,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
       // Parse out commenting style, gather words.
 
-      lastChunk = chunksToReflow[chunksToReflow.length - 1];
+      lastChunk = chunksToReflow.at(-1)!;
 
       if (lastChunk.commentType.singleLine) {
         // is it a continuation of a comment like "//"
@@ -1001,7 +1000,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
         // Preserve blank lines in output.
         if (line.trim() === '') {
           // Replace empty content line with blank line.
-          if (lines[lines.length - 1] === '') {
+          if (lines.at(-1) === '') {
             lines.pop();
           }
 
@@ -1015,7 +1014,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
 
         // Repeatedly partition line into pieces that fit in maximumLineLength
         while (line) {
-          const lastLine = lines[lines.length - 1];
+          const lastLine = lines.at(-1)!;
 
           // Determine the separator that we'd need to add to the last line
           // in order to join onto this line.
@@ -1078,7 +1077,7 @@ class ActionVisualReflowParagraph extends BaseOperator {
       }
 
       // Drop final empty content line.
-      if (lines[lines.length - 1] === '') {
+      if (lines.at(-1) === '') {
         lines.pop();
       }
 
@@ -1126,13 +1125,12 @@ class ActionVisualReflowParagraph extends BaseOperator {
     let textToReflow = vimState.document.getText(new vscode.Range(start, end));
     textToReflow = this.reflowParagraph(textToReflow);
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      text: textToReflow,
-      range: new vscode.Range(start, end),
+    vimState.recordedState.transformer.replace(
+      new vscode.Range(start, end),
+      textToReflow,
       // Move cursor to front of line to realign the view
-      diff: PositionDiff.exactCharacter({ character: 0 }),
-    });
+      PositionDiff.exactCharacter({ character: 0 }),
+    );
 
     await vimState.setCurrentMode(Mode.Normal);
   }
