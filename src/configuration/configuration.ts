@@ -200,6 +200,20 @@ class Configuration implements IConfiguration {
 
   useSystemClipboard = false;
 
+  clipboard: IConfiguration['clipboard'] = '';
+
+  /**
+   * True when the unnamed register (`""`) should alias the system clipboard,
+   * either because `vim.useSystemClipboard` is enabled or `clipboard` is set
+   * to `unnamed`/`unnamedplus`. VS Code exposes a single clipboard, so both
+   * Vim values map to the same behavior here.
+   */
+  get clipboardAliasesUnnamedRegister(): boolean {
+    return (
+      this.useSystemClipboard || this.clipboard === 'unnamed' || this.clipboard === 'unnamedplus'
+    );
+  }
+
   shell = '';
 
   useCtrlKeys = false;
