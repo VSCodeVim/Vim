@@ -46,6 +46,7 @@ import { ShCommand } from '../cmd_line/commands/sh';
 import { ShiftCommand } from '../cmd_line/commands/shift';
 import { SmileCommand } from '../cmd_line/commands/smile';
 import { SortCommand } from '../cmd_line/commands/sort';
+import { SourceCommand } from '../cmd_line/commands/source';
 import { SubstituteCommand } from '../cmd_line/commands/substitute';
 import { TabCommand } from '../cmd_line/commands/tab';
 import { TerminalCommand } from '../cmd_line/commands/terminal';
@@ -503,7 +504,7 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['sno', 'magic'], undefined],
   [['snor', 'emap'], undefined],
   [['snoreme', 'nu'], undefined],
-  [['so', 'urce'], undefined],
+  [['so', 'urce'], SourceCommand.argParser],
   [['sor', 't'], SortCommand.argParser],
   [['sp', 'lit'], FileCommand.argParsers.split],
   [['spe', 'llgood'], undefined],
