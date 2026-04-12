@@ -95,6 +95,12 @@ export interface IConfiguration {
   useSystemClipboard: boolean;
 
   /**
+   * Vim's `clipboard` option. When set to `unnamed` or `unnamedplus`, the
+   * unnamed register is aliased to the system clipboard, matching real Vim.
+   */
+  clipboard: 'unnamed' | 'unnamedplus' | '';
+
+  /**
    * Enable ctrl- actions that would override existing VSCode actions.
    */
   useCtrlKeys: boolean;

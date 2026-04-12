@@ -29,37 +29,7 @@ type RemoveIndex<T> = {
 
 export const extensionVersion = packagejson.version;
 
-/**
- * Most options supported by Vim have a short alias. They are provided here.
- * Please keep this list up to date and sorted alphabetically.
- */
-export const optionAliases: ReadonlyMap<string, string> = new Map<string, string>([
-  ['ai', 'autoindent'],
-  ['et', 'expandtab'],
-  ['gd', 'gdefault'],
-  ['hi', 'history'],
-  ['hls', 'hlsearch'],
-  ['ic', 'ignorecase'],
-  ['icm', 'inccommand'],
-  ['is', 'incsearch'],
-  ['isk', 'iskeyword'],
-  ['js', 'joinspaces'],
-  ['mmd', 'maxmapdepth'],
-  ['mps', 'matchpairs'],
-  ['nu', 'number'],
-  ['rnu', 'relativenumber'],
-  ['sc', 'showcmd'],
-  ['scr', 'scroll'],
-  ['so', 'scrolloff'],
-  ['scs', 'smartcase'],
-  ['smd', 'showmode'],
-  ['sol', 'startofline'],
-  ['to', 'timeout'],
-  ['ts', 'tabstop'],
-  ['tw', 'textwidth'],
-  ['ws', 'wrapscan'],
-  ['ww', 'whichwrap'],
-]);
+export { optionAliases } from './optionAliases';
 
 type OptionValue = number | string | boolean;
 
@@ -229,6 +199,20 @@ class Configuration implements IConfiguration {
   handleKeys: IHandleKeys = {};
 
   useSystemClipboard = false;
+
+  clipboard: IConfiguration['clipboard'] = '';
+
+  /**
+   * True when the unnamed register (`""`) should alias the system clipboard,
+   * either because `vim.useSystemClipboard` is enabled or `clipboard` is set
+   * to `unnamed`/`unnamedplus`. VS Code exposes a single clipboard, so both
+   * Vim values map to the same behavior here.
+   */
+  get clipboardAliasesUnnamedRegister(): boolean {
+    return (
+      this.useSystemClipboard || this.clipboard === 'unnamed' || this.clipboard === 'unnamedplus'
+    );
+  }
 
   shell = '';
 
