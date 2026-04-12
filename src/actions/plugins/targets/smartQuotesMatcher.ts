@@ -1,7 +1,16 @@
 import { Position, TextDocument } from 'vscode';
 import { configuration } from '../../../configuration/configuration';
 
-type Quote = '"' | "'" | '`';
+/**
+ * A quote/character for symmetric pair matching.
+ *
+ * This can be any single character that serves as both an opening and closing
+ * delimiter. Common examples include: ", ', `, $, |, /
+ *
+ * The SmartQuoteMatcher uses this to find matching pairs even when the cursor
+ * is positioned before or after the pair.
+ */
+type Quote = string;
 enum QuoteMatch {
   Opening,
   Closing,
@@ -146,9 +155,9 @@ export class SmartQuoteMatcher {
   static readonly escapeChar = '\\';
 
   private document: TextDocument;
-  private quote: Quote | 'any';
+  private quote: Quote;
 
-  constructor(quote: Quote | 'any', document: TextDocument) {
+  constructor(quote: Quote, document: TextDocument) {
     this.quote = quote;
     this.document = document;
   }
