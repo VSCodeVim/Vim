@@ -28,19 +28,6 @@ import { SmartQuoteMatcher, WhichQuotes } from './plugins/targets/smartQuotesMat
 import { useSmartQuotes } from './plugins/targets/targetsConfig';
 import { shouldWrapKey } from './wrapping';
 
-function adjustForDesiredColumn(args: {
-  position: Position;
-  desiredColumn: number;
-  multicursorIndex: number | undefined;
-}): Position {
-  const { position, desiredColumn, multicursorIndex } = args;
-  // HACK: until we put `desiredColumn` on `Cursor`, only the first cursor will respect it (except after `$`)
-  if (multicursorIndex && multicursorIndex > 0 && desiredColumn !== Number.POSITIVE_INFINITY) {
-    return position;
-  }
-  return position.with({ character: desiredColumn });
-}
-
 /**
  * A movement is something like 'h', 'k', 'w', 'b', 'gg', etc.
  */
@@ -309,32 +296,7 @@ export class MoveDown extends BaseMovement {
   override preservesDesiredColumn = true;
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    if (
-      vimState.currentMode === Mode.Insert &&
-      this.keysPressed[0] === '<down>' &&
-      vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
-      position.line === vimState.document.lineCount - 1 &&
-      vimState.editor.selection.isEmpty
-    ) {
-      // navigate history in interactive window
-      await vscode.commands.executeCommand('interactive.history.next');
-      return vimState.editor.selection.active;
-    }
-
-    if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
-      const moveDownFoldFix = new MoveDownFoldFix();
-      moveDownFoldFix.multicursorIndex = this.multicursorIndex;
-      return moveDownFoldFix.execAction(position, vimState);
-    }
-
-    if (position.line < vimState.document.lineCount - 1) {
-      return adjustForDesiredColumn({
-        position,
-        desiredColumn: vimState.desiredColumn,
-        multicursorIndex: this.multicursorIndex,
-      }).getDown();
-    }
-    return position;
+    return this.execActionWithCount(position, vimState, 1) as Promise<Position>;
   }
 
   public override async execActionForOperator(
@@ -343,6 +305,45 @@ export class MoveDown extends BaseMovement {
   ): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getDown();
+  }
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    // Optimize: jump directly to target line instead of looping
+    count = clamp(count, 1, 99999);
+
+    // Handle special cases with single iteration
+    if (
+      vimState.currentMode === Mode.Insert &&
+      this.keysPressed[0] === '<down>' &&
+      vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
+      position.line === vimState.document.lineCount - 1 &&
+      vimState.editor.selection.isEmpty
+    ) {
+      await vscode.commands.executeCommand('interactive.history.next');
+      return vimState.editor.selection.active;
+    }
+
+    if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
+      return new MoveDownFoldFix().execActionWithCount(position, vimState, count);
+    }
+
+    // For operators, set register mode and calculate target position directly
+    if (vimState.recordedState.operator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+      return position.getDown(count);
+    }
+
+    // Calculate target line directly
+    const targetLine = Math.min(position.line + count, vimState.document.lineCount - 1);
+    if (targetLine === position.line) {
+      return position;
+    }
+
+    return new Position(targetLine, vimState.desiredColumn);
   }
 }
 
@@ -386,6 +387,45 @@ export class MoveUp extends BaseMovement {
   ): Promise<Position> {
     vimState.currentRegisterMode = RegisterMode.LineWise;
     return position.getUp();
+  }
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    // Optimize: jump directly to target line instead of looping
+    count = clamp(count, 1, 99999);
+
+    // Handle special cases with single iteration
+    if (
+      vimState.currentMode === Mode.Insert &&
+      this.keysPressed[0] === '<up>' &&
+      vimState.editor.document.uri.scheme === 'vscode-interactive-input' &&
+      position.line === 0 &&
+      vimState.editor.selection.isEmpty
+    ) {
+      await vscode.commands.executeCommand('interactive.history.previous');
+      return vimState.editor.selection.active;
+    }
+
+    if (configuration.foldfix && vimState.currentMode !== Mode.VisualBlock) {
+      return new MoveUpFoldFix().execActionWithCount(position, vimState, count);
+    }
+
+    // For operators, set register mode and calculate target position directly
+    if (vimState.recordedState.operator) {
+      vimState.currentRegisterMode = RegisterMode.LineWise;
+      return position.getUp(count);
+    }
+
+    // Calculate target line directly
+    const targetLine = Math.max(position.line - count, 0);
+    if (targetLine === position.line) {
+      return position;
+    }
+
+    return new Position(targetLine, vimState.desiredColumn);
   }
 }
 
@@ -697,6 +737,65 @@ export class MoveLeft extends BaseMovement {
         )
       : getLeftWhile(position);
   }
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    // Optimize: calculate target position directly instead of looping
+    count = clamp(count, 1, 99999);
+
+    const shouldWrap = shouldWrapKey(vimState.currentMode, this.keysPressed[0]);
+    const includeEol = [Mode.Insert, Mode.Replace].includes(vimState.currentMode);
+
+    if (shouldWrap) {
+      // For wrapping mode, we need to iterate since it can cross line boundaries
+      // But we can optimize by doing it more efficiently
+      let currentPos = position;
+      for (let i = 0; i < count; i++) {
+        currentPos = currentPos.getLeftThroughLineBreaks(includeEol);
+        if (currentPos.isEqual(position) && i === 0) {
+          // Can't move left (at document start)
+          break;
+        }
+      }
+      return currentPos;
+    } else {
+      // For non-wrapping mode, we can calculate directly
+      const line = vimState.document.lineAt(position.line).text;
+      let targetChar = position.character;
+
+      // Move left count times, respecting surrogate pairs
+      for (let i = 0; i < count; i++) {
+        if (targetChar === 0) {
+          break;
+        }
+
+        // Check for surrogate pair at current position
+        if (
+          isLowSurrogate(line.charCodeAt(targetChar)) &&
+          targetChar > 0 &&
+          isHighSurrogate(line.charCodeAt(targetChar - 1))
+        ) {
+          targetChar--;
+        }
+
+        targetChar--;
+
+        // Check for surrogate pair at new position
+        if (
+          targetChar > 0 &&
+          isLowSurrogate(line.charCodeAt(targetChar)) &&
+          isHighSurrogate(line.charCodeAt(targetChar - 1))
+        ) {
+          targetChar--;
+        }
+      }
+
+      return new Position(position.line, Math.max(0, targetChar));
+    }
+  }
 }
 
 @RegisterAction
@@ -724,6 +823,63 @@ export class MoveRight extends BaseMovement {
           [Mode.Insert, Mode.Replace].includes(vimState.currentMode),
         )
       : getRightWhile(position);
+  }
+
+  public override async execActionWithCount(
+    position: Position,
+    vimState: VimState,
+    count: number,
+  ): Promise<Position | IMovement> {
+    // Optimize: calculate target position directly instead of looping
+    count = clamp(count, 1, 99999);
+
+    const shouldWrap = shouldWrapKey(vimState.currentMode, this.keysPressed[0]);
+    const includeEol = [Mode.Insert, Mode.Replace].includes(vimState.currentMode);
+
+    if (shouldWrap) {
+      // For wrapping mode, we need to iterate since it can cross line boundaries
+      // But we can optimize by doing it more efficiently
+      let currentPos = position;
+      for (let i = 0; i < count; i++) {
+        const prevPos = currentPos;
+        currentPos = currentPos.getRightThroughLineBreaks(includeEol);
+        if (currentPos.isEqual(prevPos)) {
+          // Can't move right (at document end)
+          break;
+        }
+      }
+      return currentPos;
+    } else {
+      // For non-wrapping mode, we can calculate directly
+      const line = vimState.document.lineAt(position.line).text;
+      let targetChar = position.character;
+      const lineLength = line.length;
+
+      // Move right count times, respecting surrogate pairs
+      for (let i = 0; i < count; i++) {
+        if (targetChar >= lineLength) {
+          break;
+        }
+
+        const newTargetChar = targetChar + 1;
+        if (newTargetChar >= lineLength) {
+          targetChar = newTargetChar;
+          break;
+        }
+
+        // Check for surrogate pair at new position
+        if (
+          isLowSurrogate(line.charCodeAt(newTargetChar)) &&
+          isHighSurrogate(line.charCodeAt(targetChar))
+        ) {
+          targetChar = newTargetChar + 1;
+        } else {
+          targetChar = newTargetChar;
+        }
+      }
+
+      return new Position(position.line, Math.min(lineLength, targetChar));
+    }
   }
 }
 
