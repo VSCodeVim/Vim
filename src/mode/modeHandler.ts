@@ -1299,6 +1299,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       revealRange: true,
     },
   ): void {
+    // Guard against editor being disposed or document being closed
+    if (this.vimState.document.isClosed) {
+      return;
+    }
+
     // Draw selection (or cursor)
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
