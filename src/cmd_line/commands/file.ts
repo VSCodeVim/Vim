@@ -138,7 +138,11 @@ export class FileCommand extends ExCommand {
     }
 
     // Need to do this before the split since it loses the activeTextEditor
-    const editorFileUri = vscode.window.activeTextEditor!.document.uri;
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+      return;
+    }
+    const editorFileUri = activeEditor.document.uri;
     const editorFilePath = editorFileUri.fsPath;
 
     // Do the split if requested

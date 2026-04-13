@@ -915,7 +915,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // Don't record an undo point for every action of a macro, only at the very end
     if (
-      ranRepeatableAction &&
+      ranAction &&
+      this.vimState.currentMode === Mode.Normal &&
       !this.vimState.isReplayingMacro &&
       this.vimState.normalCommandState !== NormalCommandState.Executing &&
       this.vimState.dotCommandStatus !== DotCommandStatus.Executing &&
@@ -1298,6 +1299,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       revealRange: true,
     },
   ): void {
+    // Guard against editor being disposed or document being closed
+    if (this.vimState.document.isClosed) {
+      return;
+    }
+
     // Draw selection (or cursor)
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
