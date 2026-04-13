@@ -667,6 +667,7 @@ export class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    // TODO: Consider replacing with getSurrogateAwareLeft()
     const getLeftWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
 
@@ -704,6 +705,7 @@ export class MoveRight extends BaseMovement {
   keys = [['l'], ['<right>'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    // TODO: Consider replacing with getSurrogateAwareRight()
     const getRightWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
       const newPosition = p.getRight();
