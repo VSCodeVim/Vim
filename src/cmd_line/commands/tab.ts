@@ -217,8 +217,12 @@ export class TabCommand extends ExCommand {
       case TabCommandType.New: {
         const hasFile = !(this.arguments.file === undefined || this.arguments.file === '');
         if (hasFile) {
+          const activeEditor = vscode.window.activeTextEditor;
+          if (!activeEditor) {
+            break;
+          }
           const isAbsolute = path.isAbsolute(this.arguments.file!);
-          const currentFilePath = vscode.window.activeTextEditor!.document.uri.fsPath;
+          const currentFilePath = activeEditor.document.uri.fsPath;
           const isInWorkspace =
             vscode.workspace.workspaceFolders !== undefined &&
             vscode.workspace.workspaceFolders.length > 0;

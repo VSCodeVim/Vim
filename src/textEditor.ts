@@ -65,12 +65,21 @@ export class TextEditor {
       return 0;
     }
 
-    return vscode.window.activeTextEditor!.document.lineAt(line).text.length;
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      Logger.warn('getLineLength() called with no active editor');
+      return 0;
+    }
+    return editor.document.lineAt(line).text.length;
   }
 
   /** @deprecated Use `vimState.document.lineAt()` directly */
   static getLine(lineNumber: number): vscode.TextLine {
-    return vscode.window.activeTextEditor!.document.lineAt(lineNumber);
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      throw new Error('getLine() called with no active editor');
+    }
+    return editor.document.lineAt(lineNumber);
   }
 
   static getCharAt(document: vscode.TextDocument, position: Position): string {

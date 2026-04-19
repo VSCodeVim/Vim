@@ -61,7 +61,9 @@ export async function getAndUpdateModeHandler(
 
     if (previousActiveEditorUri) {
       const prevHandler = ModeHandlerMap.get(previousActiveEditorUri);
-      prevHandler!.focusChanged = true;
+      if (prevHandler) {
+        prevHandler.focusChanged = true;
+      }
     }
   }
 
