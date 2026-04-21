@@ -222,7 +222,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
       if (relativePath !== oldFileRegister) {
         if (oldFileRegister && oldFileRegister !== '') {
-          Register.setReadonlyRegister('#', oldFileRegister as string);
+          Register.setReadonlyRegister('#', oldFileRegister);
         }
         Register.setReadonlyRegister('%', relativePath);
       }
