@@ -1001,6 +1001,23 @@ class ToggleCaseAndMoveForward extends BaseCommand {
     return newText;
   }
 
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const isVisual =
+      vimState.currentMode === Mode.Visual ||
+      vimState.currentMode === Mode.VisualLine ||
+      vimState.currentMode === Mode.VisualBlock;
+
+    if (isVisual) {
+      return super.doesActionApply(vimState, keysPressed);
+    }
+
+    if (configuration.tildeop) {
+      return false;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const count = vimState.recordedState.count || 1;
     const range = new vscode.Range(

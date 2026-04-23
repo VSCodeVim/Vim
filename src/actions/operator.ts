@@ -12,6 +12,7 @@ import { Register, RegisterMode } from './../register/register';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
 import { BaseAction, RegisterAction } from './base';
+import { BaseMovement } from './baseMotion';
 
 export abstract class BaseOperator extends BaseAction {
   override actionType = 'operator' as const;
@@ -424,6 +425,7 @@ class LowerCaseWithMotion extends LowerCaseOperator {
 @RegisterAction
 class ToggleCaseOperator extends ChangeCaseOperator {
   public keys = [['g', '~'], ['~']];
+  override createsUndoPoint = true;
 
   public transformText(text: string): string {
     let newText = '';
@@ -435,6 +437,46 @@ class ToggleCaseOperator extends ChangeCaseOperator {
       newText += toggled;
     }
     return newText;
+  }
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    const isVisual =
+      vimState.currentMode === Mode.Visual ||
+      vimState.currentMode === Mode.VisualLine ||
+      vimState.currentMode === Mode.VisualBlock;
+
+    if (isVisual) {
+      return super.doesActionApply(vimState, keysPressed);
+    }
+
+    if (keysPressed.length === 1 && keysPressed[0] === '~') {
+      return configuration.tildeop;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
+  }
+}
+
+// Add motion support for '~' in operator-pending context
+@RegisterAction
+class TildeMotion extends BaseMovement {
+  public override keys = [['~']];
+  public override modes = [Mode.Normal];
+  override createsUndoPoint = true;
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (!vimState.recordedState.operator) {
+      return false;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
+  }
+
+  public override async execAction(position: Position, vimState: VimState) {
+    return {
+      start: position.getLineBegin(),
+      stop: position.getLineEnd(),
+    };
   }
 }
 
