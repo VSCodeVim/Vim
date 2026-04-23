@@ -451,6 +451,10 @@
       "title": "Vim",
       "type": "object",
       "properties": {
+        "vim.tildeop": {
+          "type": "boolean",
+          "default": false
+        },
         "vim.normalModeKeyBindings": {
           "type": "array",
           "markdownDescription": "Remapped keys in Normal mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",

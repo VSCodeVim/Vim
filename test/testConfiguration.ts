@@ -15,6 +15,7 @@ export class Configuration implements IConfiguration {
 
   [key: string]: any;
 
+  tildeop = false;
   useSystemClipboard = false;
   useCtrlKeys = false;
   overrideCopy = true;
