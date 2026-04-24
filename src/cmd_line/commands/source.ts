@@ -59,7 +59,13 @@ export class SourceCommand extends ExCommand {
   }
 
   private static async sourceFile(vimState: VimState, filePath: string): Promise<void> {
-    const content = await readFileAsync(filePath, 'utf8');
+    let content: string;
+    try {
+      content = await readFileAsync(filePath, 'utf8');
+    } catch {
+      StatusBar.setText(vimState, `E484: Can't open file ${path.basename(filePath)}`, true);
+      return;
+    }
     const lines = content.split(/\r?\n/);
     const vscodeCommands = await vscode.commands.getCommands();
 
@@ -72,17 +78,17 @@ export class SourceCommand extends ExCommand {
       }
 
       try {
-        const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
+        const remap = await vimrcKeyRemappingBuilder.build(trimmed, vscodeCommands);
         if (remap) {
           VimrcImpl.addRemapToConfig(configuration, remap);
           continue;
         }
-        const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(line);
+        const unremap = await vimrcKeyRemappingBuilder.buildUnmapping(trimmed);
         if (unremap) {
           VimrcImpl.removeRemapFromConfig(configuration, unremap);
           continue;
         }
-        const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(line);
+        const clearRemap = await vimrcKeyRemappingBuilder.buildClearMapping(trimmed);
         if (clearRemap) {
           VimrcImpl.clearRemapsFromConfig(configuration, clearRemap);
           continue;
@@ -114,7 +120,7 @@ export class SourceCommand extends ExCommand {
   private static resolvePath(vimState: VimState, file: string): string {
     const expanded = SourceCommand.expandHome(file);
     if (path.isAbsolute(expanded)) {
-      return expanded;
+      return path.resolve(expanded);
     }
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (workspaceFolder) {
@@ -132,6 +138,7 @@ export class SourceCommand extends ExCommand {
     if (!match) {
       return filePath;
     }
-    return path.join(os.homedir(), match[2]);
+    const relativePath = match[2].replace(/^[/\\]+/, '');
+    return path.join(os.homedir(), relativePath);
   }
 }

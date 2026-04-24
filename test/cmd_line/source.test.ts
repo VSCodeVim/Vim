@@ -113,7 +113,7 @@ suite(':source', () => {
   });
 
   test('reports missing file via status bar', async () => {
-    const missing = path.join(os.tmpdir(), 'vscodevim-source-does-not-exist.vim');
+    const missing = tmpFile('does-not-exist.vim');
     await runSource(modeHandler, missing);
     assert.ok(
       StatusBar.getText().includes("Can't open file"),
