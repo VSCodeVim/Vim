@@ -1003,12 +1003,11 @@ class ToggleCaseAndMoveForward extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const count = vimState.recordedState.count || 1;
-    const line = vimState.document.lineAt(position.line).text;
     const range = new vscode.Range(
       position,
       shouldWrapKey(vimState.currentMode, '~')
         ? position.getOffsetThroughLineBreaks(count)
-        : position.getSurrogateAwareRight(line, count),
+        : position.getSurrogateAwareRight(vimState.document, count),
     );
 
     vimState.recordedState.transformer.replace(
@@ -1028,9 +1027,8 @@ export class CommandUnicodeName extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const line = vimState.document.lineAt(position.line).text;
     const char = vimState.document.getText(
-      new vscode.Range(position, position.getSurrogateAwareRight(line)),
+      new vscode.Range(position, position.getSurrogateAwareRight(vimState.document)),
     );
     const charCode = char.codePointAt(0) ?? 0;
     // TODO: Handle charCode > 127 by also including <M-x>

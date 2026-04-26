@@ -155,12 +155,12 @@ declare module 'vscode' {
      * Like getRight(), but skips past surrogate pairs so the cursor never
      * lands between the high and low surrogate of an emoji.
      */
-    getSurrogateAwareRight(line: string, count?: number): Position;
+    getSurrogateAwareRight(document: vscode.TextDocument, count?: number): Position;
     /**
      * Like getLeft(), but skips past surrogate pairs so the cursor never
      * lands between the high and low surrogate of an emoji.
      */
-    getSurrogateAwareLeft(line: string, count?: number): Position;
+    getSurrogateAwareLeft(document: vscode.TextDocument, count?: number): Position;
 
     getLeftThroughLineBreaks(includeEol?: boolean): Position;
     getRightThroughLineBreaks(includeEol?: boolean): Position;
@@ -330,9 +330,10 @@ Position.prototype.getRight = function (this: Position, count = 1): Position {
 
 Position.prototype.getSurrogateAwareRight = function (
   this: Position,
-  line: string,
+  document: vscode.TextDocument,
   count = 1,
 ): Position {
+  const line = document.lineAt(this.line).text;
   // eslint-disable-next-line @typescript-eslint/no-this-alias
   let pos: Position = this;
   for (let i = 0; i < count; i++) {
@@ -351,9 +352,10 @@ Position.prototype.getSurrogateAwareRight = function (
 
 Position.prototype.getSurrogateAwareLeft = function (
   this: Position,
-  line: string,
+  document: vscode.TextDocument,
   count = 1,
 ): Position {
+  const line = document.lineAt(this.line).text;
   // eslint-disable-next-line @typescript-eslint/no-this-alias
   let pos: Position = this;
   for (let i = 0; i < count; i++) {

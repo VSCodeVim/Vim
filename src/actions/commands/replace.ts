@@ -33,8 +33,7 @@ export class ReplaceCharacter extends BaseCommand {
       return;
     }
 
-    const line = vimState.document.lineAt(position.line).text;
-    const endPos = position.getSurrogateAwareRight(line, timesToRepeat);
+    const endPos = position.getSurrogateAwareRight(vimState.document, timesToRepeat);
 
     if (toReplace === '<tab>') {
       vimState.recordedState.transformer.delete(new Range(position, endPos));
