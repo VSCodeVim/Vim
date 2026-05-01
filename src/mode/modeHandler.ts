@@ -208,14 +208,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       (e.selections.length !== this.vimState.cursors.length || this.vimState.isMultiCursor) &&
       this.vimState.currentMode !== Mode.VisualBlock
     ) {
-      const allowedModes: Mode[] = [
-        Mode.Normal,
-        Mode.Visual,
-        Mode.VisualLine,
-        Mode.Select,
-        Mode.SelectLine,
-        Mode.SelectBlock,
-      ];
+      const allowedModes = [Mode.Normal];
       if (!isSnippetSelectionChange()) {
         allowedModes.push(Mode.Insert, Mode.Replace);
       }
@@ -236,9 +229,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // We shouldn't go to visual mode on any other mode, because the other visual modes are handled
         // very differently than vscode so only our extension will create them. And the other modes
         // like the plugin modes shouldn't be changed or else it might mess up the plugins actions.
-
-        // TODO: maybe change to select mode if it was previously on insert/replace mode,
-        // otherwise, change to visual mode?!
         await this.setCurrentMode(Mode.Visual);
       }
       return this.updateView({ drawSelection: false, revealRange: false });
@@ -253,15 +243,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (e.kind === vscode.TextEditorSelectionChangeKind.Command) {
           // This 'Command' kind is triggered when using a command like 'editor.action.smartSelect.grow'
           // but it is also triggered when we set the 'editor.selections' on 'updateView'.
-          const allowedModes: Mode[] = [
-            Mode.Normal,
-            Mode.Visual,
-            Mode.VisualLine,
-            Mode.VisualBlock,
-            Mode.Select,
-            Mode.SelectLine,
-            Mode.SelectBlock,
-          ];
+          const allowedModes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
           if (!isSnippetSelectionChange()) {
             // if we just inserted a snippet then don't allow insert modes to go to visual mode
             allowedModes.push(Mode.Insert, Mode.Replace);
@@ -270,25 +252,17 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             // Since the selections weren't ignored then probably we got change of selection from
             // a command, so we need to update our start and stop positions. This is where commands
             // like 'editor.action.smartSelect.grow' are handled.
-            if (
-              this.vimState.currentMode === Mode.Visual ||
-              this.vimState.currentMode === Mode.Select
-            ) {
-              Logger.trace('Updating Visual/Select Selection!');
+            if (this.vimState.currentMode === Mode.Visual) {
+              Logger.trace('Updating Visual Selection!');
               this.vimState.cursor = Cursor.fromSelection(selection);
               this.updateView({ drawSelection: false, revealRange: false });
 
-              // Store selection for commands like gv. Only the Visual variants
-              // are valid for `lastVisualSelection.mode`; the other branch
-              // here is Mode.Select (per the outer `if`), and `gv` reselects
-              // in Visual mode per Vim semantics — so skip storing for Select.
-              if (this.vimState.currentMode === Mode.Visual) {
-                this.vimState.lastVisualSelection = {
-                  mode: this.vimState.currentMode,
-                  start: this.vimState.cursorStartPosition,
-                  end: this.vimState.cursorStopPosition,
-                };
-              }
+              // Store selection for commands like gv
+              this.vimState.lastVisualSelection = {
+                mode: Mode.Visual,
+                start: this.vimState.cursorStartPosition,
+                end: this.vimState.cursorStopPosition,
+              };
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
               Logger.trace('Creating Visual Selection from command!');
@@ -811,7 +785,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       if (action.isCompleteAction) {
         ranAction = true;
-        this.vimState.recordedState.count = 0;
       }
 
       if (action.createsUndoPoint) {
@@ -976,9 +949,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     recordedState.actionKeys = [];
     this.vimState.currentRegisterMode = undefined;
 
-    // Collapse each cursor in non-visual modes (Normal/Insert/Replace) so that
-    // start = stop. Visual/Select modes preserve the selection range.
-    if ([Mode.Normal, Mode.Insert, Mode.Replace].includes(this.currentMode)) {
+    // If we're in Normal mode, collapse each cursor down to one character
+    if (this.currentMode === Mode.Normal) {
       this.vimState.cursors = this.vimState.cursors.map((cursor) => Cursor.atPosition(cursor.stop));
     }
 

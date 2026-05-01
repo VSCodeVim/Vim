@@ -341,9 +341,14 @@ export class VimState implements vscode.Disposable {
     }
 
     if (isVisualMode(mode) && !isVisualMode(this.currentMode)) {
-      // Entering a visual/select mode: remember where to return to. If `<C-o>`
-      // was used (modeToReturnToAfterNormalCommand is set), prefer that.
-      this.modeBeforeEnteringVisualMode = this.modeToReturnToAfterNormalCommand ?? this.currentMode;
+      // Entering a visual/select mode. Remember where to return to ONLY if we
+      // came from Insert or Replace (the `<C-o>` / `<S-arrow>` from-Insert
+      // flow); other source modes (Normal, SearchInProgressMode, etc.) go
+      // back to Normal on exit, so don't pollute modeBeforeEnteringVisualMode.
+      const target = this.modeToReturnToAfterNormalCommand ?? this.currentMode;
+      this.modeBeforeEnteringVisualMode = [Mode.Insert, Mode.Replace].includes(target)
+        ? target
+        : undefined;
     } else if (isVisualMode(this.currentMode) && !isVisualMode(mode)) {
       // Leaving a visual/select mode. If we had stored an Insert/Replace return
       // target and the new mode isn't Insert/Replace itself, force the return.

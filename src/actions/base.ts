@@ -159,7 +159,7 @@ export abstract class BaseCommand extends BaseAction {
    * that means that after the command is run we can clear recordedState.count because
    * it will have been handled already.
    */
-  public isCompleteAction = false;
+  public isCompleteAction = true;
 
   /**
    * In multi-cursor mode, do we run this command for every cursor, or just once?

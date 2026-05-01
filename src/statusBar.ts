@@ -171,19 +171,53 @@ export function statusBarText(vimState: VimState) {
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
       : '|';
-  switch (vimState.modeData.mode) {
+  switch (vimState.currentModeIncludingPseudoModes) {
     case Mode.Normal:
       return '-- NORMAL --';
     case Mode.Insert:
       return '-- INSERT --';
+    case Mode.InsertNormal:
+      return '-- (insert) --';
+    case Mode.Replace:
+      return '-- REPLACE --';
+    case Mode.ReplaceNormal:
+      return '-- (replace) --';
     case Mode.Visual:
       return '-- VISUAL --';
     case Mode.VisualBlock:
       return '-- VISUAL BLOCK --';
     case Mode.VisualLine:
       return '-- VISUAL LINE --';
-    case Mode.Replace:
-      return '-- REPLACE --';
+    case Mode.InsertVisual:
+      return '-- (insert) VISUAL --';
+    case Mode.InsertVisualBlock:
+      return '-- (insert) VISUAL BLOCK --';
+    case Mode.InsertVisualLine:
+      return '-- (insert) VISUAL LINE --';
+    case Mode.ReplaceVisual:
+      return '-- (replace) VISUAL --';
+    case Mode.ReplaceVisualBlock:
+      return '-- (replace) VISUAL BLOCK --';
+    case Mode.ReplaceVisualLine:
+      return '-- (replace) VISUAL LINE --';
+    case Mode.Select:
+      return '-- SELECT --';
+    case Mode.SelectBlock:
+      return '-- SELECT BLOCK --';
+    case Mode.SelectLine:
+      return '-- SELECT LINE --';
+    case Mode.InsertSelect:
+      return '-- (insert) SELECT --';
+    case Mode.InsertSelectBlock:
+      return '-- (insert) SELECT BLOCK --';
+    case Mode.InsertSelectLine:
+      return '-- (insert) SELECT LINE --';
+    case Mode.ReplaceSelect:
+      return '-- (replace) SELECT --';
+    case Mode.ReplaceSelectBlock:
+      return '-- (replace) SELECT BLOCK --';
+    case Mode.ReplaceSelectLine:
+      return '-- (replace) SELECT LINE --';
     case Mode.EasyMotionMode:
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:
@@ -193,9 +227,11 @@ export function statusBarText(vimState: VimState) {
     case Mode.Disabled:
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
-      return vimState.modeData.commandLine.display(cursorChar);
     case Mode.CommandlineInProgress:
-      return vimState.modeData.commandLine.display(cursorChar);
+      return vimState.modeData.mode === Mode.SearchInProgressMode ||
+        vimState.modeData.mode === Mode.CommandlineInProgress
+        ? vimState.modeData.commandLine.display(cursorChar)
+        : '';
     default:
       return '';
   }

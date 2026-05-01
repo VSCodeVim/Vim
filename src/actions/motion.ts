@@ -351,8 +351,6 @@ class MoveDownArrow extends MoveDown {
   override keys = [['<down>']];
   override modes = [
     Mode.Normal,
-    Mode.Insert,
-    Mode.Replace,
     Mode.Visual,
     Mode.VisualLine,
     Mode.VisualBlock,
@@ -723,7 +721,7 @@ class PrevMarkLinewise extends BaseMovement {
 
 @RegisterAction
 export class MoveLeft extends BaseMovement {
-  keys = [['h']];
+  keys = [['h'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     const getLeftWhile = (p: Position): Position => {
@@ -781,30 +779,8 @@ class MoveLeftArrow extends MoveLeft {
 }
 
 @RegisterAction
-class BackSpaceInNormalMode extends BaseMovement {
-  override modes = [Mode.Normal];
-  keys = ['<BS>'];
-
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getLeftThroughLineBreaks();
-  }
-}
-
-@RegisterAction
-class BackSpaceInVisualMode extends BaseMovement {
-  override modes = [Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-  keys = ['<BS>'];
-
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return configuration.whichwrap.includes('b')
-      ? position.getLeftThroughLineBreaks()
-      : position.getLeft();
-  }
-}
-
-@RegisterAction
 export class MoveRight extends BaseMovement {
-  keys = [['l']];
+  keys = [['l'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     const getRightWhile = (p: Position): Position => {
@@ -1308,15 +1284,6 @@ class MoveCtrlShiftEnd extends BaseMovement {
     );
     const line = isIMovement(linePos) ? linePos.stop.line : linePos.line;
     return new Position(line, vimState.document.lineAt(line).text.length);
-  }
-}
-
-@RegisterAction
-class MoveRightWithSpace extends BaseMovement {
-  keys = [' '];
-
-  public override async execAction(position: Position, vimState: VimState): Promise<Position> {
-    return position.getRightThroughLineBreaks();
   }
 }
 
