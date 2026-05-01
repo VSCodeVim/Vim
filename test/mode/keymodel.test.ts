@@ -140,6 +140,24 @@ suite('keymodel', () => {
       end: ['a|e'],
       endMode: Mode.Normal,
     });
+
+    newTest({
+      title: 'count prefix: 3<S-right> selects three chars',
+      config,
+      start: ['a|bcdef'],
+      keysPressed: '3<S-right>',
+      end: ['abcde|f'],
+      endMode: Mode.Visual,
+    });
+
+    newTest({
+      title: 'count prefix: 2<S-down> extends Visual two lines down',
+      config,
+      start: ['ab|cd', 'efgh', 'ijkl'],
+      keysPressed: '2<S-down>',
+      end: ['abcd', 'efgh', 'ijk|l'],
+      endMode: Mode.Visual,
+    });
   });
 
   suite("keymodel='' (terminal-Vim — shifted special keys do NOT start a selection)", () => {

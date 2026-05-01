@@ -88,4 +88,61 @@ suite('issue #2224: VSCode selection commands enter Visual', () => {
     end: ['abcd', 'ef|gh'],
     endMode: Mode.Visual,
   });
+
+  // The actual user-visible promise of #2224: after a VSCode selection command,
+  // Vim operators must act on the promoted selection. Mode-only assertions
+  // above can pass even if cursor.start/cursor.stop are stale; these tests pin
+  // that the selection is operable.
+
+  newTest({
+    title: 'd after expandLineSelection deletes the full line',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'l'],
+          commands: ['expandLineSelection'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['the |quick brown fox', 'jumps over the lazy dog'],
+    keysPressed: ' ld',
+    end: ['|jumps over the lazy dog'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'd after cursorRightSelect deletes the selected char',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'r'],
+          commands: ['cursorRightSelect'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['a|bcd'],
+    keysPressed: ' rd',
+    end: ['a|cd'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'y after editor.action.smartSelect.grow yanks the grown selection',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'g'],
+          commands: ['editor.action.smartSelect.grow'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['function fo|o() { return 42; }'],
+    keysPressed: ' gy',
+    end: ['function |foo() { return 42; }'],
+    endMode: Mode.Normal,
+    registers: { '"': 'foo' },
+  });
 });
