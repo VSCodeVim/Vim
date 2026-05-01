@@ -185,12 +185,12 @@
       {
         "key": "ctrl+left",
         "command": "extension.vim_ctrl+left",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+right",
         "command": "extension.vim_ctrl+right",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+shift+left",
@@ -215,12 +215,12 @@
       {
         "key": "ctrl+home",
         "command": "extension.vim_ctrl+home",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+end",
         "command": "extension.vim_ctrl+end",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+shift+home",

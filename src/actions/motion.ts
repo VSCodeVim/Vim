@@ -468,16 +468,6 @@ class MoveUpArrow extends MoveUp {
   }
 }
 
-// TODO: reconcile against master — berknam included an `ArrowsInReplaceMode`
-// parent + 4 per-arrow subclasses to handle arrow keys in Replace mode (which
-// must rebuild `replaceState`). Master handles arrow keys in Replace via a
-// different path. Re-applying berknam's classes verbatim risks duplicate
-// `@RegisterAction` registrations for `<up>`/`<down>`/`<left>`/`<right>` in
-// Replace mode. Verification step #9 (test triage) will catch any regression
-// here; if Replace-mode arrows misbehave, port the body of
-// `ArrowsInReplaceMode.execAction` from `/tmp/vim-pr5842-ref/src/actions/motion.ts`
-// into the existing Replace-mode arrow path on master.
-
 @RegisterAction
 class CommandNextSearchMatch extends BaseMovement {
   keys = ['n'];
@@ -1050,8 +1040,6 @@ class MoveCtrlRightArrow extends BaseMovement {
     Mode.Select,
     Mode.SelectLine,
     Mode.SelectBlock,
-    Mode.Replace,
-    Mode.Insert,
   ];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1074,8 +1062,6 @@ class MoveCtrlLeftArrow extends BaseMovement {
     Mode.Select,
     Mode.SelectLine,
     Mode.SelectBlock,
-    Mode.Replace,
-    Mode.Insert,
   ];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1101,8 +1087,6 @@ class MoveCtrlHome extends BaseMovement {
     Mode.Select,
     Mode.SelectLine,
     Mode.SelectBlock,
-    Mode.Replace,
-    Mode.Insert,
   ];
 
   public override async execActionWithCount(
@@ -1133,8 +1117,6 @@ class MoveCtrlEnd extends BaseMovement {
     Mode.Select,
     Mode.SelectLine,
     Mode.SelectBlock,
-    Mode.Replace,
-    Mode.Insert,
   ];
 
   public override async execActionWithCount(

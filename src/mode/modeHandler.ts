@@ -485,8 +485,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const oldFullMode = this.vimState.currentModeIncludingPseudoModes;
     const oldStatusBarText = StatusBar.getText();
     const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
-    const oldWaitingForRegisterKeyAfterCtrlR =
-      this.vimState.recordedState.waitingForRegisterKeyAfterCtrlR;
 
     let handledAsRemap = false;
     let handledAsAction = false;
@@ -596,18 +594,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // waiting on a register key or the `?` character and any following character
       // when waiting on digraph keys. The 'oldWaitingForAnotherActionKey' is used
       // to call the updateView after we are no longer waiting keys so that any
-      // existing overlapped key is removed. The 'waitingForRegisterKeyAfterCtrlR'
-      // is used to show and remove the virtual `"` character when waiting on a
-      // register key.
+      // existing overlapped key is removed.
       if (
         ((this.vimState.currentMode === Mode.Insert ||
           this.vimState.currentMode === Mode.Replace) &&
           (this.vimState.recordedState.bufferedKeys.length > 0 ||
             this.vimState.recordedState.waitingForAnotherActionKey ||
             this.vimState.recordedState.waitingForAnotherActionKey !==
-              oldWaitingForAnotherActionKey ||
-            this.vimState.recordedState.waitingForRegisterKeyAfterCtrlR !==
-              oldWaitingForRegisterKeyAfterCtrlR)) ||
+              oldWaitingForAnotherActionKey)) ||
         this.vimState.currentModeIncludingPseudoModes !== oldFullMode
       ) {
         // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
@@ -638,14 +632,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const recordedState = this.vimState.recordedState;
     recordedState.actionKeys.push(key);
     void VSCodeContext.set('vim.command', recordedState.commandString);
-
-    if (
-      this.vimState.recordedState.waitingForRegisterKeyAfterCtrlR &&
-      !Register.isValidRegister(key)
-    ) {
-      this.vimState.recordedState = new RecordedState();
-      return false;
-    }
 
     const action = getRelevantAction(recordedState.actionKeys, this.vimState);
     switch (action) {
@@ -1555,8 +1541,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         } else if (virtualKey === '<C-k>') {
           virtualKey = '?';
         }
-      } else if (this.vimState.recordedState.waitingForRegisterKeyAfterCtrlR) {
-        virtualKey = '"';
       }
       // Don't show keys with `<` like `<C-x>` but show everything else
       virtualKey = virtualKey && /<[^>]+>/.test(virtualKey) ? undefined : virtualKey;
