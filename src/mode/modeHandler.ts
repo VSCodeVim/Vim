@@ -404,13 +404,18 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
         }
 
-        this.vimState.cursorStartPosition = selectionStart;
+        // Update both cursor.start (anchor) and cursor.stop (active) so that
+        // operators like `d`/`y`/`c` see the full selection range. Setting
+        // only cursorStartPosition (a previous bug) left cursor.stop stale at
+        // its pre-drag position, so `d` after a mouse drag deleted only the
+        // first character. Covered by test/mode/mouseSelection.test.ts.
+        this.vimState.cursor = new Cursor(selectionStart, selection.active);
 
         // If we prevented from clicking past eol but it is part of this selection, include the last char
         if (this.lastClickWasPastEol) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
           this.vimState.editor.selection = new vscode.Selection(newStart, selection.active);
-          this.vimState.cursorStartPosition = selectionStart;
+          this.vimState.cursor = new Cursor(selectionStart, selection.active);
           this.lastClickWasPastEol = false;
         }
 
