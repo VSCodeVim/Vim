@@ -318,6 +318,36 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           return;
         }
 
+        // External Keyboard-kind events that produce a non-empty selection (e.g.
+        // VSCode `expandLineSelection`, `cursorRightSelect`, `cursorDownSelect`,
+        // or any extension command that sets a selection without going through
+        // VSCodeVim's keybinding interception) should promote us into Visual,
+        // matching the behavior already implemented for Command-kind events at
+        // lines 243-281. Internal Vim navigation (e.g. `j`, `k`, `l`, `h`)
+        // produces empty selections (anchor === active) and is unaffected by
+        // this branch. This closes the second half of issue #2224.
+        if (
+          e.kind === vscode.TextEditorSelectionChangeKind.Keyboard &&
+          !selection.active.isEqual(selection.anchor)
+        ) {
+          const allowedModes = [Mode.Normal];
+          if (!isSnippetSelectionChange()) {
+            allowedModes.push(Mode.Insert, Mode.Replace);
+          }
+          if (allowedModes.includes(this.vimState.currentMode)) {
+            Logger.trace('Creating Visual Selection from keyboard event!');
+            this.vimState.cursor = Cursor.fromSelection(selection);
+            await this.setCurrentMode(Mode.Visual);
+            this.updateView({ drawSelection: false, revealRange: false });
+            this.vimState.lastVisualSelection = {
+              mode: Mode.Visual,
+              start: this.vimState.cursorStartPosition,
+              end: this.vimState.cursorStopPosition,
+            };
+            return;
+          }
+        }
+
         // Here we allow other 'cursorMove' commands to update our cursors in case there is another
         // extension making cursor changes that we need to catch.
         //
