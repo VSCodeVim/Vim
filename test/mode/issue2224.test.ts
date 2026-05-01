@@ -3,30 +3,26 @@ import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
 // Coverage for issue #2224: native VSCode selection-changing commands should
-// promote VSCodeVim out of NORMAL into VISUAL so that subsequent Vim
-// operators (`d`, `y`, `c`, etc.) operate on the selection. The promotion
-// happens in `handleSelectionChange` (modeHandler.ts) when a selection event
-// arrives with kind=Command (e.g. smartSelect.grow) or kind=Keyboard with a
-// non-empty selection (e.g. expandLineSelection, cursorRightSelect) while
-// VSCodeVim is in Normal/Insert/Replace.
+// promote VSCodeVim out of Normal into Visual so subsequent operators
+// (`d`, `y`, `c`, etc.) act on the selection.
 //
-// The Keyboard-kind branch was added as part of closing #2224 — see
-// modeHandler.ts:320-345. The Command-kind branch already existed at master
-// (see test/mode/modeVisual.test.ts:1740 for the existing smartSelect.grow
-// test). Regression-guards for non-promoting cases (Vim navigation `j`, `k`,
-// `cursorRight`, etc.) are in test/mode/selectionPromotion.test.ts.
+// `handleSelectionChange` promotes on:
+//   - Command-kind events with non-empty selections
+//     (e.g. `editor.action.smartSelect.grow`)
+//   - Keyboard-kind events with non-empty selections
+//     (e.g. `expandLineSelection`, `cursorRightSelect`)
 //
-// Pattern: bind the VSCode command to a leader keybinding and assert the
-// resulting Vim mode after the keypress (same pattern as
-// modeVisual.test.ts:1747).
+// Tests bind each VSCode command to a leader key so the harness can dispatch
+// it and observe the resulting Vim mode. Negative cases (Vim navigation that
+// must NOT promote) live in `selectionPromotion.test.ts`.
 
-suite('issue #2224: VSCode external commands enter Visual', () => {
+suite('issue #2224: VSCode selection commands enter Visual', () => {
   setup(async () => {
     await setupWorkspace();
   });
 
   newTest({
-    title: 'H1: expandLineSelection from Normal enters Visual (line-selected)',
+    title: 'expandLineSelection from Normal enters Visual',
     config: {
       normalModeKeyBindings: [
         {
@@ -38,13 +34,12 @@ suite('issue #2224: VSCode external commands enter Visual', () => {
     },
     start: ['the |quick brown fox', 'jumps over the lazy dog'],
     keysPressed: ' l',
-    // expandLineSelection makes selection (0,0)-(1,0); cursor.stop reported (1,0).
     end: ['the quick brown fox', '|jumps over the lazy dog'],
     endMode: Mode.Visual,
   });
 
   newTest({
-    title: 'H2: editor.action.smartSelect.grow from Normal enters Visual (regression-protect)',
+    title: 'editor.action.smartSelect.grow from Normal enters Visual',
     config: {
       normalModeKeyBindings: [
         {
@@ -54,16 +49,14 @@ suite('issue #2224: VSCode external commands enter Visual', () => {
       ],
       leader: ' ',
     },
-    // smartSelect on a word grows to the word; canonical #2224 case.
     start: ['function fo|o() { return 42; }'],
     keysPressed: ' g',
-    // grew to 'function foo' (cols 0-11); Visual fwd shift → cursor.stop = col 12
     end: ['function foo|() { return 42; }'],
     endMode: Mode.Visual,
   });
 
   newTest({
-    title: 'H3: cursorRightSelect (VSCode-native Shift+Right) from Normal enters Visual',
+    title: 'cursorRightSelect from Normal enters Visual',
     config: {
       normalModeKeyBindings: [
         {
@@ -75,13 +68,12 @@ suite('issue #2224: VSCode external commands enter Visual', () => {
     },
     start: ['a|bcd'],
     keysPressed: ' r',
-    // selection from anchor (0,1) to active (0,2); harness reports cursor.stop = col 2
     end: ['ab|cd'],
     endMode: Mode.Visual,
   });
 
   newTest({
-    title: 'H4: cursorDownSelect (VSCode-native Shift+Down) from Normal enters Visual',
+    title: 'cursorDownSelect from Normal enters Visual',
     config: {
       normalModeKeyBindings: [
         {
@@ -93,7 +85,6 @@ suite('issue #2224: VSCode external commands enter Visual', () => {
     },
     start: ['ab|cd', 'efgh'],
     keysPressed: ' d',
-    // cursorDownSelect from (0,2) makes selection (0,2)-(1,2)
     end: ['abcd', 'ef|gh'],
     endMode: Mode.Visual,
   });

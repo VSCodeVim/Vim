@@ -2,19 +2,19 @@ import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
-// Constraint regression suite for the handleSelectionChange Visual-promotion
-// logic. The promotion path needs to fire on *external* selection-change
-// events (e.g. expandLineSelection, smartSelect.grow, cursorRightSelect)
-// while leaving routine Vim navigation untouched. The cases below exercise
-// the navigation half — cursor motions and cursor-move VSCode commands that
-// fire selection events but must NOT pull us into Visual mode.
+// Negative regression suite for `handleSelectionChange`'s Visual-promotion
+// logic. The promotion path needs to fire on external selection events
+// (covered by `issue2224.test.ts`) WITHOUT pulling routine Vim navigation
+// or cursor-only VSCode commands into Visual. These tests pin the latter:
+// every motion below produces an empty selection (anchor === active) and
+// must therefore NOT trigger Visual promotion.
 
-suite('selection-promotion regression-guards', () => {
+suite('selection promotion: navigation must not enter Visual', () => {
   setup(async () => {
     await setupWorkspace();
   });
 
-  suite('Normal-mode motions stay in Normal (do not promote on Keyboard-kind events)', () => {
+  suite('Normal-mode motions stay in Normal', () => {
     newTest({
       title: 'j stays in Normal',
       start: ['ab|cd', 'efgh'],
@@ -88,7 +88,7 @@ suite('selection-promotion regression-guards', () => {
     });
   });
 
-  suite('Insert-mode arrows stay in Insert (no spurious Visual promotion)', () => {
+  suite('Insert-mode arrows stay in Insert', () => {
     newTest({
       title: 'i + <right> stays in Insert',
       start: ['a|bcd'],
@@ -106,7 +106,7 @@ suite('selection-promotion regression-guards', () => {
     });
   });
 
-  suite('Cursor-only VSCode commands stay in Normal (cursorRight, cursorDown)', () => {
+  suite('cursor-only VSCode commands stay in Normal', () => {
     newTest({
       title: 'cursorRight (non-select) stays in Normal',
       config: {
@@ -132,12 +132,12 @@ suite('selection-promotion regression-guards', () => {
     });
   });
 
-  suite('Visual-mode motions stay in Visual (do not exit on internal Keyboard events)', () => {
+  suite('Visual-mode motions stay in Visual', () => {
     newTest({
       title: 'v then l stays in Visual',
       start: ['a|bcd'],
       keysPressed: 'vl',
-      end: ['abc|d'], // logical col 2 + Visual fwd shift = col 3
+      end: ['abc|d'],
       endMode: Mode.Visual,
     });
 
@@ -145,7 +145,7 @@ suite('selection-promotion regression-guards', () => {
       title: 'v then j stays in Visual',
       start: ['ab|cd', 'efgh'],
       keysPressed: 'vj',
-      end: ['abcd', 'efg|h'], // forward Visual fwd shift
+      end: ['abcd', 'efg|h'],
       endMode: Mode.Visual,
     });
 
@@ -153,7 +153,7 @@ suite('selection-promotion regression-guards', () => {
       title: 'v then w stays in Visual',
       start: ['hel|lo world'],
       keysPressed: 'vw',
-      end: ['hello w|orld'], // word-begin at col 6, +1 shift
+      end: ['hello w|orld'],
       endMode: Mode.Visual,
     });
   });

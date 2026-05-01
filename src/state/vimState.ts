@@ -122,10 +122,10 @@ export class VimState implements vscode.Disposable {
   public actionCount = 0;
 
   /**
-   * Backwards-compat alias for master's pre-#5842 boolean. Master's `insert.ts`
-   * / `put.ts` set/read this; #5842 introduced the typed
-   * `modeToReturnToAfterNormalCommand` for the same `<C-o>` flow. Both stay in
-   * sync — assigning either updates the other via accessor pattern.
+   * Boolean alias for `modeToReturnToAfterNormalCommand`. Both fields cover
+   * the same `<C-o>` flow; they're kept in sync so callers that only care
+   * about "is a return-to-Insert pending?" don't have to reason about which
+   * mode to return to.
    */
   public get returnToInsertAfterCommand(): boolean {
     return this.modeToReturnToAfterNormalCommand !== undefined;

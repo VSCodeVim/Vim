@@ -317,14 +317,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           return;
         }
 
-        // External Keyboard-kind events that produce a non-empty selection (e.g.
-        // VSCode `expandLineSelection`, `cursorRightSelect`, `cursorDownSelect`,
+        // External Keyboard-kind events that produce a non-empty selection
+        // (e.g. `expandLineSelection`, `cursorRightSelect`, `cursorDownSelect`,
         // or any extension command that sets a selection without going through
-        // VSCodeVim's keybinding interception) should promote us into Visual,
-        // matching the behavior already implemented for Command-kind events at
-        // lines 243-281. Internal Vim navigation (e.g. `j`, `k`, `l`, `h`)
-        // produces empty selections (anchor === active) and is unaffected by
-        // this branch. This closes the second half of issue #2224.
+        // VSCodeVim's keybinding interception) promote us into Visual, mirroring
+        // the Command-kind branch above. Routine Vim navigation (`j`, `k`, `l`,
+        // `h`, etc.) produces empty selections (anchor === active) and is not
+        // affected.
         if (
           e.kind === vscode.TextEditorSelectionChangeKind.Keyboard &&
           !selection.active.isEqual(selection.anchor)
@@ -404,11 +403,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
         }
 
-        // Update both cursor.start (anchor) and cursor.stop (active) so that
-        // operators like `d`/`y`/`c` see the full selection range. Setting
-        // only cursorStartPosition (a previous bug) left cursor.stop stale at
-        // its pre-drag position, so `d` after a mouse drag deleted only the
-        // first character. Covered by test/mode/mouseSelection.test.ts.
+        // Update both endpoints (anchor and active). Updating only the
+        // anchor would leave cursor.stop stale at its pre-drag position, so
+        // operators like `d`/`y`/`c` would act on a 1-char range instead of
+        // the full selection.
         this.vimState.cursor = new Cursor(selectionStart, selection.active);
 
         // If we prevented from clicking past eol but it is part of this selection, include the last char

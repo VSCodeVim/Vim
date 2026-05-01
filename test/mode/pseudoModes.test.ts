@@ -2,19 +2,22 @@ import { Mode } from '../../src/mode/mode';
 import { newTest, newTestSkip } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
-// Pseudo-mode coverage: when Insert/Replace + <S-arrow> enters Visual, and
-// when Insert + <C-o> enters Normal-for-one-command, the modeHandler tracks
-// the source mode so <Esc> / completion of the command returns there. The
-// display layer (`statusBar.ts:174-225`) shows synthesized strings like
-// '-- (insert) VISUAL --' and '-- (insert) --' (the latter is the C-o pseudo-Normal
-// in Insert; note it is intentionally NOT '-- (insert) NORMAL --').
+// Pseudo-modes are synthesized labels for Vim states where one mode is
+// temporarily nested inside another:
+//
+//   - `(insert) VISUAL`  — Insert + <S-arrow>: in Visual mode but `<Esc>` returns to Insert
+//   - `(replace) VISUAL` — Replace + <S-arrow>: same idea, returns to Replace
+//   - `(insert) ` (no NORMAL suffix, by design) — Insert + <C-o>: pending one Normal command
+//
+// They never appear as `vimState.currentMode`; they're synthesized via
+// `currentModeIncludingPseudoModes` for the status bar and the remapper.
 
-suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
+suite('pseudo-modes', () => {
   setup(async () => {
     await setupWorkspace();
   });
 
-  suite('D: Insert ↔ Visual via <S-arrow>', () => {
+  suite('Insert ↔ Visual via <S-arrow>', () => {
     const config = {
       keymodel: 'startsel,stopsel',
       keymodelStartsSelection: true,
@@ -22,41 +25,35 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
     };
 
     newTest({
-      title: 'D1: Insert + <S-right> enters Visual; <Esc> returns to Insert',
+      title: 'Insert + <S-right> enters Visual; <Esc> returns to Insert',
       config,
       start: ['a|bcd'],
       keysPressed: 'i<S-right><Esc>',
-      // i puts Insert at col 1. <S-right> moves stop to logical col 2 (Visual fwd
-      // shift to col 3). <Esc> exits Visual back to Insert; cursor lands on the
-      // last selected char (col 2 displayed; in Insert mode no shift).
       end: ['ab|cd'],
       endMode: Mode.Insert,
     });
 
     newTest({
-      title: 'D2: Insert + <S-right> shows pseudo-mode in status bar',
+      title: 'Insert + <S-right> shows `(insert) VISUAL` in the status bar',
       config,
       start: ['a|bcd'],
       keysPressed: 'i<S-right>',
-      end: ['abc|d'], // forward Visual shift
+      end: ['abc|d'],
       endMode: Mode.Visual,
       statusBar: '-- (insert) VISUAL --',
     });
 
     newTest({
-      title: 'D3: Insert + <S-right>d deletes 2 chars and returns to Insert',
+      title: 'Insert + <S-right>d deletes selection and returns to Insert',
       config,
       start: ['a|bcde'],
       keysPressed: 'i<S-right>d',
-      // i anchors Visual at col 1. <S-right> moves cursor.stop to logical col 2;
-      // Visual selection is inclusive of both anchor (col 1='b') and cursor char
-      // (col 2='c'), so 'bc' gets selected. d deletes → 'ade'.
       end: ['a|de'],
       endMode: Mode.Insert,
     });
 
     newTest({
-      title: 'D4: Insert + <S-down> enters Visual line-down; <Esc> returns to Insert',
+      title: 'Insert + <S-down><Esc> returns to Insert',
       config,
       start: ['ab|cd', 'efgh'],
       keysPressed: 'i<S-down><Esc>',
@@ -65,7 +62,7 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
     });
 
     newTest({
-      title: 'D5: Insert + <C-S-right> enters Visual word-right; <Esc> returns to Insert',
+      title: 'Insert + <C-S-right><Esc> returns to Insert',
       config,
       start: ['|hello world'],
       keysPressed: 'i<C-S-right><Esc>',
@@ -74,7 +71,7 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
     });
   });
 
-  suite('E: Replace ↔ Visual via <S-arrow>', () => {
+  suite('Replace ↔ Visual via <S-arrow>', () => {
     const config = {
       keymodel: 'startsel,stopsel',
       keymodelStartsSelection: true,
@@ -82,7 +79,7 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
     };
 
     newTest({
-      title: 'E1: Replace + <S-right> enters Visual; <Esc> returns to Replace',
+      title: 'Replace + <S-right><Esc> returns to Replace',
       config,
       start: ['a|bcd'],
       keysPressed: 'R<S-right><Esc>',
@@ -91,7 +88,7 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
     });
 
     newTest({
-      title: 'E2: Replace + <S-right> shows pseudo-mode in status bar',
+      title: 'Replace + <S-right> shows `(replace) VISUAL` in the status bar',
       config,
       start: ['a|bcd'],
       keysPressed: 'R<S-right>',
@@ -101,7 +98,7 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
     });
 
     newTest({
-      title: 'E3: Replace + <S-down> + <Esc> returns to Replace',
+      title: 'Replace + <S-down><Esc> returns to Replace',
       config,
       start: ['ab|cd', 'efgh'],
       keysPressed: 'R<S-down><Esc>',
@@ -110,42 +107,38 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
     });
   });
 
-  suite('F: <C-o> from Insert (pseudo-Normal)', () => {
+  suite('<C-o> from Insert (pending one Normal command)', () => {
     newTest({
-      title: 'F1: Insert + <C-o>w runs one normal command, returns to Insert',
+      title: 'Insert + <C-o>w runs one Normal command, returns to Insert',
       start: ['hel|lo world'],
       keysPressed: 'i<C-o>w',
-      end: ['hello |world'], // <C-o>w moves to next word start
+      end: ['hello |world'],
       endMode: Mode.Insert,
     });
 
     newTest({
-      title: 'F2: Insert + <C-o> shows pseudo-Normal in status bar',
+      title: 'Insert + <C-o> shows `(insert) ` in the status bar',
       start: ['a|bcd'],
       keysPressed: 'i<C-o>',
       end: ['a|bcd'],
-      // Note: berknam's status-bar text for InsertNormal is '-- (insert) --',
-      // matching the design that pseudo-Normal in Insert is the "subordinate"
-      // Normal, not labelled "NORMAL" again.
       statusBar: '-- (insert) --',
     });
 
     newTest({
-      title: 'F3: Insert + <C-o>dw deletes word, returns to Insert',
+      title: 'Insert + <C-o>dw deletes a word, returns to Insert',
       start: ['hel|lo world'],
       keysPressed: 'i<C-o>dw',
-      // <C-o>dw deletes 'lo ' (rest of word + trailing space, per `dw` semantics)
-      // → 'hel' + 'world' = 'helworld', cursor at col 3.
       end: ['hel|world'],
       endMode: Mode.Insert,
     });
 
-    // F4 (Replace + <C-o>) is intentionally skipped: ExecuteOneNormalCommandInInsertMode
-    // at insert.ts:574 only registers `modes = [Mode.Insert]`; <C-o> from Replace
-    // mode has no handler in the current codebase. This is a gap that can be
-    // closed in a follow-up by widening that action's `modes` to include Replace.
+    // Replace + <C-o> is currently a no-op: ExecuteOneNormalCommandInInsertMode
+    // is registered only for Mode.Insert. Closing this gap is one line —
+    // adding Mode.Replace to that action's `modes` and a small tweak to the
+    // exit path so it returns to Replace rather than Insert. Skipping the
+    // test here documents the expected behaviour for whoever closes the gap.
     newTestSkip({
-      title: 'F4 (TODO): Replace + <C-o>w returns to Replace — not yet wired',
+      title: 'Replace + <C-o>w returns to Replace (not yet wired)',
       start: ['hel|lo world'],
       keysPressed: 'R<C-o>w',
       end: ['hello |world'],

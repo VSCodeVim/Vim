@@ -2,19 +2,15 @@ import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
-// Note on cursor positions: in Visual mode, when cursor.start is before-or-equal
-// cursor.stop (forward selection), the modeHandler shifts cursor.stop right by
-// one at end of runAction (modeHandler.ts:877). The harness reads the shifted
-// value, so expected end-position cursors for forward Visual entries are at
-// logical_pos + 1.
+// Tests for the `keymodel` Vim option (`:help 'keymodel'`):
 //
-// Note on key casing: action lookup uses strict-equality on keysPressed vs.
-// `keys` declarations in src/actions/motion.ts. Casings:
-//   <S-right>, <S-left>, <S-up>, <S-down>  (lowercase letter)
-//   <S-Home>, <S-End>                      (capital H/E)
-//   <C-S-right>, <C-S-left>, <C-S-Home>, <C-S-End>
-// Notation.NormalizeKey is NOT applied to keypress inputs in the modeHandler
-// today, only to vimrc/remap config.
+//   - `startsel` — a shifted special key starts/extends a Visual selection.
+//   - `stopsel`  — an unshifted special key exits a Visual selection.
+//
+// Some assertions land on cursor.stop one column past where the cursor
+// "appears" — that's the modeHandler's forward-Visual cursor convention
+// (cursor.stop is shifted right by one when start ≤ stop, so VSCode renders
+// the selection as inclusive of the char under the cursor).
 
 suite('keymodel', () => {
   setup(async () => {
@@ -29,25 +25,25 @@ suite('keymodel', () => {
     };
 
     newTest({
-      title: 'A1: <S-right> from Normal enters Visual and extends right one char',
+      title: '<S-right> from Normal enters Visual and extends right one char',
       config,
       start: ['a|bcd'],
       keysPressed: '<S-right>',
-      end: ['abc|d'], // logical col 2; +1 Visual forward shift → reported col 3
+      end: ['abc|d'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A2: <S-right><S-right> extends two chars',
+      title: '<S-right><S-right> extends two chars',
       config,
       start: ['a|bcd'],
       keysPressed: '<S-right><S-right>',
-      end: ['abcd|'], // logical col 3; +1 shift → col 4
+      end: ['abcd|'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A3: <S-left> from Normal enters Visual leftward',
+      title: '<S-left> from Normal enters Visual leftward',
       config,
       start: ['ab|cd'],
       keysPressed: '<S-left>',
@@ -56,52 +52,52 @@ suite('keymodel', () => {
     });
 
     newTest({
-      title: 'A4: <S-down> from Normal enters Visual across lines',
+      title: '<S-down> from Normal enters Visual across lines',
       config,
       start: ['ab|cd', 'efgh'],
       keysPressed: '<S-down>',
-      end: ['abcd', 'efg|h'], // forward Visual: cursor reported at +1
+      end: ['abcd', 'efg|h'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A5: <S-up> from Normal enters Visual upward',
+      title: '<S-up> from Normal enters Visual upward',
       config,
       start: ['abcd', 'ef|gh'],
       keysPressed: '<S-up>',
-      end: ['ab|cd', 'efgh'], // backward Visual: no shift
+      end: ['ab|cd', 'efgh'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A6: <S-Home> from Normal enters Visual to bol',
+      title: '<S-Home> from Normal enters Visual to start of line',
       config,
       start: ['ab|cd'],
       keysPressed: '<S-Home>',
-      end: ['|abcd'], // backward Visual to col 0
+      end: ['|abcd'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A7: <S-End> from Normal enters Visual to eol',
+      title: '<S-End> from Normal enters Visual to end of line',
       config,
       start: ['a|bcd'],
       keysPressed: '<S-End>',
-      end: ['abcd|'], // forward Visual: logical col 3, +1 shift → col 4 = end of line
+      end: ['abcd|'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A8: <C-S-right> from Normal enters Visual word-right',
+      title: '<C-S-right> from Normal enters Visual word-right',
       config,
       start: ['|hello world'],
       keysPressed: '<C-S-right>',
-      end: ['hello w|orld'], // forward: word start at col 6, +1 shift → col 7 = on 'o'
+      end: ['hello w|orld'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A9: <C-S-left> from Normal enters Visual word-left',
+      title: '<C-S-left> from Normal enters Visual word-left',
       config,
       start: ['hello |world'],
       keysPressed: '<C-S-left>',
@@ -110,7 +106,7 @@ suite('keymodel', () => {
     });
 
     newTest({
-      title: 'A10: <C-S-Home> from Normal enters Visual to file-start',
+      title: '<C-S-Home> from Normal enters Visual to start of file',
       config,
       start: ['line one', 'line tw|o'],
       keysPressed: '<C-S-Home>',
@@ -119,34 +115,34 @@ suite('keymodel', () => {
     });
 
     newTest({
-      title: 'A11: <C-S-End> from Normal enters Visual to file-end',
+      title: '<C-S-End> from Normal enters Visual to end of file',
       config,
       start: ['lin|e one', 'line two'],
       keysPressed: '<C-S-End>',
-      end: ['line one', 'line two|'], // forward: end-of-doc, +1 shift → after last char
+      end: ['line one', 'line two|'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A12: <S-right> in Visual extends, stays Visual',
+      title: '<S-right> in Visual extends, stays Visual',
       config,
       start: ['a|bcd'],
       keysPressed: 'v<S-right><S-right>',
-      end: ['abcd|'], // v anchors at col 1; two <S-right> advance logical to col 3, +1 → col 4
+      end: ['abcd|'],
       endMode: Mode.Visual,
     });
 
     newTest({
-      title: 'A13: d after <S-right><S-right> deletes selection',
+      title: 'd after <S-right><S-right> deletes the selection',
       config,
       start: ['a|bcde'],
       keysPressed: '<S-right><S-right>d',
-      end: ['a|e'], // anchor (0,1); 2× <S-right> covers chars 1-3 = 'bcd' (Visual inclusive); delete leaves 'ae'
+      end: ['a|e'],
       endMode: Mode.Normal,
     });
   });
 
-  suite("keymodel='' (terminal-Vim — shifted special keys do NOT enter Visual)", () => {
+  suite("keymodel='' (terminal-Vim — shifted special keys do NOT start a selection)", () => {
     const config = {
       keymodel: '',
       keymodelStartsSelection: false,
@@ -154,7 +150,7 @@ suite('keymodel', () => {
     };
 
     newTest({
-      title: 'B1: <S-right> with empty keymodel does not enter Visual (acts as `w`)',
+      title: '<S-right> with empty keymodel does not enter Visual (acts as `w`)',
       config,
       start: ['hel|lo world'],
       keysPressed: '<S-right>',
@@ -163,7 +159,7 @@ suite('keymodel', () => {
     });
 
     newTest({
-      title: 'B2: <C-S-right> with empty keymodel does not enter Visual',
+      title: '<C-S-right> with empty keymodel does not enter Visual',
       config,
       start: ['hel|lo world'],
       keysPressed: '<C-S-right>',
@@ -172,7 +168,7 @@ suite('keymodel', () => {
     });
 
     newTest({
-      title: 'B3: <S-Home> with empty keymodel goes to bol, no Visual',
+      title: '<S-Home> with empty keymodel goes to start of line, no Visual',
       config,
       start: ['ab|cd'],
       keysPressed: '<S-Home>',
@@ -181,18 +177,18 @@ suite('keymodel', () => {
     });
 
     newTest({
-      title: 'B4: <S-End> with empty keymodel goes to eol, no Visual',
+      title: '<S-End> with empty keymodel goes to end of line, no Visual',
       config,
       start: ['a|bcd'],
       keysPressed: '<S-End>',
-      end: ['abc|d'], // Normal mode: cursor on last char (col 3), no shift
+      end: ['abc|d'],
       endMode: Mode.Normal,
     });
   });
 
   suite("keymodel='stopsel' — unshifted special keys exit Visual to source mode", () => {
     newTest({
-      title: 'C1: <right> after <S-right> exits Visual back to Normal',
+      title: '<right> after <S-right> exits Visual back to Normal',
       config: {
         keymodel: 'startsel,stopsel',
         keymodelStartsSelection: true,
@@ -200,12 +196,12 @@ suite('keymodel', () => {
       },
       start: ['a|bcd'],
       keysPressed: '<S-right><right>',
-      end: ['abc|d'], // <S-right> selects to logical col 2; <right> exits Visual + advances → Normal at col 3
+      end: ['abc|d'],
       endMode: Mode.Normal,
     });
 
     newTest({
-      title: 'C2: keymodelStopsSelection=false: <right> after <S-right> stays in Visual (extends)',
+      title: 'with stopsel disabled, <right> after <S-right> stays in Visual (extends)',
       config: {
         keymodel: 'startsel',
         keymodelStartsSelection: true,
@@ -213,7 +209,7 @@ suite('keymodel', () => {
       },
       start: ['a|bcd'],
       keysPressed: '<S-right><right>',
-      end: ['abcd|'], // logical col 3 + Visual forward shift = col 4
+      end: ['abcd|'],
       endMode: Mode.Visual,
     });
   });
