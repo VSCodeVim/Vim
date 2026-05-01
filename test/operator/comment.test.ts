@@ -1,13 +1,11 @@
 import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 suite('comment operator', () => {
-  setup(async () => {
-    await setupWorkspace(undefined, '.js');
+  suiteSetup(async () => {
+    await setupWorkspace({ fileExtension: '.js' });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'gcc comments out current line',

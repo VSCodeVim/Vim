@@ -1,15 +1,10 @@
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
+import { setupWorkspace } from './../testUtils';
 
 suite('camelCaseMotion plugin if not enabled', () => {
-  setup(async () => {
-    const configuration = new Configuration();
-    configuration.camelCaseMotion.enable = false;
-    await setupWorkspace(configuration);
+  suiteSetup(async () => {
+    await setupWorkspace({ config: { camelCaseMotion: { enable: false } } });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: "basic motion doesn't work",
@@ -20,13 +15,9 @@ suite('camelCaseMotion plugin if not enabled', () => {
 });
 
 suite('camelCaseMotion plugin', () => {
-  setup(async () => {
-    const configuration = new Configuration();
-    configuration.camelCaseMotion.enable = true;
-    await setupWorkspace(configuration);
+  suiteSetup(async () => {
+    await setupWorkspace({ config: { camelCaseMotion: { enable: true } } });
   });
-
-  teardown(cleanUpWorkspace);
 
   suite('handles <leader>w for camelCaseText', () => {
     newTest({
@@ -98,35 +89,35 @@ suite('camelCaseMotion plugin', () => {
       title: 'step to _word',
       start: ['|some_var and_other23_var'],
       keysPressed: '<leader>w',
-      end: ['some|_var and_other23_var'],
+      end: ['some_|var and_other23_var'],
     });
 
     newTest({
       title: 'step over whitespace to word',
       start: ['some|_var and_other23_var'],
       keysPressed: '<leader>w',
-      end: ['some_var |and_other23_var'],
+      end: ['some_|var and_other23_var'],
     });
 
     newTest({
-      title: 'step from inside word to _word',
+      title: 'step from inside word to word',
       start: ['some_var a|nd_other23_var'],
       keysPressed: '<leader>w',
-      end: ['some_var and|_other23_var'],
+      end: ['some_var and_|other23_var'],
     });
 
     newTest({
       title: 'step form _word to number',
-      start: ['some_var and|_other23_var'],
+      start: ['some_var and_|other23_var'],
       keysPressed: '<leader>w',
       end: ['some_var and_other|23_var'],
     });
 
     newTest({
-      title: 'step from nubmer word to _word',
+      title: 'step from number word to word',
       start: ['some_var and_other2|3_var'],
       keysPressed: '<leader>w',
-      end: ['some_var and_other23|_var'],
+      end: ['some_var and_other23_|var'],
     });
 
     newTest({
@@ -140,7 +131,7 @@ suite('camelCaseMotion plugin', () => {
       title: 'step in ALL_CAPS_WORD',
       start: ['A|LL_CAPS_WORD'],
       keysPressed: '2<leader>w',
-      end: ['ALL_CAPS|_WORD'],
+      end: ['ALL_CAPS_|WORD'],
     });
   });
 
@@ -177,21 +168,21 @@ suite('camelCaseMotion plugin', () => {
       title: 'delete from start of underscore_word',
       start: ['|camel_two_word'],
       keysPressed: 'd<leader>w',
-      end: ['|_two_word'],
+      end: ['|two_word'],
     });
 
     newTest({
       title: 'delete from middle of underscore_word',
       start: ['ca|mel_two_word'],
       keysPressed: 'd<leader>w',
-      end: ['ca|_two_word'],
+      end: ['ca|two_word'],
     });
 
     newTest({
       title: 'delete two words from camel_word',
       start: ['ca|mel_two_word'],
       keysPressed: '2d<leader>w',
-      end: ['ca|_word'],
+      end: ['ca|word'],
     });
   });
 

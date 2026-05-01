@@ -9,9 +9,9 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
+import glob from 'glob';
+import Mocha from 'mocha';
 import * as path from 'path';
-import * as Mocha from 'mocha';
-import * as glob from 'glob';
 
 import { Globals } from '../src/globals';
 import { Configuration } from './testConfiguration';
@@ -26,7 +26,7 @@ export function run(): Promise<void> {
   const mocha = new Mocha({
     ui: 'tdd',
     color: true,
-    timeout: 10000,
+    timeout: 5000,
     grep: mochaGrep,
   });
 
@@ -50,8 +50,9 @@ export function run(): Promise<void> {
             c();
           }
         });
-      } catch (err) {
-        e(err);
+      } catch (error) {
+        console.error(error);
+        e(error as Error);
       }
     });
   });

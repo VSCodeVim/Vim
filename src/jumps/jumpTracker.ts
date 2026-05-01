@@ -1,11 +1,14 @@
 import * as vscode from 'vscode';
 
-import { FileCommand } from './../cmd_line/commands/file';
 import { VimState } from '../state/vimState';
+import { FileCommand } from './../cmd_line/commands/file';
 
-import { Jump } from './jump';
 import { existsAsync } from 'platform/fs';
 import { Position } from 'vscode';
+import { VimError } from '../error';
+import { Jump } from './jump';
+
+const MAX_JUMPS = 100;
 
 /**
  * JumpTracker is a handrolled version of VSCode's TextEditorState
@@ -27,7 +30,7 @@ export class JumpTracker {
   /**
    * All recorded jumps, in the order of occurrence.
    */
-  public get jumps(): Jump[] {
+  public get jumps(): readonly Jump[] {
     return this._jumps;
   }
 
@@ -42,8 +45,8 @@ export class JumpTracker {
   /**
    * Current jump in the list of jumps.
    */
-  public get currentJump(): Jump {
-    return this._jumps[this._currentJumpNumber] || null;
+  public get currentJump(): Jump | undefined {
+    return this._jumps.at(this._currentJumpNumber);
   }
 
   /**
@@ -56,8 +59,8 @@ export class JumpTracker {
   /**
    * Last jump in list of jumps.
    */
-  public get end(): Jump | null {
-    return this._jumps[this._jumps.length - 1];
+  public get end(): Jump | undefined {
+    return this._jumps.at(-1);
   }
 
   /**
@@ -69,8 +72,8 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public recordJump(from: Jump, to: Jump) {
-    if (from.isSamePosition(to)) {
+  public recordJump(from: Jump, to?: Jump) {
+    if (to && from.isSamePosition(to)) {
       return;
     }
 
@@ -89,13 +92,13 @@ export class JumpTracker {
    * @param from - File/position jumped from
    * @param to - File/position jumped to
    */
-  public handleFileJump(from: Jump | null, to: Jump) {
+  public handleFileJump(from: Jump | undefined, to: Jump) {
     if (this.isJumpingThroughHistory) {
       this.isJumpingThroughHistory = false;
       return;
     }
 
-    if (to.editor && to.editor.document && to.editor.document.isClosed) {
+    if (to.document.isClosed) {
       // Wallaby.js seemed to be adding an extra file jump, named e.g. extension-output-#4
       // It was marked closed when jumping to it. Hopefully we can rely on checking isClosed
       // when extensions get all weird on us.
@@ -108,24 +111,36 @@ export class JumpTracker {
   private async performFileJump(jump: Jump, vimState: VimState): Promise<void> {
     this.isJumpingThroughHistory = true;
 
-    if (jump.editor) {
-      // Open jump file from stored editor
-      await vscode.window.showTextDocument(jump.editor.document);
+    if (jump.document) {
+      try {
+        // Open jump file from stored editor
+        await vscode.window.showTextDocument(jump.document, {
+          selection: new vscode.Range(jump.position, jump.position),
+        });
+      } catch (e: unknown) {
+        // This can happen when the document we'd like to jump to is weird (like a search editor) or has been deleted
+        throw VimError.FileNoLongerAvailable();
+      }
     } else if (await existsAsync(jump.fileName)) {
       // Open jump file from disk
       await new FileCommand({
-        name: jump.fileName,
-        lineNumber: jump.position.line,
+        name: 'edit',
+        bang: false,
+        opt: [],
+        file: jump.fileName,
+        cmd: { type: 'line_number', line: jump.position.line },
         createFileIfNotExists: false,
       }).execute(vimState);
     } else {
       // Get jump file from visible editors
       const editor: vscode.TextEditor = vscode.window.visibleTextEditors.filter(
-        (e) => e.document.fileName === jump.fileName
+        (e) => e.document.fileName === jump.fileName,
       )[0];
 
       if (editor) {
-        await vscode.window.showTextDocument(editor.document, jump.position.character, false);
+        await vscode.window.showTextDocument(editor.document, {
+          selection: new vscode.Range(jump.position, jump.position),
+        });
       }
     }
   }
@@ -134,24 +149,23 @@ export class JumpTracker {
    * Jump forward, possibly resulting in a file jump
    */
   public async jumpForward(position: Position, vimState: VimState): Promise<void> {
-    await this.jumpThroughHistory(this.recordJumpForward.bind(this), position, vimState);
+    await this.jumpThroughHistory((jump) => this.recordJumpForward(jump), position, vimState);
   }
 
   /**
    * Jump back, possibly resulting in a file jump
    */
   public async jumpBack(position: Position, vimState: VimState): Promise<void> {
-    await this.jumpThroughHistory(this.recordJumpBack.bind(this), position, vimState);
+    await this.jumpThroughHistory((jump) => this.recordJumpBack(jump), position, vimState);
   }
 
   private async jumpThroughHistory(
     getJump: (j: Jump) => Jump,
     position: Position,
-    vimState: VimState
+    vimState: VimState,
   ): Promise<void> {
     let jump = new Jump({
-      editor: vimState.editor,
-      fileName: vimState.document.fileName,
+      document: vimState.document,
       position,
     });
 
@@ -223,25 +237,32 @@ export class JumpTracker {
    * Update existing jumps when lines were added to a document.
    *
    * @param document - Document that was changed, typically a vscode.TextDocument.
-   * @param range - Location where the text was added.
+   * @param position - Location where the text was added.
    * @param text - Text containing one or more newline characters.
    */
-  public handleTextAdded(document: { fileName: string }, range: vscode.Range, text: string): void {
+  public handleTextAdded(
+    document: { fileName: string },
+    position: vscode.Position,
+    text: string,
+  ): void {
     // Get distance from newlines in the text added.
     // Unlike handleTextDeleted, the range parameter distance between start/end is generally zero,
     // just showing where the text was added.
     const distance = text.split('').filter((c) => c === '\n').length;
+    if (distance === 0) {
+      return;
+    }
 
-    this._jumps.forEach((jump, i) => {
+    for (const [i, jump] of this._jumps.entries()) {
       const jumpIsAfterAddedText =
-        jump.fileName === document.fileName && jump.position.line > range.start.line;
+        jump.fileName === document.fileName && jump.position.line > position.line;
 
       if (jumpIsAfterAddedText) {
         const newPosition = new Position(jump.position.line + distance, jump.position.character);
 
         this.changePositionForJumpNumber(i, jump, newPosition);
       }
-    });
+    }
   }
 
   /**
@@ -293,18 +314,20 @@ export class JumpTracker {
     this._currentJumpNumber = 0;
   }
 
-  private pushJump(from: Jump | null, to: Jump) {
+  private pushJump(from: Jump | undefined, to: Jump | undefined) {
     if (from) {
-      this.clearJumpsOnSamePosition(from);
+      this.clearJumpsOnSameLine(from);
     }
 
-    if (from && !from.isSamePosition(to)) {
+    if (from && (!to || !from.isSamePosition(to))) {
+      if (this._jumps.length === MAX_JUMPS) {
+        this._jumps.splice(0, 1);
+      }
+
       this._jumps.push(from);
     }
 
     this._currentJumpNumber = this._jumps.length;
-
-    this.clearOldJumps();
   }
 
   private changePositionForJumpNumber(index: number, jump: Jump, newPosition: Position) {
@@ -312,36 +335,34 @@ export class JumpTracker {
       index,
       1,
       new Jump({
-        editor: jump.editor,
-        fileName: jump.fileName,
+        document: jump.document,
         position: newPosition,
-      })
+      }),
     );
   }
 
-  private clearOldJumps(): void {
-    if (this._jumps.length > 100) {
-      this._jumps.splice(0, this._jumps.length - 100);
-    }
-  }
-
-  private clearJumpsOnSamePosition(jump: Jump): void {
-    this._jumps = this._jumps.filter((j) => j === jump || !j.isSamePosition(jump));
+  private clearJumpsOnSameLine(jump: Jump): void {
+    this._jumps = this._jumps.filter(
+      (j) =>
+        j === jump || !(j.fileName === jump.fileName && j.position.line === jump.position.line),
+    );
   }
 
   private removeDuplicateJumps() {
-    const linesSeenPerFile = {};
+    const linesSeenPerFile = new Map<string, number[]>();
     for (let i = this._jumps.length - 1; i >= 0; i--) {
       const jump = this._jumps[i];
 
-      if (!linesSeenPerFile[jump.fileName]) {
-        linesSeenPerFile[jump.fileName] = [];
+      if (!linesSeenPerFile.has(jump.fileName)) {
+        linesSeenPerFile.set(jump.fileName, []);
       }
 
-      if (linesSeenPerFile[jump.fileName].includes(jump.position.line)) {
+      const lines = linesSeenPerFile.get(jump.fileName)!;
+
+      if (lines.includes(jump.position.line)) {
         this._jumps.splice(i, 1);
       } else {
-        linesSeenPerFile[jump.fileName].push(jump.position.line);
+        lines.push(jump.position.line);
       }
     }
   }

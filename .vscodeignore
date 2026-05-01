@@ -1,10 +1,10 @@
 .github/**
-
+.husky/**
+.yarn/**
 .vscode/**
 .vscode-test/**
 
 **/*.ts
-**/*.map
 *.yml
 
 src/**
@@ -13,14 +13,14 @@ test/**
 typings/**
 out/src/**
 out/test/**
+out/*.map
 node_modules/**
 images/design/**
 
 .gitignore
+.prettierignore
 
 tsconfig.json
-tslint.json
-webpack.config.js
+webpack.*.js
 gulpfile.js
 renovate.json
-.github_changelog_generator

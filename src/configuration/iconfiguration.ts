@@ -14,9 +14,10 @@ export interface IModeSpecificStrings<T> {
 export interface IKeyRemapping {
   before: string[];
   after?: string[];
+  silent?: boolean;
   // 'recursive' is calculated when validating, according to the config that stored the remapping
   recursive?: boolean;
-  commands?: ({ command: string; args: any[] } | string)[];
+  commands?: Array<{ command: string; args: any[] } | string>;
   source?: 'vscode' | 'vimrc';
 }
 
@@ -30,24 +31,6 @@ export interface IAutoSwitchInputMethod {
   defaultIM: string;
   switchIMCmd: string;
   obtainIMCmd: string;
-}
-
-export interface IDebugConfiguration {
-  /**
-   * Boolean indicating whether all logs should be suppressed
-   * This value overrides both `loggingLevelForAlert` and `loggingLevelForConsole`
-   */
-  silent: boolean;
-
-  /**
-   * Maximum level of messages to show as VS Code information message
-   */
-  loggingLevelForAlert: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
-
-  /**
-   * Maximum level of messages to log to console.
-   */
-  loggingLevelForConsole: 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 }
 
 export interface IHighlightedYankConfiguration {
@@ -79,7 +62,33 @@ export interface ICamelCaseMotionConfiguration {
   enable: boolean;
 }
 
+export interface ISmartQuotesConfiguration {
+  /**
+   * Enable SmartQuotes plugin or not
+   */
+  enable: boolean;
+  /**
+   * Whether to break through lines when using [n]ext/[l]ast motion
+   */
+  breakThroughLines: boolean;
+  /**
+   * Whether to use default vim behaviour when using `a` (e.g. da') which include surrounding spaces, or not, as for other text objects.
+   */
+  aIncludesSurroundingSpaces: boolean;
+}
+
+export interface ITargetsConfiguration {
+  /**
+   * Enable Targets plugin or not
+   */
+  enable: boolean;
+  bracketObjects: { enable: boolean };
+  smartQuotes: ISmartQuotesConfiguration;
+}
+
 export interface IConfiguration {
+  [key: string]: any;
+
   /**
    * Use the system's clipboard when copying.
    */
@@ -120,6 +129,11 @@ export interface IConfiguration {
    * Indent automatically?
    */
   autoindent: boolean;
+
+  /**
+   * Add two spaces after '.', '?', and '!' when joining or formatting?
+   */
+  joinspaces: boolean;
 
   /**
    * CamelCaseMotion plugin options
@@ -173,17 +187,12 @@ export interface IConfiguration {
    */
   easymotionMarkerBackgroundColor: string;
   easymotionMarkerForegroundColorOneChar: string;
-  easymotionMarkerForegroundColorTwoChar: string; // Deprecated! Use the ones bellow
   easymotionMarkerForegroundColorTwoCharFirst: string;
   easymotionMarkerForegroundColorTwoCharSecond: string;
   easymotionIncSearchForegroundColor: string;
   easymotionDimColor: string;
-  easymotionMarkerWidthPerChar: number; // Deprecated! No longer needed!
   easymotionDimBackground: boolean;
-  easymotionMarkerFontFamily: string; // Deprecated! No longer needed!
-  easymotionMarkerFontSize: string; // Deprecated! No longer needed!
   easymotionMarkerFontWeight: string;
-  easymotionMarkerMargin: number; // Deprecated! No longer needed!
   easymotionKeys: string;
 
   /**
@@ -220,6 +229,11 @@ export interface IConfiguration {
   history: number;
 
   /**
+   * Show substitutions while user is typing?
+   */
+  inccommand: '' | 'append' | 'replace';
+
+  /**
    * Show results of / or ? search as user is typing?
    */
   incsearch: boolean;
@@ -228,6 +242,12 @@ export interface IConfiguration {
    * Start in insert mode?
    */
   startInInsertMode: boolean;
+
+  /**
+   * List of document URI schemes that should automatically start in Insert mode.
+   * For example, ['comment'] for GitHub PR comment editors.
+   */
+  startInInsertModeSchemes: string[];
 
   /**
    * Enable changing of the status bar color based on mode
@@ -240,15 +260,22 @@ export interface IConfiguration {
   statusBarColors: IModeSpecificStrings<string | string[]>;
 
   /**
-   * Extension debugging settings
-   */
-  debug: IDebugConfiguration;
-
-  /**
    * Color of search highlights.
    */
   searchHighlightColor: string;
   searchHighlightTextColor: string;
+
+  /**
+   * Color of current match
+   */
+  searchMatchColor: string;
+  searchMatchTextColor: string;
+
+  /**
+   * Color of substituted text
+   */
+  substitutionColor: string;
+  substitutionTextColor: string;
 
   /**
    * Yank highlight settings.
@@ -273,6 +300,7 @@ export interface IConfiguration {
   /**
    * Show line numbers
    */
+  // eslint-disable-next-line id-denylist
   number: boolean;
 
   /**
@@ -285,6 +313,14 @@ export interface IConfiguration {
    * If not configured `editor.wordSeparators` is used
    */
   iskeyword: string;
+
+  /**
+   * Characters that form pairs. The % command jumps from one to the other.
+   * Only character pairs are allowed that are different, thus you cannot jump between two double quotes.
+   * The characters must be separated by a colon.
+   * The pairs must be separated by a comma.
+   */
+  matchpairs: string;
 
   /**
    * In visual mode, start a search with * or # using the current selection
@@ -341,6 +377,8 @@ export interface IConfiguration {
    */
   enableNeovim: boolean;
   neovimPath: string;
+  neovimUseConfigFile: boolean;
+  neovimConfigPath: string;
 
   /**
    * .vimrc
@@ -421,6 +459,11 @@ export interface IConfiguration {
   scroll: number;
 
   /**
+   * Number of line offset above or below cursor when moving.
+   */
+  scrolloff: number;
+
+  /**
    * When `true` the commands listed below move the cursor to the first non-blank of the line. When
    * `false` the cursor is kept in the same column (if possible). This applies to the commands:
    * `<C-d>`, `<C-u>`, `<C-b>`, `<C-f>`, `G`, `H`, `M`, `L`, `gg`, and to the commands `d`, `<<`
@@ -432,4 +475,11 @@ export interface IConfiguration {
    * Show the currently set mark(s) in the gutter.
    */
   showMarksInGutter: boolean;
+
+  /**
+   * Path to the shell to use for `!` and `:!` commands.
+   */
+  shell: string;
+
+  langmap: string;
 }

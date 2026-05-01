@@ -1,20 +1,9 @@
-import { VimState } from '../../state/vimState';
-import * as node from '../node';
 import { globalState } from '../../state/globalState';
+import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
+import { ExCommand } from '../../vimscript/exCommand';
 
-export class NohlCommand extends node.CommandBase {
-  protected _arguments: {};
-
-  constructor(args: {}) {
-    super();
-    this._arguments = args;
-  }
-
-  get arguments(): {} {
-    return this._arguments;
-  }
-
+export class NohlCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     globalState.hl = false;
 

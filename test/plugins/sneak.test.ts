@@ -1,15 +1,10 @@
-import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 suite('sneak plugin', () => {
-  setup(async () => {
-    await setupWorkspace();
-    Globals.mockConfiguration.sneak = true;
-    await reloadConfiguration();
+  suiteSetup(async () => {
+    await setupWorkspace({ config: { sneak: true } });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Can handle s motion',
@@ -160,14 +155,9 @@ suite('sneak plugin', () => {
 });
 
 suite('sneakReplacesF', () => {
-  setup(async () => {
-    await setupWorkspace();
-    Globals.mockConfiguration.sneak = true;
-    Globals.mockConfiguration.sneakReplacesF = true;
-    await reloadConfiguration();
+  suiteSetup(async () => {
+    await setupWorkspace({ config: { sneak: true, sneakReplacesF: true } });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'sneakReplacesF forward',

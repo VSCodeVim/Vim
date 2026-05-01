@@ -1,5 +1,7 @@
 import * as assert from 'assert';
-import { join, sep, basename } from 'path';
+import * as os from 'os';
+import { basename, join, sep } from 'path';
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { StatusBar } from '../../src/statusBar';
@@ -10,12 +12,6 @@ suite('cmd_line tabComplete', () => {
   suiteSetup(async () => {
     await t.setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
-  });
-
-  suiteTeardown(t.cleanUpWorkspace);
-
-  teardown(async () => {
-    await modeHandler.handleKeyEvent('<Esc>');
   });
 
   test('command line command tab completion', async () => {
@@ -38,7 +34,7 @@ suite('cmd_line tabComplete', () => {
     const actual = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(firstTab, secondTab);
+    assert.notStrictEqual(firstTab, secondTab);
     assert.strictEqual(actual, firstTab, "Command can't go back with shift+tab");
   });
 
@@ -50,7 +46,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with / as base path', async () => {
@@ -61,7 +57,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with ~/ as base path', async () => {
@@ -72,7 +68,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with ./ as base path', async () => {
@@ -83,7 +79,7 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion with ../ as base path', async () => {
@@ -94,11 +90,11 @@ suite('cmd_line tabComplete', () => {
     const statusBarAfterTab = StatusBar.getText();
 
     await modeHandler.handleKeyEvent('<Esc>');
-    assert.notEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
+    assert.notStrictEqual(statusBarBeforeTab, statusBarAfterTab, 'Status Bar did not change');
   });
 
   test('command line file tab completion directory with / at the end', async () => {
-    const dirPath = await t.createRandomDir();
+    const dirPath = await t.createDir();
 
     try {
       const baseCmd = `:e ${dirPath.slice(0, -1)}`.split('');
@@ -109,17 +105,17 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab,
         `:e ${dirPath}${sep}|`,
-        'Cannot complete with / at the end'
+        'Cannot complete with / at the end',
       );
     } finally {
-      await t.removeDir(dirPath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
     }
   });
 
   test('command line file navigate tab completion', async () => {
     // tmpDir --- inner0
     //         |- inner1 --- inner10 --- inner100
-    const tmpDir = await t.createRandomDir();
+    const tmpDir = await t.createDir();
     const inner0 = await t.createDir(join(tmpDir, 'inner0'));
     const inner1 = await t.createDir(join(tmpDir, 'inner1'));
     const inner10 = await t.createDir(join(inner1, 'inner10'));
@@ -164,11 +160,7 @@ suite('cmd_line tabComplete', () => {
 
       await modeHandler.handleKeyEvent('<Esc>');
     } finally {
-      await t.removeDir(inner100);
-      await t.removeDir(inner10);
-      await t.removeDir(inner1);
-      await t.removeDir(inner0);
-      await t.removeDir(tmpDir);
+      await vscode.workspace.fs.delete(vscode.Uri.file(tmpDir), { recursive: true });
     }
   });
 
@@ -187,15 +179,15 @@ suite('cmd_line tabComplete', () => {
     assert.strictEqual(
       statusBarAfterTab,
       ':edit|it',
-      'Failed to complete content left of the cursor'
+      'Failed to complete content left of the cursor',
     );
 
     await modeHandler.handleKeyEvent('<Esc>');
   });
 
   test('command line file tab completion with .', async () => {
-    const dirPath = await t.createRandomDir();
-    const testFilePath = await t.createEmptyFile(join(dirPath, '.testfile'));
+    const dirPath = await t.createDir();
+    const testFilePath = await t.createFile({ fsPath: join(dirPath, '.testfile') });
 
     try {
       // There should only be one auto-completion
@@ -207,7 +199,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab.trim(),
         `:e ${testFilePath}|`,
-        'Cannot complete to .testfile'
+        'Cannot complete to .testfile',
       );
       // Second tab - resolve to .testfile
       // ./ and ../ because . is not explicitly typed in.
@@ -224,7 +216,7 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(
         statusBarAfterTab,
         `:e ${dirPath}${sep}..${sep}|`,
-        'Cannot complete to ../'
+        'Cannot complete to ../',
       );
       // Second tab - resolve to ./
       await modeHandler.handleKeyEvent('<tab>');
@@ -236,18 +228,20 @@ suite('cmd_line tabComplete', () => {
       assert.strictEqual(statusBarAfterTab, `:e ${testFilePath}|`, 'Cannot complete to .testfile');
       await modeHandler.handleKeyEvent('<Esc>');
     } finally {
-      await t.removeFile(testFilePath);
-      await t.removeDir(dirPath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
     }
   });
 
   test('command line file tab completion with space in file path', async () => {
-    // Create an random file in temp folder with a space in the file name
-    const spacedFilePath = await t.createRandomFile('', 'vscode-vim completion-test');
+    // Create a random file in temp folder with a space in the file name
+    const prefix = t.rndName();
+    const spacedFilePath = await t.createFile({
+      fsPath: join(os.tmpdir(), prefix + 'vscode-vim completion-test'),
+    });
     try {
-      // Get the base name of the path which is <random name>vscode-vim completion-test
+      // Get the base name of the path which is '<prefix>vscode-vim completion-test'
       const baseName = basename(spacedFilePath);
-      // Get the base name exclude the space which is <random name>vscode-vim
+      // Get the base name exclude the space which is '<prefix>vscode-vim'
       const baseNameExcludeSpace = baseName.substring(0, baseName.lastIndexOf(' '));
       const fullPathExcludeSpace = spacedFilePath.substring(0, spacedFilePath.lastIndexOf(' '));
       const failMsg = 'Cannot complete to a path with space';
@@ -276,7 +270,41 @@ suite('cmd_line tabComplete', () => {
       await modeHandler.handleKeyEvent('<Esc>');
       assert.strictEqual(statusBarAfterTab, `:e ${spacedFilePath}|`, `(${failMsg} full path)`);
     } finally {
-      await t.removeFile(spacedFilePath);
+      await vscode.workspace.fs.delete(vscode.Uri.file(spacedFilePath));
+    }
+  });
+
+  test('command line file tab completion case-sensitivity platform dependent', async () => {
+    const dirPath = await t.createDir();
+    const filePath = await t.createFile({ fsPath: join(dirPath, 'testfile') });
+    const fileAsTyped = join(dirPath, 'TESTFIL');
+    const cmd = `:e ${fileAsTyped}`.split('');
+
+    try {
+      if (process.platform === 'win32') {
+        await modeHandler.handleMultipleKeyEvents(cmd);
+        await modeHandler.handleKeyEvent('<tab>');
+        const statusBarAfterTab = StatusBar.getText().trim();
+        await modeHandler.handleKeyEvent('<Esc>');
+        assert.strictEqual(
+          statusBarAfterTab.toLowerCase(),
+          `:e ${filePath}|`.toLowerCase(),
+          'Cannot complete path case-insensitive on windows',
+        );
+      } else {
+        await modeHandler.handleMultipleKeyEvents(cmd);
+        const statusBarBeforeTab = StatusBar.getText();
+        await modeHandler.handleKeyEvent('<tab>');
+        const statusBarAfterTab = StatusBar.getText().trim();
+        await modeHandler.handleKeyEvent('<Esc>');
+        assert.strictEqual(
+          statusBarBeforeTab,
+          statusBarAfterTab,
+          'Is case-insensitive on non-windows',
+        );
+      }
+    } finally {
+      await vscode.workspace.fs.delete(vscode.Uri.file(dirPath), { recursive: true });
     }
   });
 });

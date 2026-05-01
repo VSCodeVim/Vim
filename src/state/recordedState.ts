@@ -1,32 +1,25 @@
+import { IBaseAction, IBaseCommand, IBaseOperator } from '../actions/types';
 import { configuration } from '../configuration/configuration';
 import { Mode, isVisualMode } from '../mode/mode';
-import { BaseAction, BaseCommand } from './../actions/base';
-import { BaseOperator } from './../actions/operator';
+import { SpecialKeys } from '../util/specialKeys';
 import { PositionDiff } from './../common/motion/position';
 import { Transformer } from './../transformations/transformer';
-import { SpecialKeys } from '../util/specialKeys';
+
+const ESCAPE_REGEX = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
+const BUFFERED_KEYS_REGEX = new RegExp(SpecialKeys.TimeoutFinished, 'g');
 
 /**
- * The RecordedState class holds the current action that the user is
- * doing. Example: Imagine that the user types:
+ * Much of Vim's power comes from the composition of individual actions.
  *
- * 5"qdw
+ * RecordedState holds the state associated with a sequence of actions,
+ * generally beginning and ending in Normal mode.
  *
- * Then the relevant state would be
- *   * count of 5
- *   * copy into q register
- *   * delete operator
- *   * word movement
+ * For example, each of these action sequences would be combined into a single RecordedState:
+ *   - 5"xyw      (yank 5 words into the 'x' register)
+ *   - Axyz<Esc>  (append 'xyz' to end of line)
+ *   - Vjj~       (reverse case of next 3 lines)
  *
- *
- * Or imagine the user types:
- *
- * vw$}}d
- *
- * Then the state would be
- *   * Visual mode action
- *   * (a list of all the motions you ran)
- *   * delete operator
+ * The last action (for dot-repeating), macros, and a few other things are RecordedStates.
  */
 export class RecordedState {
   constructor() {
@@ -43,63 +36,30 @@ export class RecordedState {
    * String representation of the exact keys that the user entered.
    */
   public get commandString(): string {
-    let result = '';
+    const result =
+      this.actionsRunPressedKeys.join('') + this.actionKeys.join('') + this.bufferedKeys.join('');
 
-    if (this.actionsRun.length > 0) {
-      result = this.actionsRunPressedKeys.join('');
-    }
-    if (this.actionKeys.length > 0) {
-      // if there are any actionKeys waiting for other key append them
-      result += this.actionKeys.join('');
-    }
-    if (this.bufferedKeys.length > 0) {
-      // if there are any bufferedKeys waiting for other key append them
-      result += this.bufferedKeys.join('');
-    }
-    if (
-      this.actionsRun.length === 0 &&
-      this.actionKeys.length === 0 &&
-      this.bufferedKeys.length === 0 &&
-      this.commandList.length > 0
-    ) {
+    if (result.length === 0 && this.commandList.length > 0) {
       // Used for the registers and macros that only record on commandList
-      result = this.commandList.join('');
+      // The commandList here saves the ex command, so we should not regex replace the
+      // leader key by the literal string '<leader>', as would have been done for a normal command.
+      return this.commandList.join('');
     }
-    const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
-    const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
-    const regexBufferedKeys = new RegExp(SpecialKeys.TimeoutFinished, 'g');
-    result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
 
-    return result;
+    return result
+      .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
+      .replace(BUFFERED_KEYS_REGEX, '');
   }
 
   /**
    * String representation of the pending keys that the user entered.
    */
   public get pendingCommandString(): string {
-    let result = '';
+    const result = this.actionKeys.join('') + this.bufferedKeys.join('');
 
-    if (this.actionKeys.length > 0) {
-      // if there are any actionKeys waiting for other key append them
-      result += this.actionKeys.join('');
-    }
-    if (this.bufferedKeys.length > 0) {
-      // if there are any bufferedKeys waiting for other key append them
-      result += this.bufferedKeys.join('');
-    }
-    const regexEscape = new RegExp(/[|\\{}()[\]^$+*?.]/, 'g');
-    const regexLeader = new RegExp(configuration.leader.replace(regexEscape, '\\$&'), 'g');
-    const regexBufferedKeys = new RegExp(SpecialKeys.TimeoutFinished, 'g');
-    result = result.replace(regexLeader, '<leader>').replace(regexBufferedKeys, '');
-
-    return result;
-  }
-
-  /**
-   * Determines if the current command list is prefixed with a count
-   */
-  public get commandWithoutCountPrefix() {
-    return this.commandList.join('').replace(/^[0-9]+/g, '');
+    return result
+      .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
+      .replace(BUFFERED_KEYS_REGEX, '');
   }
 
   /**
@@ -148,7 +108,7 @@ export class RecordedState {
   /**
    * Every action that has been run.
    */
-  public actionsRun: BaseAction[] = [];
+  public actionsRun: IBaseAction[] = [];
 
   /**
    * Keeps track of keys pressed by the actionsRun. Used for the showCmd. If an action
@@ -156,14 +116,6 @@ export class RecordedState {
    * key after a number key.
    */
   public actionsRunPressedKeys: string[] = [];
-
-  public getLastActionRun(): BaseAction | undefined {
-    if (this.actionsRun.length === 0) {
-      return;
-    }
-
-    return this.actionsRun[this.actionsRun.length - 1];
-  }
 
   /**
    * Every key that was buffered to wait for a new key or the timeout to finish
@@ -190,10 +142,6 @@ export class RecordedState {
 
   public hasRunOperator = false;
 
-  public hasRunSurround = false;
-  public surroundKeys: string[] = [];
-  public surroundKeyIndexStart = 0;
-
   /**
    * This is kind of a hack and should be associated with something like this:
    *
@@ -217,30 +165,26 @@ export class RecordedState {
   /**
    * The operator (e.g. d, y, >) the user wants to run, if there is one.
    */
-  public get operator(): BaseOperator | undefined {
-    const operators = this.operators;
-    return operators.length > 0 ? operators[0] : undefined;
+  public get operator(): IBaseOperator | undefined {
+    return this.operators.at(0);
   }
 
-  public get operators(): BaseOperator[] {
-    return this.actionsRun.filter((a): a is BaseOperator => a instanceof BaseOperator).reverse();
+  public get operators(): IBaseOperator[] {
+    return this.actionsRun.filter((a): a is IBaseOperator => a.actionType === 'operator').reverse();
   }
 
   /**
    * The command (e.g. i, ., R, /) the user wants to run, if there is one.
    */
-  public get command(): BaseCommand {
+  public get command(): IBaseCommand {
+    // TODO: this is probably wrong
     const list = this.actionsRun
-      .filter((a): a is BaseCommand => a instanceof BaseCommand)
+      .filter((a): a is IBaseCommand => a.actionType === 'command')
       .reverse();
 
     // TODO - disregard <Esc>, then assert this is of length 1.
 
     return list[0];
-  }
-
-  public get hasRunAMovement(): boolean {
-    return this.actionsRun.some((a) => a.isMotion);
   }
 
   /**
@@ -261,6 +205,13 @@ export class RecordedState {
    */
   public registerName: string;
 
+  /**
+   * The key used to access the register with `registerName`
+   * Example: if 'q5' then key=5 and name=5
+   * Or:      if 'qA' then key=A and name=a
+   */
+  public registerKey: string = '';
+
   public clone(): RecordedState {
     const res = new RecordedState();
 
@@ -269,39 +220,34 @@ export class RecordedState {
     res.actionKeys = this.actionKeys.slice(0);
     res.actionsRun = this.actionsRun.slice(0);
     res.hasRunOperator = this.hasRunOperator;
-    res.hasRunSurround = this.hasRunSurround;
-    res.surroundKeys = this.surroundKeys;
 
     return res;
   }
 
-  public operatorReadyToExecute(mode: Mode): boolean {
-    // Visual modes do not require a motion -- they ARE the motion.
-    return (
-      this.operator !== undefined &&
-      !this.hasRunOperator &&
-      mode !== Mode.SearchInProgressMode &&
-      mode !== Mode.CommandlineInProgress &&
-      (this.hasRunAMovement ||
-        isVisualMode(mode) ||
-        (this.operators.length > 1 &&
-          this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor))
-    );
-  }
+  public getOperatorState(mode: Mode): 'pending' | 'ready' | undefined {
+    const operators = this.operators;
 
-  public isOperatorPending(mode: Mode): boolean {
-    // Visual modes do not require a motion -- they ARE the motion.
-    return (
-      this.operator !== undefined &&
-      !this.hasRunOperator &&
-      mode !== Mode.SearchInProgressMode &&
-      mode !== Mode.CommandlineInProgress &&
-      !(
-        this.hasRunAMovement ||
-        isVisualMode(mode) ||
-        (this.operators.length > 1 &&
-          this.operators.reverse()[0].constructor === this.operators.reverse()[1].constructor)
-      )
-    );
+    // Do we have an operator that hasn't been run yet?
+    if (
+      operators.length === 0 ||
+      this.hasRunOperator ||
+      // TODO: Is this mode check necessary?
+      mode === Mode.SearchInProgressMode ||
+      mode === Mode.CommandlineInProgress
+    ) {
+      return undefined;
+    }
+
+    // We've got an operator - do we also have a motion or visual selection to operate on?
+    if (this.actionsRun.some((a) => a.actionType === 'motion') || isVisualMode(mode)) {
+      return 'ready';
+    }
+
+    // This case is for a "repeated" operator (such as `dd` or `yy`)
+    if (operators.length > 1 && operators[0].constructor === operators[1].constructor) {
+      return 'ready';
+    }
+
+    return 'pending';
   }
 }

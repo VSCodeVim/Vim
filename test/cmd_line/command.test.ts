@@ -1,6 +1,8 @@
+import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
+import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace, assertStatusBarEqual } from '../testUtils';
+import { assertStatusBarEqual, setupWorkspace } from '../testUtils';
 
 suite('cmd_line/search command', () => {
   let modeHandler: ModeHandler;
@@ -9,8 +11,6 @@ suite('cmd_line/search command', () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   test('command <C-w> can remove word in cmd line', async () => {
     await modeHandler.handleMultipleKeyEvents([':', 'a', 'b', 'c', '-', '1', '2', '3', '<C-w>']);
@@ -149,5 +149,46 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleMultipleKeyEvents('/abc'.split('').concat('<Esc>'));
     await modeHandler.handleMultipleKeyEvents(['/', '<C-p>']);
     assertStatusBarEqual('/abc|', 'Failed to go to previous search string');
+  });
+
+  for (const key of ['<BS>', '<S-BS>', '<C-h>']) {
+    test(`${key} removes one character from command line`, async () => {
+      await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+      await modeHandler.handleKeyEvent(key);
+      assertStatusBarEqual(':ab|');
+    });
+
+    test(`${key} with empty command line goes to normal mode`, async () => {
+      await modeHandler.handleKeyEvent(':');
+      await modeHandler.handleKeyEvent(key);
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+    });
+
+    test(`${key} at start of non-empty command does nothing`, async () => {
+      await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+      await modeHandler.handleKeyEvent('<Home>');
+      await modeHandler.handleKeyEvent(key);
+      assertStatusBarEqual(':|abc');
+    });
+  }
+
+  test(`<Del> removes one character from command line`, async () => {
+    await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<left>', '<left>']);
+    await modeHandler.handleMultipleKeyEvents(['<Del>']);
+    assertStatusBarEqual(':a|c');
+  });
+
+  test(`<Del> with empty command line goes to normal mode`, async () => {
+    await modeHandler.handleKeyEvent(':');
+    await modeHandler.handleKeyEvent('<Del>');
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+  });
+
+  test(`<Del> at start of non-empty command acts normally`, async () => {
+    await modeHandler.handleMultipleKeyEvents(':abc'.split(''));
+    await modeHandler.handleKeyEvent('<Home>');
+    await modeHandler.handleKeyEvent('<Del>');
+    assertStatusBarEqual(':|bc');
   });
 });

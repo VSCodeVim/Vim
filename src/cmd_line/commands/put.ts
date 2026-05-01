@@ -1,16 +1,24 @@
-import * as node from '../node';
-import { VimState } from '../../state/vimState';
 import { configuration } from '../../configuration/configuration';
+import { VimState } from '../../state/vimState';
 
-import { PutCommand, IPutCommandOptions } from '../../actions/commands/put';
+// eslint-disable-next-line id-denylist
+import { Parser, all, alt, any, optWhitespace, seq, string } from 'parsimmon';
+import { Position } from 'vscode';
+import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
+import { VimError } from '../../error';
 import { Register } from '../../register/register';
 import { StatusBar } from '../../statusBar';
-import { VimError, ErrorCode } from '../../error';
-import { Position } from 'vscode';
+import { ExCommand } from '../../vimscript/exCommand';
+import { EvaluationContext, toString } from '../../vimscript/expression/evaluate';
+import { expressionParser } from '../../vimscript/expression/parser';
+import { Expression } from '../../vimscript/expression/types';
+import { LineRange } from '../../vimscript/lineRange';
+import { bangParser } from '../../vimscript/parserUtils';
 
-export interface IPutCommandArguments extends node.ICommandArgs {
-  bang?: boolean;
+export interface IPutCommandArguments {
+  bang: boolean;
   register?: string;
+  fromExpression?: Expression;
 }
 
 //
@@ -18,46 +26,85 @@ export interface IPutCommandArguments extends node.ICommandArgs {
 // http://vimdoc.sourceforge.net/htmldoc/change.html#:put
 //
 
-export class PutExCommand extends node.CommandBase {
-  protected _arguments: IPutCommandArguments;
+export class PutExCommand extends ExCommand {
+  public static readonly argParser: Parser<PutExCommand> = seq(
+    bangParser,
+    optWhitespace.then(
+      alt<Partial<IPutCommandArguments>>(
+        string('=')
+          .then(optWhitespace)
+          .then(seq(expressionParser.fallback(undefined), all))
+          .map(([expression, trailing]) => {
+            trailing = trailing.trim();
+            if (expression === undefined) {
+              if (trailing) {
+                throw VimError.InvalidExpression(trailing);
+              }
+              return { register: '=' };
+            }
+            if (trailing) {
+              throw VimError.TrailingCharacters(trailing);
+            }
+            return { fromExpression: expression };
+          }),
+        // eslint-disable-next-line id-denylist
+        any.map((register) => ({ register })).fallback({ register: undefined }),
+      ),
+    ),
+  ).map(([bang, register]) => new PutExCommand({ bang, ...register }));
+
+  private static lastExpression: Expression | undefined;
+
+  public readonly arguments: IPutCommandArguments;
 
   constructor(args: IPutCommandArguments) {
     super();
-    this._arguments = args;
+    this.arguments = args;
   }
 
-  get arguments(): IPutCommandArguments {
-    return this._arguments;
-  }
-
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
   async doPut(vimState: VimState, position: Position): Promise<void> {
+    if (this.arguments.register === '=' && this.arguments.fromExpression === undefined) {
+      if (PutExCommand.lastExpression === undefined) {
+        return;
+      }
+      this.arguments.fromExpression = PutExCommand.lastExpression;
+    }
+
+    if (this.arguments.fromExpression) {
+      PutExCommand.lastExpression = this.arguments.fromExpression;
+
+      this.arguments.register = '=';
+
+      const value = new EvaluationContext(vimState).evaluate(this.arguments.fromExpression);
+      const stringified =
+        value.type === 'list' ? value.items.map(toString).join('\n') : toString(value);
+      Register.overwriteRegister(vimState, this.arguments.register, stringified, 0);
+    }
+
     const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');
+
     if (!Register.isValidRegister(registerName)) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.TrailingCharacters));
+      StatusBar.displayError(vimState, VimError.TrailingCharacters());
       return;
     }
 
     vimState.recordedState.registerName = registerName;
 
-    let options: IPutCommandOptions = {
-      forceLinewise: true,
-      forceCursorLastLine: true,
-      pasteBeforeCursor: this.arguments.bang,
-    };
-
-    await new PutCommand().exec(position, vimState, options);
+    const putCmd = this.arguments.bang ? new PutBeforeFromCmdLine() : new PutFromCmdLine();
+    putCmd.setInsertionLine(position.line);
+    await putCmd.exec(position, vimState);
   }
 
   async execute(vimState: VimState): Promise<void> {
     await this.doPut(vimState, vimState.cursorStopPosition);
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [_, end] = range.resolve(vimState);
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const { end } = range.resolve(vimState);
     await this.doPut(vimState, new Position(end, 0).getLineEnd());
   }
 }

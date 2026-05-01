@@ -1,30 +1,32 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './../../configuration/configuration';
-import { TextEditor } from './../../textEditor';
-import { clamp } from '../../util/util';
+import { Position } from 'vscode';
 import { getSentenceBegin, getSentenceEnd } from '../../textobject/sentence';
 import {
   WordType,
-  getCurrentWordEnd,
-  getLastWordEnd,
-  getWordLeft,
-  getWordRight,
+  nextWordEnd,
+  nextWordStart,
+  prevWordEnd,
+  prevWordStart,
 } from '../../textobject/word';
-import { Position } from 'vscode';
+import { clamp } from '../../util/util';
+import { configuration } from './../../configuration/configuration';
+import { TextEditor } from './../../textEditor';
 
 /**
  * Controls how a PositionDiff affects the Position it's applied to.
  */
-export enum PositionDiffType {
-  /** Simple line and column offset */
+enum PositionDiffType {
+  /** Sets both the line and character exactly */
+  ExactPosition,
+  /** Offsets both the line and character */
   Offset,
-  /**
-   * Sets the Position's column to `PositionDiff.character`
-   */
+  /** Offsets the line and sets the column exactly */
   ExactCharacter,
   /** Brings the Position to the beginning of the line if `vim.startofline` is true */
   ObeyStartOfLine,
+  /** Brings the Position to the end of the line */
+  EndOfLine,
 }
 
 /**
@@ -36,18 +38,46 @@ export class PositionDiff {
   public readonly character: number;
   public readonly type: PositionDiffType;
 
-  constructor({ line = 0, character = 0, type = PositionDiffType.Offset } = {}) {
+  private constructor(type: PositionDiffType, line: number, character: number) {
+    this.type = type;
     this.line = line;
     this.character = character;
-    this.type = type;
   }
 
-  public static newBOLDiff(lineOffset: number = 0) {
-    return new PositionDiff({
-      line: lineOffset,
-      character: 0,
-      type: PositionDiffType.ExactCharacter,
-    });
+  /** Has no effect */
+  public static identity(): PositionDiff {
+    return PositionDiff.offset({ line: 0, character: 0 });
+  }
+
+  /** Offsets both the Position's line and character */
+  public static offset({ line = 0, character = 0 }): PositionDiff {
+    return new PositionDiff(PositionDiffType.Offset, line, character);
+  }
+
+  /** Sets the Position's line and character exactly */
+  public static exactPosition(position: Position): PositionDiff {
+    return new PositionDiff(PositionDiffType.ExactPosition, position.line, position.character);
+  }
+
+  /** Brings the Position to the beginning of the line if `vim.startofline` is true */
+  public static startOfLine(): PositionDiff {
+    return new PositionDiff(PositionDiffType.ObeyStartOfLine, 0, 0);
+  }
+
+  /** Brings the Position to the end of the line */
+  public static endOfLine(): PositionDiff {
+    return new PositionDiff(PositionDiffType.EndOfLine, 0, 0);
+  }
+
+  /** Offsets the Position's line and sets its character exactly */
+  public static exactCharacter({
+    lineOffset,
+    character,
+  }: {
+    lineOffset?: number;
+    character: number;
+  }): PositionDiff {
+    return new PositionDiff(PositionDiffType.ExactCharacter, lineOffset ?? 0, character);
   }
 
   public toString(): string {
@@ -56,9 +86,14 @@ export class PositionDiff {
         return `[ Diff: Offset ${this.line} ${this.character} ]`;
       case PositionDiffType.ExactCharacter:
         return `[ Diff: ExactCharacter ${this.line} ${this.character} ]`;
+      case PositionDiffType.ExactPosition:
+        return `[ Diff: ExactPosition ${this.line} ${this.character} ]`;
       case PositionDiffType.ObeyStartOfLine:
         return `[ Diff: ObeyStartOfLine ${this.line} ]`;
+      case PositionDiffType.EndOfLine:
+        return `[ Diff: EndOfLine ${this.line} ]`;
       default:
+        const guard: never = this.type;
         throw new Error(`Unknown PositionDiffType: ${this.type}`);
     }
   }
@@ -89,17 +124,13 @@ declare module 'vscode' {
   interface Position {
     toString(): string;
 
-    add(diff: PositionDiff, boundsCheck?: boolean): Position;
+    add(document: vscode.TextDocument, diff: PositionDiff, boundsCheck?: boolean): Position;
     subtract(other: Position): PositionDiff;
 
     /**
-     * @returns a new Position with the same character and the given line.
-     * Does bounds-checking to make sure the result is valid.
-     */
-    withLine(line: number): Position;
-    /**
      * @returns a new Position with the same line and the given character.
      * Does bounds-checking to make sure the result is valid.
+     * @deprecated use `Position.with` instead
      */
     withColumn(column: number): Position;
 
@@ -124,15 +155,45 @@ declare module 'vscode' {
     getRightThroughLineBreaks(includeEol?: boolean): Position;
     getOffsetThroughLineBreaks(offset: number): Position;
 
-    getWordLeft(inclusive?: boolean): Position;
-    getWordRight(inclusive?: boolean): Position;
-    getCurrentWordEnd(inclusive?: boolean): Position;
-    getLastWordEnd(): Position;
+    /**
+     * @returns the start of the first word to the left of the current position, like `b`
+     *
+     * @param wordType how word boundaries are determined
+     * @param inclusive if true, returns the current position if it's at the start of a word
+     */
+    prevWordStart(
+      document: vscode.TextDocument,
+      args?: { wordType?: WordType; inclusive?: boolean },
+    ): Position;
 
-    getBigWordLeft(inclusive?: boolean): Position;
-    getBigWordRight(): Position;
-    getCurrentBigWordEnd(inclusive?: boolean): Position;
-    getLastBigWordEnd(): Position;
+    /**
+     * @returns the start of the first word to the right of the current position, like `w`
+     *
+     * @param wordType how word boundaries are determined
+     * @param inclusive if true, returns the current position if it's at the start of a word
+     */
+    nextWordStart(
+      document: vscode.TextDocument,
+      args?: { wordType?: WordType; inclusive?: boolean },
+    ): Position;
+
+    /**
+     * @returns the end of the first word to the left of the current position, like `ge`
+     *
+     * @param wordType how word boundaries are determined
+     */
+    prevWordEnd(document: vscode.TextDocument, args?: { wordType?: WordType }): Position;
+
+    /**
+     * @returns the end of the first word to the right of the current position, like `e`
+     *
+     * @param wordType how word boundaries are determined
+     * @param inclusive if true, returns the current position if it's at the end of a word
+     */
+    nextWordEnd(
+      document: vscode.TextDocument,
+      args?: { wordType?: WordType; inclusive?: boolean },
+    ): Position;
 
     getSentenceBegin(args: { forward: boolean }): Position;
     getSentenceEnd(): Position;
@@ -143,29 +204,12 @@ declare module 'vscode' {
      * @returns the beginning of the line, excluding preceeding whitespace.
      * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
      */
-    getLineBeginRespectingIndent(): Position;
-
-    /**
-     * @return the beginning of the previous line.
-     * If already on the first line, return the beginning of this line.
-     */
-    getPreviousLineBegin(): Position;
-
-    /**
-     * @return the beginning of the next line.
-     * If already on the last line, return the *end* of this line.
-     */
-    getNextLineBegin(): Position;
+    getLineBeginRespectingIndent(document: vscode.TextDocument): Position;
 
     /**
      * @returns a new Position at the end of this position's line.
      */
     getLineEnd(): Position;
-
-    /**
-     * @returns a new Position at the end of this Position's line, including the invisible newline character.
-     */
-    getLineEndIncludingEOL(): Position;
 
     /**
      * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
@@ -185,26 +229,25 @@ declare module 'vscode' {
     /**
      * Is this position at the end of the line?
      */
-    isLineEnd(): boolean;
+    isLineEnd(document: vscode.TextDocument): boolean;
 
-    isFirstWordOfLine(): boolean;
+    isFirstWordOfLine(document: vscode.TextDocument): boolean;
 
     isAtDocumentBegin(): boolean;
 
-    isAtDocumentEnd(): boolean;
+    isAtDocumentEnd(document: vscode.TextDocument): boolean;
 
     /**
      * Returns whether the current position is in the leading whitespace of a line
-     * @param allowEmpty : Use true if "" is valid
      */
-    isInLeadingWhitespace(allowEmpty?: boolean): boolean;
+    isInLeadingWhitespace(document: vscode.TextDocument): boolean;
 
     /**
      * If `vim.startofline` is set, get first non-blank character's position.
      */
-    obeyStartOfLine(): Position;
+    obeyStartOfLine(document: vscode.TextDocument): Position;
 
-    isValid(textEditor: vscode.TextEditor): boolean;
+    isValid(document: vscode.TextDocument): boolean;
   }
 }
 
@@ -214,10 +257,15 @@ Position.prototype.toString = function (this: Position) {
 
 Position.prototype.add = function (
   this: Position,
+  document: vscode.TextDocument,
   diff: PositionDiff,
-  boundsCheck = true
+  boundsCheck = true,
 ): Position {
-  let resultLine = this.line + diff.line;
+  if (diff.type === PositionDiffType.ExactPosition) {
+    return new Position(diff.line, diff.character);
+  }
+
+  const resultLine = clamp(this.line + diff.line, 0, document.lineCount - 1);
 
   let resultChar: number;
   if (diff.type === PositionDiffType.Offset) {
@@ -225,33 +273,22 @@ Position.prototype.add = function (
   } else if (diff.type === PositionDiffType.ExactCharacter) {
     resultChar = diff.character;
   } else if (diff.type === PositionDiffType.ObeyStartOfLine) {
-    resultChar = this.withLine(resultLine).obeyStartOfLine().character;
+    resultChar = this.obeyStartOfLine(document).character;
+  } else if (diff.type === PositionDiffType.EndOfLine) {
+    resultChar = this.getLineEnd().character;
   } else {
     throw new Error(`Unknown PositionDiffType: ${diff.type}`);
   }
 
-  if (boundsCheck) {
-    resultLine = clamp(resultLine, 0, TextEditor.getLineCount() - 1);
-    resultChar = clamp(resultChar, 0, TextEditor.getLineLength(resultLine));
-  }
-
-  return new Position(resultLine, resultChar);
+  const pos = new Position(resultLine, Math.max(resultChar, 0));
+  return boundsCheck ? document.validatePosition(pos) : pos;
 };
 
 Position.prototype.subtract = function (this: Position, other: Position): PositionDiff {
-  return new PositionDiff({
+  return PositionDiff.offset({
     line: this.line - other.line,
     character: this.character - other.character,
   });
-};
-
-/**
- * @returns a new Position with the same character and the given line.
- * Does bounds-checking to make sure the result is valid.
- */
-Position.prototype.withLine = function (this: Position, line: number): Position {
-  line = clamp(line, 0, TextEditor.getLineCount() - 1);
-  return new Position(line, this.character);
 };
 
 /**
@@ -276,7 +313,7 @@ Position.prototype.getLeft = function (this: Position, count = 1): Position {
 Position.prototype.getRight = function (this: Position, count = 1): Position {
   return new Position(
     this.line,
-    Math.min(this.character + count, TextEditor.getLineLength(this.line))
+    Math.min(this.character + count, TextEditor.getLineLength(this.line)),
   );
 };
 
@@ -284,8 +321,12 @@ Position.prototype.getRight = function (this: Position, count = 1): Position {
  * @returns the Position `count` lines down from this Position
  */
 Position.prototype.getDown = function (this: Position, count = 1): Position {
-  const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
-  return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  if (vscode.window.activeTextEditor) {
+    const line = Math.min(this.line + count, TextEditor.getLineCount() - 1);
+    return new Position(line, Math.min(this.character, TextEditor.getLineLength(line)));
+  } else {
+    return this.translate({ lineDelta: count });
+  }
 };
 
 /**
@@ -302,7 +343,7 @@ Position.prototype.getUp = function (this: Position, count = 1): Position {
  */
 Position.prototype.getLeftThroughLineBreaks = function (
   this: Position,
-  includeEol = true
+  includeEol = true,
 ): Position {
   if (!this.isLineBeginning()) {
     return this.getLeft();
@@ -322,18 +363,23 @@ Position.prototype.getLeftThroughLineBreaks = function (
 
 Position.prototype.getRightThroughLineBreaks = function (
   this: Position,
-  includeEol = false
+  includeEol = false,
 ): Position {
-  if (this.isAtDocumentEnd()) {
+  const document = vscode.window.activeTextEditor?.document;
+  if (document === undefined) {
+    return this;
+  }
+  if (this.isAtDocumentEnd(document)) {
     return this;
   }
 
-  if (this.line < TextEditor.getLineCount() - 1) {
+  const lineLength = document.lineAt(this.line).text.length;
+  if (this.line < document.lineCount - 1) {
     const pos = includeEol ? this : this.getRight();
-    if (pos.isLineEnd()) {
+    if (pos.character === lineLength) {
       return this.with({ character: 0 }).getDown();
     }
-  } else if (!includeEol && this.character === TextEditor.getLineLength(this.line) - 1) {
+  } else if (!includeEol && this.character === lineLength - 1) {
     // Last character of document, don't go on to non-existent EOL
     return this;
   }
@@ -343,7 +389,7 @@ Position.prototype.getRightThroughLineBreaks = function (
 
 Position.prototype.getOffsetThroughLineBreaks = function (
   this: Position,
-  offset: number
+  offset: number,
 ): Position {
   let pos = new Position(this.line, this.character);
 
@@ -360,62 +406,41 @@ Position.prototype.getOffsetThroughLineBreaks = function (
   return pos;
 };
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getWordLeft = function (this: Position, inclusive: boolean = false): Position {
-  return getWordLeft(this, WordType.Normal, inclusive);
-};
-
-Position.prototype.getBigWordLeft = function (
+Position.prototype.prevWordStart = function (
   this: Position,
-  inclusive: boolean = false
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType; inclusive?: boolean },
 ): Position {
-  return getWordLeft(this, WordType.Big, inclusive);
+  return prevWordStart(document, this, args?.wordType ?? WordType.Normal, args?.inclusive ?? false);
 };
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getWordRight = function (this: Position, inclusive: boolean = false): Position {
-  return getWordRight(this, WordType.Normal, inclusive);
-};
-
-Position.prototype.getBigWordRight = function (this: Position): Position {
-  return getWordRight(this, WordType.Big);
-};
-
-Position.prototype.getLastWordEnd = function (this: Position): Position {
-  return getLastWordEnd(this, WordType.Normal);
-};
-
-Position.prototype.getLastBigWordEnd = function (this: Position): Position {
-  return getLastWordEnd(this, WordType.Big);
-};
-
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getCurrentWordEnd = function (
+Position.prototype.nextWordStart = function (
   this: Position,
-  inclusive: boolean = false
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType; inclusive?: boolean },
 ): Position {
-  return getCurrentWordEnd(this, WordType.Normal, inclusive);
+  return nextWordStart(document, this, args?.wordType ?? WordType.Normal, args?.inclusive ?? false);
 };
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-Position.prototype.getCurrentBigWordEnd = function (
+Position.prototype.prevWordEnd = function (
   this: Position,
-  inclusive: boolean = false
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType },
 ): Position {
-  return getCurrentWordEnd(this, WordType.Big, inclusive);
+  return prevWordEnd(document, this, args?.wordType ?? WordType.Normal);
+};
+
+Position.prototype.nextWordEnd = function (
+  this: Position,
+  document: vscode.TextDocument,
+  args?: { wordType?: WordType; inclusive?: boolean },
+): Position {
+  return nextWordEnd(document, this, args?.wordType ?? WordType.Normal, args?.inclusive ?? false);
 };
 
 Position.prototype.getSentenceBegin = function (
   this: Position,
-  args: { forward: boolean }
+  args: { forward: boolean },
 ): Position {
   return getSentenceBegin(this, args);
 };
@@ -435,35 +460,14 @@ Position.prototype.getLineBegin = function (this: Position): Position {
  * @returns the beginning of the line, excluding preceeding whitespace.
  * This respects the `autoindent` setting, and returns `getLineBegin()` if auto-indent is disabled.
  */
-Position.prototype.getLineBeginRespectingIndent = function (this: Position): Position {
+Position.prototype.getLineBeginRespectingIndent = function (
+  this: Position,
+  document: vscode.TextDocument,
+): Position {
   if (!configuration.autoindent) {
     return this.getLineBegin();
   }
-  return TextEditor.getFirstNonWhitespaceCharOnLine(this.line);
-};
-
-/**
- * @return the beginning of the previous line.
- * If already on the first line, return the beginning of this line.
- */
-Position.prototype.getPreviousLineBegin = function (this: Position): Position {
-  if (this.line === 0) {
-    return this.getLineBegin();
-  }
-
-  return new Position(this.line - 1, 0);
-};
-
-/**
- * @return the beginning of the next line.
- * If already on the last line, return the *end* of this line.
- */
-Position.prototype.getNextLineBegin = function (this: Position): Position {
-  if (this.line >= TextEditor.getLineCount() - 1) {
-    return this.getLineEnd();
-  }
-
-  return new Position(this.line + 1, 0);
+  return TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line);
 };
 
 /**
@@ -471,14 +475,6 @@ Position.prototype.getNextLineBegin = function (this: Position): Position {
  */
 Position.prototype.getLineEnd = function (this: Position): Position {
   return new Position(this.line, TextEditor.getLineLength(this.line));
-};
-
-/**
- * @returns a new Position at the end of this Position's line, including the invisible newline character.
- */
-Position.prototype.getLineEndIncludingEOL = function (this: Position): Position {
-  // TODO: isn't this one too far?
-  return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
 };
 
 /**
@@ -502,10 +498,7 @@ Position.prototype.advancePositionByText = function (this: Position, text: strin
   if (newlines.length === 0) {
     return new Position(this.line, this.character + text.length);
   } else {
-    return new Position(
-      this.line + newlines.length,
-      text.length - (newlines[newlines.length - 1] + 1)
-    );
+    return new Position(this.line + newlines.length, text.length - (newlines.at(-1)! + 1));
   }
 };
 
@@ -519,20 +512,28 @@ Position.prototype.isLineBeginning = function (this: Position): boolean {
 /**
  * Is this position at the end of the line?
  */
-Position.prototype.isLineEnd = function (this: Position): boolean {
-  return this.character >= TextEditor.getLineLength(this.line);
+Position.prototype.isLineEnd = function (this: Position, document: vscode.TextDocument): boolean {
+  return this.character >= document.lineAt(this.line).range.end.character;
 };
 
-Position.prototype.isFirstWordOfLine = function (this: Position): boolean {
-  return TextEditor.getFirstNonWhitespaceCharOnLine(this.line).character === this.character;
+Position.prototype.isFirstWordOfLine = function (
+  this: Position,
+  document: vscode.TextDocument,
+): boolean {
+  return (
+    TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line).character === this.character
+  );
 };
 
 Position.prototype.isAtDocumentBegin = function (this: Position): boolean {
   return this.line === 0 && this.isLineBeginning();
 };
 
-Position.prototype.isAtDocumentEnd = function (this: Position): boolean {
-  return this.line === TextEditor.getLineCount() - 1 && this.isLineEnd();
+Position.prototype.isAtDocumentEnd = function (
+  this: Position,
+  document: vscode.TextDocument,
+): boolean {
+  return this.isEqual(TextEditor.getDocumentEnd(document));
 };
 
 /**
@@ -541,33 +542,30 @@ Position.prototype.isAtDocumentEnd = function (this: Position): boolean {
  */
 Position.prototype.isInLeadingWhitespace = function (
   this: Position,
-  allowEmpty: boolean = false
+  document: vscode.TextDocument,
 ): boolean {
-  if (allowEmpty) {
-    return /^\s*$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
-  } else {
-    return /^\s+$/.test(TextEditor.getText(new vscode.Range(this.getLineBegin(), this)));
-  }
+  return /^\s+$/.test(document.getText(new vscode.Range(this.getLineBegin(), this)));
 };
 
 /**
  * If `vim.startofline` is set, get first non-blank character's position.
  */
-Position.prototype.obeyStartOfLine = function (this: Position): Position {
-  return configuration.startofline ? TextEditor.getFirstNonWhitespaceCharOnLine(this.line) : this;
+Position.prototype.obeyStartOfLine = function (
+  this: Position,
+  document: vscode.TextDocument,
+): Position {
+  return configuration.startofline
+    ? TextEditor.getFirstNonWhitespaceCharOnLine(document, this.line)
+    : this;
 };
 
-Position.prototype.isValid = function (this: Position, textEditor: vscode.TextEditor): boolean {
+Position.prototype.isValid = function (this: Position, document: vscode.TextDocument): boolean {
   try {
-    // line
-    // TODO: this `|| 1` seems dubious...
-    let lineCount = TextEditor.getLineCount(textEditor) || 1;
-    if (this.line >= lineCount) {
+    if (this.line >= document.lineCount) {
       return false;
     }
 
-    // char
-    let charCount = TextEditor.getLineLength(this.line);
+    const charCount = document.lineAt(this.line).range.end.character;
     if (this.character > charCount + 1) {
       return false;
     }

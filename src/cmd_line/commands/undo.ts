@@ -1,28 +1,28 @@
-import * as node from '../node';
-import { Logger } from '../../util/logger';
-import { VimState } from '../../state/vimState';
-import { CommandUndo } from '../../actions/commands/actions';
+import { optWhitespace, Parser } from 'parsimmon';
 import { Position } from 'vscode';
+import { Undo } from '../../actions/commands/undo';
+import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { numberParser } from '../../vimscript/parserUtils';
 
 //
 //  Implements :u[ndo]
 //  http://vimdoc.sourceforge.net/htmldoc/undo.html
 //
-export class UndoCommand extends node.CommandBase {
-  protected _arguments: {};
-  private readonly _logger = Logger.get('Undo');
+export class UndoCommand extends ExCommand {
+  public static readonly argParser: Parser<UndoCommand> = optWhitespace
+    .then(numberParser)
+    .fallback(undefined)
+    .map((count) => new UndoCommand(count));
 
-  constructor(args: {}) {
+  private count?: number;
+  private constructor(count?: number) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): {} {
-    return this._arguments;
+    this.count = count;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    await new CommandUndo().exec(new Position(0, 0), vimState);
-    return;
+    // TODO: Use `this.count`
+    await new Undo().exec(new Position(0, 0), vimState);
   }
 }

@@ -1,13 +1,6 @@
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from '../testUtils';
 
 suite('Repeatable movements with f and t', () => {
-  setup(async () => {
-    await setupWorkspace();
-  });
-
-  suiteTeardown(cleanUpWorkspace);
-
   newTest({
     title: 'Can repeat f<character>',
     start: ['|abc abc abc'],

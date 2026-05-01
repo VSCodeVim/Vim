@@ -1,10 +1,10 @@
-import { CommandBase, ICommandArgs } from '../node';
+// eslint-disable-next-line id-denylist
+import { Parser, alt, optWhitespace, string } from 'parsimmon';
+import { ShowCommandHistory, ShowSearchHistory } from '../../actions/commands/actions';
 import { VimState } from '../../state/vimState';
-import {
-  CommandShowSearchHistory,
-  CommandShowCommandHistory,
-} from '../../actions/commands/actions';
-import { SearchDirection } from '../../state/searchState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { nameAbbrevParser } from '../../vimscript/parserUtils';
+import { SearchDirection } from '../../vimscript/pattern';
 
 export enum HistoryCommandType {
   Cmd,
@@ -15,34 +15,41 @@ export enum HistoryCommandType {
   All,
 }
 
-export interface IHistoryCommandArguments extends ICommandArgs {
+const historyTypeParser: Parser<HistoryCommandType> = alt(
+  alt(nameAbbrevParser('c', 'md'), string(':')).result(HistoryCommandType.Cmd),
+  alt(nameAbbrevParser('s', 'earch'), string('/')).result(HistoryCommandType.Search),
+  alt(nameAbbrevParser('e', 'xpr'), string('=')).result(HistoryCommandType.Expr),
+  alt(nameAbbrevParser('i', 'nput'), string('@')).result(HistoryCommandType.Input),
+  alt(nameAbbrevParser('d', 'ebug'), string('>')).result(HistoryCommandType.Debug),
+  nameAbbrevParser('a', 'll').result(HistoryCommandType.All),
+);
+
+export interface IHistoryCommandArguments {
   type: HistoryCommandType;
-  // TODO: :history can accept multiple types
   // TODO: :history can also accept a range
 }
 
 // http://vimdoc.sourceforge.net/htmldoc/cmdline.html#:history
-export class HistoryCommand extends CommandBase {
-  protected _arguments: IHistoryCommandArguments;
+export class HistoryCommand extends ExCommand {
+  public static readonly argParser: Parser<HistoryCommand> = optWhitespace
+    .then(historyTypeParser.fallback(HistoryCommandType.Cmd))
+    .map((type) => new HistoryCommand({ type }));
 
+  private readonly arguments: IHistoryCommandArguments;
   constructor(args: IHistoryCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IHistoryCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    switch (this._arguments.type) {
+    switch (this.arguments.type) {
       case HistoryCommandType.Cmd:
-        await new CommandShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
+        await new ShowCommandHistory().exec(vimState.cursorStopPosition, vimState);
         break;
       case HistoryCommandType.Search:
-        await new CommandShowSearchHistory(SearchDirection.Forward).exec(
+        await new ShowSearchHistory(SearchDirection.Forward).exec(
           vimState.cursorStopPosition,
-          vimState
+          vimState,
         );
         break;
       // TODO: Implement these

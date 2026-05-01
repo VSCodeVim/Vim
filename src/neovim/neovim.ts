@@ -1,28 +1,26 @@
+import { ChildProcess, spawn } from 'child_process';
+import { exists } from 'fs';
+import { Neovim } from 'neovim/lib/api/Neovim';
+import { attach } from 'neovim/lib/attach';
+import { dirname } from 'path';
 import * as util from 'util';
 import * as vscode from 'vscode';
-import { Logger } from '../util/logger';
-import { sorted } from './../common/motion/position';
+import { Position, TextDocument } from 'vscode';
+import { configuration } from '../configuration/configuration';
 import { Register, RegisterMode } from '../register/register';
 import { TextEditor } from '../textEditor';
+import { Logger } from '../util/logger';
+import { sorted } from './../common/motion/position';
 import { VimState } from './../state/vimState';
-import { configuration } from '../configuration/configuration';
-import { dirname } from 'path';
-import { exists } from 'fs';
-import { spawn, ChildProcess } from 'child_process';
-import { attach } from 'neovim/lib/attach';
-import { Neovim } from 'neovim/lib/api/Neovim';
-import { Position } from 'vscode';
-import { TextDocument } from 'vscode';
 
 export class NeovimWrapper implements vscode.Disposable {
-  private process: ChildProcess;
-  private nvim: Neovim;
-  private static readonly logger = Logger.get('Neovim');
+  private process?: ChildProcess;
+  private nvim?: Neovim;
   private readonly processTimeoutInSeconds = 3;
 
   async run(
     vimState: VimState,
-    command: string
+    command: string,
   ): Promise<{ statusBarText: string; error: boolean }> {
     if (!this.nvim) {
       this.nvim = await this.startNeovim(vimState.document);
@@ -43,12 +41,13 @@ export class NeovimWrapper implements vscode.Disposable {
         await Promise.race([nvimAttach, timeout]);
       } catch (e) {
         configuration.enableNeovim = false;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         throw new Error(`Failed to attach to neovim process. ${e.message}`);
       }
 
       const apiInfo = await this.nvim.apiInfo;
       const version = apiInfo[1].version;
-      NeovimWrapper.logger.debug(`version: ${version.major}.${version.minor}.${version.patch}`);
+      Logger.debug(`version: ${version.major}.${version.minor}.${version.patch}`);
     }
 
     await this.syncVSCodeToVim(vimState);
@@ -59,7 +58,7 @@ export class NeovimWrapper implements vscode.Disposable {
     await this.nvim.command('let v:errmsg="" | let v:statusmsg=""');
 
     // Execute the command
-    NeovimWrapper.logger.debug(`Running ${command}.`);
+    Logger.debug(`Running ${command}.`);
     await this.nvim.input(command);
     const mode = await this.nvim.mode;
     if (mode.blocking) {
@@ -88,17 +87,30 @@ export class NeovimWrapper implements vscode.Disposable {
   }
 
   private async startNeovim(document: TextDocument) {
-    NeovimWrapper.logger.debug('Spawning Neovim process...');
+    Logger.debug('Spawning Neovim process...');
     let dir = dirname(document.uri.fsPath);
     if (!(await util.promisify(exists)(dir))) {
       dir = __dirname;
     }
-    this.process = spawn(configuration.neovimPath, ['-u', 'NONE', '-i', 'NONE', '-n', '--embed'], {
+    const neovimArgs: string[] = [];
+    // '-u' flag is only added if user wants to use a custom path for
+    // their config file OR they want no config file to be loaded at all.
+    // '-u' flag is omitted altogether if user wants Neovim to look for a
+    // config in its default location.
+    if (configuration.neovimUseConfigFile) {
+      if (configuration.neovimConfigPath !== '') {
+        neovimArgs.push('-u', configuration.neovimConfigPath);
+      }
+    } else {
+      neovimArgs.push('-u', 'NONE');
+    }
+    neovimArgs.push('-i', 'NONE', '-n', '--embed');
+    this.process = spawn(configuration.neovimPath, neovimArgs, {
       cwd: dir,
     });
 
     this.process.on('error', (err) => {
-      NeovimWrapper.logger.error(`Error spawning neovim. ${err.message}.`);
+      Logger.error(`Error spawning neovim. ${err.message}.`);
       configuration.enableNeovim = false;
     });
 
@@ -107,6 +119,10 @@ export class NeovimWrapper implements vscode.Disposable {
 
   // Data flows from VSCode to Vim
   private async syncVSCodeToVim(vimState: VimState) {
+    if (!this.nvim) {
+      return;
+    }
+
     const buf = await this.nvim.buffer;
     if (configuration.expandtab) {
       await vscode.commands.executeCommand('editor.action.indentationToTabs');
@@ -121,7 +137,7 @@ export class NeovimWrapper implements vscode.Disposable {
 
     const [rangeStart, rangeEnd] = sorted(
       vimState.cursorStartPosition,
-      vimState.cursorStopPosition
+      vimState.cursorStopPosition,
     );
     await this.nvim.callFunction('setpos', [
       '.',
@@ -143,19 +159,23 @@ export class NeovimWrapper implements vscode.Disposable {
     }
 
     // We only copy over " register for now, due to our weird handling of macros.
-    const reg = await Register.get(vimState, '"');
+    const reg = await Register.get('"');
     if (reg) {
-      const vsRegTovimReg = [undefined, 'c', 'l', 'b'];
+      const vsRegTovimReg = ['c', 'l', 'b'];
       await this.nvim.callFunction('setreg', [
         '"',
         reg.text as string,
-        vsRegTovimReg[vimState.effectiveRegisterMode] as string,
+        vsRegTovimReg[vimState.currentRegisterMode],
       ]);
     }
   }
 
   // Data flows from Vim to VSCode
   private async syncVimToVSCode(vimState: VimState) {
+    if (!this.nvim) {
+      return;
+    }
+
     const buf = await this.nvim.buffer;
     const lines = await buf.getLines({ start: 0, end: -1, strictIndexing: false });
 
@@ -169,18 +189,18 @@ export class NeovimWrapper implements vscode.Disposable {
     await TextEditor.replace(
       vimState.editor,
       new vscode.Range(0, 0, lineCount - 1, TextEditor.getLineLength(lineCount - 1)),
-      fixedLines.join('\n')
+      fixedLines.join('\n'),
     );
 
-    NeovimWrapper.logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
+    Logger.debug(`${lines.length} lines in nvim. ${lineCount} in editor.`);
 
-    let [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as Array<number>).slice(
+    const [row, character] = ((await this.nvim.callFunction('getpos', ['.'])) as number[]).slice(
       1,
-      3
+      3,
     );
     vimState.editor.selection = new vscode.Selection(
       new Position(row - 1, character),
-      new Position(row - 1, character)
+      new Position(row - 1, character),
     );
 
     if (configuration.expandtab) {
@@ -188,14 +208,14 @@ export class NeovimWrapper implements vscode.Disposable {
     }
     // We're only syncing back the default register for now, due to the way we could
     // be storing macros in registers.
-    const vimRegToVsReg = {
+    const vimRegToVsReg: { [key: string]: RegisterMode } = {
       v: RegisterMode.CharacterWise,
       V: RegisterMode.LineWise,
       '\x16': RegisterMode.BlockWise,
     };
     vimState.currentRegisterMode =
       vimRegToVsReg[(await this.nvim.callFunction('getregtype', ['"'])) as string];
-    Register.put((await this.nvim.callFunction('getreg', ['"'])) as string, vimState);
+    Register.put(vimState, (await this.nvim.callFunction('getreg', ['"'])) as string);
   }
 
   dispose() {

@@ -1,22 +1,25 @@
-import { ILogger } from 'src/platform/common/logger';
-import { LoggerImpl } from 'platform/loggerImpl';
+import { LogOutputChannel, window } from 'vscode';
 
 export class Logger {
-  private static readonly cache = new Map<string, ILogger>();
+  private static output: LogOutputChannel;
 
-  static get(prefix: string): ILogger {
-    let logger = Logger.cache.get(prefix);
-    if (logger === undefined) {
-      logger = LoggerImpl.get(prefix);
-      Logger.cache.set(prefix, logger);
-    }
-
-    return logger;
+  public static init(): void {
+    Logger.output = window.createOutputChannel('Vim', { log: true });
   }
 
-  static configChanged() {
-    for (const logger of this.cache.values()) {
-      logger.configChanged();
-    }
+  public static error(msg: string): void {
+    Logger.output.error(msg);
+  }
+  public static warn(msg: string): void {
+    Logger.output.warn(msg);
+  }
+  public static info(msg: string): void {
+    Logger.output.info(msg);
+  }
+  public static debug(msg: string): void {
+    Logger.output.debug(msg);
+  }
+  public static trace(msg: string): void {
+    Logger.output.trace(msg);
   }
 }

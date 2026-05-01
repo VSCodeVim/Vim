@@ -1,5 +1,5 @@
-import { TextEditor } from '../../textEditor';
 import { VimState } from '../../state/vimState';
+import { TextEditor } from '../../textEditor';
 
 type Tag = { name: string; type: 'close' | 'open'; startPos: number; endPos: number };
 type MatchedTag = {
@@ -47,7 +47,7 @@ export class TagMatcher {
     const stack: Tag[] = [];
     const matchedTags: MatchedTag[] = [];
 
-    for (let tag of tags) {
+    for (const tag of tags) {
       // We have to push on the stack
       // if it is an open tag.
       if (tag.type === 'open') {
@@ -77,7 +77,8 @@ export class TagMatcher {
     }
 
     const firstNonWhitespacePositionOnLine = TextEditor.getFirstNonWhitespaceCharOnLine(
-      vimState.cursorStartPosition.line
+      vimState.document,
+      vimState.cursorStartPosition.line,
     );
 
     /**
@@ -108,7 +109,7 @@ export class TagMatcher {
     const nodeSurrounding = this.determineRelevantTag(
       tagsSurrounding,
       startPosOffset,
-      vimState.cursorStartPosition.compareTo(vimState.cursorStopPosition) !== 0
+      vimState.cursorStartPosition.compareTo(vimState.cursorStopPosition) !== 0,
     );
 
     if (!nodeSurrounding) {
@@ -139,7 +140,7 @@ export class TagMatcher {
   determineRelevantTag(
     tagsSurrounding: MatchedTag[],
     adjustedStartPosOffset: number,
-    selectionActive: boolean
+    selectionActive: boolean,
   ): MatchedTag | undefined {
     const relevantTag = tagsSurrounding[0];
 

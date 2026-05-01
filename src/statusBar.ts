@@ -1,40 +1,48 @@
 import * as vscode from 'vscode';
-import { Mode, statusBarText, statusBarCommandText } from './mode/mode';
 import { configuration } from './configuration/configuration';
-import { VimState } from './state/vimState';
 import { VimError } from './error';
+import { Mode } from './mode/mode';
+import { VimState } from './state/vimState';
+import { Logger } from './util/logger';
 
 class StatusBarImpl implements vscode.Disposable {
   // Displays the current state (mode, recording macro, etc.) and messages to the user
-  private _statusBarItem: vscode.StatusBarItem;
+  private readonly statusBarItem: vscode.StatusBarItem;
 
   // Displays the keys you've typed so far when they haven't yet resolved to a command
-  private _recordedStateStatusBarItem: vscode.StatusBarItem;
+  private readonly recordedStateStatusBarItem: vscode.StatusBarItem;
 
-  private _previousModeName: Mode | undefined = undefined;
-  private _showingDefaultMessage = true;
+  private previousMode: Mode | undefined = undefined;
+  private showingDefaultMessage = true;
+
+  public lastMessageTime: Date | undefined;
 
   constructor() {
-    this._statusBarItem = vscode.window.createStatusBarItem(
+    this.statusBarItem = vscode.window.createStatusBarItem(
+      'primary',
       vscode.StatusBarAlignment.Left,
-      Number.MIN_SAFE_INTEGER // Furthest right on the left
+      Number.MIN_SAFE_INTEGER, // Furthest right on the left
     );
-    this._statusBarItem.show();
+    this.statusBarItem.name = 'Vim Command Line';
+    this.statusBarItem.command = 'toggleVim';
+    this.statusBarItem.show();
 
-    this._recordedStateStatusBarItem = vscode.window.createStatusBarItem(
+    this.recordedStateStatusBarItem = vscode.window.createStatusBarItem(
+      'showcmd',
       vscode.StatusBarAlignment.Right,
-      Number.MAX_SAFE_INTEGER // Furthest left on the right
+      Number.MAX_SAFE_INTEGER, // Furthest left on the right
     );
-    this._recordedStateStatusBarItem.show();
+    this.recordedStateStatusBarItem.name = 'Vim Pending Command Keys';
+    this.recordedStateStatusBarItem.show();
   }
 
   dispose() {
-    this._statusBarItem.dispose();
-    this._recordedStateStatusBarItem.dispose();
+    this.statusBarItem.dispose();
+    this.recordedStateStatusBarItem.dispose();
   }
 
   public updateShowCmd(vimState: VimState) {
-    this._recordedStateStatusBarItem.text = configuration.showcmd
+    this.recordedStateStatusBarItem.text = configuration.showcmd
       ? statusBarCommandText(vimState)
       : '';
   }
@@ -44,24 +52,33 @@ class StatusBarImpl implements vscode.Disposable {
    * @param isError If true, text rendered in red
    */
   public setText(vimState: VimState, text: string, isError = false) {
-    const hasModeChanged = vimState.currentMode !== this._previousModeName;
-
     // Text
-    this.updateText(text);
-
-    // Foreground color
-    if (!configuration.statusBarColorControl) {
-      this._statusBarItem.color = isError ? new vscode.ThemeColor('errorForeground') : undefined;
+    text = text.replace(/\n/g, '^M');
+    if (this.statusBarItem.text !== text) {
+      this.statusBarItem.text = text;
+      Logger.debug(`Status bar: ${text}`);
     }
 
-    // Background color
-    const shouldUpdateColor = configuration.statusBarColorControl && hasModeChanged;
+    // StatusBarItem color
+    if (!configuration.statusBarColorControl) {
+      this.statusBarItem.color = isError
+        ? new vscode.ThemeColor('statusBarItem.errorForeground')
+        : undefined;
+      this.statusBarItem.backgroundColor = isError
+        ? new vscode.ThemeColor('statusBarItem.errorBackground')
+        : undefined;
+    }
+
+    // StatusBar color
+    const shouldUpdateColor =
+      configuration.statusBarColorControl && vimState.currentMode !== this.previousMode;
     if (shouldUpdateColor) {
       this.updateColor(vimState.currentMode);
     }
 
-    this._previousModeName = vimState.currentMode;
-    this._showingDefaultMessage = false;
+    this.previousMode = vimState.currentMode;
+    this.showingDefaultMessage = false;
+    this.lastMessageTime = new Date();
   }
 
   public displayError(vimState: VimState, error: VimError) {
@@ -69,7 +86,7 @@ class StatusBarImpl implements vscode.Disposable {
   }
 
   public getText() {
-    return this._statusBarItem.text.replace(/\^M/g, '\n');
+    return this.statusBarItem.text.replace(/\^M/g, '\n');
   }
 
   /**
@@ -78,13 +95,17 @@ class StatusBarImpl implements vscode.Disposable {
    * @param force If true, will clear even high priority messages like errors.
    */
   public clear(vimState: VimState, force = true) {
-    if (!this._showingDefaultMessage && !force) {
+    if (!this.showingDefaultMessage && !force) {
       return;
     }
 
-    let text: string[] = [];
+    const text: string[] = [];
 
-    if (configuration.showmodename) {
+    if (
+      configuration.showmodename ||
+      vimState.currentMode === Mode.CommandlineInProgress ||
+      vimState.currentMode === Mode.SearchInProgressMode
+    ) {
       text.push(statusBarText(vimState));
       if (vimState.isMultiCursor) {
         text.push(' MULTI CURSOR ');
@@ -92,25 +113,21 @@ class StatusBarImpl implements vscode.Disposable {
     }
 
     if (vimState.macro) {
-      const macroText = 'Recording @' + vimState.macro.registerName;
-      text.push(macroText);
+      text.push('recording @' + vimState.macro.registerKey);
     }
 
     StatusBar.setText(vimState, text.join(' '));
 
-    this._showingDefaultMessage = true;
-  }
-
-  private updateText(text: string) {
-    const escaped = text.replace(/\n/g, '^M');
-    this._statusBarItem.text = escaped || '';
+    this.showingDefaultMessage = true;
   }
 
   private updateColor(mode: Mode) {
-    let foreground: string | undefined = undefined;
-    let background: string | undefined = undefined;
+    let foreground: string | undefined;
+    let background: string | undefined;
 
-    let colorToSet = configuration.statusBarColors[Mode[mode].toLowerCase()];
+    const colorToSet = (
+      configuration.statusBarColors as unknown as Record<string, string | string[] | undefined>
+    )[Mode[mode].toLowerCase()];
 
     if (colorToSet !== undefined) {
       if (typeof colorToSet === 'string') {
@@ -132,16 +149,116 @@ class StatusBarImpl implements vscode.Disposable {
       colorCustomizations['statusBar.background'] = background;
       colorCustomizations['statusBar.noFolderBackground'] = background;
       colorCustomizations['statusBar.debuggingBackground'] = background;
+      colorCustomizations['statusBarItem.prominentBackground'] = background;
     }
 
     if (foreground !== undefined) {
       colorCustomizations['statusBar.foreground'] = foreground;
+      colorCustomizations['statusBar.debuggingForeground'] = foreground;
+      colorCustomizations['statusBarItem.prominentForeground'] = foreground;
     }
 
     if (currentColorCustomizations !== colorCustomizations) {
-      workbenchConfiguration.update('colorCustomizations', colorCustomizations, true);
+      void workbenchConfiguration.update('colorCustomizations', colorCustomizations, true);
     }
   }
 }
 
 export const StatusBar = new StatusBarImpl();
+
+export function statusBarText(vimState: VimState) {
+  const cursorChar =
+    vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
+      ? '"'
+      : '|';
+  switch (vimState.modeData.mode) {
+    case Mode.Normal:
+      return '-- NORMAL --';
+    case Mode.Insert:
+      return '-- INSERT --';
+    case Mode.Visual:
+      return '-- VISUAL --';
+    case Mode.VisualBlock:
+      return '-- VISUAL BLOCK --';
+    case Mode.VisualLine:
+      return '-- VISUAL LINE --';
+    case Mode.Replace:
+      return '-- REPLACE --';
+    case Mode.EasyMotionMode:
+      return '-- EASYMOTION --';
+    case Mode.EasyMotionInputMode:
+      return '-- EASYMOTION INPUT --';
+    case Mode.SurroundInputMode:
+      return '-- SURROUND INPUT --';
+    case Mode.Disabled:
+      return '-- VIM: DISABLED --';
+    case Mode.SearchInProgressMode:
+      return vimState.modeData.commandLine.display(cursorChar);
+    case Mode.CommandlineInProgress:
+      return vimState.modeData.commandLine.display(cursorChar);
+    default:
+      return '';
+  }
+}
+
+export function statusBarCommandText(vimState: VimState): string {
+  switch (vimState.currentMode) {
+    case Mode.SurroundInputMode:
+      return vimState.surround && vimState.surround.replacement
+        ? vimState.surround.replacement
+        : '';
+    case Mode.EasyMotionMode:
+      return `Target key: ${vimState.easyMotion.accumulation}`;
+    case Mode.EasyMotionInputMode:
+      if (!vimState.easyMotion) {
+        return '';
+      }
+
+      const searchCharCount = vimState.easyMotion.searchAction.searchCharCount;
+      const message =
+        searchCharCount > 0
+          ? `Search for ${searchCharCount} character(s): `
+          : 'Search for characters: ';
+      return message + vimState.easyMotion.searchAction.searchString;
+    case Mode.Visual: {
+      // TODO: holy shit, this is SO much more complicated than it should be because
+      // our representation of a visual selection is so weird and inconsistent
+      let [start, end] = [vimState.cursorStartPosition, vimState.cursorStopPosition];
+      let wentOverEOL = false;
+      if (start.isAfter(end)) {
+        start = start.getRightThroughLineBreaks();
+        [start, end] = [end, start];
+      } else if (end.isAfter(start) && end.character === 0) {
+        end = end.getLeftThroughLineBreaks(true);
+        wentOverEOL = true;
+      }
+      const lines = end.line - start.line + 1;
+      if (lines > 1) {
+        return `${lines} ${vimState.recordedState.pendingCommandString}`;
+      } else {
+        const chars = Math.max(end.character - start.character, 1) + (wentOverEOL ? 1 : 0);
+        return `${chars} ${vimState.recordedState.pendingCommandString}`;
+      }
+    }
+    case Mode.VisualLine:
+      return `${
+        Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1
+      } ${vimState.recordedState.pendingCommandString}`;
+    case Mode.VisualBlock: {
+      const lines =
+        Math.abs(vimState.cursorStopPosition.line - vimState.cursorStartPosition.line) + 1;
+      const chars =
+        Math.abs(vimState.cursorStopPosition.character - vimState.cursorStartPosition.character) +
+        1;
+      return `${lines}x${chars} ${vimState.recordedState.pendingCommandString}`;
+    }
+    case Mode.Insert:
+    case Mode.Replace:
+      return vimState.recordedState.pendingCommandString;
+    case Mode.Normal:
+    case Mode.Disabled:
+      return vimState.recordedState.commandString;
+    default:
+      return '';
+  }
+}

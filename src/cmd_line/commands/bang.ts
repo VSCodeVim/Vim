@@ -1,26 +1,29 @@
-import * as vscode from 'vscode';
-import { TextEditor } from '../../textEditor';
-
-import * as node from '../node';
+import { all, Parser } from 'parsimmon';
+import { PositionDiff } from '../../common/motion/position';
 import { VimState } from '../../state/vimState';
-import { PositionDiff, PositionDiffType } from '../../common/motion/position';
 import { externalCommand } from '../../util/externalCommand';
-import { Range } from '../../common/motion/range';
-import { Position } from 'vscode';
+import { ExCommand } from '../../vimscript/exCommand';
+import { LineRange } from '../../vimscript/lineRange';
 
-export interface IBangCommandArguments extends node.ICommandArgs {
+export interface IBangCommandArguments {
   command: string;
 }
 
-export class BangCommand extends node.CommandBase {
-  protected _arguments: IBangCommandArguments;
+export class BangCommand extends ExCommand {
+  public static readonly argParser: Parser<BangCommand> = all.map(
+    (command) =>
+      new BangCommand({
+        command,
+      }),
+  );
 
+  protected _arguments: IBangCommandArguments;
   constructor(args: IBangCommandArguments) {
     super();
     this._arguments = args;
   }
 
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
@@ -30,10 +33,9 @@ export class BangCommand extends node.CommandBase {
     const check = lines[0].match(/^\s*/);
     const numWhitespace = check ? check[0].length : 0;
 
-    return new PositionDiff({
-      line: -numNewlines,
+    return PositionDiff.exactCharacter({
+      lineOffset: -numNewlines,
       character: numWhitespace,
-      type: PositionDiffType.ExactCharacter,
     });
   }
 
@@ -41,23 +43,16 @@ export class BangCommand extends node.CommandBase {
     await externalCommand.run(this._arguments.command);
   }
 
-  async executeWithRange(vimState: VimState, range: node.LineRange): Promise<void> {
-    const [startLine, endLine] = range.resolve(vimState);
-    const start = new Position(startLine, 0);
-    const end = new Position(endLine, 0).getLineEnd();
+  override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {
+    const resolvedRange = range.resolveToRange(vimState);
 
     // pipe in stdin from lines in range
-    const input = vimState.document.getText(new vscode.Range(start, end));
+    const input = vimState.document.getText(resolvedRange);
     const output = await externalCommand.run(this._arguments.command, input);
 
     // place cursor at the start of the replaced text and first non-whitespace character
     const diff = this.getReplaceDiff(output);
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      text: output,
-      range: new Range(start, end),
-      diff: diff,
-    });
+    vimState.recordedState.transformer.replace(resolvedRange, output, diff);
   }
 }

@@ -1,18 +1,13 @@
-import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
-import { cleanUpWorkspace, setupWorkspace, reloadConfiguration } from '../testUtils';
+import { setupWorkspace } from '../testUtils';
 
 suite('replaceWithRegister plugin', () => {
   const YankInnerWord = 'yiw';
   const ReplaceOperator = 'gr';
 
-  setup(async () => {
-    await setupWorkspace();
-    Globals.mockConfiguration.replaceWithRegister = true;
-    await reloadConfiguration();
+  suiteSetup(async () => {
+    await setupWorkspace({ config: { replaceWithRegister: true } });
   });
-
-  teardown(cleanUpWorkspace);
 
   newTest({
     title: 'Replaces within inner word',

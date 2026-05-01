@@ -1,68 +1,68 @@
-import { TextEditor } from '../../textEditor';
-import * as node from '../node';
-import { readFileAsync } from 'platform/fs';
+// eslint-disable-next-line id-denylist
+import { all, alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
+import { readFileAsync } from 'platform/fs';
 import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
-export interface IReadCommandArguments extends node.ICommandArgs {
-  file?: string;
-  cmd?: string;
-}
+export type IReadCommandArguments =
+  | { opt: FileOpt; cmd: string }
+  | { opt: FileOpt; file: string }
+  | { opt: FileOpt };
 
 //
 //  Implements :read and :read!
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read
 //  http://vimdoc.sourceforge.net/htmldoc/insert.html#:read!
 //
-export class ReadCommand extends node.CommandBase {
-  protected _arguments: IReadCommandArguments;
+export class ReadCommand extends ExCommand {
+  public static readonly argParser: Parser<ReadCommand> = seq(
+    whitespace.then(fileOptParser).fallback<FileOpt>([]),
+    optWhitespace
+      .then(
+        alt<{ cmd: string } | { file: string }>(
+          string('!')
+            .then(all)
+            .map((cmd) => ({ cmd })),
+          fileNameParser.map((file) => ({ file })),
+        ),
+      )
+      .fallback({}),
+  ).map(([opt, other]) => new ReadCommand({ opt, ...other }));
 
+  private readonly arguments: IReadCommandArguments;
   constructor(args: IReadCommandArguments) {
     super();
-    this._arguments = args;
+    this.arguments = args;
   }
 
-  get arguments(): IReadCommandArguments {
-    return this._arguments;
-  }
-
-  public neovimCapable(): boolean {
+  public override neovimCapable(): boolean {
     return true;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    const textToInsert = await this.getTextToInsert();
+    const textToInsert = await this.getTextToInsert(vimState);
     if (textToInsert) {
-      await TextEditor.insert(vimState.editor, textToInsert);
+      vimState.recordedState.transformer.insert(
+        vimState.cursorStopPosition.getLineEnd(),
+        '\n' + textToInsert,
+      );
     }
   }
 
-  async getTextToInsert(): Promise<string> {
-    if (this.arguments.file && this.arguments.file.length > 0) {
-      return this.getTextToInsertFromFile();
-    } else if (this.arguments.cmd && this.arguments.cmd.length > 0) {
-      return this.getTextToInsertFromCmd();
-    } else {
-      throw Error('Invalid arguments');
-    }
-  }
+  // TODO: executeWithRange()
 
-  async getTextToInsertFromFile(): Promise<string> {
-    // TODO: Read encoding from ++opt argument.
-    try {
-      const data = await readFileAsync(this.arguments.file as string, 'utf8');
-      return data;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  async getTextToInsertFromCmd(): Promise<string> {
-    if (SUPPORT_READ_COMMAND) {
-      return new Promise<string>((resolve, reject) => {
-        try {
-          import('child_process').then((cp) => {
-            return cp.exec(this.arguments.cmd as string, (err, stdout, stderr) => {
+  async getTextToInsert(vimState: VimState): Promise<string> {
+    if ('file' in this.arguments) {
+      return readFileAsync(this.arguments.file, 'utf8');
+    } else if ('cmd' in this.arguments) {
+      if (this.arguments.cmd.length > 0) {
+        if (SUPPORT_READ_COMMAND) {
+          const cmd = this.arguments.cmd;
+          return new Promise<string>(async (resolve, reject) => {
+            const { exec } = await import('child_process');
+            exec(cmd, (err, stdout, stderr) => {
               if (err) {
                 reject(err);
               } else {
@@ -70,12 +70,15 @@ export class ReadCommand extends node.CommandBase {
               }
             });
           });
-        } catch (e) {
-          reject(e);
+        } else {
+          return '';
         }
-      });
+      } else {
+        // TODO: error message?
+        return '';
+      }
     } else {
-      return '';
+      return vimState.document.getText();
     }
   }
 }

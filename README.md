@@ -1,32 +1,37 @@
 <h2 align="center"><img src="https://raw.githubusercontent.com/VSCodeVim/Vim/master/images/icon.png" height="128"><br>VSCodeVim</h2>
 <p align="center"><strong>Vim emulation for Visual Studio Code</strong></p>
 
+<!-- TODO: use pgns or something; otherwise vsce won't package it
 [![](https://vsmarketplacebadge.apphb.com/version/vscodevim.vim.svg)](http://aka.ms/vscodevim)
 [![](https://vsmarketplacebadge.apphb.com/installs-short/vscodevim.vim.svg)](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim)
 [![](https://github.com/VSCodeVim/Vim/workflows/build/badge.svg?branch=master)](https://github.com/VSCodeVim/Vim/actions?query=workflow%3Abuild+branch%3Amaster)
-[![](https://img.shields.io/badge/vscodevim-slack-blue.svg?logo=slack)](https://vscodevim.herokuapp.com/)
+-->
 
 VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
-- 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
 - 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
-- ❓ If you need to ask any questions, join us on [Slack](https://vscodevim.herokuapp.com/)
 - Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
 
 <details>
  <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
-- [Installation](#-installation)
-  - [Mac setup](#mac)
-  - [Windows setup](#windows)
-  - [Linux setup](#linux-setup)
-- [Settings](#%EF%B8%8F-settings)
+- [💾 Installation](#-installation)
+  - [Mac](#mac)
+  - [Windows](#windows)
+- [⚙️ Settings](#️-settings)
+  - [Quick Example](#quick-example)
   - [VSCodeVim settings](#vscodevim-settings)
   - [Neovim Integration](#neovim-integration)
-  - [Key remapping](#key-remapping)
+  - [Key Remapping](#key-remapping)
+    - [`"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`](#viminsertmodekeybindingsvimnormalmodekeybindingsvimvisualmodekeybindingsvimoperatorpendingmodekeybindings)
+    - [`"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`](#viminsertmodekeybindingsnonrecursivenormalmodekeybindingsnonrecursivevisualmodekeybindingsnonrecursiveoperatorpendingmodekeybindingsnonrecursive)
+    - [Debugging Remappings](#debugging-remappings)
+    - [Remapping more complex key combinations](#remapping-more-complex-key-combinations)
+  - [Vim modes](#vim-modes)
   - [Vim settings](#vim-settings)
-- [Multi-Cursor mode](#%EF%B8%8F-multi-cursor-mode)
-- [Emulated plugins](#-emulated-plugins)
+- [.vimrc support](#vimrc-support)
+- [🖱️ Multi-Cursor Mode](#️-multi-cursor-mode)
+- [🔌 Emulated Plugins](#-emulated-plugins)
   - [vim-airline](#vim-airline)
   - [vim-easymotion](#vim-easymotion)
   - [vim-surround](#vim-surround)
@@ -37,36 +42,40 @@ VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.c
   - [Input Method](#input-method)
   - [ReplaceWithRegister](#replacewithregister)
   - [vim-textobj-entire](#vim-textobj-entire)
-- [VSCodeVim tricks](#-vscodevim-tricks)
-- [F.A.Q / Troubleshooting](#-faq)
-- [Contributing](#️-contributing)
+  - [vim-textobj-arguments](#vim-textobj-arguments)
+- [🎩 VSCodeVim tricks!](#-vscodevim-tricks)
+- [📚 F.A.Q.](#-faq)
+- [❤️ Contributing](#️-contributing)
+  - [Special shoutouts to:](#special-shoutouts-to)
 
 </details>
 
 ## 💾 Installation
 
-VSCodeVim is automatically enabled following [installation](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) and reloading of VS Code.
+VSCodeVim can be installed via the VS Code [Marketplace](https://marketplace.visualstudio.com/items?itemName=vscodevim.vim) or the OpenVSX [Marketplace](https://open-vsx.org/extension/vscodevim/vim).
 
 ### Mac
 
-To enable key-repeating execute the following in your Terminal and restart VS Code:
+To enable key-repeating, execute the following in your Terminal, log out and back in, and then restart VS Code:
 
 ```sh
-$ defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
-$ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
-$ defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false    # For VS Codium
-$ defaults delete -g ApplePressAndHoldEnabled                                      # If necessary, reset global default
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
+defaults write com.vscodium ApplePressAndHoldEnabled -bool false                      # For VS Codium
+defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
+defaults write com.exafunction.windsurf ApplePressAndHoldEnabled -bool false          # For Windsurf
+defaults delete -g ApplePressAndHoldEnabled                                           # If necessary, reset global default
 ```
 
-We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Preferences -> Keyboard_.
+We also recommend increasing Key Repeat and Delay Until Repeat settings in _System Settings/Preferences -> Keyboard_.
 
 ### Windows
 
-Like real vim, VSCodeVim will take over your control keys. This behaviour can be adjusted with the [`useCtrlKeys`](#vscodevim-settings) and [`handleKeys`](#vscodevim-settings) settings.
+Like real vim, VSCodeVim will take over your control keys. This behavior can be adjusted with the [`useCtrlKeys`](#vscodevim-settings) and [`handleKeys`](#vscodevim-settings) settings.
 
 ## ⚙️ Settings
 
-The settings documented here are a subset of the supported settings; the full list is described in the `Contributions` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-gallery#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-gallery) of VS Code.
+The settings documented here are a subset of the supported settings; the full list is described in the `FEATURES` -> `Settings` tab of VSCodeVim's [extension details page](https://code.visualstudio.com/docs/editor/extension-marketplace#_extension-details), which can be found in the [extensions view](https://code.visualstudio.com/docs/editor/extension-marketplace) of VS Code.
 
 ### Quick Example
 
@@ -93,12 +102,21 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
     {
       "before": ["<C-n>"],
       "commands": [":nohl"]
+    },
+    {
+      "before": ["K"],
+      "commands": ["lineBreakInsert"],
+      "silent": true
     }
   ],
   "vim.leader": "<space>",
   "vim.handleKeys": {
     "<C-a>": false,
     "<C-f>": false
+  },
+  // To improve performance
+  "extensions.experimental.affinity": {
+    "vscodevim.vim": 1
   }
 }
 ```
@@ -107,24 +125,27 @@ Below is an example of a [settings.json](https://code.visualstudio.com/Docs/cust
 
 These settings are specific to VSCodeVim.
 
-| Setting                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                         | Type    | Default Value                             |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ----------------------------------------- |
-| vim.changeWordIncludesWhitespace | Include trailing whitespace when changing word. This configures the <kbd>cw</kbd> action to act consistently as its siblings (<kbd>yw</kbd> and <kbd>dw</kbd>) instead of acting as <kbd>ce</kbd>.                                                                                                                                                                                                                                  | Boolean | false                                     |
-| vim.cursorStylePerMode._{Mode}_  | Configure a specific cursor style for _{Mode}_. Omitted modes will use [default cursor type](https://github.com/VSCodeVim/Vim/blob/4a6fde6dbd4d1fac1f204c0dc27c32883651ef1a/src/mode/mode.ts#L34) Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin.                                                                                                                                          | String  | None                                      |
-| vim.digraphs._{shorthand}_       | Set custom digraph shorthands that can override the default ones. Entries should map a two-character shorthand to a descriptive string and one or more UTF16 code points. Example: `"R!": ["🚀", [55357, 56960]]`                                                                                                                                                                                                                   | Object  | `{"R!": ["🚀", [0xD83D, 0xDE80]]`         |
-| vim.debug.silent                 | Boolean indicating whether log messages will be suppressed.                                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                     |
-| vim.debug.loggingLevelForConsole | Maximum level of messages to log to console. Logs are visible in the [developer tools](https://code.visualstudio.com/docs/extensions/developing-extensions#_developer-tools-console). Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                               | String  | error                                     |
-| vim.debug.loggingLevelForAlert   | Maximum level of messages to present as VS Code information window. Supported values: 'error', 'warn', 'info', 'verbose', 'debug').                                                                                                                                                                                                                                                                                                 | String  | error                                     |
-| vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                      | Boolean | false                                     |
-| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behaviour): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`                           |
-| vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                    | Boolean | false                                     |
-| vim.searchHighlightColor         | Set the color of search highlights                                                                                                                                                                                                                                                                                                                                                                                                  | String  | `findMatchHighlightBackground` ThemeColor |
-| vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                     |
-| vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                           | Boolean | true                                      |
-| vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                          | Boolean | false                                     |
-| vim.highlightedyank.enable       | Enable highlighting when yanking                                                                                                                                                                                                                                                                                                                                                                                                    | Boolean | false                                     |
-| vim.highlightedyank.color        | Set the color of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                    | String  | rgba(250, 240, 170, 0.5)                  |
-| vim.highlightedyank.duration     | Set the duration of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                 | Number  | 200                                       |
+| Setting                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                        | Type    | Default Value                                                 |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------- |
+| vim.changeWordIncludesWhitespace | Include trailing whitespace when changing word. This configures the <kbd>cw</kbd> action to act consistently as its siblings (<kbd>yw</kbd> and <kbd>dw</kbd>) instead of acting as <kbd>ce</kbd>.                                                                                                                                                                                                                                 | Boolean | false                                                         |
+| vim.cursorStylePerMode._{Mode}_  | Configure a specific cursor style for _{Mode}_. Omitted modes will use [default cursor type](https://github.com/VSCodeVim/Vim/blob/4a6fde6dbd4d1fac1f204c0dc27c32883651ef1a/src/mode/mode.ts#L34) Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin.                                                                                                                                         | String  | None                                                          |
+| vim.digraphs._{shorthand}_       | Set custom digraph shorthands that can override the default ones. Entries should map a two-character shorthand to a descriptive string and one or more UTF16 code points. Example: `"R!": ["🚀", [55357, 56960]]`                                                                                                                                                                                                                  | Object  | `{"R!": ["🚀", [0xD83D, 0xDE80]]`                             |
+| vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                     | Boolean | false                                                         |
+| vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behavior): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`<br /> `"<C-z>": false` |
+| vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                   | Boolean | false                                                         |
+| vim.useSystemClipboard           | Use the system clipboard register (`*`) as the default register                                                                                                                                                                                                                                                                                                                                                                    | Boolean | false                                                         |
+| vim.searchHighlightColor         | Background color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                     | String  | `findMatchHighlightBackground` ThemeColor                     |
+| vim.searchHighlightTextColor     | Foreground color of non-current search matches                                                                                                                                                                                                                                                                                                                                                                                     | String  | None                                                          |
+| vim.searchMatchColor             | Background color of current search match                                                                                                                                                                                                                                                                                                                                                                                           | String  | `findMatchBackground` ThemeColor                              |
+| vim.searchMatchTextColor         | Foreground color of current search match                                                                                                                                                                                                                                                                                                                                                                                           | String  | None                                                          |
+| vim.substitutionColor            | Background color of substitution text when `vim.inccommand` is enabled                                                                                                                                                                                                                                                                                                                                                             | String  | "#50f01080"                                                   |
+| vim.substitutionTextColor        | Foreground color of substitution text when `vim.inccommand` is enabled                                                                                                                                                                                                                                                                                                                                                             | String  | None                                                          |
+| vim.startInInsertMode            | Start in Insert mode instead of Normal Mode                                                                                                                                                                                                                                                                                                                                                                                        | Boolean | false                                                         |
+| vim.useCtrlKeys                  | Enable Vim ctrl keys overriding common VS Code operations such as copy, paste, find, etc.                                                                                                                                                                                                                                                                                                                                          | Boolean | true                                                          |
+| vim.visualstar                   | In visual mode, start a search with `*` or `#` using the current selection                                                                                                                                                                                                                                                                                                                                                         | Boolean | false                                                         |
+| vim.highlightedyank.enable       | Enable highlighting when yanking                                                                                                                                                                                                                                                                                                                                                                                                   | Boolean | false                                                         |
+| vim.highlightedyank.color        | Set the color of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                   | String  | rgba(250, 240, 170, 0.5)                                      |
+| vim.highlightedyank.duration     | Set the duration of yank highlights                                                                                                                                                                                                                                                                                                                                                                                                | Number  | 200                                                           |
 
 ### Neovim Integration
 
@@ -135,10 +156,12 @@ To leverage neovim for Ex-commands,
 1.  Install [neovim](https://github.com/neovim/neovim/wiki/Installing-Neovim)
 2.  Modify the following configurations:
 
-| Setting          | Description                                                                                                             | Type    | Default Value |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
-| vim.enableNeovim | Enable Neovim                                                                                                           | Boolean | false         |
-| vim.neovimPath   | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path. | String  |               |
+| Setting                 | Description                                                                                                                                            | Type    | Default Value |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | ------------- |
+| vim.enableNeovim        | Enable Neovim                                                                                                                                          | Boolean | false         |
+| vim.neovimPath          | Full path to neovim executable. If left empty, PATH environment variable will be automatically checked for neovim path.                                | String  |               |
+| vim.neovimUseConfigFile | If `true`, Neovim will load a config file specified by `vim.neovimConfigPath`. This is necessary if you want Neovim to be able to use its own plugins. | Boolean | false         |
+| vim.neovimConfigPath    | Path that Neovim will load as config file. If left blank, Neovim will search in its default location.                                                  | String  |               |
 
 Here's some ideas on what you can do with neovim integration:
 
@@ -153,6 +176,7 @@ Custom remappings are defined on a per-mode basis.
 #### `"vim.insertModeKeyBindings"`/`"vim.normalModeKeyBindings"`/`"vim.visualModeKeyBindings"`/`"vim.operatorPendingModeKeyBindings"`
 
 - Keybinding overrides to use for insert, normal, operatorPending and visual modes.
+- Keybinding overrides can include `"before"`, `"after"`, `"commands"`, and `"silent"`.
 - Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -164,7 +188,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `£` to goto previous whole word under cursor
+- Bind `£` to goto previous whole word under cursor:
 
 ```json
     "vim.normalModeKeyBindings": [
@@ -175,7 +199,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `:` to show the command palette:
+- Bind `:` to show the command palette, and don't show the message on the status bar:
 
 ```json
     "vim.normalModeKeyBindings": [
@@ -183,7 +207,8 @@ Custom remappings are defined on a per-mode basis.
             "before": [":"],
             "commands": [
                 "workbench.action.showCommands",
-            ]
+            ],
+            "silent": true
         }
     ]
 ```
@@ -226,7 +251,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `{` to `w` in operator pending mode makes `y{` and `d{` work like `yw` and `dw` respectively.
+- Bind `{` to `w` in operator pending mode makes `y{` and `d{` work like `yw` and `dw` respectively:
 
 ```json
     "vim.operatorPendingModeKeyBindings": [
@@ -237,7 +262,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `y$` and `d^` respectively.
+- Bind `L` to `$` and `H` to `^` in operator pending mode makes `yL` and `dH` work like `y$` and `d^` respectively:
 
 ```json
     "vim.operatorPendingModeKeyBindings": [
@@ -252,7 +277,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `>` and `<` in visual mode to indent/outdent lines (repeatable)
+- Bind `>` and `<` in visual mode to indent/outdent lines (repeatable):
 
 ```json
     "vim.visualModeKeyBindings": [
@@ -275,7 +300,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `<leader>vim` to clone this repository to the selected location.
+- Bind `<leader>vim` to clone this repository to the selected location:
 
 ```json
     "vim.visualModeKeyBindings": [
@@ -296,7 +321,7 @@ Custom remappings are defined on a per-mode basis.
 #### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`
 
 - Non-recursive keybinding overrides to use for insert, normal, and visual modes
-- _Example:_ Exchange the meaning of two keys like `j` to `k` and `k` to `j` to exchange the cursor up and down commands. Notice that if you attempted this binding normally, the `j` would be replaced with `k` and the `k` would be replaced with `j`, on and on forever. When this happens 'maxmapdepth' times (default 1000) the error message 'E223 Recursive Mapping' will be thrown. Stop this recursive expansion using the NonRecursive variation of the keybindings.
+- _Example:_ Exchange the meaning of two keys like `j` to `k` and `k` to `j` to exchange the cursor up and down commands. Notice that if you attempted this binding normally, the `j` would be replaced with `k` and the `k` would be replaced with `j`, on and on forever. When this happens 'maxmapdepth' times (default 1000) the error message 'E223 Recursive Mapping' will be thrown. Stop this recursive expansion using the NonRecursive variation of the keybindings:
 
 ```json
     "vim.normalModeKeyBindingsNonRecursive": [
@@ -311,7 +336,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `(` to 'i(' in operator pending mode makes 'y(' and 'c(' work like 'yi(' and 'ci(' respectively.
+- Bind `(` to 'i(' in operator pending mode makes 'y(' and 'c(' work like 'yi(' and 'ci(' respectively:
 
 ```json
     "vim.operatorPendingModeKeyBindingsNonRecursive": [
@@ -322,7 +347,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `p` in visual mode to paste without overriding the current register
+- Bind `p` in visual mode to paste without overriding the current register:
 
 ```json
     "vim.visualModeKeyBindingsNonRecursive": [
@@ -342,21 +367,26 @@ Custom remappings are defined on a per-mode basis.
 
 #### Debugging Remappings
 
-1.  Are your configurations correct?
+1.  Adjust the extension's logging level to 'debug' and open the Output window:
+    1.  Run `Developer: Set Log Level` from the command palette.
+    2.  Select `Vim`, then `Debug`
+    3.  Run `Developer: Reload window`
+    4.  In the bottom panel, open the `Output` tab and select `Vim` from the dropdown selection.
+2.  Are your configurations correct?
 
-    Adjust the extension's [logging level](#vscodevim-settings) to 'debug', restart VS Code. As each remapped configuration is loaded, it is outputted to console. In the Developer Tools console, do you see any errors?
+    As each remapped configuration is loaded, it is logged to the Vim Output panel. Do you see any errors?
 
     ```console
     debug: Remapper: normalModeKeyBindingsNonRecursive. before=0. after=^.
     debug: Remapper: insertModeKeyBindings. before=j,j. after=<Esc>.
-    error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'command'. before=j,k.
+    error: Remapper: insertModeKeyBindings. Invalid configuration. Missing 'after' key or 'commands'. before=j,k.
     ```
 
     Misconfigured configurations are ignored.
 
-2.  Does the extension handle the keys you are trying to remap?
+3.  Does the extension handle the keys you are trying to remap?
 
-    VSCodeVim explicitly instructs VS Code which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/9bab33c75d0a53873880a79c5d2de41c8be1bef9/package.json#L62). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. With [logging level](#vscodevim-settings) adjusted to 'debug', as you press keys, you should see output similar to:
+    VSCodeVim explicitly instructs VS Code which key events we care about through the [package.json](https://github.com/VSCodeVim/Vim/blob/9bab33c75d0a53873880a79c5d2de41c8be1bef9/package.json#L62). If the key you are trying to remap is a key in which vim/vscodevim generally does not handle, then it's most likely that this extension does not receive those key events from VS Code. In the Vim Output panel, you should see:
 
     ```console
     debug: ModeHandler: handling key=A.
@@ -365,7 +395,65 @@ Custom remappings are defined on a per-mode basis.
     debug: ModeHandler: handling key=<C-a>.
     ```
 
-    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events.
+    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events. It is still possible to remap those keys by using VSCode's [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference) (see next section: [Remapping more complex key combinations](#remapping-more-complex-key-combinations)).
+
+#### Remapping more complex key combinations
+
+It is highly recommended to remap keys using vim commands like `"vim.normalModeKeyBindings"` ([see here](#key-remapping)). But sometimes the usual remapping commands are not enough as they do not support every key combinations possible (for example `Alt+key` or `Ctrl+Shift+key`). In this case it is possible to create new keybindings inside [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference). To do so: open up keybindings.json in VSCode using `CTRL+SHIFT+P` and select `Open keyboard shortcuts (JSON)`.
+
+You can then add a new entry to the keybindings like so:
+
+```json
+{
+  "key": "YOUR_KEY_COMBINATION",
+  "command": "vim.remap",
+  "when": "inputFocus && vim.mode == 'VIM_MODE_YOU_WANT_TO_REBIND'",
+  "args": {
+    "after": ["YOUR_VIM_ACTION"]
+  }
+}
+```
+
+For example, to rebind `ctrl+shift+y` to VSCodeVim's `yy` (yank line) in normal mode, add this to your keybindings.json:
+
+```json
+{
+  "key": "ctrl+shift+y",
+  "command": "vim.remap",
+  "when": "inputFocus && vim.mode == 'Normal'",
+  "args": {
+    "after": ["y", "y"]
+  }
+}
+```
+
+If keybindings.json is empty the first time you open it, make sure to add opening `[` and closing `]` square brackets to the file as the keybindings should be inside a JSON Array.
+
+### Vim modes
+
+Here are all the modes used by VSCodeVim:
+
+| Mode                  |
+| --------------------- |
+| Normal                |
+| Insert                |
+| Visual                |
+| VisualBlock           |
+| VisualLine            |
+| SearchInProgressMode  |
+| CommandlineInProgress |
+| Replace               |
+| EasyMotionMode        |
+| EasyMotionInputMode   |
+| SurroundInputMode     |
+| OperatorPendingMode   |
+| Disabled              |
+
+When rebinding keys in [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings) using ["when clause context"](https://code.visualstudio.com/api/references/when-clause-contexts), it can be useful to know in which mode vim currently is. For example to write a "when clause" that checks if vim is currently in normal mode or visual mode it is possible to write the following:
+
+```json
+"when": "vim.mode == 'Normal' || vim.mode == 'Visual'",
+```
 
 ### Vim settings
 
@@ -376,22 +464,25 @@ Configuration settings that have been copied from vim. Vim settings are loaded i
 3.  VS Code settings
 4.  VSCodeVim default values
 
-| Setting          | Description                                                                                                                                                                                                                                                           | Type    | Default Value |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------- |
-| vim.autoindent   | Copy indent from current line when starting a new line                                                                                                                                                                                                                | Boolean | true          |
-| vim.gdefault     | When on, the `:substitute` flag `g` is default on. This means that all matches in a line are substituted instead of one. When a `g` flag is given to a `:substitute` command, this will toggle the substitution of all or one match.                                  | Boolean | false         |
-| vim.hlsearch     | Highlights all text matching current search                                                                                                                                                                                                                           | Boolean | false         |
-| vim.ignorecase   | Ignore case in search patterns                                                                                                                                                                                                                                        | Boolean | true          |
-| vim.incsearch    | Show the next match while entering a search                                                                                                                                                                                                                           | Boolean | true          |
-| vim.leader       | Defines key for `<leader>` to be used in key remappings                                                                                                                                                                                                               | String  | `\`           |
-| vim.showcmd      | Show (partial) command in status bar                                                                                                                                                                                                                                  | Boolean | true          |
-| vim.showmodename | Show name of current mode in status bar                                                                                                                                                                                                                               | Boolean | true          |
-| vim.smartcase    | Override the 'ignorecase' setting if search pattern contains uppercase characters                                                                                                                                                                                     | Boolean | true          |
-| vim.textwidth    | Width to word-wrap when using `gq`                                                                                                                                                                                                                                    | Number  | 80            |
-| vim.timeout      | Timeout in milliseconds for remapped commands                                                                                                                                                                                                                         | Number  | 1000          |
-| vim.maxmapdepth  | Maximum number of times a mapping is done without resulting in a character to be used. This normally catches endless mappings, like ":map x y" with ":map y x". It still does not catch ":map g wg", because the 'w' is used before the next mapping is done.         | Number  | 1000          |
-| vim.whichwrap    | Controls wrapping at beginning and end of line. Comma-separated set of keys that should wrap to next/previous line. Arrow keys are represented by `[` and `]` in insert mode, `<` and `>` in normal and visual mode. To wrap "everything", set this to `h,l,<,>,[,]`. | String  | ``            |
-| vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                                      | Number  | 2             |
+| Setting          | Description                                                                                                                                                                                                                                                   | Type    | Default Value                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------- |
+| vim.autoindent   | Copy indent from current line when starting a new line                                                                                                                                                                                                        | Boolean | true                                                           |
+| vim.gdefault     | When on, the `:substitute` flag `g` is default on. This means that all matches in a line are substituted instead of one. When a `g` flag is given to a `:substitute` command, this will toggle the substitution of all or one match.                          | Boolean | false                                                          |
+| vim.hlsearch     | Highlights all text matching current search                                                                                                                                                                                                                   | Boolean | false                                                          |
+| vim.ignorecase   | Ignore case in search patterns                                                                                                                                                                                                                                | Boolean | true                                                           |
+| vim.incsearch    | Show the next match while entering a search                                                                                                                                                                                                                   | Boolean | true                                                           |
+| vim.inccommand   | Show the effects of the `:substitute` command while typing                                                                                                                                                                                                    | String  | `replace`                                                      |
+| vim.joinspaces   | Add two spaces after '.', '?', and '!' when joining or reformatting                                                                                                                                                                                           | Boolean | true                                                           |
+| vim.leader       | Defines key for `<leader>` to be used in key remappings                                                                                                                                                                                                       | String  | `\`                                                            |
+| vim.maxmapdepth  | Maximum number of times a mapping is done without resulting in a character to be used. This normally catches endless mappings, like ":map x y" with ":map y x". It still does not catch ":map g wg", because the 'w' is used before the next mapping is done. | Number  | 1000                                                           |
+| vim.report       | Threshold for reporting number of lines changed.                                                                                                                                                                                                              | Number  | 2                                                              |
+| vim.shell        | Path to the shell to use for `!` and `:!` commands.                                                                                                                                                                                                           | String  | `/bin/sh` on Unix, `%COMSPEC%` environment variable on Windows |
+| vim.showcmd      | Show (partial) command in status bar                                                                                                                                                                                                                          | Boolean | true                                                           |
+| vim.showmodename | Show name of current mode in status bar                                                                                                                                                                                                                       | Boolean | true                                                           |
+| vim.smartcase    | Override the 'ignorecase' setting if search pattern contains uppercase characters                                                                                                                                                                             | Boolean | true                                                           |
+| vim.textwidth    | Width to word-wrap when using `gq`                                                                                                                                                                                                                            | Number  | 80                                                             |
+| vim.timeout      | Timeout in milliseconds for remapped commands                                                                                                                                                                                                                 | Number  | 1000                                                           |
+| vim.whichwrap    | Allow specified keys that move the cursor left/right to move to the previous/next line when the cursor is on the first/last character in the line. See [:help whichwrap](https://vimhelp.org/options.txt.html#%27whichwrap%27).                               | String  | `b,s`                                                          |
 
 ## .vimrc support
 
@@ -441,19 +532,19 @@ Change the color of the status bar based on the current mode. Once enabled, conf
 
 Based on [vim-easymotion](https://github.com/easymotion/vim-easymotion) and configured through the following settings:
 
-| Setting                                          | Description                                                                                                                                                                                                                                                       | Type           | Default Value                  |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------ |
-| vim.easymotion                                   | Enable/disable easymotion plugin                                                                                                                                                                                                                                  | Boolean        | false                          |
-| vim.easymotionMarkerBackgroundColor              | The background color of the marker box.                                                                                                                                                                                                                           | String         | '#0000'                        |
-| vim.easymotionMarkerForegroundColorOneChar       | The font color for one-character markers.                                                                                                                                                                                                                         | String         | '#ff0000'                      |
-| vim.easymotionMarkerForegroundColorTwoCharFirst  | The font color for the first of two-character markers, used to differentiate from one-character markers.                                                                                                                                                          | String         | '#ffb400'                      |
-| vim.easymotionMarkerForegroundColorTwoCharSecond | The font color for the second of two-character markers, used to differentiate consecutive markers.                                                                                                                                                                | String         | '#b98300'                      |
-| vim.easymotionIncSearchForegroundColor           | The font color for the search n-character command, used to highlight the matches.                                                                                                                                                                                 | String         | '#7fbf00'                      |
-| vim.easymotionDimColor                           | The font color for the dimmed characters, used when `#vim.easymotionDimBackground#` is set to true.                                                                                                                                                               | String         | '#777777'                      |
-| vim.easymotionDimBackground                      | Whether to dim other text while markers are visible.                                                                                                                                                                                                              | Boolean        | true                           |
-| vim.easymotionMarkerFontWeight                   | The font weight used for the marker text.                                                                                                                                                                                                                         | String         | 'bold'                         |
-| vim.easymotionKeys                               | The characters used for jump marker name                                                                                                                                                                                                                          | String         | 'hklyuiopnm,qwertzxcvbasdgjf;' |
-| vim.easymotionJumpToAnywhereRegex                | Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`). Example setting (which also matches start & end of line, as well as Javascript comments in addition to the regular behavior (note the double escaping required): ^\\s\*. | \\b[A-Za-z0-9] | [A-Za-z0-9]\\b                 |
+| Setting                                          | Description                                                                                              | Type    | Default Value                                      |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------- |
+| vim.easymotion                                   | Enable/disable easymotion plugin                                                                         | Boolean | false                                              |
+| vim.easymotionMarkerBackgroundColor              | The background color of the marker box.                                                                  | String  | '#0000'                                            |
+| vim.easymotionMarkerForegroundColorOneChar       | The font color for one-character markers.                                                                | String  | '#ff0000'                                          |
+| vim.easymotionMarkerForegroundColorTwoCharFirst  | The font color for the first of two-character markers, used to differentiate from one-character markers. | String  | '#ffb400'                                          |
+| vim.easymotionMarkerForegroundColorTwoCharSecond | The font color for the second of two-character markers, used to differentiate consecutive markers.       | String  | '#b98300'                                          |
+| vim.easymotionIncSearchForegroundColor           | The font color for the search n-character command, used to highlight the matches.                        | String  | '#7fbf00'                                          |
+| vim.easymotionDimColor                           | The font color for the dimmed characters, used when `#vim.easymotionDimBackground#` is set to true.      | String  | '#777777'                                          |
+| vim.easymotionDimBackground                      | Whether to dim other text while markers are visible.                                                     | Boolean | true                                               |
+| vim.easymotionMarkerFontWeight                   | The font weight used for the marker text.                                                                | String  | 'bold'                                             |
+| vim.easymotionKeys                               | The characters used for jump marker name                                                                 | String  | 'hklyuiopnm,qwertzxcvbasdgjf;'                     |
+| vim.easymotionJumpToAnywhereRegex                | Custom regex to match for JumpToAnywhere motion (analogous to `Easymotion_re_anywhere`)                  | String  | `\b[A-Za-z0-9]\|[A-Za-z0-9]\b\|_.\|#.\|[a-z][A-Z]` |
 
 Once easymotion is active, initiate motions using the following commands. After you initiate the motion, text decorators/markers will be displayed and you can press the keys displayed to jump to that position. `leader` is configurable and is `\` by default.
 
@@ -492,14 +583,14 @@ Based on [surround.vim](https://github.com/tpope/vim-surround), the plugin is us
 | ------------ | --------------------------- | ------- | ------------- |
 | vim.surround | Enable/disable vim-surround | Boolean | true          |
 
-`t` or `<` as `<desired char>` or `<existing char>` will do tags and enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
+`t` or `<` as `<desired>` or `<existing>` will enter tag entry mode. Using `<CR>` instead of `>` to finish changing a tag will preserve any existing attributes.
 
-| Surround Command                     | Description                                                           |
-| ------------------------------------ | --------------------------------------------------------------------- |
-| `d s <existing char>`                | Delete existing surround                                              |
-| `c s <existing char> <desired char>` | Change surround existing to desired                                   |
-| `y s <motion> <desired char>`        | Surround something with something using motion (as in "you surround") |
-| `S <desired char>`                   | Surround when in visual modes (surrounds full selection)              |
+| Surround Command           | Description                                              |
+| -------------------------- | -------------------------------------------------------- |
+| `y s <motion> <desired>`   | Add `desired` surround around text defined by `<motion>` |
+| `d s <existing>`           | Delete `existing` surround                               |
+| `c s <existing> <desired>` | Change `existing` surround to `desired`                  |
+| `S <desired>`              | Surround when in visual modes (surrounds full selection) |
 
 Some examples:
 
@@ -580,7 +671,6 @@ Any third-party program can be used to switch input methods. The following will 
 
 1.  Install im-select (see [installation guide](https://github.com/daipeihust/im-select#installation))
 1.  Find your default input method key
-
     - Mac:
 
       Switch your input method to English, and run the following in your terminal: `/<path-to-im-select-installation>/im-select` to output your default input method. The table below lists the common English key layouts for MacOS.
@@ -600,7 +690,6 @@ Any third-party program can be used to switch input methods. The following will 
       Refer to the [im-select guide](https://github.com/daipeihust/im-select#to-get-current-keyboard-locale) on how to discover your input method key. Generally, if your keyboard layout is en_US the input method key is 1033 (the locale ID of en_US). You can also find your locale ID from [this page](https://www.science.co.il/language/Locale-codes.php), where the `LCID Decimal` column is the locale ID.
 
 1.  Configure `vim.autoSwitchInputMethod`.
-
     - MacOS:
 
       Given the input method key of `com.apple.keylayout.US` and `im-select` located at `/usr/local/bin`. The configuration is:
@@ -655,6 +744,26 @@ Usage examples:
 - `dae` - delete the whole buffer content.
 - `yie` - will yank the buffer content except leading and trailing blank lines.
 - `gUae` - transform the whole buffer to uppercase.
+
+### vim-textobj-arguments
+
+Similar to the argument text object in [targets.vim](https://github.com/wellle/targets.vim). It is an easy way to deal with arguments inside functions in most programming languages.
+
+| Motion Command | Description                        |
+| -------------- | ---------------------------------- |
+| `<operator>ia` | The argument excluding separators. |
+| `<operator>aa` | The argument including separators. |
+
+Usage examples:
+
+- `cia` - change the argument under the cursor while preserving separators like comma `,`.
+- `daa` - will delete the whole argument under the cursor and the separators if applicable.
+
+| Setting                             | Description                  | Type        | Default Value |
+| ----------------------------------- | ---------------------------- | ----------- | ------------- |
+| vim.argumentObjectOpeningDelimiters | A list of opening delimiters | String list | ["(", "["]    |
+| vim.argumentObjectClosingDelimiters | A list of closing delimiters | String list | [")", "]"]    |
+| vim.argumentObjectSeparators        | A list of object separators  | String list | [","]         |
 
 ## 🎩 VSCodeVim tricks!
 
@@ -739,6 +848,18 @@ VS Code has a lot of nifty tricks and we try to preserve some of them:
 - I've swapped Escape and Caps Lock with setxkbmap and VSCodeVim isn't respecting the swap
 
   This is a [known issue in VS Code](https://github.com/microsoft/vscode/issues/23991), as a workaround you can set `"keyboard.dispatch": "keyCode"` and restart VS Code.
+
+- VSCodeVim is too slow!
+
+  You can try adding the following [setting](https://github.com/microsoft/vscode/issues/75627#issuecomment-1078827311), and reload/restart VSCode:
+
+  ```json
+  "extensions.experimental.affinity": {
+    "vscodevim.vim": 1
+  }
+  ```
+
+  **Caveats:** One issue with using the affinity setting is that each time you update your settings file, the Vim plugin will reload, which can take a few seconds.
 
 ## ❤️ Contributing
 

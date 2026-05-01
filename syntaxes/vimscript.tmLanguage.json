@@ -1,0 +1,64 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Vimscript",
+  "fileTypes": [".vim", ".vimrc"],
+  "scopeName": "source.vimscript",
+  "patterns": [
+    {
+      "name": "comment.line",
+      "match": "(^| |\t)\".*$"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^( |\t)*(let|const|eval|call)"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^( |\t)*(map|nmap|vmap|smap|xmap|omap|map!|imap|lmap|cmap)"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^( |\t)*(noremap|nnoremap|vnoremap|snoremap|xnoremap|onoremap|noremap!|inoremap|lnoremap|cnoremap)"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^( |\t)*(unmap|nunmap|vunmap|sunmap|xunmap|ounmap|unmap!|iunmap|lunmap|cunmap)"
+    },
+    {
+      "name": "entity.name.function",
+      "match": "^( |\t)*set"
+    },
+    {
+      "name": "constant.numeric",
+      "match": "\\d+(\\.\\d+)?"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<Leader>"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<(CR|Enter|Return)>"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<(BS|Del|Space)>"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<Esc>"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<(Up|Down|Left|Right)>"
+    },
+    {
+      "name": "constant",
+      "match": "(?i)<[CD]-.>"
+    },
+    {
+      "name": "string.unquoted",
+      "match": "(?i)[\\w-]+(\\.[\\w-]+)+"
+    }
+  ]
+}

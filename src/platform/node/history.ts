@@ -1,31 +1,25 @@
 import * as path from 'path';
+import { mkdirAsync, readFileAsync, unlinkSync, writeFileAsync } from 'platform/fs';
 import * as vscode from 'vscode';
-import { readFileAsync, mkdirAsync, writeFileAsync, unlinkSync } from 'platform/fs';
-import { ILogger } from '../common/logger';
 import { Globals } from '../../globals';
+import { Logger } from '../../util/logger';
 
 export class HistoryBase {
-  private _historyFileName: string;
-  private _history: string[] = [];
+  private readonly extensionStoragePath: string;
+  private readonly historyFileName: string;
+  private history: string[] = [];
 
   get historyKey(): string {
-    return path.join(this._extensionStoragePath, this._historyFileName);
+    return path.join(this.extensionStoragePath, this.historyFileName);
   }
-
-  private _context: vscode.ExtensionContext;
-  private _extensionStoragePath: string;
-  private _logger: ILogger;
 
   constructor(
     context: vscode.ExtensionContext,
     historyFileName: string,
     extensionStoragePath: string,
-    logger: ILogger
   ) {
-    this._historyFileName = historyFileName;
-    this._context = context;
-    this._extensionStoragePath = extensionStoragePath;
-    this._logger = logger;
+    this.historyFileName = historyFileName;
+    this.extensionStoragePath = extensionStoragePath;
   }
 
   public async add(value: string | undefined, history: number): Promise<void> {
@@ -34,17 +28,17 @@ export class HistoryBase {
     }
 
     // remove duplicates
-    let index: number = this._history.indexOf(value);
+    const index: number = this.history.indexOf(value);
     if (index !== -1) {
-      this._history.splice(index, 1);
+      this.history.splice(index, 1);
     }
 
     // append to the end
-    this._history.push(value);
+    this.history.push(value);
 
     // resize array if necessary
-    if (this._history.length > history) {
-      this._history = this._history.slice(this._history.length - history);
+    if (this.history.length > history) {
+      this.history = this.history.slice(this.history.length - history);
     }
 
     return this.save();
@@ -52,19 +46,19 @@ export class HistoryBase {
 
   public get(history: number): string[] {
     // resize array if necessary
-    if (this._history.length > history) {
-      this._history = this._history.slice(this._history.length - history);
+    if (this.history.length > history) {
+      this.history = this.history.slice(this.history.length - history);
     }
 
-    return this._history;
+    return this.history;
   }
 
   public clear() {
     try {
-      this._history = [];
+      this.history = [];
       unlinkSync(this.historyKey);
     } catch (err) {
-      this._logger.warn(`Unable to delete ${this.historyKey}. err=${err}.`);
+      Logger.warn(`Unable to delete ${this.historyKey}. err=${err}.`);
     }
   }
 
@@ -75,10 +69,11 @@ export class HistoryBase {
     try {
       data = await readFileAsync(this.historyKey, 'utf-8');
     } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (err.code === 'ENOENT') {
-        this._logger.debug(`History does not exist. path=${this.historyKey}`);
+        Logger.debug(`History does not exist. path=${this.historyKey}`);
       } else {
-        this._logger.warn(`Failed to load history. path=${this.historyKey} err=${err}.`);
+        Logger.warn(`Failed to load history. path=${this.historyKey} err=${err}.`);
       }
       return;
     }
@@ -88,13 +83,15 @@ export class HistoryBase {
     }
 
     try {
-      let parsedData = JSON.parse(data);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const parsedData = JSON.parse(data);
       if (!Array.isArray(parsedData)) {
         throw Error('Unexpected format in history file. Expected JSON.');
       }
-      this._history = parsedData;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      this.history = parsedData;
     } catch (e) {
-      this._logger.warn(`Deleting corrupted history file. path=${this.historyKey} err=${e}.`);
+      Logger.warn(`Deleting corrupted history file. path=${this.historyKey} err=${e}.`);
       this.clear();
     }
   }
@@ -105,15 +102,16 @@ export class HistoryBase {
       try {
         await mkdirAsync(Globals.extensionStoragePath, { recursive: true });
       } catch (createDirectoryErr) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (createDirectoryErr.code !== 'EEXIST') {
           throw createDirectoryErr;
         }
       }
 
       // create file
-      await writeFileAsync(this.historyKey, JSON.stringify(this._history), 'utf-8');
+      await writeFileAsync(this.historyKey, JSON.stringify(this.history), 'utf-8');
     } catch (err) {
-      this._logger.error(`Failed to save history. filepath=${this.historyKey}. err=${err}.`);
+      Logger.error(`Failed to save history. filepath=${this.historyKey}. err=${err}.`);
       throw err;
     }
   }

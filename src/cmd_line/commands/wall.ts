@@ -1,27 +1,22 @@
+import { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 import { VimState } from '../../state/vimState';
-
-import * as node from '../node';
-
-export interface IWallCommandArguments extends node.ICommandArgs {
-  bang?: boolean;
-  range?: node.LineRange;
-}
+import { ExCommand } from '../../vimscript/exCommand';
+import { bangParser } from '../../vimscript/parserUtils';
 
 //
 //  Implements :wall (write all)
 //  http://vimdoc.sourceforge.net/htmldoc/editing.html#:wall
 //
-export class WallCommand extends node.CommandBase {
-  protected _arguments: IWallCommandArguments;
+export class WallCommand extends ExCommand {
+  public static readonly argParser: Parser<WallCommand> = bangParser.map(
+    (bang) => new WallCommand(bang),
+  );
 
-  constructor(args: IWallCommandArguments) {
+  private readonly bang: boolean;
+  constructor(bang?: boolean) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IWallCommandArguments {
-    return this._arguments;
+    this.bang = bang ?? false;
   }
 
   async execute(vimState: VimState): Promise<void> {

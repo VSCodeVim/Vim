@@ -1,17 +1,14 @@
-import * as vscode from 'vscode';
-import { Clipboard } from './../util/clipboard';
-import {
-  ActionDeleteChar,
-  ActionDeleteCharWithDeleteKey,
-  ActionDeleteLastChar,
-  CommandRegister,
-  CommandYankFullLine,
-} from './../actions/commands/actions';
-import { DeleteOperator, YankOperator } from './../actions/operator';
-import { RecordedState } from './../state/recordedState';
-import { VimState } from './../state/vimState';
 import { readFileAsync, writeFileAsync } from 'platform/fs';
 import { Globals } from '../globals';
+import { RecordedState } from './../state/recordedState';
+import { VimState } from './../state/vimState';
+import { Clipboard } from './../util/clipboard';
+
+/**
+ * This is included in the register file.
+ * Whenever the format saved to disk changes, so should this.
+ */
+const REGISTER_FORMAT_VERSION = '1.0';
 
 /**
  * There are two different modes of copy/paste in Vim - copy by character
@@ -20,13 +17,12 @@ import { Globals } from '../globals';
  * yy).
  */
 export enum RegisterMode {
-  AscertainFromCurrentMode,
   CharacterWise,
   LineWise,
   BlockWise,
 }
 
-export type RegisterContent = string | string[] | RecordedState;
+export type RegisterContent = string | RecordedState;
 
 export interface IRegisterContent {
   text: RegisterContent;
@@ -34,30 +30,33 @@ export interface IRegisterContent {
 }
 
 export class Register {
-  /**
-   * " is the unnamed register.
-   * * and + are special registers for accessing the system clipboard.
-   * . is the last inserted text.
-   * - is the last deleted text less than a line.
-   * / is the most recently executed search.
-   * : is the most recently executed command.
-   * % is the current file path (relative to workspace root).
-   * # is the previous file path (relative to workspace root).
-   * _ is the black hole register; it's always empty.
-   */
-  private static readonly specialRegisters = ['"', '*', '+', '.', '-', '/', ':', '%', '#', '_'];
+  private static readonly specialRegisters: readonly string[] = [
+    '"', // Unnamed (default)
+    '*', // Clipboard
+    '+', // Clipboard
+    '.', // Last inserted text
+    '-', // Last deleted text less than a line
+    '/', // Most recently executed search
+    ':', // Most recently executed command
+    '%', // Current file path (relative to workspace root)
+    '#', // Previous file path (relative to workspace root)
+    '_', // Black hole (always empty)
+    '=', // Expression register
+  ];
 
-  private static registers: Map<string, IRegisterContent>;
-
-  /**
-   * ". readonly register: last content change.
-   */
-  public static lastContentChange: RecordedState;
+  private static registers: Map<string, IRegisterContent[]>;
 
   /**
-   * Puts content in a register. If none is specified, uses the default register ".
+   * Puts given content in the currently selected register, using the current RegisterMode.
+   *
+   * @param copyToUnnamed: If true, set the unnamed register (") as well
    */
-  public static put(content: RegisterContent, vimState: VimState, multicursorIndex?: number): void {
+  public static put(
+    vimState: VimState,
+    content: RegisterContent,
+    multicursorIndex?: number,
+    copyToUnnamed?: boolean,
+  ): void {
     const register = vimState.recordedState.registerName;
 
     if (!Register.isValidRegister(register)) {
@@ -68,18 +67,14 @@ export class Register {
       return;
     }
 
-    if (vimState.isMultiCursor) {
-      if (Register.isValidUppercaseRegister(register)) {
-        Register.appendMulticursorRegister(content, register, vimState, multicursorIndex as number);
-      } else {
-        Register.putMulticursorRegister(content, register, vimState, multicursorIndex as number);
-      }
+    if (Register.isValidUppercaseRegister(register)) {
+      Register.appendToRegister(vimState, register.toLowerCase(), content, multicursorIndex ?? 0);
     } else {
-      if (Register.isValidUppercaseRegister(register)) {
-        Register.appendNormalRegister(content, register, vimState);
-      } else {
-        Register.putNormalRegister(content, register, vimState);
-      }
+      Register.overwriteRegister(vimState, register, content, multicursorIndex ?? 0);
+    }
+
+    if (copyToUnnamed && register !== '"') {
+      Register.registers.set('"', Register.registers.get(register)!);
     }
   }
 
@@ -112,230 +107,143 @@ export class Register {
     return /^[a-z]$/.test(register);
   }
 
-  private static isValidUppercaseRegister(register: string): boolean {
+  public static isValidUppercaseRegister(register: string): boolean {
     return /^[A-Z]$/.test(register);
   }
 
   /**
    * Puts the content at the specified index of the multicursor Register.
-   *
-   * `REMARKS:` This procedure assumes that you pass an valid register.
+   * If multicursorIndex === 0, the register will be completely overwritten. Otherwise, just that index will be.
    */
-  private static putMulticursorRegister(
-    content: RegisterContent,
-    register: string,
+  public static overwriteRegister(
     vimState: VimState,
-    multicursorIndex: number
-  ): void {
-    if (multicursorIndex === 0) {
-      Register.registers.set(register.toLowerCase(), {
-        text: [],
-        registerMode: vimState.effectiveRegisterMode,
-      });
-    }
-
-    let registerContent = Register.registers.get(register.toLowerCase())!;
-
-    if (!Array.isArray(registerContent.text)) {
-      registerContent.text = [];
-    }
-
-    registerContent.text.push(content as string);
-
-    if (multicursorIndex === vimState.cursors.length - 1) {
-      if (this.isClipboardRegister(register)) {
-        let clipboardText: string = '';
-
-        for (const line of registerContent.text) {
-          clipboardText += line + '\n';
-        }
-        clipboardText = clipboardText.replace(/\n$/, '');
-
-        Clipboard.Copy(clipboardText);
-      }
-
-      Register.processNumberedRegister(registerContent.text, vimState);
-    }
-  }
-
-  /**
-   * Appends the content at the specified index of the multicursor Register.
-   *
-   * `REMARKS:` This Procedure assume that you pass an valid uppercase register.
-   */
-  private static appendMulticursorRegister(
-    content: RegisterContent,
     register: string,
-    vimState: VimState,
-    multicursorIndex: number
+    content: RegisterContent,
+    multicursorIndex: number,
   ): void {
-    let appendToRegister = Register.registers.get(register.toLowerCase())!;
-
-    // Only append if appendToRegister is multicursor register
-    // and line count match, otherwise replace register
-    if (multicursorIndex === 0) {
-      let createEmptyRegister: boolean = false;
-
-      if (typeof appendToRegister.text === 'string') {
-        createEmptyRegister = true;
-      } else {
-        if ((appendToRegister.text as string[]).length !== vimState.cursors.length) {
-          createEmptyRegister = true;
-        }
-      }
-
-      if (createEmptyRegister) {
-        Register.registers.set(register.toLowerCase(), {
-          text: Array<string>(vimState.cursors.length).fill(''),
-          registerMode: vimState.effectiveRegisterMode,
-        });
-
-        appendToRegister = Register.registers.get(register.toLowerCase())!;
-      }
+    if (multicursorIndex === 0 || !Register.registers.has(register)) {
+      Register.registers.set(register, []);
     }
 
-    let currentRegisterMode = vimState.effectiveRegisterMode;
+    Register.registers.get(register)![multicursorIndex] = {
+      registerMode: vimState.currentRegisterMode,
+      text: content,
+    };
+
     if (
-      appendToRegister.registerMode === RegisterMode.CharacterWise &&
-      currentRegisterMode === RegisterMode.CharacterWise
+      multicursorIndex === 0 &&
+      this.isClipboardRegister(register) &&
+      !(content instanceof RecordedState)
     ) {
-      appendToRegister.text[multicursorIndex] += content;
-    } else {
-      appendToRegister.text[multicursorIndex] += '\n' + content;
-      appendToRegister.registerMode = currentRegisterMode;
-    }
-  }
-
-  /**
-   * Puts the content in the specified Register.
-   *
-   * `REMARKS:` This Procedure assume that you pass an valid register.
-   */
-  private static putNormalRegister(
-    content: RegisterContent,
-    register: string,
-    vimState: VimState
-  ): void {
-    if (Register.isClipboardRegister(register)) {
-      Clipboard.Copy(content.toString());
+      void Clipboard.Copy(content);
     }
 
-    Register.registers.set(register.toLowerCase(), {
-      text: content,
-      registerMode: vimState.effectiveRegisterMode,
-    });
-
-    Register.processNumberedRegister(content, vimState);
+    this.processNumberedRegisters(vimState, content);
   }
 
   /**
    * Appends the content at the specified index of the multicursor Register.
-   *
-   * `REMARKS:` This Procedure assume that you pass an valid uppercase register.
    */
-  private static appendNormalRegister(
-    content: RegisterContent,
+  private static appendToRegister(
+    vimState: VimState,
     register: string,
-    vimState: VimState
+    content: RegisterContent,
+    multicursorIndex: number,
   ): void {
-    register = register.toLowerCase();
-    let currentRegisterMode = vimState.effectiveRegisterMode;
-    let appendToRegister = Register.registers.get(register);
-    if (appendToRegister === undefined) {
-      appendToRegister = { registerMode: currentRegisterMode, text: '' };
-      Register.registers.set(register, appendToRegister);
+    if (!Register.registers.has(register)) {
+      Register.registers.set(register, []);
     }
 
-    // Check if appending to a multicursor register or normal
-    if (appendToRegister.text instanceof Array) {
-      if (
-        appendToRegister.registerMode === RegisterMode.CharacterWise &&
-        currentRegisterMode === RegisterMode.CharacterWise
-      ) {
-        for (let i = 0; i < appendToRegister.text.length; i++) {
-          appendToRegister.text[i] += content;
-        }
+    const contentByCursor = Register.registers.get(register)!;
+    const oldContent = contentByCursor[multicursorIndex];
+    if (oldContent === undefined) {
+      contentByCursor[multicursorIndex] = {
+        registerMode: vimState.currentRegisterMode,
+        text: content,
+      };
+    } else {
+      // Line-wise trumps other RegisterModes
+      const registerMode =
+        vimState.currentRegisterMode === RegisterMode.LineWise
+          ? RegisterMode.LineWise
+          : oldContent.registerMode;
+      let newText: RegisterContent;
+      if (oldContent.text instanceof RecordedState || content instanceof RecordedState) {
+        newText = oldContent.text;
       } else {
-        for (let i = 0; i < appendToRegister.text.length; i++) {
-          appendToRegister.text[i] += '\n' + content;
-        }
-        appendToRegister.registerMode = currentRegisterMode;
+        newText = oldContent.text + (registerMode === RegisterMode.LineWise ? '\n' : '') + content;
       }
-    } else if (typeof appendToRegister.text === 'string') {
-      if (
-        appendToRegister.registerMode === RegisterMode.CharacterWise &&
-        currentRegisterMode === RegisterMode.CharacterWise
-      ) {
-        appendToRegister.text = appendToRegister.text + content;
-      } else {
-        appendToRegister.text += '\n' + content;
-        appendToRegister.registerMode = currentRegisterMode;
+      contentByCursor[multicursorIndex] = {
+        registerMode,
+        text: newText,
+      };
+    }
+
+    if (multicursorIndex === 0 && this.isClipboardRegister(register)) {
+      const newContent = contentByCursor[multicursorIndex].text;
+      if (!(newContent instanceof RecordedState)) {
+        void Clipboard.Copy(newContent);
       }
     }
   }
 
-  public static putByKey(
+  /**
+   * Updates a readonly register's content. This is the only way to do so.
+   */
+  public static setReadonlyRegister(
+    register: '.' | '%' | ':' | '#' | '/',
     content: RegisterContent,
-    register = '"',
-    registerMode = RegisterMode.AscertainFromCurrentMode,
-    force = false
-  ): void {
-    if (!Register.isValidRegister(register)) {
-      throw new Error(`Invalid register ${register}`);
-    }
-
-    if (Register.isClipboardRegister(register)) {
-      Clipboard.Copy(content.toString());
-    }
-
-    if (Register.isBlackHoleRegister(register)) {
-      return;
-    }
-
-    if (Register.isReadOnlyRegister(register) && !force) {
-      return;
-    }
-
-    Register.registers.set(register, {
-      text: content,
-      registerMode: registerMode || RegisterMode.AscertainFromCurrentMode,
-    });
+  ) {
+    Register.registers.set(register, [
+      {
+        text: content,
+        registerMode: RegisterMode.CharacterWise,
+      },
+    ]);
   }
 
   /**
    * Handles special cases for Yank- and DeleteOperator.
    */
-  private static processNumberedRegister(content: RegisterContent, vimState: VimState): void {
+  private static processNumberedRegisters(vimState: VimState, content: RegisterContent): void {
     // Find the BaseOperator of the current actions
     const baseOperator = vimState.recordedState.operator || vimState.recordedState.command;
+    if (!baseOperator) {
+      return;
+    }
 
-    if (baseOperator instanceof YankOperator || baseOperator instanceof CommandYankFullLine) {
+    if (baseOperator.name === 'yank_op' || baseOperator.name === 'yank_full_line') {
       // 'yank' to 0 only if no register was specified
       const registerCommand = vimState.recordedState.actionsRun.find((value) => {
-        return value instanceof CommandRegister;
+        return value.name === 'cmd_register';
       });
 
       if (!registerCommand) {
-        Register.registers.set('0', {
-          text: content,
-          registerMode: vimState.effectiveRegisterMode,
-        });
+        Register.registers.set('0', [
+          {
+            text: content,
+            registerMode: vimState.currentRegisterMode,
+          },
+        ]);
       }
     } else if (
-      (baseOperator instanceof DeleteOperator ||
-        baseOperator instanceof ActionDeleteChar ||
-        baseOperator instanceof ActionDeleteLastChar ||
-        baseOperator instanceof ActionDeleteCharWithDeleteKey) &&
-      !(vimState.macro !== undefined || vimState.isReplayingMacro)
+      (baseOperator.name === 'delete_op' ||
+        baseOperator.name === 'delete_char' ||
+        baseOperator.name === 'delete_last_char' ||
+        baseOperator.name === 'delete_char_visual_line_mode' ||
+        baseOperator.name === 'delete_char_with_del') &&
+      !vimState.isReplayingMacro
     ) {
       if (
         !content.toString().match(/\n/g) &&
         vimState.currentRegisterMode !== RegisterMode.LineWise
       ) {
-        Register.registers.set('-', {
-          text: content,
-          registerMode: RegisterMode.CharacterWise,
-        });
+        Register.registers.set('-', [
+          {
+            text: content,
+            registerMode: RegisterMode.CharacterWise,
+          },
+        ]);
       } else {
         // shift 'delete-history' register
         for (let index = 9; index > 1; index--) {
@@ -346,55 +254,67 @@ export class Register {
         }
 
         // Paste last delete into register '1'
-        Register.registers.set('1', {
-          text: content,
-          registerMode: vimState.effectiveRegisterMode,
-        });
+        Register.registers.set('1', [
+          {
+            text: content,
+            registerMode: vimState.currentRegisterMode,
+          },
+        ]);
       }
     }
   }
 
   /**
-   * Gets content from a register. If no register is specified, uses `vimState.recordedState.registerName`.
+   * @returns content of the given register
    */
   public static async get(
-    vimState: VimState,
-    register?: string
+    register: string,
+    multicursorIndex = 0,
   ): Promise<IRegisterContent | undefined> {
-    register ??= vimState.recordedState.registerName;
+    if (Register.isClipboardRegister(register)) {
+      const contentByCursor = Register.registers.get(register);
+      const clipboardContent = (await Clipboard.Paste()).replace(/\r\n/g, '\n');
+      const currentRegisterContent = (contentByCursor?.[0]?.text as string)?.replace(/\r\n/g, '\n');
+      if (currentRegisterContent !== clipboardContent) {
+        // System clipboard seems to have changed
+        const registerContent = {
+          text: clipboardContent,
+          registerMode: RegisterMode.CharacterWise,
+        };
+        Register.registers.set(register, [registerContent]);
+      }
+    }
 
+    return Register._get(register, multicursorIndex);
+  }
+
+  /**
+   * @returns content of the given register
+   *
+   * NOTE: The clipboard register is silently converted to the unnamed register
+   */
+  public static getSync(register: string, multicursorIndex = 0): IRegisterContent | undefined {
+    if (Register.isClipboardRegister(register)) {
+      register = '"';
+    }
+
+    return Register._get(register, multicursorIndex);
+  }
+
+  private static _get(register: string, multicursorIndex: number): IRegisterContent | undefined {
     if (!Register.isValidRegister(register)) {
       throw new Error(`Invalid register ${register}`);
     }
 
     register = register.toLowerCase();
 
-    /* Read from system clipboard */
-    if (Register.isClipboardRegister(register)) {
-      let text = await Clipboard.Paste();
-
-      // Harmonize newline character
-      text = text.replace(/\r\n/g, '\n');
-
-      let registerText: string | string[];
-      if (vimState && vimState.isMultiCursor) {
-        registerText = text.split('\n');
-        if (registerText.length !== vimState.cursors.length) {
-          registerText = text;
-        }
-      } else {
-        registerText = text;
-      }
-
-      const registerContent = {
-        text: registerText,
-        registerMode: Register.registers.get(register)?.registerMode ?? RegisterMode.CharacterWise,
-      };
-      Register.registers.set(register, registerContent);
-      return registerContent;
-    } else {
-      return Register.registers.get(register);
+    const contentByCursor = Register.registers.get(register);
+    if (contentByCursor === undefined) {
+      return undefined;
     }
+
+    // Default to first cursor if the requested multicursor index doesn't exist
+    return contentByCursor[multicursorIndex] ?? contentByCursor[0];
   }
 
   public static has(register: string): boolean {
@@ -405,20 +325,26 @@ export class Register {
     return [...Register.registers.keys()];
   }
 
+  public static clearAllRegisters(): void {
+    Register.registers.clear();
+  }
+
   public static async saveToDisk(supportNode: boolean): Promise<void> {
     if (supportNode) {
-      const serializable = new Array<[string, IRegisterContent]>();
-      for (const [key, content] of Register.registers) {
-        if (typeof content.text === 'string' || Array.isArray(content.text)) {
-          serializable.push([key, content]);
+      const serializableRegisters = new Array<[string, IRegisterContent[]]>();
+      for (const [key, contentByCursor] of Register.registers) {
+        if (!contentByCursor.some((content) => content instanceof RecordedState)) {
+          serializableRegisters.push([key, contentByCursor]);
         }
       }
-
       return import('path').then((path) => {
         return writeFileAsync(
           path.join(Globals.extensionStoragePath, '.registers'),
-          JSON.stringify(serializable),
-          'utf8'
+          JSON.stringify({
+            version: REGISTER_FORMAT_VERSION,
+            registers: serializableRegisters,
+          }),
+          'utf8',
         );
       });
     }
@@ -427,11 +353,17 @@ export class Register {
   public static loadFromDisk(supportNode: boolean): void {
     if (supportNode) {
       Register.registers = new Map();
-      import('path').then((path) => {
-        readFileAsync(path.join(Globals.extensionStoragePath, '.registers'), 'utf8').then(
+      void import('path').then((path) => {
+        void readFileAsync(path.join(Globals.extensionStoragePath, '.registers'), 'utf8').then(
           (savedRegisters) => {
-            Register.registers = new Map(JSON.parse(savedRegisters));
-          }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const parsed = JSON.parse(savedRegisters);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            if (parsed.version === REGISTER_FORMAT_VERSION) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+              Register.registers = new Map(parsed.registers);
+            }
+          },
         );
       });
     } else {

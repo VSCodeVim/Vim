@@ -1,31 +1,32 @@
 import * as _ from 'lodash';
-import { Position } from 'vscode';
+import { Position, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
-import { TextEditor } from '../textEditor';
-import { getAllPositions, getAllEndPositions } from './util';
+import { getAllEndPositions, getAllPositions } from './util';
 
 export enum WordType {
   Normal,
   Big,
   CamelCase,
   FileName,
+  TagName,
 }
 
-const nonWordCharRegex = makeUnicodeWordRegex(configuration.iskeyword);
 const nonBigWordCharRegex = makeWordRegex('');
-const nonCamelCaseWordCharRegex = makeCamelCaseWordRegex(configuration.iskeyword);
 const nonFileNameRegex = makeWordRegex('"\'`;<>{}[]()');
+const nonTagNameRegex = makeWordRegex('</>');
 
 function regexForWordType(wordType: WordType): RegExp {
   switch (wordType) {
     case WordType.Normal:
-      return nonWordCharRegex;
+      return makeUnicodeWordRegex(configuration.iskeyword);
     case WordType.Big:
       return nonBigWordCharRegex;
     case WordType.CamelCase:
-      return nonCamelCaseWordCharRegex;
+      return makeCamelCaseWordRegex(configuration.iskeyword);
     case WordType.FileName:
       return nonFileNameRegex;
+    case WordType.TagName:
+      return nonTagNameRegex;
   }
 }
 
@@ -33,31 +34,38 @@ function regexForWordType(wordType: WordType): RegExp {
  * Get the position of the word counting from the position specified.
  * @param text The string to search from.
  * @param pos The position of text to search from.
- * @param inclusive true if we consider the pos a valid result, false otherwise.
  * @returns The character position of the word to the left relative to the text and the pos.
  *          undefined if there is no word to the left of the postion.
  */
-export function getWordLeftInText(text: string, pos: number): number | undefined {
-  // TODO: isn't `inclusive` being put into `forceFirst`?
-  const inclusive = false;
-  return getWordLeftOnLine(text, pos, WordType.Normal, inclusive);
+export function getWordLeftInText(
+  text: string,
+  pos: number,
+  wordType: WordType,
+): number | undefined {
+  return getWordLeftOnLine(text, pos, wordType);
 }
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-export function getWordLeft(
+export function getWordRightInText(
+  text: string,
+  pos: number,
+  wordType: WordType,
+): number | undefined {
+  return getAllPositions(text, regexForWordType(wordType)).find((index) => index > pos);
+}
+
+export function prevWordStart(
+  document: TextDocument,
   pos: Position,
   wordType: WordType,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): Position {
   for (let currentLine = pos.line; currentLine >= 0; currentLine--) {
     const newCharacter = getWordLeftOnLine(
-      TextEditor.getLine(currentLine).text,
+      document.lineAt(currentLine).text,
       pos.character,
       wordType,
       currentLine !== pos.line,
-      inclusive
+      inclusive,
     );
 
     if (newCharacter !== undefined) {
@@ -73,31 +81,29 @@ function getWordLeftOnLine(
   pos: number,
   wordType: WordType,
   forceFirst: boolean = false,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): number | undefined {
   return getAllPositions(text, regexForWordType(wordType))
     .reverse()
     .find((index) => (index < pos && !inclusive) || (index <= pos && inclusive) || forceFirst);
 }
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-export function getWordRight(
+export function nextWordStart(
+  document: TextDocument,
   pos: Position,
   wordType: WordType,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): Position {
-  for (let currentLine = pos.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-    let positions = getAllPositions(
-      TextEditor.getLine(currentLine).text,
-      regexForWordType(wordType)
+  for (let currentLine = pos.line; currentLine < document.lineCount; currentLine++) {
+    const positions = getAllPositions(
+      document.lineAt(currentLine).text,
+      regexForWordType(wordType),
     );
-    let newCharacter = positions.find(
+    const newCharacter = positions.find(
       (index) =>
         (index > pos.character && !inclusive) ||
         (index >= pos.character && inclusive) ||
-        currentLine !== pos.line
+        currentLine !== pos.line,
     );
 
     if (newCharacter !== undefined) {
@@ -105,27 +111,25 @@ export function getWordRight(
     }
   }
 
-  return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+  return new Position(document.lineCount - 1, 0).getLineEnd();
 }
 
-/**
- * Inclusive is true if we consider the current position a valid result, false otherwise.
- */
-export function getCurrentWordEnd(
+export function nextWordEnd(
+  document: TextDocument,
   pos: Position,
   wordType: WordType,
-  inclusive: boolean = false
+  inclusive: boolean = false,
 ): Position {
-  for (let currentLine = pos.line; currentLine < TextEditor.getLineCount(); currentLine++) {
-    let positions = getAllEndPositions(
-      TextEditor.getLine(currentLine).text,
-      regexForWordType(wordType)
+  for (let currentLine = pos.line; currentLine < document.lineCount; currentLine++) {
+    const positions = getAllEndPositions(
+      document.lineAt(currentLine).text,
+      regexForWordType(wordType),
     );
-    let newCharacter = positions.find(
+    const newCharacter = positions.find(
       (index) =>
         (index > pos.character && !inclusive) ||
         (index >= pos.character && inclusive) ||
-        currentLine !== pos.line
+        currentLine !== pos.line,
     );
 
     if (newCharacter !== undefined) {
@@ -133,14 +137,14 @@ export function getCurrentWordEnd(
     }
   }
 
-  return new Position(TextEditor.getLineCount() - 1, 0).getLineEnd();
+  return new Position(document.lineCount - 1, 0).getLineEnd();
 }
 
-export function getLastWordEnd(pos: Position, wordType: WordType): Position {
+export function prevWordEnd(document: TextDocument, pos: Position, wordType: WordType): Position {
   for (let currentLine = pos.line; currentLine > -1; currentLine--) {
     let positions = getAllEndPositions(
-      TextEditor.getLine(currentLine).text,
-      regexForWordType(wordType)
+      document.lineAt(currentLine).text,
+      regexForWordType(wordType),
     );
     // if one line is empty, use the 0 position as the default value
     if (positions.length === 0) {
@@ -148,13 +152,13 @@ export function getLastWordEnd(pos: Position, wordType: WordType): Position {
     }
     // reverse the list to find the biggest element smaller than pos.character
     positions = positions.reverse();
-    let index = positions.findIndex((i) => i < pos.character || currentLine !== pos.line);
+    const index = positions.findIndex((i) => i < pos.character || currentLine !== pos.line);
     let newCharacter = 0;
     if (index === -1) {
       if (currentLine > -1) {
         continue;
       }
-      newCharacter = positions[positions.length - 1];
+      newCharacter = positions.at(-1)!;
     } else {
       newCharacter = positions[index];
     }
@@ -181,7 +185,6 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   // Older browsers don't support lookbehind - in this case, use an inferior regex rather than crashing
   let supportsLookbehind = true;
   try {
-    // tslint:disable-next-line
     new RegExp('(?<=x)');
   } catch {
     supportsLookbehind = false;
@@ -190,7 +193,7 @@ function makeCamelCaseWordRegex(characterSet: string): RegExp {
   // prettier-ignore
   const firstSegment =
       '(' +                                             // OPEN: group for matching camel case words
-      `[^\\s${escaped}]` +                              //   words can start with any word character
+      `[^\\s${escaped}_]` +                             //   words can start with any non-keyword non-underscore character
       '(?:' +                                           //   OPEN: group for characters after initial char
       `(?:${supportsLookbehind ? '(?<=[A-Z_])' : ''}` + //     If first char was a capital
       `[A-Z](?=[\\sA-Z0-9${escaped}_]))+` +             //       the word can continue with all caps
@@ -231,7 +234,7 @@ function makeUnicodeWordRegex(keywordChars: string): RegExp {
   // List of printable characters (code point intervals) and their character kinds.
   // Latin alphabets (e.g., ASCII alphabets and numbers,  Latin-1 Supplement, European Latin) are excluded.
   // Imported from utf_class_buf in src/mbyte.c of Vim.
-  const symbolTable: [[number, number], CharKind][] = [
+  const symbolTable: Array<[[number, number], CharKind]> = [
     [[0x00a1, 0x00bf], CharKind.Punctuation], // Latin-1 punctuation
     [[0x037e, 0x037e], CharKind.Punctuation], // Greek question mark
     [[0x0387, 0x0387], CharKind.Punctuation], // Greek ano teleia
@@ -297,13 +300,13 @@ function makeUnicodeWordRegex(keywordChars: string): RegExp {
   ];
 
   const codePointRangePatterns: string[][] = [];
-  for (let kind in CharKind) {
+  for (const kind in CharKind) {
     if (!isNaN(Number(kind))) {
       codePointRangePatterns[kind] = [];
     }
   }
 
-  for (let [[first, last], kind] of symbolTable) {
+  for (const [[first, last], kind] of symbolTable) {
     if (first === last) {
       // '\u{hhhh}'
       codePointRangePatterns[kind].push(`\\u{${first.toString(16)}}`);

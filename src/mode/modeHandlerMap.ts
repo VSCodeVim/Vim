@@ -1,42 +1,35 @@
+import { TextEditor, Uri } from 'vscode';
 import { ModeHandler } from './modeHandler';
-import { EditorIdentity } from '../editorIdentity';
 
 /**
- * Stores one ModeHandler (and therefore VimState) per editor.
+ * Stores one ModeHandler (and therefore VimState) per TextDocument.
  */
 class ModeHandlerMapImpl {
-  private modeHandlerMap = new Map<EditorIdentity, ModeHandler>();
+  private modeHandlerMap = new Map<Uri, ModeHandler>();
 
-  public async getOrCreate(editorId: EditorIdentity): Promise<[ModeHandler, boolean]> {
+  public async getOrCreate(editor: TextEditor): Promise<[ModeHandler, boolean]> {
+    const editorId = editor.document.uri;
+
     let isNew = false;
     let modeHandler: ModeHandler | undefined = this.get(editorId);
 
     if (!modeHandler) {
       isNew = true;
-      modeHandler = await ModeHandler.create();
+      modeHandler = await ModeHandler.create(this, editor);
       this.modeHandlerMap.set(editorId, modeHandler);
     }
     return [modeHandler, isNew];
   }
 
-  public get(editorId: EditorIdentity): ModeHandler | undefined {
-    for (const [key, value] of this.modeHandlerMap.entries()) {
-      if (key.isEqual(editorId)) {
-        return value;
-      }
-    }
-    return undefined;
+  public get(uri: Uri): ModeHandler | undefined {
+    return this.modeHandlerMap.get(uri);
   }
 
-  public getKeys(): EditorIdentity[] {
-    return [...this.modeHandlerMap.keys()];
+  public entries(): IterableIterator<[Uri, ModeHandler]> {
+    return this.modeHandlerMap.entries();
   }
 
-  public getAll(): ModeHandler[] {
-    return [...this.modeHandlerMap.values()];
-  }
-
-  public delete(editorId: EditorIdentity) {
+  public delete(editorId: Uri) {
     const modeHandler = this.modeHandlerMap.get(editorId);
     if (modeHandler) {
       modeHandler.dispose();
@@ -51,4 +44,4 @@ class ModeHandlerMapImpl {
   }
 }
 
-export let ModeHandlerMap = new ModeHandlerMapImpl();
+export const ModeHandlerMap = new ModeHandlerMapImpl();

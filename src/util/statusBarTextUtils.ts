@@ -1,8 +1,18 @@
-import { Mode } from '../mode/mode';
-import { StatusBar } from '../statusBar';
-import { VimState } from '../state/vimState';
-import { configuration } from '../configuration/configuration';
 import { Position } from 'vscode';
+import { configuration } from '../configuration/configuration';
+import { Mode } from '../mode/mode';
+import { VimState } from '../state/vimState';
+import { StatusBar } from '../statusBar';
+
+/**
+ * Escapes substrings that would be interpreted as css icon markdown in certain
+ * ui labels, including the status bar.
+ */
+export function escapeCSSIcons(text: string): string {
+  // regex from iconLabel implementation at
+  // https://github.com/microsoft/vscode/blob/9b75bd1f813e683bf46897d85387089ec083fb24/src/vs/base/browser/ui/iconLabel/iconLabels.ts#L9
+  return text.replace(/\\?\$\([A-Za-z0-9\-]+(?:~[A-Za-z]+)?\)/g, '\\$&');
+}
 
 /**
  * Shows the number of lines you just changed (with `dG`, for instance), if it
@@ -41,9 +51,21 @@ export function reportLinesYanked(numLinesYanked: number, vimState: VimState) {
  */
 export function reportFileInfo(position: Position, vimState: VimState) {
   const doc = vimState.document;
-  const progress = Math.floor(((position.line + 1) / doc.lineCount) * 100);
+  const fileName = doc.isUntitled ? '[No Name]' : doc.fileName;
+  const modified = doc.isDirty ? ' [Modified]' : '';
 
-  StatusBar.setText(vimState, `"${doc.fileName}" ${doc.lineCount} lines --${progress}%--`);
+  if (doc.lineCount === 1 && doc.lineAt(0).text.length === 0) {
+    // TODO: Vim behaves slightly differently - seems this is only shown for new buffer that hasn't been saved to disk
+    StatusBar.setText(vimState, `"${fileName}"${modified} --No lines in buffer--`);
+  } else {
+    const progress = Math.floor(((position.line + 1) / doc.lineCount) * 100);
+    StatusBar.setText(
+      vimState,
+      `"${fileName}"${modified} ${doc.lineCount} line${
+        doc.lineCount > 1 ? 's' : ''
+      } --${progress}%--`,
+    );
+  }
 }
 
 /**

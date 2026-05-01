@@ -1,8 +1,7 @@
-import * as vscode from 'vscode';
-import { Position } from 'vscode';
-
+import { Position, Range, TextDocumentContentChangeEvent } from 'vscode';
+import { RecordedState } from '../state/recordedState';
+import { LineRange } from '../vimscript/lineRange';
 import { PositionDiff } from './../common/motion/position';
-import { Range } from './../common/motion/range';
 
 /**
  * This file contains definitions of objects that represent text
@@ -115,31 +114,6 @@ export interface InsertTextVSCodeTransformation {
 }
 
 /**
- * Represents deleting a character at a position in the document.
- */
-export interface DeleteTextTransformation {
-  type: 'deleteText';
-
-  /**
-   * Position at which to delete a character.
-   */
-  position: Position;
-
-  /**
-   * The index of the cursor that this transformation applies to.
-   */
-  cursorIndex?: number;
-
-  /**
-   * A position diff that will be added to the position of the cursor after
-   * the replace transformation has been applied.
-   *
-   * If you don't know what this is, just ignore it. You probably don't need it.
-   */
-  diff?: PositionDiff;
-}
-
-/**
  * Represents deleting a range of characters.
  */
 export interface DeleteTextRangeTransformation {
@@ -157,8 +131,6 @@ export interface DeleteTextRangeTransformation {
    * If you don't know what this is, just ignore it. You probably don't need it.
    */
   diff?: PositionDiff;
-
-  collapseRange?: boolean;
 
   /**
    * The index of the cursor that this transformation applies to.
@@ -183,48 +155,18 @@ export interface MoveCursorTransformation {
 }
 
 /**
- * Represents pressing ':'
- */
-export interface ShowCommandHistory {
-  type: 'showCommandHistory';
-}
-
-export interface ShowSearchHistory {
-  type: 'showSearchHistory';
-  direction: number;
-}
-
-/**
- * Represents pressing '.'
+ * Replays a RecordedState. Used for `.`, primarily.
  */
 export interface Dot {
-  type: 'dot';
+  type: 'replayRecordedState';
+  count: number;
+  recordedState: RecordedState;
 }
 
-/**
- * Represents Tab
- */
-export interface Tab {
-  type: 'tab';
-  cursorIndex?: number;
-
-  /**
-   * Move the cursor this much.
-   */
-  diff?: PositionDiff;
-}
-
-/**
- * Represents reindenting the selected line
- */
-export interface Reindent {
-  type: 'reindent';
-  cursorIndex?: number;
-
-  /**
-   * Move the cursor this much.
-   */
-  diff?: PositionDiff;
+export interface VSCodeCommandTransformation {
+  type: 'vscodeCommand';
+  command: string;
+  args: any[];
 }
 
 /**
@@ -241,8 +183,14 @@ export interface Macro {
  */
 export interface ContentChangeTransformation {
   type: 'contentChange';
-  changes: vscode.TextDocumentContentChangeEvent[];
+  changes: TextDocumentContentChangeEvent[];
   diff: PositionDiff;
+}
+
+export interface ExecuteNormalTransformation {
+  type: 'executeNormal';
+  keystrokes: string;
+  range?: LineRange;
 }
 
 export type Transformation =
@@ -250,16 +198,12 @@ export type Transformation =
   | InsertTextVSCodeTransformation
   | ReplaceTextTransformation
   | DeleteTextRangeTransformation
-  | DeleteTextTransformation
   | MoveCursorTransformation
-  | ShowCommandHistory
-  | ShowSearchHistory
   | Dot
   | Macro
   | ContentChangeTransformation
-  | DeleteTextTransformation
-  | Tab
-  | Reindent;
+  | ExecuteNormalTransformation
+  | VSCodeCommandTransformation;
 
 /**
  * Text Transformations
@@ -280,40 +224,43 @@ export type TextTransformations =
   | InsertTextVSCodeTransformation
   | DeleteTextRangeTransformation
   | MoveCursorTransformation
-  | DeleteTextTransformation
   | ReplaceTextTransformation;
 
 export const isTextTransformation = (x: Transformation): x is TextTransformations => {
   return (
     x.type === 'insertText' ||
     x.type === 'replaceText' ||
-    x.type === 'deleteText' ||
     x.type === 'deleteRange' ||
     x.type === 'moveCursor'
   );
 };
-export const isMultiCursorTextTransformation = (x: Transformation): Boolean => {
+export const isMultiCursorTextTransformation = (x: Transformation): boolean => {
   return (x.type === 'insertTextVSCode' && x.isMultiCursor) ?? false;
 };
 
 const getRangeFromTextTransformation = (transformation: TextTransformations): Range | undefined => {
   switch (transformation.type) {
     case 'insertText':
-      return new Range(transformation.position, transformation.position);
+      return new Range(
+        transformation.position,
+        transformation.position.advancePositionByText(transformation.text),
+      );
     case 'replaceText':
+      // TODO: Do we need to do the same sort of thing here as for insertText?
       return transformation.range;
-    case 'deleteText':
-      return new Range(transformation.position, transformation.position);
     case 'deleteRange':
       return transformation.range;
     case 'moveCursor':
       return undefined;
   }
 
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   throw new Error('Unhandled text transformation: ' + transformation);
 };
 
-export const areAnyTransformationsOverlapping = (transformations: TextTransformations[]) => {
+export function overlappingTransformations(
+  transformations: TextTransformations[],
+): [TextTransformations, TextTransformations] | undefined {
   for (let i = 0; i < transformations.length; i++) {
     for (let j = i + 1; j < transformations.length; j++) {
       const first = transformations[i];
@@ -326,21 +273,33 @@ export const areAnyTransformationsOverlapping = (transformations: TextTransforma
         continue;
       }
 
-      if (firstRange.overlaps(secondRange)) {
-        return true;
+      const intersection = firstRange.intersection(secondRange);
+      if (intersection && !intersection.start.isEqual(intersection.end)) {
+        return [first, second];
       }
     }
   }
 
-  return false;
-};
+  return undefined;
+}
 
-export const areAllSameTransformation = (transformations: Transformation[]): Boolean => {
+export const areAllSameTransformation = (transformations: Transformation[]): boolean => {
   const firstTransformation = transformations[0];
 
   return transformations.every((t) => {
     return Object.entries(t).every(([key, value]) => {
-      return firstTransformation[key] === value;
+      // TODO: this is all quite janky
+      return (firstTransformation as unknown as Record<string, any>)[key] === value;
     });
   });
 };
+
+export function stringify(transformation: Transformation): string {
+  if (transformation.type === 'replayRecordedState') {
+    return `Replay: ${transformation.recordedState.actionsRun
+      .map((x) => x.keysPressed.join(''))
+      .join('')}`;
+  } else {
+    return JSON.stringify(transformation);
+  }
+}

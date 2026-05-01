@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:22
 
 ARG DEBIAN_FRONTEND=noninteractive
 

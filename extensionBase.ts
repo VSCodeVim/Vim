@@ -1,45 +1,41 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
-import { CompositionState } from './src/state/compositionState';
-import { EditorIdentity } from './src/editorIdentity';
+import { ExCommandLine, SearchCommandLine } from './src/cmd_line/commandLine';
+import { configuration } from './src/configuration/configuration';
+import { Notation } from './src/configuration/notation';
 import { Globals } from './src/globals';
 import { Jump } from './src/jumps/jump';
+import { Mode } from './src/mode/mode';
 import { ModeHandler } from './src/mode/modeHandler';
 import { ModeHandlerMap } from './src/mode/modeHandlerMap';
-import { Mode } from './src/mode/mode';
-import { Notation } from './src/configuration/notation';
-import { Logger } from './src/util/logger';
-import { StatusBar } from './src/statusBar';
-import { VSCodeContext } from './src/util/vscodeContext';
-import { commandLine } from './src/cmd_line/commandLine';
-import { configuration } from './src/configuration/configuration';
-import { globalState } from './src/state/globalState';
-import { taskQueue } from './src/taskQueue';
 import { Register } from './src/register/register';
+import { CompositionState } from './src/state/compositionState';
+import { globalState } from './src/state/globalState';
+import { StatusBar } from './src/statusBar';
+import { taskQueue } from './src/taskQueue';
+import { Logger } from './src/util/logger';
 import { SpecialKeys } from './src/util/specialKeys';
-import { HistoryTracker } from './src/history/historyTracker';
+import { VSCodeContext } from './src/util/vscodeContext';
+import { exCommandParser } from './src/vimscript/exCommandParser';
 
 let extensionContext: vscode.ExtensionContext;
-let previousActiveEditorId: EditorIdentity | undefined = undefined;
+let previousActiveEditorUri: vscode.Uri | undefined;
 let lastClosedModeHandler: ModeHandler | null = null;
 
 interface ICodeKeybinding {
   after?: string[];
-  commands?: { command: string; args: any[] }[];
+  commands?: Array<{ command: string; args: any[] }>;
 }
 
 export async function getAndUpdateModeHandler(
-  forceSyncAndUpdate = false
+  forceSyncAndUpdate = false,
 ): Promise<ModeHandler | undefined> {
   const activeTextEditor = vscode.window.activeTextEditor;
   if (activeTextEditor === undefined || activeTextEditor.document.isClosed) {
     return undefined;
   }
 
-  const activeEditorId = EditorIdentity.fromEditor(activeTextEditor);
-
-  let [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeEditorId);
+  const [curHandler, isNew] = await ModeHandlerMap.getOrCreate(activeTextEditor);
   if (isNew) {
     extensionContext.subscriptions.push(curHandler);
   }
@@ -48,24 +44,24 @@ export async function getAndUpdateModeHandler(
 
   if (
     forceSyncAndUpdate ||
-    !previousActiveEditorId ||
-    !previousActiveEditorId.isEqual(activeEditorId)
+    !previousActiveEditorUri ||
+    previousActiveEditorUri !== activeTextEditor.document.uri
   ) {
     // We sync the cursors here because ModeHandler is specific to a document, not an editor, so we
     // need to update our representation of the cursors when switching between editors for the same document.
     // This will be unnecessary once #4889 is fixed.
     curHandler.syncCursors();
-    await curHandler.updateView({ drawSelection: false, revealRange: false });
+    curHandler.updateView({ drawSelection: false, revealRange: false });
   }
 
-  previousActiveEditorId = activeEditorId;
+  previousActiveEditorUri = activeTextEditor.document.uri;
 
-  if (curHandler.vimState.focusChanged) {
-    curHandler.vimState.focusChanged = false;
+  if (curHandler.focusChanged) {
+    curHandler.focusChanged = false;
 
-    if (previousActiveEditorId) {
-      const prevHandler = ModeHandlerMap.get(previousActiveEditorId);
-      prevHandler!.vimState.focusChanged = true;
+    if (previousActiveEditorUri) {
+      const prevHandler = ModeHandlerMap.get(previousActiveEditorUri);
+      prevHandler!.focusChanged = true;
     }
   }
 
@@ -75,22 +71,19 @@ export async function getAndUpdateModeHandler(
 /**
  * Loads and validates the user's configuration
  */
-async function loadConfiguration() {
+export async function loadConfiguration() {
   const validatorResults = await configuration.load();
 
-  Logger.configChanged();
-
-  const logger = Logger.get('Configuration');
-  logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
+  Logger.debug(`${validatorResults.numErrors} errors found with vim configuration`);
 
   if (validatorResults.numErrors > 0) {
-    for (let validatorResult of validatorResults.get()) {
+    for (const validatorResult of validatorResults.get()) {
       switch (validatorResult.level) {
         case 'error':
-          logger.error(validatorResult.message);
+          Logger.error(validatorResult.message);
           break;
         case 'warning':
-          logger.warn(validatorResult.message);
+          Logger.warn(validatorResult.message);
           break;
       }
     }
@@ -101,22 +94,26 @@ async function loadConfiguration() {
  * The extension's entry point
  */
 export async function activate(context: vscode.ExtensionContext, handleLocal: boolean = true) {
+  ExCommandLine.parser = exCommandParser;
+
+  Logger.init();
+
   // before we do anything else, we need to load the configuration
   await loadConfiguration();
 
-  const logger = Logger.get('Extension Startup');
-  logger.debug('Start');
+  Logger.debug('Start');
 
   extensionContext = context;
   extensionContext.subscriptions.push(StatusBar);
 
   // Load state
   Register.loadFromDisk(handleLocal);
-  await Promise.all([commandLine.load(extensionContext), globalState.load(extensionContext)]);
+  await Promise.all([ExCommandLine.loadHistory(context), SearchCommandLine.loadHistory(context)]);
 
-  if (vscode.window.activeTextEditor) {
-    const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
-    Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
+  const document = vscode.window.activeTextEditor?.document;
+  if (document) {
+    const filepathComponents = document.fileName.split(/\\|\//);
+    Register.setReadonlyRegister('%', filepathComponents.at(-1)!);
   }
 
   // workspace events
@@ -124,66 +121,46 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.workspace.onDidChangeConfiguration,
     async () => {
+      Logger.info('Configuration changed');
       await loadConfiguration();
     },
-    false
+    false,
   );
 
   registerEventListener(context, vscode.workspace.onDidChangeTextDocument, async (event) => {
-    const textWasDeleted = (changeEvent: vscode.TextDocumentChangeEvent) =>
-      changeEvent.contentChanges.length === 1 &&
-      changeEvent.contentChanges[0].text === '' &&
-      changeEvent.contentChanges[0].range.start.line !==
-        changeEvent.contentChanges[0].range.end.line;
-
-    const textWasAdded = (changeEvent: vscode.TextDocumentChangeEvent) =>
-      changeEvent.contentChanges.length === 1 &&
-      (changeEvent.contentChanges[0].text === '\n' ||
-        changeEvent.contentChanges[0].text === '\r\n') &&
-      changeEvent.contentChanges[0].range.start.line ===
-        changeEvent.contentChanges[0].range.end.line;
-
-    if (textWasDeleted(event)) {
-      globalState.jumpTracker.handleTextDeleted(event.document, event.contentChanges[0].range);
-    } else if (textWasAdded(event)) {
-      globalState.jumpTracker.handleTextAdded(
-        event.document,
-        event.contentChanges[0].range,
-        event.contentChanges[0].text
-      );
+    if (event.document.uri.scheme === 'output') {
+      // Without this, we'll get an infinite logging loop
+      return;
+    }
+    if (event.contentChanges.length === 0) {
+      // This happens when the document is saved
+      return;
     }
 
-    // Change from VSCode editor should set document.isDirty to true but they initially don't!
-    // There is a timing issue in VSCode codebase between when the isDirty flag is set and
-    // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
-    const contentChangeHandler = (modeHandler: ModeHandler) => {
-      if (modeHandler.vimState.currentMode === Mode.Insert) {
-        if (modeHandler.vimState.historyTracker.currentContentChanges === undefined) {
-          modeHandler.vimState.historyTracker.currentContentChanges = [];
-        }
+    Logger.debug(
+      `${event.contentChanges.length} change(s) to ${event.document.fileName} because ${event.reason}`,
+    );
+    for (const x of event.contentChanges) {
+      Logger.trace(`\t-${x.rangeLength}, +'${x.text}'`);
+    }
 
-        modeHandler.vimState.historyTracker.currentContentChanges = modeHandler.vimState.historyTracker.currentContentChanges.concat(
-          event.contentChanges
-        );
+    for (const change of event.contentChanges) {
+      if (change.rangeLength > 0) {
+        globalState.jumpTracker.handleTextDeleted(event.document, change.range);
       }
-    };
-
-    if (Globals.isTesting && Globals.mockModeHandler) {
-      contentChangeHandler(Globals.mockModeHandler);
-    } else {
-      ModeHandlerMap.getAll()
-        .filter((modeHandler) => modeHandler.vimState.identity.fileName === event.document.fileName)
-        .forEach((modeHandler) => {
-          contentChangeHandler(modeHandler);
-        });
+      if (change.text.length > 0) {
+        globalState.jumpTracker.handleTextAdded(event.document, change.range.start, change.text);
+      }
     }
 
-    if (handleLocal) {
-      setTimeout(() => {
-        if (!event.document.isDirty && !event.document.isUntitled && event.contentChanges.length) {
-          handleContentChangedFromDisk(event.document);
-        }
-      }, 0);
+    const mh = ModeHandlerMap.get(event.document.uri);
+    if (mh) {
+      // Change from VSCode editor should set document.isDirty to true but they initially don't!
+      // There is a timing issue in VSCode codebase between when the isDirty flag is set and
+      // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
+      if (mh.vimState.currentMode === Mode.Insert) {
+        mh.vimState.historyTracker.currentContentChanges.push(...event.contentChanges);
+      }
     }
   });
 
@@ -191,50 +168,43 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     context,
     vscode.workspace.onDidCloseTextDocument,
     async (closedDocument) => {
-      const documents = vscode.workspace.textDocuments;
+      Logger.info(`${closedDocument.fileName} closed`);
 
       // Delete modehandler once all tabs of this document have been closed
-      for (let editorIdentity of ModeHandlerMap.getKeys()) {
-        const modeHandler = ModeHandlerMap.get(editorIdentity);
-
+      for (const [uri, modeHandler] of ModeHandlerMap.entries()) {
         let shouldDelete = false;
-        if (modeHandler == null || modeHandler.vimState.editor === undefined) {
+        if (modeHandler == null) {
           shouldDelete = true;
         } else {
-          const document = modeHandler.vimState.document;
-          if (!documents.includes(document)) {
+          if (!vscode.workspace.textDocuments.includes(modeHandler.vimState.document)) {
             shouldDelete = true;
-            if (closedDocument === document) {
+            if (closedDocument === modeHandler.vimState.document) {
               lastClosedModeHandler = modeHandler;
             }
           }
         }
 
         if (shouldDelete) {
-          ModeHandlerMap.delete(editorIdentity);
+          ModeHandlerMap.delete(uri);
         }
       }
     },
-    false
+    false,
   );
-
-  registerEventListener(context, vscode.workspace.onDidSaveTextDocument, async (document) => {
-    if (
-      configuration.vimrc.enable &&
-      path.relative(document.fileName, configuration.vimrc.path) === ''
-    ) {
-      await configuration.load();
-      vscode.window.showInformationMessage('Sourced new .vimrc');
-    }
-  });
 
   // window events
   registerEventListener(
     context,
     vscode.window.onDidChangeActiveTextEditor,
-    async () => {
-      const mhPrevious: ModeHandler | undefined = previousActiveEditorId
-        ? ModeHandlerMap.get(previousActiveEditorId)
+    async (activeTextEditor: vscode.TextEditor | undefined) => {
+      if (activeTextEditor) {
+        Logger.info(`Active editor: ${activeTextEditor.document.uri}`);
+      } else {
+        Logger.debug(`No active editor`);
+      }
+
+      const mhPrevious: ModeHandler | undefined = previousActiveEditorUri
+        ? ModeHandlerMap.get(previousActiveEditorUri)
         : undefined;
       // Track the closed editor so we can use it the next time an open event occurs.
       // When vscode changes away from a temporary file, onDidChangeActiveTextEditor first twice.
@@ -245,32 +215,44 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // once a new file is opened.
       lastClosedModeHandler = mhPrevious || lastClosedModeHandler;
 
-      if (vscode.window.activeTextEditor === undefined) {
-        Register.putByKey('', '%', undefined, true);
-        return;
+      const oldFileRegister = (await Register.get('%'))?.text;
+      const relativePath = activeTextEditor
+        ? vscode.workspace.asRelativePath(activeTextEditor.document.uri, false)
+        : '';
+
+      if (relativePath !== oldFileRegister) {
+        if (oldFileRegister && oldFileRegister !== '') {
+          Register.setReadonlyRegister('#', oldFileRegister);
+        }
+        Register.setReadonlyRegister('%', relativePath);
       }
 
-      const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
-      Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
+      if (activeTextEditor === undefined) {
+        return;
+      }
 
       taskQueue.enqueueTask(async () => {
         const mh = await getAndUpdateModeHandler(true);
         if (mh) {
           globalState.jumpTracker.handleFileJump(
-            lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : null,
-            Jump.fromStateNow(mh.vimState)
+            lastClosedModeHandler ? Jump.fromStateNow(lastClosedModeHandler.vimState) : undefined,
+            Jump.fromStateNow(mh.vimState),
           );
         }
       });
     },
     true,
-    true
+    true,
   );
 
   registerEventListener(
     context,
     vscode.window.onDidChangeTextEditorSelection,
     async (e: vscode.TextEditorSelectionChangeEvent) => {
+      if (e.textEditor.document.uri.scheme === 'output') {
+        // Without this, we can an infinite logging loop
+        return;
+      }
       if (
         vscode.window.activeTextEditor === undefined ||
         e.textEditor.document !== vscode.window.activeTextEditor.document
@@ -279,37 +261,17 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      const mh = await getAndUpdateModeHandler();
+      const mh = ModeHandlerMap.get(vscode.window.activeTextEditor.document.uri);
       if (mh === undefined) {
         // We don't care if there is no active editor
         return;
       }
 
-      if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) {
-        const selectionsHash = e.selections.reduce(
-          (hash, s) =>
-            hash +
-            `[${s.anchor.line}, ${s.anchor.character}; ${s.active.line}, ${s.active.character}]`,
-          ''
-        );
-        const idx = mh.vimState.selectionsChanged.ourSelections.indexOf(selectionsHash);
-        if (idx > -1) {
-          mh.vimState.selectionsChanged.ourSelections.splice(idx, 1);
-          logger.debug(
-            `Selections: Ignoring selection: ${selectionsHash}, Count left: ${mh.vimState.selectionsChanged.ourSelections.length}`
-          );
-          return;
-        } else if (mh.vimState.selectionsChanged.ignoreIntermediateSelections) {
-          logger.debug(`Selections: ignoring intermediate selection change: ${selectionsHash}`);
-          return;
-        } else if (mh.vimState.selectionsChanged.ourSelections.length > 0) {
-          // Some intermediate selection must have slipped in after setting the
-          // 'ignoreIntermediateSelections' to false. Which means we didn't count
-          // for it yet, but since we have selections to be ignored then we probably
-          // wanted this one to be ignored as well.
-          logger.debug(`Selections: Ignoring slipped selection: ${selectionsHash}`);
-          return;
-        }
+      if (
+        e.kind !== vscode.TextEditorSelectionChangeKind.Mouse &&
+        mh.internalSelectionsTracker.shouldIgnoreAsInternalSelectionChangeEvent(e)
+      ) {
+        return;
       }
 
       // We may receive changes from other panels when, having selections in them containing the same file
@@ -318,50 +280,55 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         return;
       }
 
-      if (mh.vimState.focusChanged) {
-        mh.vimState.focusChanged = false;
+      if (mh.focusChanged) {
+        mh.focusChanged = false;
         return;
       }
 
-      if (mh.currentMode === Mode.EasyMotionMode) {
+      if (mh.vimState.currentMode === Mode.EasyMotionMode) {
         return;
       }
 
-      taskQueue.enqueueTask(
-        () => mh.handleSelectionChange(e),
-        undefined,
-        /**
-         * We don't want these to become backlogged! If they do, we'll update
-         * the selection to an incorrect value and see a jittering cursor.
-         */
-        true
-      );
+      taskQueue.enqueueTask(() => mh.handleSelectionChange(e));
     },
     true,
-    false
+    false,
   );
 
   registerEventListener(
     context,
     vscode.window.onDidChangeTextEditorVisibleRanges,
     async (e: vscode.TextEditorVisibleRangesChangeEvent) => {
-      const mh = await getAndUpdateModeHandler();
-      if (mh) {
-        // Scrolling the viewport clears any status bar message, even errors.
-        StatusBar.clear(mh.vimState, true);
+      if (e.textEditor !== vscode.window.activeTextEditor) {
+        return;
       }
-    }
+      taskQueue.enqueueTask(async () => {
+        // Scrolling the viewport clears any status bar message, even errors.
+        const mh = await getAndUpdateModeHandler();
+        if (mh && StatusBar.lastMessageTime) {
+          // TODO: Using the time elapsed works most of the time, but is a bit of a hack
+          const timeElapsed = Date.now() - Number(StatusBar.lastMessageTime);
+          if (timeElapsed > 100) {
+            StatusBar.clear(mh.vimState, true);
+          }
+        }
+      });
+    },
   );
 
   const compositionState = new CompositionState();
 
   // Override VSCode commands
-  overrideCommand(context, 'type', async (args) => {
+  overrideCommand(context, 'type', async (args: { text: string }) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
         if (compositionState.isInComposition) {
           compositionState.composingText += args.text;
+          if (mh.vimState.currentMode === Mode.Insert) {
+            compositionState.insertedText = true;
+            void vscode.commands.executeCommand('default:type', { text: args.text });
+          }
         } else {
           await mh.handleKeyEvent(args.text);
         }
@@ -369,27 +336,37 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     });
   });
 
-  overrideCommand(context, 'replacePreviousChar', async (args) => {
-    taskQueue.enqueueTask(async () => {
-      const mh = await getAndUpdateModeHandler();
-      if (mh) {
-        if (compositionState.isInComposition) {
-          compositionState.composingText =
-            compositionState.composingText.substr(
-              0,
-              compositionState.composingText.length - args.replaceCharCnt
-            ) + args.text;
+  overrideCommand(
+    context,
+    'replacePreviousChar',
+    async (args: { replaceCharCnt: number; text: string }) => {
+      taskQueue.enqueueTask(async () => {
+        const mh = await getAndUpdateModeHandler();
+        if (mh) {
+          if (compositionState.isInComposition) {
+            compositionState.composingText =
+              compositionState.composingText.substr(
+                0,
+                compositionState.composingText.length - args.replaceCharCnt,
+              ) + args.text;
+          }
+          if (compositionState.insertedText) {
+            await vscode.commands.executeCommand('default:replacePreviousChar', {
+              text: args.text,
+              replaceCharCnt: args.replaceCharCnt,
+            });
+            mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
+            mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
+          }
         } else {
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: args.text,
             replaceCharCnt: args.replaceCharCnt,
           });
-          mh.vimState.cursorStopPosition = mh.vimState.editor.selection.start;
-          mh.vimState.cursorStartPosition = mh.vimState.editor.selection.start;
         }
-      }
-    });
-  });
+      });
+    },
+  );
 
   overrideCommand(context, 'compositionStart', async () => {
     taskQueue.enqueueTask(async () => {
@@ -401,10 +378,24 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
+        if (compositionState.insertedText) {
+          mh.internalSelectionsTracker.startIgnoringIntermediateSelections();
+          await vscode.commands.executeCommand('default:replacePreviousChar', {
+            text: '',
+            replaceCharCnt: compositionState.composingText.length,
+          });
+          mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
+          mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
+          mh.internalSelectionsTracker.stopIgnoringIntermediateSelections();
+        }
         const text = compositionState.composingText;
-        compositionState.reset();
-        await mh.handleMultipleKeyEvents(text.split(''));
+        if (compositionState.insertedText) {
+          await mh.handleMultipleKeyEvents([text]);
+        } else {
+          await mh.handleMultipleKeyEvents(text.split(''));
+        }
       }
+      compositionState.reset();
     });
   });
 
@@ -412,7 +403,15 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   registerCommand(context, 'vim.showQuickpickCmdLine', async () => {
     const mh = await getAndUpdateModeHandler();
     if (mh) {
-      await commandLine.PromptAndRun('', mh.vimState);
+      const cmd = await vscode.window.showInputBox({
+        prompt: 'Vim command line',
+        value: '',
+        ignoreFocusOut: false,
+        valueSelection: [0, 0],
+      });
+      if (cmd) {
+        await new ExCommandLine(cmd, mh.vimState.currentMode).run(mh.vimState);
+      }
       mh.updateView();
     }
   });
@@ -426,7 +425,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
       if (!args) {
         throw new Error(
-          "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'"
+          "'args' is undefined. For this remap to work it needs to have 'args' with an '\"after\": string[]' and/or a '\"commands\": { command: string; args: any[] }[]'",
         );
       }
 
@@ -440,10 +439,13 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
         for (const command of args.commands) {
           // Check if this is a vim command by looking for :
           if (command.command.startsWith(':')) {
-            await commandLine.Run(command.command.slice(1, command.command.length), mh.vimState);
+            await new ExCommandLine(
+              command.command.slice(1, command.command.length),
+              mh.vimState.currentMode,
+            ).run(mh.vimState);
             mh.updateView();
           } else {
-            vscode.commands.executeCommand(command.command, command.args);
+            await vscode.commands.executeCommand(command.command, command.args);
           }
         }
       }
@@ -452,31 +454,26 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   registerCommand(context, 'toggleVim', async () => {
     configuration.disableExtension = !configuration.disableExtension;
-    toggleExtension(configuration.disableExtension, compositionState);
+    void toggleExtension(configuration.disableExtension, compositionState);
   });
-
-  registerCommand(
-    context,
-    'vim.editVimrc',
-    async () => {
-      const document = await vscode.workspace.openTextDocument(configuration.vimrc.path);
-      await vscode.window.showTextDocument(document);
-    },
-    false
-  );
 
   for (const boundKey of configuration.boundKeyCombinations) {
     const command = ['<Esc>', '<C-c>'].includes(boundKey.key)
       ? async () => {
-          const didStopRemap = await forceStopRecursiveRemap();
-          if (!didStopRemap) {
-            handleKeyEvent(`${boundKey.key}`);
+          const mh = await getAndUpdateModeHandler();
+          if (mh && !(await forceStopRecursiveRemap(mh))) {
+            await mh.handleKeyEvent(`${boundKey.key}`);
           }
         }
-      : () => {
-          handleKeyEvent(`${boundKey.key}`);
+      : async () => {
+          const mh = await getAndUpdateModeHandler();
+          if (mh) {
+            await mh.handleKeyEvent(`${boundKey.key}`);
+          }
         };
-    registerCommand(context, boundKey.command, command);
+    registerCommand(context, boundKey.command, async () => {
+      taskQueue.enqueueTask(command);
+    });
   }
 
   {
@@ -500,7 +497,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       }
 
       // This is called last because getAndUpdateModeHandler() will change cursor
-      modeHandler.updateView({ drawSelection: true, revealRange: false });
+      void modeHandler.updateView({ drawSelection: true, revealRange: false });
     }
   }
 
@@ -510,7 +507,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   await toggleExtension(configuration.disableExtension, compositionState);
 
-  logger.debug('Finish.');
+  Logger.debug('Finish.');
 }
 
 /**
@@ -536,7 +533,7 @@ async function toggleExtension(isDisabled: boolean, compositionState: Compositio
 function overrideCommand(
   context: vscode.ExtensionContext,
   command: string,
-  callback: (...args: any[]) => any
+  callback: (...args: any[]) => any,
 ) {
   const disposable = vscode.commands.registerCommand(command, async (args) => {
     if (configuration.disableExtension) {
@@ -554,16 +551,16 @@ function overrideCommand(
       return vscode.commands.executeCommand('default:' + command, args);
     }
 
-    return callback(args);
+    return callback(args) as vscode.Disposable;
   });
   context.subscriptions.push(disposable);
 }
 
-function registerCommand(
+export function registerCommand(
   context: vscode.ExtensionContext,
   command: string,
   callback: (...args: any[]) => any,
-  requiresActiveEditor: boolean = true
+  requiresActiveEditor: boolean = true,
 ) {
   const disposable = vscode.commands.registerCommand(command, async (args) => {
     if (requiresActiveEditor && !vscode.window.activeTextEditor) {
@@ -575,12 +572,12 @@ function registerCommand(
   context.subscriptions.push(disposable);
 }
 
-function registerEventListener<T>(
+export function registerEventListener<T>(
   context: vscode.ExtensionContext,
   event: vscode.Event<T>,
-  listener: (e: T) => void,
+  listener: (e: T) => Promise<void>,
   exitOnExtensionDisable = true,
-  exitOnTests = false
+  exitOnTests = false,
 ) {
   const disposable = event(async (e) => {
     if (exitOnExtensionDisable && configuration.disableExtension) {
@@ -591,37 +588,19 @@ function registerEventListener<T>(
       return;
     }
 
-    listener(e);
+    await listener(e);
   });
   context.subscriptions.push(disposable);
-}
-
-async function handleKeyEvent(key: string): Promise<void> {
-  const mh = await getAndUpdateModeHandler();
-  if (mh) {
-    taskQueue.enqueueTask(async () => {
-      await mh.handleKeyEvent(key);
-    });
-  }
 }
 
 /**
  * @returns true if there was a remap being executed to stop
  */
-async function forceStopRecursiveRemap(): Promise<boolean> {
-  const mh = await getAndUpdateModeHandler();
-  if (mh?.remapState.isCurrentlyPerformingRecursiveRemapping) {
+async function forceStopRecursiveRemap(mh: ModeHandler): Promise<boolean> {
+  if (mh.remapState.isCurrentlyPerformingRecursiveRemapping) {
     mh.remapState.forceStopRecursiveRemapping = true;
     return true;
   }
 
   return false;
-}
-
-function handleContentChangedFromDisk(document: vscode.TextDocument): void {
-  ModeHandlerMap.getAll()
-    .filter((modeHandler) => modeHandler.vimState.identity.fileName === document.fileName)
-    .forEach((modeHandler) => {
-      modeHandler.vimState.historyTracker = new HistoryTracker(modeHandler.vimState);
-    });
 }

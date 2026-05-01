@@ -1,41 +1,36 @@
+import { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
-import * as node from '../node';
-
-export interface ICloseCommandArguments extends node.ICommandArgs {
-  bang?: boolean;
-  range?: node.LineRange;
-  quitAll?: boolean;
-}
+import { ExCommand } from '../../vimscript/exCommand';
+import { bangParser } from '../../vimscript/parserUtils';
 
 //
 //  Implements :close
 //  http://vimdoc.sourceforge.net/htmldoc/windows.html#:close
 //
-export class CloseCommand extends node.CommandBase {
-  protected _arguments: ICloseCommandArguments;
+export class CloseCommand extends ExCommand {
+  public static readonly argParser: Parser<CloseCommand> = bangParser.map(
+    (bang) => new CloseCommand(bang),
+  );
 
-  constructor(args: ICloseCommandArguments) {
+  public readonly bang: boolean;
+  constructor(bang: boolean) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): ICloseCommandArguments {
-    return this._arguments;
+    this.bang = bang;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (vimState.document.isDirty && !this.arguments.bang) {
-      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
+    if (vimState.document.isDirty && !this.bang) {
+      throw VimError.NoWriteSinceLastChange();
     }
 
     if (vscode.window.visibleTextEditors.length === 1) {
-      throw error.VimError.fromCode(error.ErrorCode.CannotCloseLastWindow);
+      throw VimError.CannotCloseLastWindow();
     }
 
-    let oldViewColumn = vimState.editor.viewColumn;
+    const oldViewColumn = vimState.editor.viewColumn;
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
     if (

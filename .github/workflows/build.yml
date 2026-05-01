@@ -3,45 +3,46 @@ name: build
 on:
   push:
     branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
+      - 'master'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout VSCodeVim
-        uses: actions/checkout@v2
-        with:
-          # Get full history; needed for Prettier to amend commit
-          fetch-depth: 0
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2-beta
+        uses: actions/setup-node@v6
         with:
-          node-version: '12'
+          node-version: 22
+          cache: yarn
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Prettier
-        uses: creyD/prettier_action@v3.3
-        with:
-          prettier_options: '--write **/*.{ts,js,json,md,yml}'
-          same_commit: true
-          only_changed: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: matrix.os != 'windows-latest'
+        run: yarn prettier:check
 
       - name: Lint
-        run: npx tslint -c tslint.json -p tsconfig.json
+        if: matrix.os != 'windows-latest'
+        run: yarn lint
 
       - name: Build
-        run: gulp webpack
+        run: yarn build
 
-      - name: Test
+      - name: Test on ubuntu-latest
+        if: matrix.os != 'windows-latest'
         run: |
-          gulp prepare-test
+          yarn build-test
           xvfb-run -a yarn test
+
+      - name: Test on windows-latest
+        if: matrix.os == 'windows-latest'
+        run: |
+          yarn build-test
+          yarn test

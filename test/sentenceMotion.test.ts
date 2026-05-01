@@ -1,12 +1,10 @@
 import { newTest } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('sentence motion', () => {
-  setup(async () => {
-    await setupWorkspace(undefined, '.js');
+  suiteSetup(async () => {
+    await setupWorkspace({ fileExtension: '.js' });
   });
-
-  teardown(cleanUpWorkspace);
 
   suite('[count] sentences backward', () => {
     newTest({
@@ -49,6 +47,34 @@ suite('sentence motion', () => {
       start: ['lorem ipsum.|lorem ipsum'],
       keysPressed: '(',
       end: ['|lorem ipsum.lorem ipsum'],
+    });
+
+    newTest({
+      title: 'move one sentence backward closing quotes',
+      start: ['"lorem ipsum." lorem ipsum|'],
+      keysPressed: '(',
+      end: ['"lorem ipsum." |lorem ipsum'],
+    });
+
+    newTest({
+      title: 'move one sentence backward closing singlequote',
+      start: ["'lorem ipsum.' lorem ipsum|"],
+      keysPressed: '(',
+      end: ["'lorem ipsum.' |lorem ipsum"],
+    });
+
+    newTest({
+      title: 'move one sentence backward closing paren',
+      start: ['(lorem ipsum.) lorem ipsum|'],
+      keysPressed: '(',
+      end: ['(lorem ipsum.) |lorem ipsum'],
+    });
+
+    newTest({
+      title: 'move one sentence backward closing square bracket',
+      start: ['[lorem ipsum.] lorem ipsum|'],
+      keysPressed: '(',
+      end: ['[lorem ipsum.] |lorem ipsum'],
     });
 
     newTest({

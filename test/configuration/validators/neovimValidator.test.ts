@@ -1,10 +1,10 @@
 import * as assert from 'assert';
+import childProcess from 'child_process';
+import fs from 'fs';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import * as fs from 'fs';
-import * as childProcess from 'child_process';
-import { Configuration } from '../../testConfiguration';
 import { NeovimValidator } from '../../../src/configuration/validators/neovimValidator';
+import { Configuration } from '../../testConfiguration';
 
 suite('Neovim Validator', () => {
   let sandbox: sinon.SinonSandbox;
@@ -39,7 +39,12 @@ suite('Neovim Validator', () => {
     assert.strictEqual(configuration.enableNeovim, false);
   });
 
+  // TODO(#4844): this fails on Windows
   test('neovim enabled with nvim in path', async () => {
+    if (process.platform === 'win32') {
+      return;
+    }
+
     // setup
     const configuration = new Configuration();
     configuration.enableNeovim = true;

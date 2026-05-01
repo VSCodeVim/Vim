@@ -1,5 +1,5 @@
 export function getAllPositions(line: string, regex: RegExp): number[] {
-  let positions: number[] = [];
+  const positions: number[] = [];
   let result = regex.exec(line);
 
   while (result) {
@@ -17,7 +17,7 @@ export function getAllPositions(line: string, regex: RegExp): number[] {
 }
 
 export function getAllEndPositions(line: string, regex: RegExp): number[] {
-  let positions: number[] = [];
+  const positions: number[] = [];
   let result = regex.exec(line);
 
   while (result) {

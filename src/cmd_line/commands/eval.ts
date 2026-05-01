@@ -1,0 +1,50 @@
+import { all, optWhitespace, Parser, seq } from 'parsimmon';
+import { VimError } from '../../error';
+import { VimState } from '../../state/vimState';
+import { ExCommand } from '../../vimscript/exCommand';
+import { EvaluationContext } from '../../vimscript/expression/evaluate';
+import { expressionParser, functionCallParser } from '../../vimscript/expression/parser';
+import { Expression } from '../../vimscript/expression/types';
+
+export class EvalCommand extends ExCommand {
+  public static argParser: Parser<EvalCommand> = optWhitespace
+    .then(seq(expressionParser.fallback(undefined), all))
+    .map(([expression, trailing]) => {
+      trailing = trailing.trim();
+      if (expression === undefined) {
+        throw VimError.InvalidExpression(trailing);
+      }
+      if (trailing) {
+        throw VimError.TrailingCharacters(trailing);
+      }
+      return new EvalCommand(expression);
+    });
+
+  private expression: Expression;
+  constructor(expression: Expression) {
+    super();
+    this.expression = expression;
+  }
+
+  public async execute(vimState: VimState): Promise<void> {
+    const ctx = new EvaluationContext(vimState);
+    ctx.evaluate(this.expression);
+  }
+}
+
+export class CallCommand extends ExCommand {
+  public static argParser: Parser<CallCommand> = optWhitespace
+    .then(functionCallParser)
+    .map((call) => new CallCommand(call));
+
+  private expression: Expression;
+  private constructor(funcCall: Expression) {
+    super();
+    this.expression = funcCall;
+  }
+
+  public async execute(vimState: VimState): Promise<void> {
+    const ctx = new EvaluationContext(vimState);
+    ctx.evaluate(this.expression);
+  }
+}

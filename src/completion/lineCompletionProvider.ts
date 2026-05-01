@@ -1,16 +1,15 @@
 import * as vscode from 'vscode';
 
-import { TextEditor } from './../textEditor';
-import { VimState } from '../state/vimState';
-import { Range } from '../common/motion/range';
 import { Position } from 'vscode';
+import { VimState } from '../state/vimState';
+import { TextEditor } from './../textEditor';
 
 /**
  * Return open text documents, with a given file at the top of the list.
  * @param startingFileName File that will be first in the array, typically current file
  */
 const documentsStartingWith = (startingFileName: string) => {
-  return vscode.workspace.textDocuments.sort((a, b) => {
+  return [...vscode.workspace.textDocuments].sort((a, b) => {
     if (a.fileName === startingFileName) {
       return -1;
     } else if (b.fileName === startingFileName) {
@@ -30,8 +29,8 @@ const documentsStartingWith = (startingFileName: string) => {
 const linesWithoutIndentation = (
   document: vscode.TextDocument,
   lineToStartScanFrom: number,
-  scanAboveFirst: boolean
-): { sortPriority: number; text: string }[] => {
+  scanAboveFirst: boolean,
+): Array<{ sortPriority: number; text: string }> => {
   const distanceFromStartLine = (line: number) => {
     let sortPriority = scanAboveFirst ? lineToStartScanFrom - line : line - lineToStartScanFrom;
     if (sortPriority < 0) {
@@ -69,7 +68,7 @@ const linesWithoutIndentation = (
 const getCompletionsForText = (
   text: string,
   currentFileName: string,
-  currentPosition: Position
+  currentPosition: Position,
 ): string[] | null => {
   const matchedLines: string[] = [];
 
@@ -116,10 +115,10 @@ const getCompletionsForText = (
  */
 export const getCompletionsForCurrentLine = (
   position: Position,
-  document: vscode.TextDocument
+  document: vscode.TextDocument,
 ): string[] | null => {
   const currentLineText = document.getText(
-    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(position.line), position)
+    new vscode.Range(TextEditor.getFirstNonWhitespaceCharOnLine(document, position.line), position),
   );
 
   return getCompletionsForText(currentLineText, document.fileName, position);
@@ -158,13 +157,12 @@ export const lineCompletionProvider = {
       return;
     }
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'deleteRange',
-      range: new Range(
-        TextEditor.getFirstNonWhitespaceCharOnLine(position.line),
-        position.getLineEnd()
+    vimState.recordedState.transformer.delete(
+      new vscode.Range(
+        TextEditor.getFirstNonWhitespaceCharOnLine(vimState.document, position.line),
+        position.getLineEnd(),
       ),
-    });
+    );
 
     vimState.recordedState.transformer.addTransformation({
       type: 'insertTextVSCode',

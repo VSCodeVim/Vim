@@ -1,7 +1,7 @@
-import { Logger } from '../../util/logger';
-import { Mode } from '../../mode/mode';
-import { configuration } from '../../configuration/configuration';
 import { exec } from 'child_process';
+import { configuration } from '../../configuration/configuration';
+import { Mode } from '../../mode/mode';
+import { Logger } from '../../util/logger';
 
 /**
  * This function executes a shell command and returns the standard output as a string.
@@ -17,7 +17,7 @@ function executeShell(cmd: string): Promise<string> {
         }
       });
     } catch (error) {
-      reject(error);
+      reject(error as Error);
     }
   });
 }
@@ -26,7 +26,6 @@ function executeShell(cmd: string): Promise<string> {
  * InputMethodSwitcher changes input method when mode changed
  */
 export class InputMethodSwitcher {
-  private static readonly logger = Logger.get('IMSwitcher');
   private execute: (cmd: string) => Promise<string>;
   private savedIMKey = '';
 
@@ -39,8 +38,8 @@ export class InputMethodSwitcher {
       return;
     }
     // when you exit from insert-like mode, save origin input method and set it to default
-    let isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
-    let isNewModeInsertLike = this.isInsertLikeMode(newMode);
+    const isPrevModeInsertLike = this.isInsertLikeMode(prevMode);
+    const isNewModeInsertLike = this.isInsertLikeMode(newMode);
     if (isPrevModeInsertLike !== isNewModeInsertLike) {
       if (isNewModeInsertLike) {
         await this.resumeIM();
@@ -59,7 +58,7 @@ export class InputMethodSwitcher {
         this.savedIMKey = insertIMKey.trim();
       }
     } catch (e) {
-      InputMethodSwitcher.logger.error(`Error switching to default IM. err=${e}`);
+      Logger.error(`Error switching to default IM. err=${e}`);
     }
 
     const defaultIMKey = configuration.autoSwitchInputMethod.defaultIM;
@@ -82,7 +81,7 @@ export class InputMethodSwitcher {
       try {
         await this.execute(switchIMCmd);
       } catch (e) {
-        InputMethodSwitcher.logger.error(`Error switching to IM. err=${e}`);
+        Logger.error(`Error switching to IM. err=${e}`);
       }
     }
   }

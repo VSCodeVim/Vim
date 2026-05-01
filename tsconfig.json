@@ -1,26 +1,25 @@
 {
   "compilerOptions": {
-    "lib": ["ES2019"],
+    "lib": ["ES2021"],
     "module": "commonjs",
-    "target": "ES2019",
+    "target": "ES2021",
     "outDir": "out",
-    "noImplicitAny": true,
+    "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noImplicitThis": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
-    "strictBindCallApply": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
+    "strict": true,
+    "useUnknownInCatchVariables": false,
     "experimentalDecorators": true,
-    "alwaysStrict": true,
-    "baseUrl": ".",
     "paths": {
-      "platform/*": ["src/platform/node/*"]
+      "platform/*": ["./src/platform/node/*"]
     },
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "rootDir": "."
+    // "isolatedModules": true,
   },
   "exclude": ["node_modules", "!node_modules/@types"]
 }

@@ -1,26 +1,21 @@
 import * as vscode from 'vscode';
-import { ILogger } from '../common/logger';
 
 export class HistoryBase {
-  private _historyFileName: string;
-  private _history: string[] = [];
+  private readonly context: vscode.ExtensionContext;
+  private readonly historyFileName: string;
+  private history: string[] = [];
+
   get historyKey(): string {
-    return `vim.${this._historyFileName}`;
+    return `vim.${this.historyFileName}`;
   }
-  private _context: vscode.ExtensionContext;
-  private _extensionStoragePath: string;
-  private _logger: ILogger;
 
   constructor(
     context: vscode.ExtensionContext,
     historyFileName: string,
     extensionStoragePath: string,
-    logger: ILogger
   ) {
-    this._context = context;
-    this._historyFileName = historyFileName;
-    this._extensionStoragePath = extensionStoragePath;
-    this._logger = logger;
+    this.context = context;
+    this.historyFileName = historyFileName;
   }
 
   public async add(value: string | undefined, history: number): Promise<void> {
@@ -29,17 +24,17 @@ export class HistoryBase {
     }
 
     // remove duplicates
-    let index: number = this._history.indexOf(value);
+    const index: number = this.history.indexOf(value);
     if (index !== -1) {
-      this._history.splice(index, 1);
+      this.history.splice(index, 1);
     }
 
     // append to the end
-    this._history.push(value);
+    this.history.push(value);
 
     // resize array if necessary
-    if (this._history.length > history) {
-      this._history = this._history.slice(this._history.length - history);
+    if (this.history.length > history) {
+      this.history = this.history.slice(this.history.length - history);
     }
 
     return this.save();
@@ -47,32 +42,34 @@ export class HistoryBase {
 
   public get(history: number): string[] {
     // resize array if necessary
-    if (this._history.length > history) {
-      this._history = this._history.slice(this._history.length - history);
+    if (this.history.length > history) {
+      this.history = this.history.slice(this.history.length - history);
     }
 
-    return this._history;
+    return this.history;
   }
 
   public async clear() {
-    this._context.workspaceState.update(this.historyKey, undefined);
-    this._history = [];
+    void this.context.workspaceState.update(this.historyKey, undefined);
+    this.history = [];
   }
 
   public async load(): Promise<void> {
-    let data = this._context.workspaceState.get<string>(this.historyKey) || '';
+    const data = this.context.workspaceState.get<string>(this.historyKey) || '';
     if (data.length === 0) {
       return;
     }
 
-    let parsedData = JSON.parse(data);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const parsedData = JSON.parse(data);
     if (!Array.isArray(parsedData)) {
       throw Error('Unexpected format in history. Expected JSON.');
     }
-    this._history = parsedData;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    this.history = parsedData;
   }
 
   async save(): Promise<void> {
-    this._context.workspaceState.update(this.historyKey, JSON.stringify(this._history));
+    void this.context.workspaceState.update(this.historyKey, JSON.stringify(this.history));
   }
 }

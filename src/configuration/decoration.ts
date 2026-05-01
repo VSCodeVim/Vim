@@ -2,17 +2,30 @@ import * as vscode from 'vscode';
 import { IConfiguration } from './iconfiguration';
 
 class DecorationImpl {
-  private _default: vscode.TextEditorDecorationType;
-  private _searchHighlight: vscode.TextEditorDecorationType;
-  private _easyMotionIncSearch: vscode.TextEditorDecorationType;
-  private _easyMotionDimIncSearch: vscode.TextEditorDecorationType;
-  private _insertModeVirtualCharacter: vscode.TextEditorDecorationType;
-  private _operatorPendingModeCursor: vscode.TextEditorDecorationType;
-  private _operatorPendingModeCursorChar: vscode.TextEditorDecorationType;
+  private _default!: vscode.TextEditorDecorationType;
+  private _searchHighlight!: vscode.TextEditorDecorationType;
+  private _searchMatch!: vscode.TextEditorDecorationType;
+  private _substitutionAppend!: vscode.TextEditorDecorationType;
+  private _substitutionReplace!: vscode.TextEditorDecorationType;
+  private _easyMotionIncSearch!: vscode.TextEditorDecorationType;
+  private _easyMotionDimIncSearch!: vscode.TextEditorDecorationType;
+  private _insertModeVirtualCharacter!: vscode.TextEditorDecorationType;
+  private _operatorPendingModeCursor!: vscode.TextEditorDecorationType;
+  private _operatorPendingModeCursorChar!: vscode.TextEditorDecorationType;
 
   private _markDecorationCache = new Map<string, vscode.TextEditorDecorationType>();
 
   private _createMarkDecoration(name: string): vscode.TextEditorDecorationType {
+    const escape: Record<string, string> = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '&': '&amp;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    if (name in escape) {
+      name = escape[name];
+    }
     const svg = [
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30px" height="30px">',
       '<style>text { font-family: sans-serif; font-size: 0.8em; }</style>',
@@ -29,6 +42,11 @@ class DecorationImpl {
       gutterIconSize: 'cover',
     });
   }
+
+  public readonly confirmedSubstitution = vscode.window.createTextEditorDecorationType({
+    letterSpacing: '-9999999px',
+    opacity: '0',
+  });
 
   public set default(value: vscode.TextEditorDecorationType) {
     if (this._default) {
@@ -52,6 +70,43 @@ class DecorationImpl {
     return this._searchHighlight;
   }
 
+  public set searchMatch(value: vscode.TextEditorDecorationType) {
+    if (this._searchMatch) {
+      this._searchMatch.dispose();
+    }
+    this._searchMatch = value;
+  }
+
+  public get searchMatch() {
+    return this._searchMatch;
+  }
+
+  public set substitutionAppend(value: vscode.TextEditorDecorationType) {
+    if (this._substitutionAppend) {
+      this._substitutionAppend.dispose();
+    }
+    this._substitutionAppend = value;
+  }
+
+  public get substitutionAppend() {
+    return this._substitutionAppend;
+  }
+
+  public set substitutionReplace(value: vscode.TextEditorDecorationType) {
+    if (this._substitutionReplace) {
+      this._substitutionReplace.dispose();
+    }
+    this._substitutionReplace = value;
+  }
+
+  public get substitutionReplace() {
+    return this._substitutionReplace;
+  }
+
+  public get easyMotionIncSearch() {
+    return this._easyMotionIncSearch;
+  }
+
   public set easyMotionIncSearch(value: vscode.TextEditorDecorationType) {
     if (this._easyMotionIncSearch) {
       this._easyMotionIncSearch.dispose();
@@ -59,19 +114,15 @@ class DecorationImpl {
     this._easyMotionIncSearch = value;
   }
 
+  public get easyMotionDimIncSearch() {
+    return this._easyMotionDimIncSearch;
+  }
+
   public set easyMotionDimIncSearch(value: vscode.TextEditorDecorationType) {
     if (this._easyMotionDimIncSearch) {
       this._easyMotionDimIncSearch.dispose();
     }
     this._easyMotionDimIncSearch = value;
-  }
-
-  public get easyMotionIncSearch() {
-    return this._easyMotionIncSearch;
-  }
-
-  public get easyMotionDimIncSearch() {
-    return this._easyMotionDimIncSearch;
   }
 
   public getOrCreateMarkDecoration(name: string): vscode.TextEditorDecorationType {
@@ -88,6 +139,10 @@ class DecorationImpl {
 
   public getMarkDecoration(name: string): vscode.TextEditorDecorationType | undefined {
     return this._markDecorationCache.get(name);
+  }
+
+  public allMarkDecorations(): IterableIterator<vscode.TextEditorDecorationType> {
+    return this._markDecorationCache.values();
   }
 
   public set insertModeVirtualCharacter(value: vscode.TextEditorDecorationType) {
@@ -138,14 +193,67 @@ class DecorationImpl {
       borderWidth: '1px',
     });
 
-    const searchHighlightColor = configuration.searchHighlightColor
+    const searchHighlightBackgroundColor = configuration.searchHighlightColor
       ? configuration.searchHighlightColor
       : new vscode.ThemeColor('editor.findMatchHighlightBackground');
 
     this.searchHighlight = vscode.window.createTextEditorDecorationType({
-      backgroundColor: searchHighlightColor,
+      backgroundColor: searchHighlightBackgroundColor,
       color: configuration.searchHighlightTextColor,
       overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: 'transparent',
+        backgroundColor: searchHighlightBackgroundColor,
+      },
+      border: '1px solid',
+      borderColor: new vscode.ThemeColor('editor.findMatchHighlightBorder'),
+    });
+
+    const searchMatchBackgroundColor = configuration.searchMatchColor
+      ? configuration.searchMatchColor
+      : new vscode.ThemeColor('editor.findMatchBackground');
+
+    this.searchMatch = vscode.window.createTextEditorDecorationType({
+      backgroundColor: searchMatchBackgroundColor,
+      color: configuration.searchMatchTextColor,
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: 'transparent',
+        backgroundColor: searchMatchBackgroundColor,
+      },
+      border: '2px solid',
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
+    });
+
+    const substitutionBackgroundColor = configuration.substitutionColor
+      ? configuration.substitutionColor
+      : new vscode.ThemeColor('editor.findMatchBackground');
+
+    this.substitutionAppend = vscode.window.createTextEditorDecorationType({
+      backgroundColor: searchHighlightBackgroundColor,
+      color: configuration.searchHighlightTextColor,
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      after: {
+        color: configuration.substitutionTextColor,
+        backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
+      },
+      border: '1px dashed',
+      borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
+    });
+
+    // Use letterSpacing and opacity to hide the decorated range, so that before text gets rendered over it
+    this.substitutionReplace = vscode.window.createTextEditorDecorationType({
+      letterSpacing: '-9999999px',
+      opacity: '0',
+      overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.findMatchForeground'),
+      before: {
+        color: configuration.substitutionTextColor,
+        backgroundColor: substitutionBackgroundColor,
+        border: '1px solid',
+        borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
+      },
     });
 
     this.easyMotionIncSearch = vscode.window.createTextEditorDecorationType({

@@ -5,7 +5,7 @@ import { Notation } from '../../src/configuration/notation';
 suite('Notation', () => {
   test('Normalize', () => {
     const leaderKey = '//';
-    const testCases = {
+    const testCases: { [key: string]: string } = {
       '<cTrL+w>': '<C-w>',
       'cTrL+x': '<C-x>',
       'CtRl+y': '<C-y>',

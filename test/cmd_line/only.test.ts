@@ -2,14 +2,14 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
-import { commandLine } from '../../src/cmd_line/commandLine';
+import { ExCommandLine } from '../../src/cmd_line/commandLine';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { cleanUpWorkspace, setupWorkspace, assertEqualLines } from '../testUtils';
+import { cleanUpWorkspace, setupWorkspace, waitForEditorsToClose } from '../testUtils';
 
 const isPanelVisible = async () =>
   withinIsolatedEditor(async () => {
     // Insert 1000 lines (ie. beyond veritical viewport)
-    await vscode.window.activeTextEditor!.edit(async (editBuilder) => {
+    await vscode.window.activeTextEditor!.edit((editBuilder) => {
       editBuilder.insert(new vscode.Position(0, 0), 'Line\n'.repeat(1000));
     });
 
@@ -45,6 +45,7 @@ suite(':only command', () => {
   test('Run :only', async () => {
     // Ensure we have multiple editors in a split
     await vscode.commands.executeCommand('workbench.action.splitEditorRight');
+    await waitForEditorsToClose(2);
     assert.strictEqual(vscode.window.visibleTextEditors.length, 2, 'Editor did not split into 2');
 
     // Ensure panel is visible
@@ -54,11 +55,11 @@ suite(':only command', () => {
     assert.strictEqual(await isPanelVisible(), true);
 
     // Run 'only' command
-    await commandLine.Run('only', modeHandler.vimState);
+    await new ExCommandLine('only', modeHandler.vimState.currentMode).run(modeHandler.vimState);
     assert.strictEqual(
       vscode.window.visibleTextEditors.length,
       1,
-      'Did not reduce to single editor'
+      'Did not reduce to single editor',
     );
     assert.strictEqual(await isPanelVisible(), false, 'Panel is still visible');
   });

@@ -1,68 +1,167 @@
+import { optWhitespace, seq } from 'parsimmon';
+import { doesFileExist } from 'platform/fs';
 import * as vscode from 'vscode';
+import { Position } from 'vscode';
+import { VimState } from '../../state/vimState';
 import { Logger } from '../../util/logger';
 import { getPathDetails, resolveUri } from '../../util/path';
-import * as node from '../node';
-import { doesFileExist } from 'platform/fs';
+import { ExCommand } from '../../vimscript/exCommand';
+import {
+  bangParser,
+  FileCmd,
+  fileCmdParser,
+  fileNameParser,
+  FileOpt,
+  fileOptParser,
+} from '../../vimscript/parserUtils';
+// TODO:
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import untildify = require('untildify');
-import { VimState } from '../../state/vimState';
 
 export enum FilePosition {
   NewWindowVerticalSplit,
   NewWindowHorizontalSplit,
 }
 
-export interface IFileCommandArguments extends node.ICommandArgs {
-  name: string | undefined;
+export type IFileCommandArguments =
+  | {
+      name: 'edit';
+      bang: boolean;
+      opt: FileOpt;
+      cmd?: FileCmd;
+      file?: string;
+      createFileIfNotExists?: boolean;
+    }
+  | {
+      name: 'enew';
+      bang: boolean;
+      createFileIfNotExists?: boolean;
+    }
+  | {
+      name: 'new' | 'vnew' | 'split' | 'vsplit';
+      opt: FileOpt;
+      cmd?: FileCmd;
+      file?: string;
+      createFileIfNotExists?: boolean;
+    };
+
+// TODO: This is a hack to get this to work in the short term with new arg parsing logic.
+type LegacyArgs = {
+  file?: string;
   bang?: boolean;
   position?: FilePosition;
-  lineNumber?: number;
+  cmd?: FileCmd;
   createFileIfNotExists?: boolean;
+};
+function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
+  if (args.name === 'edit') {
+    return { file: args.file, bang: args.bang, cmd: args.cmd, createFileIfNotExists: true };
+  } else if (args.name === 'enew') {
+    return { bang: args.bang, createFileIfNotExists: true };
+  } else if (args.name === 'new') {
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowHorizontalSplit,
+      createFileIfNotExists: true,
+    };
+  } else if (args.name === 'vnew') {
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowVerticalSplit,
+      createFileIfNotExists: true,
+    };
+  } else if (args.name === 'split') {
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowHorizontalSplit,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
+    };
+  } else if (args.name === 'vsplit') {
+    return {
+      file: args.file,
+      position: FilePosition.NewWindowVerticalSplit,
+      // only to create if file arg is specified
+      createFileIfNotExists: args.file !== undefined,
+    };
+  } else {
+    throw new Error(`Unexpected FileCommand.arguments.name: ${args.name}`);
+  }
 }
 
-export class FileCommand extends node.CommandBase {
-  protected _arguments: IFileCommandArguments;
-  private readonly _logger = Logger.get('File');
+export class FileCommand extends ExCommand {
+  // TODO: There's a lot of duplication here
+  // TODO: These `optWhitespace` calls should be `whitespace`
+  public static readonly argParsers = {
+    edit: seq(
+      bangParser,
+      optWhitespace.then(fileOptParser).fallback([]),
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(fileNameParser).fallback(undefined),
+    ).map(([bang, opt, cmd, file]) => new FileCommand({ name: 'edit', bang, opt, cmd, file })),
+    enew: bangParser.map((bang) => new FileCommand({ name: 'enew', bang })),
+    new: seq(
+      optWhitespace.then(fileOptParser).fallback([]),
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(fileNameParser).fallback(undefined),
+    ).map(([opt, cmd, file]) => new FileCommand({ name: 'new', opt, cmd, file })),
+    split: seq(
+      optWhitespace.then(fileOptParser).fallback([]),
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(fileNameParser).fallback(undefined),
+    ).map(([opt, cmd, file]) => new FileCommand({ name: 'split', opt, cmd, file })),
+    vnew: seq(
+      optWhitespace.then(fileOptParser).fallback([]),
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(fileNameParser).fallback(undefined),
+    ).map(([opt, cmd, file]) => new FileCommand({ name: 'vnew', opt, cmd, file })),
+    vsplit: seq(
+      optWhitespace.then(fileOptParser).fallback([]),
+      optWhitespace.then(fileCmdParser).fallback(undefined),
+      optWhitespace.then(fileNameParser).fallback(undefined),
+    ).map(([opt, cmd, file]) => new FileCommand({ name: 'vsplit', opt, cmd, file })),
+  };
+
+  private readonly arguments: IFileCommandArguments;
 
   constructor(args: IFileCommandArguments) {
     super();
-    this._arguments = args;
-  }
-
-  get arguments(): IFileCommandArguments {
-    return this._arguments;
+    this.arguments = args;
   }
 
   async execute(vimState: VimState): Promise<void> {
-    if (this.arguments.bang) {
+    const args = getLegacyArgs(this.arguments);
+
+    if (args.bang) {
       await vscode.commands.executeCommand('workbench.action.files.revert');
       return;
     }
 
     // Need to do this before the split since it loses the activeTextEditor
     const editorFileUri = vscode.window.activeTextEditor!.document.uri;
-    let editorFilePath = editorFileUri.fsPath;
+    const editorFilePath = editorFileUri.fsPath;
 
     // Do the split if requested
     let split = false;
-    if (this.arguments.position === FilePosition.NewWindowVerticalSplit) {
+    if (args.position === FilePosition.NewWindowVerticalSplit) {
       await vscode.commands.executeCommand('workbench.action.splitEditorRight');
       split = true;
     }
-    if (this.arguments.position === FilePosition.NewWindowHorizontalSplit) {
+    if (args.position === FilePosition.NewWindowHorizontalSplit) {
       await vscode.commands.executeCommand('workbench.action.splitEditorDown');
       split = true;
     }
 
-    let hidePreviousEditor = async function () {
+    const hidePreviousEditor = async () => {
       if (split === true) {
         await vscode.commands.executeCommand('workbench.action.previousEditor');
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
       }
     };
 
-    // No name was specified
-    if (this.arguments.name === undefined) {
-      if (this.arguments.createFileIfNotExists === true) {
+    // No file was specified
+    if (args.file === undefined) {
+      if (args.createFileIfNotExists === true) {
         await vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
         await hidePreviousEditor();
       }
@@ -70,14 +169,14 @@ export class FileCommand extends node.CommandBase {
     }
 
     // Only untidify when the currently open page and file completion is local
-    if (this.arguments.name && editorFileUri.scheme === 'file') {
-      this._arguments.name = untildify(this.arguments.name);
+    if (args.file && editorFileUri.scheme === 'file') {
+      args.file = untildify(args.file);
     }
 
     let fileUri = editorFileUri;
     // Using the empty string will request to open a file
-    if (this.arguments.name === '') {
-      // No name on split is fine and just return
+    if (args.file === '') {
+      // No file on split is fine and just return
       if (split === true) {
         return;
       }
@@ -88,11 +187,11 @@ export class FileCommand extends node.CommandBase {
       }
     } else {
       // remove file://
-      this._arguments.name = this.arguments.name.replace(/^file:\/\//, '');
+      args.file = args.file.replace(/^file:\/\//, '');
 
       // Using a filename, open or create the file
       const isRemote = !!vscode.env.remoteName;
-      const { fullPath, path: p } = getPathDetails(this.arguments.name, editorFileUri, isRemote);
+      const { fullPath, path: p } = getPathDetails(args.file, editorFileUri, isRemote);
       // Only if the expanded path of the full path is different than
       // the currently opened window path
       if (fullPath !== editorFilePath) {
@@ -122,12 +221,12 @@ export class FileCommand extends node.CommandBase {
 
         // If both with and without ext path do not exist
         if (!fileExists) {
-          if (this.arguments.createFileIfNotExists) {
+          if (args.createFileIfNotExists) {
             // Change the scheme to untitled to open an
             // untitled tab
             fileUri = uriPath.with({ scheme: 'untitled' });
           } else {
-            this._logger.error(`${this.arguments.name} does not exist.`);
+            Logger.error(`${args.file} does not exist.`);
             return;
           }
         }
@@ -135,16 +234,20 @@ export class FileCommand extends node.CommandBase {
     }
 
     const doc = await vscode.workspace.openTextDocument(fileUri);
-    vscode.window.showTextDocument(doc);
 
-    if (this.arguments.lineNumber) {
-      vscode.window.activeTextEditor!.revealRange(
-        new vscode.Range(
-          new vscode.Position(this.arguments.lineNumber, 0),
-          new vscode.Position(this.arguments.lineNumber, 0)
-        )
-      );
+    const lineNumber =
+      args.cmd?.type === 'line_number'
+        ? args.cmd.line
+        : args.cmd?.type === 'last_line'
+          ? doc.lineCount - 1
+          : undefined;
+    const options: vscode.TextDocumentShowOptions = {};
+    if (lineNumber !== undefined && lineNumber >= 0) {
+      const pos = new Position(lineNumber, 0);
+      options.selection = new vscode.Range(pos, pos);
     }
+    await vscode.window.showTextDocument(doc, options);
+
     await hidePreviousEditor();
   }
 }

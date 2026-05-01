@@ -1,18 +1,16 @@
-import { Configuration } from './testConfiguration';
 import { newTest } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('motion line wrapping', () => {
-  teardown(cleanUpWorkspace);
-
   suite('whichwrap enabled', () => {
-    setup(async () => {
-      const configuration = new Configuration();
-      configuration.tabstop = 4;
-      configuration.expandtab = false;
-      configuration.whichwrap = 'h,l,<,>,[,]';
-
-      await setupWorkspace(configuration);
+    suiteSetup(async () => {
+      await setupWorkspace({
+        config: {
+          tabstop: 4,
+          expandtab: false,
+          whichwrap: 'h,l,<,>,[,]',
+        },
+      });
     });
 
     suite('normal mode', () => {
@@ -76,12 +74,13 @@ suite('motion line wrapping', () => {
   });
 
   suite('whichwrap disabled', () => {
-    setup(async () => {
-      const configuration = new Configuration();
-      configuration.tabstop = 4;
-      configuration.expandtab = false;
-
-      await setupWorkspace(configuration);
+    suiteSetup(async () => {
+      await setupWorkspace({
+        config: {
+          tabstop: 4,
+          expandtab: false,
+        },
+      });
     });
 
     suite('normal mode', () => {
@@ -132,11 +131,12 @@ suite('motion line wrapping', () => {
   });
 
   suite('wrapscan enabled', () => {
-    setup(async () => {
-      const configuration = new Configuration();
-      configuration.wrapscan = true;
-
-      await setupWorkspace(configuration);
+    suiteSetup(async () => {
+      await setupWorkspace({
+        config: {
+          wrapscan: true,
+        },
+      });
     });
 
     newTest({
@@ -155,11 +155,12 @@ suite('motion line wrapping', () => {
   });
 
   suite('wrapscan disabled', () => {
-    setup(async () => {
-      const configuration = new Configuration();
-      configuration.wrapscan = false;
-
-      await setupWorkspace(configuration);
+    suiteSetup(async () => {
+      await setupWorkspace({
+        config: {
+          wrapscan: false,
+        },
+      });
     });
 
     newTest({
@@ -167,6 +168,7 @@ suite('motion line wrapping', () => {
       start: ['|line 1', 'line 2'],
       keysPressed: '/line\nn',
       end: ['line 1', '|line 2'],
+      statusBar: 'E385: Search hit BOTTOM without match for: line',
     });
 
     newTest({
@@ -174,6 +176,7 @@ suite('motion line wrapping', () => {
       start: ['|line 1', 'line 2'],
       keysPressed: '/line\nNN',
       end: ['|line 1', 'line 2'],
+      statusBar: 'E384: Search hit TOP without match for: line',
     });
   });
 });

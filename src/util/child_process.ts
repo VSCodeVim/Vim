@@ -1,6 +1,9 @@
 import * as child_process from 'child_process';
 import { promisify } from 'util';
 
-export async function exec(command: string) {
-  return promisify(child_process.exec)(command);
+export function exec(
+  command: string,
+  options?: child_process.ExecOptions,
+): child_process.PromiseWithChild<{ stdout: string | Buffer; stderr: string | Buffer }> {
+  return promisify(child_process.exec)(command, options);
 }

@@ -1,16 +1,20 @@
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { assertEqualLines, cleanUpWorkspace, setupWorkspace } from './../testUtils';
+import { newTest } from '../../test/testSimplifier';
+import { assertEqualLines, setupWorkspace } from './../testUtils';
 
+// TODO(#4844): this fails on Windows
 suite('bang (!) cmd_line', () => {
+  if (process.platform === 'win32') {
+    return;
+  }
+
   let modeHandler: ModeHandler;
 
   setup(async () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
-
-  teardown(cleanUpWorkspace);
 
   suite('parsing', () => {
     test('simple !', async () => {
@@ -31,8 +35,8 @@ suite('bang (!) cmd_line', () => {
 
     test('! with line range', async () => {
       await modeHandler.handleMultipleKeyEvents(['i', '123\n456\n789', '<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(':1,3!echo hello world\n'.split(''));
-      assertEqualLines(['hello world']);
+      await modeHandler.handleMultipleKeyEvents(':2,3!echo hello world\n'.split(''));
+      assertEqualLines(['123', 'hello world']);
     });
   });
 
@@ -78,9 +82,9 @@ suite('bang (!) cmd_line', () => {
     });
 
     test(':{range}!{cmd} should pass in line range as stdin', async () => {
-      await modeHandler.handleMultipleKeyEvents(['i', '3\n2\n1', '<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(':1,3!sort -n\n'.split(''));
-      assertEqualLines(['1', '2', '3']);
+      await modeHandler.handleMultipleKeyEvents(['i', '4\n3\n2\n1', '<Esc>']);
+      await modeHandler.handleMultipleKeyEvents(':2,4!sort -n\n'.split(''));
+      assertEqualLines(['4', '1', '2', '3']);
     });
 
     test('! with commands expecting stdin do not block when no stdin is supplied', async () => {
@@ -90,7 +94,7 @@ suite('bang (!) cmd_line', () => {
 
     test('! can read from both stdout and stderr', async () => {
       await modeHandler.handleMultipleKeyEvents(
-        ':.!echo "stdout" && >&2 echo "stderr"\n'.split('')
+        ':.!echo "stdout" && >&2 echo "stderr"\n'.split(''),
       );
       assertEqualLines(['stdout', 'stderr']);
     });
@@ -100,4 +104,27 @@ suite('bang (!) cmd_line', () => {
       assertEqualLines(['a', 'b', 'c']);
     });
   });
+});
+
+suite('custom bang shell', () => {
+  if (process.platform === 'win32') {
+    return;
+  }
+
+  for (const shell of ['sh', 'bash']) {
+    suite(shell, () => {
+      setup(async () => {
+        await setupWorkspace({
+          config: { shell: `/bin/${shell}` },
+        });
+      });
+
+      newTest({
+        title: `! supports /bin/${shell}`,
+        start: ['|'],
+        keysPressed: '<Esc>:.!echo $0\n',
+        end: [`|/bin/${shell}`],
+      });
+    });
+  }
 });
