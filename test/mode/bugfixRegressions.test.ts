@@ -3,7 +3,7 @@ import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
 // Regression-guards for the bundled bug fixes that PR #5842 shipped alongside
-// the keymodel/selectmode/Select-mode work, plus the structural change to
+// the keymodel work, plus the structural change to
 // `recordedState.count` clearing during the merge resolution.
 
 suite('bug-fix regressions from #5842 / merge', () => {

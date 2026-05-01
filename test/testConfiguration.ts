@@ -109,10 +109,6 @@ export class Configuration implements IConfiguration {
   keymodel = '';
   keymodelStartsSelection = false;
   keymodelStopsSelection = false;
-  selectmode = '';
-  selectmodeMouse = false;
-  selectmodeKey = false;
-  selectmodeCmd = false;
   changeWordIncludesWhitespace = false;
   foldfix = false;
   disableExtension = false;
@@ -144,8 +140,6 @@ export class Configuration implements IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   allVisualModeKeyBindings: IKeyRemapping[] = [];
   allVisualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
-  selectModeKeyBindings: IKeyRemapping[] = [];
-  selectModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   insertModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
@@ -153,7 +147,6 @@ export class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   allVisualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
-  selectModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   whichwrap = 'b,s';
   report = 2;

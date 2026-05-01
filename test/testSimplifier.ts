@@ -116,8 +116,6 @@ interface ITestWithRemapsObject {
         visualModeKeyBindingsNonRecursive?: IKeyRemapping[];
         allVisualModeKeyBindings?: IKeyRemapping[];
         allVisualModeKeyBindingsNonRecursive?: IKeyRemapping[];
-        selectModeKeyBindings?: IKeyRemapping[];
-        selectModeKeyBindingsNonRecursive?: IKeyRemapping[];
         operatorPendingModeKeyBindings?: IKeyRemapping[];
         operatorPendingModeKeyBindingsNonRecursive?: IKeyRemapping[];
       }
@@ -362,9 +360,6 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
       config.allVisualModeKeyBindings = testObj.remaps?.allVisualModeKeyBindings ?? [];
       config.allVisualModeKeyBindingsNonRecursive =
         testObj.remaps?.allVisualModeKeyBindingsNonRecursive ?? [];
-      config.selectModeKeyBindings = testObj.remaps?.selectModeKeyBindings ?? [];
-      config.selectModeKeyBindingsNonRecursive =
-        testObj.remaps?.selectModeKeyBindingsNonRecursive ?? [];
       config.operatorPendingModeKeyBindings = testObj.remaps?.operatorPendingModeKeyBindings ?? [];
       config.operatorPendingModeKeyBindingsNonRecursive =
         testObj.remaps?.operatorPendingModeKeyBindingsNonRecursive ?? [];

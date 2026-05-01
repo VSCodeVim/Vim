@@ -200,24 +200,6 @@ export function statusBarText(vimState: VimState) {
       return '-- (replace) VISUAL BLOCK --';
     case Mode.ReplaceVisualLine:
       return '-- (replace) VISUAL LINE --';
-    case Mode.Select:
-      return '-- SELECT --';
-    case Mode.SelectBlock:
-      return '-- SELECT BLOCK --';
-    case Mode.SelectLine:
-      return '-- SELECT LINE --';
-    case Mode.InsertSelect:
-      return '-- (insert) SELECT --';
-    case Mode.InsertSelectBlock:
-      return '-- (insert) SELECT BLOCK --';
-    case Mode.InsertSelectLine:
-      return '-- (insert) SELECT LINE --';
-    case Mode.ReplaceSelect:
-      return '-- (replace) SELECT --';
-    case Mode.ReplaceSelectBlock:
-      return '-- (replace) SELECT BLOCK --';
-    case Mode.ReplaceSelectLine:
-      return '-- (replace) SELECT LINE --';
     case Mode.EasyMotionMode:
       return '-- EASYMOTION --';
     case Mode.EasyMotionInputMode:

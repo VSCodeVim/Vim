@@ -19,8 +19,6 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
       keymodel: 'startsel,stopsel',
       keymodelStartsSelection: true,
       keymodelStopsSelection: true,
-      selectmode: '',
-      selectmodeKey: false,
     };
 
     newTest({
@@ -81,8 +79,6 @@ suite('pseudo-modes (Insert/Replace ↔ Visual; C-o)', () => {
       keymodel: 'startsel,stopsel',
       keymodelStartsSelection: true,
       keymodelStopsSelection: true,
-      selectmode: '',
-      selectmodeKey: false,
     };
 
     newTest({

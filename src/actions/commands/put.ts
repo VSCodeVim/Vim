@@ -101,13 +101,7 @@ abstract class BasePutCommand extends BaseCommand {
     }
 
     // We do not run this in multi-cursor mode as it will overwrite the register for upcoming put iterations
-    if (
-      isVisualMode(mode) &&
-      mode !== Mode.Select &&
-      mode !== Mode.SelectLine &&
-      mode !== Mode.SelectBlock &&
-      !vimState.isMultiCursor
-    ) {
+    if (isVisualMode(mode) && !vimState.isMultiCursor) {
       // After using "p" or "P" in Visual mode the text that was put will be selected (from Vim's ":help gv").
       vimState.lastVisualSelection = {
         mode,

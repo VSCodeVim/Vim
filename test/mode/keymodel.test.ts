@@ -26,8 +26,6 @@ suite('keymodel', () => {
       keymodel: 'startsel,stopsel',
       keymodelStartsSelection: true,
       keymodelStopsSelection: true,
-      selectmode: '',
-      selectmodeKey: false,
     };
 
     newTest({

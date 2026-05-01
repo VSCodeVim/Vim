@@ -333,27 +333,16 @@ export interface IConfiguration {
   mouseSelectionGoesIntoVisualMode: boolean;
 
   /**
-   * Defines the behavior of shifted arrow keys and
-   * List of comma separated words, which enable special things that keys
-   * can do. These values can be used:
-   * - `startsel`    Using a shifted special key starts selection (either
-   * Select mode or Visual mode, depending on "key" being present in
-   * 'selectmode').
-   * - `stopsel`	    Using a not-shifted special key stops selection.
+   * Defines the behavior of shifted arrow keys (and Home/End). Comma-separated
+   * tokens:
+   * - `startsel`  shifted special key starts/extends Visual selection.
+   * - `stopsel`   unshifted special key stops Visual selection (returns to
+   *               Normal, or to Insert/Replace if Visual was entered from
+   *               there via `<S-arrow>` or `<C-o>`).
    * Special keys in this context are the cursor keys, <End>, <Home>,
    * <PageUp> and <PageDown>.
    */
   keymodel: string;
-
-  /**
-   * This is a comma separated list of words, which specifies when to start
-   * Select mode instead of Visual mode, when a selection is started.
-   * Possible values:
-   * - `mouse`	when using the mouse
-   * - `key`		when using shifted special keys
-   * - `cmd`		when using "v", "V" or CTRL-V
-   */
-  selectmode: string;
 
   /**
    * Includes trailing whitespace when changing word.
@@ -415,8 +404,6 @@ export interface IConfiguration {
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
   allVisualModeKeyBindings: IKeyRemapping[];
   allVisualModeKeyBindingsNonRecursive: IKeyRemapping[];
-  selectModeKeyBindings: IKeyRemapping[];
-  selectModeKeyBindingsNonRecursive: IKeyRemapping[];
   commandLineModeKeyBindings: IKeyRemapping[];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[];
 
@@ -428,7 +415,6 @@ export interface IConfiguration {
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   allVisualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  selectModeKeyBindingsMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
 
   /**

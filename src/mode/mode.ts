@@ -7,9 +7,6 @@ export enum Mode {
   Visual,
   VisualBlock,
   VisualLine,
-  Select,
-  SelectBlock,
-  SelectLine,
   SearchInProgressMode,
   CommandlineInProgress,
   Replace,
@@ -29,12 +26,6 @@ export enum Mode {
   ReplaceVisual,
   ReplaceVisualBlock,
   ReplaceVisualLine,
-  InsertSelect,
-  InsertSelectBlock,
-  InsertSelectLine,
-  ReplaceSelect,
-  ReplaceSelectBlock,
-  ReplaceSelectLine,
 }
 
 export enum VSCodeVimCursorType {
@@ -65,32 +56,10 @@ export enum ReplayMode {
 }
 
 /**
- * Is the given mode visual, visual line, visual block, select, select line or select block?
+ * Is the given mode visual, visual line, or visual block?
  */
-export function isVisualMode(
-  mode: Mode,
-): mode is
-  | Mode.Visual
-  | Mode.VisualLine
-  | Mode.VisualBlock
-  | Mode.Select
-  | Mode.SelectLine
-  | Mode.SelectBlock {
-  return [
-    Mode.Visual,
-    Mode.VisualLine,
-    Mode.VisualBlock,
-    Mode.Select,
-    Mode.SelectLine,
-    Mode.SelectBlock,
-  ].includes(mode);
-}
-
-/**
- * Is the given mode select, select line or select block?
- */
-export function isSelectMode(mode: Mode): mode is Mode.Select | Mode.SelectLine | Mode.SelectBlock {
-  return [Mode.Select, Mode.SelectLine, Mode.SelectBlock].includes(mode);
+export function isVisualMode(mode: Mode): mode is Mode.Visual | Mode.VisualLine | Mode.VisualBlock {
+  return [Mode.Visual, Mode.VisualLine, Mode.VisualBlock].includes(mode);
 }
 
 /**
@@ -119,12 +88,6 @@ export function isPseudoMode(mode: Mode): boolean {
     Mode.ReplaceVisual,
     Mode.ReplaceVisualLine,
     Mode.ReplaceVisualBlock,
-    Mode.InsertSelect,
-    Mode.InsertSelectLine,
-    Mode.InsertSelectBlock,
-    Mode.ReplaceSelect,
-    Mode.ReplaceSelectLine,
-    Mode.ReplaceSelectBlock,
   ].includes(mode);
 }
 

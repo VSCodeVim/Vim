@@ -54,7 +54,6 @@ import {
   ReplayMode,
   VSCodeVimCursorType,
   getCursorStyle,
-  isSelectMode,
   isStatusBarMode,
   isVisualMode,
 } from './mode';
@@ -419,11 +418,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           configuration.mouseSelectionGoesIntoVisualMode &&
           !isVisualMode(this.vimState.currentMode)
         ) {
-          if (configuration.selectmodeMouse) {
-            await this.setCurrentMode(Mode.Select);
-          } else {
-            await this.setCurrentMode(Mode.Visual);
-          }
+          await this.setCurrentMode(Mode.Visual);
 
           // double click mouse selection causes an extra character to be selected so take one less character
         }
@@ -433,10 +428,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
 
       const mode = this.vimState.currentMode;
-      if (isVisualMode(mode) && !isSelectMode(mode)) {
-        // Store selection for commands like gv. Only Visual variants are
-        // recorded; Select-mode last-selection is not tracked since `gv`
-        // always reselects in Visual mode per Vim semantics.
+      if (isVisualMode(mode)) {
         this.vimState.lastVisualSelection = {
           mode,
           start: this.vimState.cursorStartPosition,
@@ -776,8 +768,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // We handle the end of selections different to VSCode. In order for VSCode to select
     // including the last character we will at the end of 'runAction' shift our stop position
     // to the right. So here we shift it back by one so that our actions have our correct
-    // position instead of the position sent to VSCode.
-    if ([Mode.Visual, Mode.Select].includes(this.vimState.currentMode)) {
+    // position instead of the position sent to VSCode. Charwise Visual only — VisualLine
+    // and VisualBlock manage their selection ranges differently.
+    if (this.vimState.currentMode === Mode.Visual) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBefore(c.stop) ? c.withNewStop(c.stop.getLeftThroughLineBreaks(true)) : c,
       );
@@ -903,8 +896,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // Like previously stated we handle the end of selections different to VSCode. In order
     // for VSCode to select including the last character we shift our stop position to the
     // right now that all steps that need that position have already run. On the next action
-    // we will shift it back again on the start of 'runAction'.
-    if ([Mode.Visual, Mode.Select].includes(this.vimState.currentMode)) {
+    // we will shift it back again on the start of 'runAction'. Charwise Visual only.
+    if (this.vimState.currentMode === Mode.Visual) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBeforeOrEqual(c.stop)
           ? c.withNewStop(
@@ -1015,7 +1008,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const lastVisualMode = this.vimState.currentMode;
     if (
       isVisualMode(lastVisualMode) &&
-      !isSelectMode(lastVisualMode) &&
       this.vimState.dotCommandStatus !== DotCommandStatus.Executing
     ) {
       // Store selection for commands like gv (Visual variants only).
@@ -1353,7 +1345,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         let { start, stop } = cursor;
         switch (selectionMode) {
           case Mode.Visual:
-          case Mode.Select:
             /**
              * Always select the letter that we started visual mode on, no matter
              * if we are in front or behind it. Imagine that we started visual mode
@@ -1373,13 +1364,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             break;
 
           case Mode.VisualLine:
-          case Mode.SelectLine:
             [start, stop] = sorted(start, stop);
             selections.push(new vscode.Selection(start.getLineBegin(), stop.getLineEnd()));
             break;
 
           case Mode.VisualBlock:
-          case Mode.SelectBlock:
             for (const line of TextEditor.iterateLinesInBlock(this.vimState, cursor)) {
               selections.push(
                 new vscode.Selection(
@@ -1538,8 +1527,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       !configuration.getCursorStyleForMode(this.currentMode)
     ) {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
-      // in the middle of a selection natively, which is what we need for Visual and Select Modes.
-      if ([Mode.Visual, Mode.Select].includes(this.currentMode)) {
+      // in the middle of a selection natively, which is what we need for Visual mode.
+      if (this.currentMode === Mode.Visual) {
         for (const { start: cursorStart, stop: cursorStop } of this.vimState.cursors) {
           if (cursorStart.isBefore(cursorStop)) {
             cursorRange.push(new vscode.Range(cursorStop.getLeft(), cursorStop));
@@ -1742,15 +1731,6 @@ function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
     case Mode.ReplaceVisual:
     case Mode.ReplaceVisualBlock:
     case Mode.ReplaceVisualLine:
-    case Mode.Select:
-    case Mode.SelectBlock:
-    case Mode.SelectLine:
-    case Mode.InsertSelect:
-    case Mode.InsertSelectBlock:
-    case Mode.InsertSelectLine:
-    case Mode.ReplaceSelect:
-    case Mode.ReplaceSelectBlock:
-    case Mode.ReplaceSelectLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
     case Mode.CommandlineInProgress:

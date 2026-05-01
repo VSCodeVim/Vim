@@ -9,15 +9,6 @@ import { SpecialKeys } from '../util/specialKeys';
 import { exCommandParser } from '../vimscript/exCommandParser';
 import { IKeyRemapping } from './iconfiguration';
 
-// TODO (deferred from #5842 merge): the Select-mode → Visual-mode swap logic
-// in `handleRemapping` (for vim's `:vmap` / `allVisualModeKeyBindings`
-// semantics) needs `CommandSwapVisualSelectModes` and `CommandReselectVisual`,
-// which berknam added in `actions/commands/actions.ts`. We took master's
-// version of that file (heavy structural drift), so those classes are not
-// present. Re-add them in a follow-up; for this PR `:vmap` and `:smap`
-// remaps are still registered but the in-Select-mode → temporary-Visual
-// swap is bypassed (remap runs in whatever mode the user is in).
-
 interface IRemapper {
   /**
    * Send keys to remapper
@@ -36,7 +27,6 @@ export class Remappers implements IRemapper {
     new NormalModeRemapper(),
     new VisualModeRemapper(),
     new AllVisualModeRemapper(),
-    new SelectModeRemapper(),
     new CommandLineModeRemapper(),
     new OperatorPendingModeRemapper(),
   ];
@@ -485,11 +475,6 @@ export class Remapper implements IRemapper {
     vimState.recordedState.resetCommandList();
     if (remapping.after) {
       Logger.debug(`Remapping ${remapping.before} to ${remapping.after}`);
-      // TODO (deferred from #5842): when remap source is `:vmap`
-      // (`allVisualModeKeyBindingsMap`) and the user is in Select mode, Vim
-      // temporarily switches to the corresponding Visual mode for the remap
-      // body, then back to Select. Re-add once `CommandSwapVisualSelectModes`
-      // and `CommandReselectVisual` are ported from #5842.
       if (skipFirstCharacter) {
         remapState.isCurrentlyPerformingNonRecursiveRemapping = true;
         await modeHandler.handleKeyEvent(remapping.after[0]);
@@ -668,31 +653,6 @@ class AllVisualModeRemapper extends Remapper {
       Mode.ReplaceVisual,
       Mode.ReplaceVisualLine,
       Mode.ReplaceVisualBlock,
-      Mode.Select,
-      Mode.SelectLine,
-      Mode.SelectBlock,
-      Mode.InsertSelect,
-      Mode.InsertSelectLine,
-      Mode.InsertSelectBlock,
-      Mode.ReplaceSelect,
-      Mode.ReplaceSelectLine,
-      Mode.ReplaceSelectBlock,
-    ]);
-  }
-}
-
-class SelectModeRemapper extends Remapper {
-  constructor() {
-    super(keyBindingsConfigKey('select'), [
-      Mode.Select,
-      Mode.SelectLine,
-      Mode.SelectBlock,
-      Mode.InsertSelect,
-      Mode.InsertSelectLine,
-      Mode.InsertSelectBlock,
-      Mode.ReplaceSelect,
-      Mode.ReplaceSelectLine,
-      Mode.ReplaceSelectBlock,
     ]);
   }
 }
