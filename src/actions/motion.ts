@@ -2009,11 +2009,11 @@ class MoveBeginningFullWord extends BaseMovement {
   }
 }
 
-// `<S-BS>` is left as a char-back motion (claimed by `MoveLeft`) to match
-// VSCode's default Shift+Backspace = `deleteLeft` and the Insert-mode
-// `<S-BS>` = `<BS>` symmetry.
+// `<C-BS>` uses small-word (`b`), matching `<C-Left>` and Insert-mode's
+// `deleteWordLeft`. `<S-BS>` is char-back (claimed by `MoveLeft`) to match
+// VSCode's default Shift+Backspace = `deleteLeft`.
 @RegisterAction
-class MoveBeginningFullWordCtrlBS extends MoveBeginningFullWord {
+class MoveBeginningWordCtrlBS extends MoveBeginningWord {
   override keys = ['<C-BS>'];
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 }
@@ -2860,6 +2860,9 @@ class MoveLeftMouse extends BaseMovement {
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (isVisualMode(vimState.currentMode)) {
+      // `Mode.Normal` here is rewritten to `modeBeforeEnteringVisualMode`
+      // (Insert/Replace) by `setCurrentMode`'s leave-Visual override —
+      // that's how clicking in pseudo-(insert)Visual returns to Insert.
       await vimState.setCurrentMode(Mode.Normal);
     }
     return vimState.editor.selection.active;

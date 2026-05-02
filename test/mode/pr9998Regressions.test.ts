@@ -49,31 +49,39 @@ suite('PR #9998 — Bug #1: PageUp/PageDown miss suggestion-widget guard', () =>
 
 suite('PR #9998 — Bug #2: <C-BS> is dead in Normal/Visual', () => {
   // `MoveLeft` (motion.ts) used to claim `<C-BS>` as one of its keys for the
-  // same modes (Normal, Visual*) as `MoveBeginningFullWordCtrlBS`.
+  // same modes (Normal, Visual*) as `MoveBeginningWordCtrlBS`.
   // `getRelevantAction` returns the first registered match, so the word-back
   // class never fired — `<C-BS>` instead behaved like `<BS>` (char left).
   //
-  // `<S-BS>` is intentionally left as a char-back motion (matches VSCode's
-  // default Shift+Backspace = deleteLeft and the Insert-mode <S-BS> = <BS>
-  // symmetry).
+  // `<C-BS>` uses small-word (`b`), matching `<C-Left>` and Insert-mode's
+  // `deleteWordLeft`. `<S-BS>` is char-back (matches VSCode's default
+  // Shift+Backspace = deleteLeft).
 
   setup(async () => {
     await setupWorkspace();
   });
 
   newTest({
-    title: '<C-BS> in Normal moves to start of WORD (like B)',
-    start: ['hello.dot wo|rld'],
+    title: '<C-BS> in Normal moves to start of small word (like b, stops at punctuation)',
+    start: ['hello.world fo|o'],
     keysPressed: '<C-BS>',
-    end: ['hello.dot |world'],
+    end: ['hello.world |foo'],
     endMode: Mode.Normal,
   });
 
   newTest({
-    title: '<C-BS> in Visual extends to start of WORD',
-    start: ['hello.dot wo|rld'],
+    title: '<C-BS> at start of word in Normal jumps over punctuation boundary as small word',
+    start: ['hello.world |foo'],
+    keysPressed: '<C-BS>',
+    end: ['hello.|world foo'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<C-BS> in Visual extends to start of small word',
+    start: ['hello.world fo|o'],
     keysPressed: 'v<C-BS>',
-    end: ['hello.dot |world'],
+    end: ['hello.world |foo'],
     endMode: Mode.Visual,
   });
 
