@@ -141,7 +141,7 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
 
 @RegisterAction
 class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
-  keys = ['<C-b>'];
+  keys = [['<C-b>'], ['<PageUp>']];
   to: EditorScrollDirection = 'up';
 
   protected getNumLines(visibleRanges: vscode.Range[]) {
@@ -151,11 +151,51 @@ class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
 
 @RegisterAction
 class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
-  keys = ['<C-f>'];
+  keys = [['<C-f>'], ['<PageDown>']];
   to: EditorScrollDirection = 'down';
 
   protected getNumLines(visibleRanges: vscode.Range[]) {
     return visibleRanges[0].end.line - visibleRanges[0].start.line;
+  }
+}
+
+@RegisterAction
+class MoveShiftPageUp extends CommandMoveFullPageUp {
+  override keys = [['<S-PageUp>']];
+  override modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      await vimState.setCurrentMode(Mode.Visual);
+    }
+    await super.exec(position, vimState);
+  }
+}
+
+@RegisterAction
+class MoveShiftPageDown extends CommandMoveFullPageDown {
+  override keys = [['<S-PageDown>']];
+  override modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    if (!isVisualMode(vimState.currentMode) && configuration.keymodelStartsSelection) {
+      await vimState.setCurrentMode(Mode.Visual);
+    }
+    await super.exec(position, vimState);
   }
 }
 

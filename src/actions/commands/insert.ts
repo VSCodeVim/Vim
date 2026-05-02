@@ -408,7 +408,7 @@ class DecreaseIndent extends IndentCommand {
 @RegisterAction
 export class BackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
-  keys = [['<BS>'], ['<C-h>']];
+  keys = [['<BS>'], ['<C-h>'], ['<S-BS>']];
 
   override runsOnceForEveryCursor() {
     return false;
@@ -416,6 +416,20 @@ export class BackspaceInInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.transformer.vscodeCommand('deleteLeft');
+  }
+}
+
+@RegisterAction
+class CtrlBackspaceInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-BS>'];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.recordedState.transformer.vscodeCommand('deleteWordLeft');
   }
 }
 

@@ -158,6 +158,24 @@ suite('keymodel', () => {
       end: ['abcd', 'efgh', 'ijk|l'],
       endMode: Mode.Visual,
     });
+
+    newTest({
+      title: '<S-PageUp> from Normal enters Visual',
+      config,
+      start: ['line one', 'line tw|o'],
+      keysPressed: '<S-PageUp>',
+      end: ['|line one', 'line two'],
+      endMode: Mode.Visual,
+    });
+
+    newTest({
+      title: '<S-PageDown> from Normal enters Visual',
+      config,
+      start: ['line on|e', 'line two'],
+      keysPressed: '<S-PageDown>',
+      end: ['line one', 'l|ine two'],
+      endMode: Mode.Visual,
+    });
   });
 
   suite("keymodel='' (terminal-Vim — shifted special keys do NOT start a selection)", () => {
@@ -200,6 +218,33 @@ suite('keymodel', () => {
       start: ['a|bcd'],
       keysPressed: '<S-End>',
       end: ['abc|d'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '<S-PageUp> with empty keymodel does not enter Visual',
+      config,
+      start: ['line one', 'line tw|o'],
+      keysPressed: '<S-PageUp>',
+      end: ['|line one', 'line two'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '<PageUp> from Normal does not enter Visual',
+      config,
+      start: ['line one', 'line tw|o'],
+      keysPressed: '<PageUp>',
+      end: ['|line one', 'line two'],
+      endMode: Mode.Normal,
+    });
+
+    newTest({
+      title: '<PageDown> from Normal does not enter Visual',
+      config,
+      start: ['line on|e', 'line two'],
+      keysPressed: '<PageDown>',
+      end: ['line one', '|line two'],
       endMode: Mode.Normal,
     });
   });

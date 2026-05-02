@@ -75,3 +75,44 @@ suite('mouse selection', () => {
     assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 });
+
+suite('<LeftMouse> remap', () => {
+  let modeHandler: ModeHandler;
+
+  setup(async () => {
+    await setupWorkspace({
+      config: {
+        normalModeKeyBindings: [
+          {
+            before: ['<LeftMouse>'],
+            after: ['i'],
+          },
+        ],
+      },
+    });
+    const handler = await getAndUpdateModeHandler();
+    assert.ok(handler, 'expected a ModeHandler for the active editor');
+    modeHandler = handler;
+  });
+
+  /** Single empty-selection click at the given position. */
+  const simulateMouseClick = async (position: vscode.Position): Promise<void> => {
+    const editor = modeHandler.vimState.editor;
+    editor.selection = new vscode.Selection(position, position);
+    await modeHandler.handleSelectionChange({
+      textEditor: editor,
+      selections: [editor.selection],
+      kind: vscode.TextEditorSelectionChangeKind.Mouse,
+    });
+  };
+
+  test('single click in Normal triggers a remapped <LeftMouse>', async () => {
+    await modeHandler.handleMultipleKeyEvents('ihello world'.split(''));
+    await modeHandler.handleKeyEvent('<Esc>');
+    await modeHandler.handleKeyEvent('0');
+
+    await simulateMouseClick(new vscode.Position(0, 5));
+
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
+  });
+});
