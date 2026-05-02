@@ -145,4 +145,62 @@ suite('pseudo-modes', () => {
       endMode: Mode.Replace,
     });
   });
+
+  suite('Insert ↔ VisualLine / VisualBlock via <C-o>V / <C-o><C-v>', () => {
+    newTest({
+      title: 'Insert + <C-o>V shows `(insert) VISUAL LINE` in the status bar',
+      start: ['hel|lo world'],
+      keysPressed: 'i<C-o>V',
+      end: ['hel|lo world'],
+      endMode: Mode.VisualLine,
+      statusBar: '-- (insert) VISUAL LINE --',
+    });
+
+    newTest({
+      title: 'Insert + <C-o>V<Esc> returns to Insert',
+      start: ['hel|lo world'],
+      keysPressed: 'i<C-o>V<Esc>',
+      end: ['hel|lo world'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'Insert + <C-o><C-v> shows `(insert) VISUAL BLOCK` in the status bar',
+      start: ['hel|lo world'],
+      keysPressed: 'i<C-o><C-v>',
+      end: ['hel|lo world'],
+      endMode: Mode.VisualBlock,
+      statusBar: '-- (insert) VISUAL BLOCK --',
+    });
+
+    newTest({
+      title: 'Insert + <C-o><C-v><Esc> returns to Insert',
+      start: ['hel|lo world'],
+      keysPressed: 'i<C-o><C-v><Esc>',
+      end: ['hel|lo world'],
+      endMode: Mode.Insert,
+    });
+
+    // Replace ↔ VisualLine/VisualBlock pseudo-modes (`(replace) VISUAL LINE`,
+    // `(replace) VISUAL BLOCK`) are reachable only via `R<C-o>V` / `R<C-o><C-v>`,
+    // which depends on the `R<C-o>` flow being wired (see skipped test above).
+    // Once that gap closes, drop these skips.
+    newTestSkip({
+      title: 'Replace + <C-o>V shows `(replace) VISUAL LINE` (not yet wired)',
+      start: ['hel|lo world'],
+      keysPressed: 'R<C-o>V',
+      end: ['hello worl|d'],
+      endMode: Mode.VisualLine,
+      statusBar: '-- (replace) VISUAL LINE --',
+    });
+
+    newTestSkip({
+      title: 'Replace + <C-o><C-v> shows `(replace) VISUAL BLOCK` (not yet wired)',
+      start: ['hel|lo world'],
+      keysPressed: 'R<C-o><C-v>',
+      end: ['hel|lo world'],
+      endMode: Mode.VisualBlock,
+      statusBar: '-- (replace) VISUAL BLOCK --',
+    });
+  });
 });
