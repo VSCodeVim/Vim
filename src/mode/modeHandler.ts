@@ -369,20 +369,19 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
 
     if (selection) {
-      let newPosition = selection.active;
+      const newPosition = selection.active;
 
-      // Only check on a click, not a full selection (to prevent clicking past EOL)
+      // Empty click at/past EOL: dispatch <LeftMouse> so the cursor advances.
+      // For non-Insert modes, the post-action bounds-clamp at line ~977 caps
+      // the cursor to lineEnd-1; Insert keeps the cursor at lineEnd, which is
+      // valid in Insert. lastClickWasPastEol records the past-EOL hit so a
+      // follow-up drag can extend the selection inclusively (line ~411).
       if (newPosition.character >= newPosition.getLineEnd().character && selection.isEmpty) {
         if (this.vimState.currentMode !== Mode.Insert) {
           this.lastClickWasPastEol = true;
-
-          // This prevents you from mouse clicking past the EOL
-          newPosition = newPosition.withColumn(Math.max(newPosition.getLineEnd().character - 1, 0));
-
-          // Switch back to normal mode since it was a click not a selection
-          await this.handleKeyEvent('<LeftMouse>');
-          return;
         }
+        await this.handleKeyEvent('<LeftMouse>');
+        return;
       } else if (selection.isEmpty) {
         this.lastClickWasPastEol = false;
       }
