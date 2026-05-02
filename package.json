@@ -1067,7 +1067,7 @@
             "stopsel",
             "startsel,stopsel"
           ],
-          "default": "startsel"
+          "default": "startsel,stopsel"
         },
         "vim.disableExtension": {
           "type": "boolean",

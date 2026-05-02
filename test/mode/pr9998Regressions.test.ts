@@ -1,7 +1,10 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 
+import { getAndUpdateModeHandler } from '../../extension';
 import * as packagejson from '../../package.json';
 import { Mode } from '../../src/mode/mode';
+import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
@@ -303,5 +306,152 @@ suite('PR #9998 — Bug #7: R<C-o> not wired (Replace + <C-o> is a no-op)', () =
     keysPressed: 'R<C-o>dw',
     end: ['hel|world'],
     endMode: Mode.Replace,
+  });
+});
+
+suite('PR #9998 — Bug #8: <PageUp>/<PageDown> are silent no-ops in Insert', () => {
+  // package.json now binds plain `PageUp`/`PageDown` for all modes (no
+  // `vim.mode != 'Insert'` guard). `CommandMoveFullPageUp`/`Down` inherit
+  // modes from `CommandScrollAndMoveCursor` = Normal/Visual only, so in
+  // Insert the keybinding fires `extension.vim_pageup`, no action matches,
+  // the key is swallowed, and VSCode never gets to handle it natively.
+  // Master left these bindings absent, so VSCode's native page-up/down took
+  // effect in Insert. Net result is a regression in Insert.
+  //
+  // The shifted variants (`<S-PageUp>`/`<S-PageDown>`) work in Insert
+  // because their dedicated classes explicitly include Insert/Replace —
+  // these tests pin the unshifted siblings to the same coverage.
+  //
+  // Preferred fix: extend `CommandMoveFullPageUp`/`Down` modes to include
+  // Insert/Replace (same as the shifted variants). Adding
+  // `vim.mode != 'Insert'` to the package.json `when` clause would also fix
+  // it for users but not for the test harness, since handleKeyEvent doesn't
+  // fall back to VSCode native.
+
+  setup(async () => {
+    await setupWorkspace({
+      fileContent: ['line one', 'line two', 'line three'],
+    });
+  });
+
+  test('<PageUp> in Insert moves the cursor (not a silent no-op)', async () => {
+    const handler = await getAndUpdateModeHandler();
+    assert.ok(handler);
+    await handler.handleKeyEvent('G');
+    await handler.handleKeyEvent('i');
+    const startLine = handler.vimState.cursorStopPosition.line;
+
+    await handler.handleKeyEvent('<PageUp>');
+
+    assert.notStrictEqual(
+      handler.vimState.cursorStopPosition.line,
+      startLine,
+      '<PageUp> in Insert should move the cursor up; it did not (silent no-op)',
+    );
+    assert.strictEqual(handler.vimState.currentMode, Mode.Insert);
+  });
+
+  test('<PageDown> in Insert moves the cursor (not a silent no-op)', async () => {
+    const handler = await getAndUpdateModeHandler();
+    assert.ok(handler);
+    await handler.handleKeyEvent('g');
+    await handler.handleKeyEvent('g');
+    await handler.handleKeyEvent('i');
+    const startLine = handler.vimState.cursorStopPosition.line;
+
+    await handler.handleKeyEvent('<PageDown>');
+
+    assert.notStrictEqual(
+      handler.vimState.cursorStopPosition.line,
+      startLine,
+      '<PageDown> in Insert should move the cursor down; it did not (silent no-op)',
+    );
+    assert.strictEqual(handler.vimState.currentMode, Mode.Insert);
+  });
+});
+
+suite('PR #9998 — Guard: click past EOL clamps cursor to last char', () => {
+  // Originally written as a red regression test on the suspicion that the
+  // PR's rewrite of the lastClickWasPastEol branch in
+  // `modeHandler.handleSelectionChange` had broken cursor clamping: the old
+  // assignment `newPosition.withColumn(getLineEnd().character - 1)` followed
+  // by a write to `cursorStopPosition` was replaced with
+  // `await this.handleKeyEvent('<LeftMouse>'); return;`, leaving the
+  // `withColumn` line as dead code. `MoveLeftMouse` then sets the cursor to
+  // the raw past-EOL position from `editor.selection.active`.
+  //
+  // In practice the cursor still ends at the last valid Normal-mode column,
+  // because a downstream clamp (the `currentStopLineLength` adjustment in
+  // `runAction`) corrects the position after `MoveLeftMouse` returns. So
+  // this is not a regression — but the invariant ("click past EOL must NOT
+  // strand the Normal-mode cursor past the last char") is load-bearing and
+  // worth pinning, since it now relies on a clamp two layers removed from
+  // the mouse path. If the downstream clamp is ever moved or removed, this
+  // test catches the real regression.
+
+  let modeHandler: ModeHandler;
+
+  setup(async () => {
+    await setupWorkspace({ fileContent: ['hello'] });
+    const handler = await getAndUpdateModeHandler();
+    assert.ok(handler);
+    modeHandler = handler;
+  });
+
+  const simulateMouseClick = async (position: vscode.Position): Promise<void> => {
+    const editor = modeHandler.vimState.editor;
+    editor.selection = new vscode.Selection(position, position);
+    await modeHandler.handleSelectionChange({
+      textEditor: editor,
+      selections: [editor.selection],
+      kind: vscode.TextEditorSelectionChangeKind.Mouse,
+    });
+  };
+
+  test('click past EOL in Normal clamps cursor to last char', async () => {
+    // 'hello' is 5 chars (cols 0–4). Clicking at col 5 lands on the line-end
+    // position; in Normal mode the valid cursor range is [0, lineLength-1],
+    // so the cursor must clamp to col 4.
+    await simulateMouseClick(new vscode.Position(0, 5));
+    assert.strictEqual(
+      modeHandler.vimState.cursorStopPosition.character,
+      4,
+      'cursor should clamp to col 4 (last valid Normal-mode position), ' +
+        `not stay at col ${modeHandler.vimState.cursorStopPosition.character}`,
+    );
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+  });
+});
+
+suite('PR #9998 — Bug #10: vim.keymodel default leaves the user stuck in Visual', () => {
+  // package.json defaults `vim.keymodel` to bare `"startsel"`. With only
+  // `startsel`, `<S-right>` enters Visual but unshifted `<right>` does NOT
+  // exit (no `stopsel`), so a VSCode-muscle-memory user pressing
+  // `<S-right>` then `<right>` to deselect ends up stranded in Visual until
+  // <Esc>. Vim defaults to `""`; gVim defaults to `"startsel,stopsel"`.
+  // Bare `"startsel"` is non-standard and produces the only stuck-in-Visual
+  // combination of the four enum values.
+  //
+  // Expected default: `"startsel,stopsel"` (gVim parity, sane default for
+  // VSCode users — <S-arrow> selects, plain arrow deselects).
+
+  test('vim.keymodel default is "startsel,stopsel"', () => {
+    const props = (
+      packagejson as unknown as {
+        contributes: {
+          configuration: {
+            properties: Record<string, { default?: unknown }>;
+          };
+        };
+      }
+    ).contributes.configuration.properties;
+    const def = props['vim.keymodel']?.default;
+    assert.strictEqual(
+      def,
+      'startsel,stopsel',
+      `vim.keymodel default is ${JSON.stringify(def)}; expected "startsel,stopsel". ` +
+        `Bare "startsel" enters Visual on <S-arrow> but never exits on <arrow> ` +
+        `(no stopsel), leaving the user stranded in Visual until <Esc>.`,
+    );
   });
 });

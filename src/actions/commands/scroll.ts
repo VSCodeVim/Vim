@@ -142,6 +142,14 @@ abstract class CommandScrollAndMoveCursor extends BaseCommand {
 @RegisterAction
 class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
   keys = [['<C-b>'], ['<PageUp>']];
+  override modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
   to: EditorScrollDirection = 'up';
 
   protected getNumLines(visibleRanges: vscode.Range[]) {
@@ -152,6 +160,14 @@ class CommandMoveFullPageUp extends CommandScrollAndMoveCursor {
 @RegisterAction
 class CommandMoveFullPageDown extends CommandScrollAndMoveCursor {
   keys = [['<C-f>'], ['<PageDown>']];
+  override modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
   to: EditorScrollDirection = 'down';
 
   protected getNumLines(visibleRanges: vscode.Range[]) {
