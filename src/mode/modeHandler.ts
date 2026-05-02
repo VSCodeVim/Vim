@@ -401,10 +401,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
         }
 
-        // Update both endpoints (anchor and active). Updating only the
-        // anchor would leave cursor.stop stale at its pre-drag position, so
-        // operators like `d`/`y`/`c` would act on a 1-char range instead of
-        // the full selection.
+        if (selectionStart.isAfter(newPosition)) {
+          selectionStart = selectionStart.getLeft();
+        }
+
         this.vimState.cursor = new Cursor(selectionStart, selection.active);
 
         // If we prevented from clicking past eol but it is part of this selection, include the last char
