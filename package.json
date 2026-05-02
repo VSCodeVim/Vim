@@ -90,12 +90,12 @@
       {
         "key": "PageUp",
         "command": "extension.vim_pageup",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "PageDown",
         "command": "extension.vim_pagedown",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "Insert",
@@ -175,12 +175,12 @@
       {
         "key": "shift+pageup",
         "command": "extension.vim_shift+pageup",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "shift+pagedown",
         "command": "extension.vim_shift+pagedown",
-        "when": "editorTextFocus && vim.active && !inDebugRepl"
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetVisible && !parameterHintsVisible"
       },
       {
         "key": "ctrl+left",

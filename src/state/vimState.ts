@@ -236,14 +236,13 @@ export class VimState implements vscode.Disposable {
 
   private inputMethodSwitcher?: IInputMethodSwitcher;
   /**
-   * The mode Vim is currently in including pseudo-modes like OperatorPendingMode.
-   * This is to be used only by the Remappers when getting the remappings or by
-   * 'showmode' to show the mode to the user; don't use it anywhere else.
+   * The pseudo-mode synthesized from `currentMode` plus the Insert/Replace
+   * return targets (`modeToReturnToAfterNormalCommand`,
+   * `modeBeforeEnteringVisualMode`). Does NOT account for operator-pending —
+   * see `currentModeIncludingPseudoModes` for that.
    */
-  public get currentModeIncludingPseudoModes(): Mode {
-    if (this.recordedState.getOperatorState(this.currentMode) === 'pending') {
-      return Mode.OperatorPendingMode;
-    } else if (this.modeToReturnToAfterNormalCommand != null && this.currentMode === Mode.Normal) {
+  public get currentModeWithoutOperatorPending(): Mode {
+    if (this.modeToReturnToAfterNormalCommand != null && this.currentMode === Mode.Normal) {
       return this.modeToReturnToAfterNormalCommand === Mode.Insert
         ? Mode.InsertNormal
         : Mode.ReplaceNormal;
@@ -262,6 +261,19 @@ export class VimState implements vscode.Disposable {
     } else {
       return this.currentMode;
     }
+  }
+
+  /**
+   * The mode Vim is currently in including pseudo-modes like OperatorPendingMode.
+   * This is to be used only by the Remappers when getting the remappings; the
+   * status bar uses `currentModeWithoutOperatorPending` so the bar keeps
+   * showing the underlying mode while an operator is pending (matching Vim).
+   */
+  public get currentModeIncludingPseudoModes(): Mode {
+    if (this.recordedState.getOperatorState(this.currentMode) === 'pending') {
+      return Mode.OperatorPendingMode;
+    }
+    return this.currentModeWithoutOperatorPending;
   }
 
   public async setModeData(modeData: ModeData): Promise<void> {

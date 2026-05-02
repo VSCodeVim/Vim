@@ -695,7 +695,7 @@ class PrevMarkLinewise extends BaseMovement {
 
 @RegisterAction
 export class MoveLeft extends BaseMovement {
-  keys = [['h'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
+  keys = [['h'], ['<BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     const getLeftWhile = (p: Position): Position => {
@@ -2007,12 +2007,9 @@ class MoveBeginningFullWord extends BaseMovement {
   }
 }
 
-@RegisterAction
-class MoveBeginningWordShiftBS extends MoveBeginningWord {
-  override keys = [['<S-BS>']];
-  override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-}
-
+// `<S-BS>` is left as a char-back motion (claimed by `MoveLeft`) to match
+// VSCode's default Shift+Backspace = `deleteLeft` and the Insert-mode
+// `<S-BS>` = `<BS>` symmetry.
 @RegisterAction
 class MoveBeginningFullWordCtrlBS extends MoveBeginningFullWord {
   override keys = ['<C-BS>'];

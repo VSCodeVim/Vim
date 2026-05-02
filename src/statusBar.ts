@@ -171,7 +171,7 @@ export function statusBarText(vimState: VimState) {
     vimState.recordedState.actionKeys[vimState.recordedState.actionKeys.length - 1] === '<C-r>'
       ? '"'
       : '|';
-  switch (vimState.currentModeIncludingPseudoModes) {
+  switch (vimState.currentModeWithoutOperatorPending) {
     case Mode.Normal:
       return '-- NORMAL --';
     case Mode.Insert:
@@ -210,6 +210,8 @@ export function statusBarText(vimState: VimState) {
       return '-- VIM: DISABLED --';
     case Mode.SearchInProgressMode:
     case Mode.CommandlineInProgress:
+      // Discriminated-union narrowing: only these two `modeData` variants
+      // carry a `commandLine`. The check is a type guard, not dead code.
       return vimState.modeData.mode === Mode.SearchInProgressMode ||
         vimState.modeData.mode === Mode.CommandlineInProgress
         ? vimState.modeData.commandLine.display(cursorChar)
