@@ -414,8 +414,6 @@ export interface IConfiguration {
   operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[];
   visualModeKeyBindings: IKeyRemapping[];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[];
-  allVisualModeKeyBindings: IKeyRemapping[];
-  allVisualModeKeyBindingsNonRecursive: IKeyRemapping[];
   commandLineModeKeyBindings: IKeyRemapping[];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[];
 
@@ -426,7 +424,6 @@ export interface IConfiguration {
   normalModeKeyBindingsMap: Map<string, IKeyRemapping>;
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping>;
   visualModeKeyBindingsMap: Map<string, IKeyRemapping>;
-  allVisualModeKeyBindingsMap: Map<string, IKeyRemapping>;
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping>;
 
   /**

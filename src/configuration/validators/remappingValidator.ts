@@ -19,8 +19,6 @@ export class RemappingValidator implements IConfigurationValidator {
       'operatorPendingModeKeyBindingsNonRecursive',
       'visualModeKeyBindings',
       'visualModeKeyBindingsNonRecursive',
-      'allVisualModeKeyBindings',
-      'allVisualModeKeyBindingsNonRecursive',
       'commandLineModeKeyBindings',
       'commandLineModeKeyBindingsNonRecursive',
     ];

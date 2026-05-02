@@ -14,8 +14,6 @@ suite('Remapping Validator', () => {
     configuration.operatorPendingModeKeyBindingsNonRecursive = [];
     configuration.visualModeKeyBindings = [];
     configuration.visualModeKeyBindingsNonRecursive = [];
-    configuration.allVisualModeKeyBindings = [];
-    configuration.allVisualModeKeyBindingsNonRecursive = [];
 
     // test
     const validator = new RemappingValidator();
@@ -31,7 +29,6 @@ suite('Remapping Validator', () => {
     assert.strictEqual(configuration.normalModeKeyBindingsMap.size, 0);
     assert.strictEqual(configuration.operatorPendingModeKeyBindingsMap.size, 0);
     assert.strictEqual(configuration.visualModeKeyBindingsMap.size, 0);
-    assert.strictEqual(configuration.allVisualModeKeyBindingsMap.size, 0);
   });
 
   test('jj->esc', async () => {

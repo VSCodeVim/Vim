@@ -227,7 +227,6 @@ class Configuration implements IConfiguration {
     this.normalModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.insertModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.visualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
-    this.allVisualModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.commandLineModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
@@ -489,8 +488,6 @@ class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
-  allVisualModeKeyBindings: IKeyRemapping[] = [];
-  allVisualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
 
@@ -498,7 +495,6 @@ class Configuration implements IConfiguration {
   normalModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
-  allVisualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
 
   // langmap

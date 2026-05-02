@@ -635,14 +635,6 @@
           "markdownDescription": "Non-recursive keybinding overrides to use for Visual mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",
           "scope": "application"
         },
-        "vim.allVisualModeKeyBindings": {
-          "type": "array",
-          "markdownDescription": "Remapped keys in all Visual mode variants (Visual, VisualLine, VisualBlock). Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
-        },
-        "vim.allVisualModeKeyBindingsNonRecursive": {
-          "type": "array",
-          "markdownDescription": "Non-recursive keybinding overrides for all Visual mode variants (Visual, VisualLine, VisualBlock). Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details."
-        },
         "vim.commandLineModeKeyBindings": {
           "type": "array",
           "markdownDescription": "Remapped keys in command line mode. Allows mapping to Vim commands or VS Code actions. See [README](https://github.com/VSCodeVim/Vim/#key-remapping) for details.",

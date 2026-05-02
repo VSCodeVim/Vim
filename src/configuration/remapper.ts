@@ -26,7 +26,6 @@ export class Remappers implements IRemapper {
     new InsertModeRemapper(),
     new NormalModeRemapper(),
     new VisualModeRemapper(),
-    new AllVisualModeRemapper(),
     new CommandLineModeRemapper(),
     new OperatorPendingModeRemapper(),
   ];
@@ -628,22 +627,6 @@ class OperatorPendingModeRemapper extends Remapper {
 class VisualModeRemapper extends Remapper {
   constructor() {
     super(keyBindingsConfigKey('visual'), [
-      Mode.Visual,
-      Mode.VisualLine,
-      Mode.VisualBlock,
-      Mode.InsertVisual,
-      Mode.InsertVisualLine,
-      Mode.InsertVisualBlock,
-      Mode.ReplaceVisual,
-      Mode.ReplaceVisualLine,
-      Mode.ReplaceVisualBlock,
-    ]);
-  }
-}
-
-class AllVisualModeRemapper extends Remapper {
-  constructor() {
-    super(keyBindingsConfigKey('allVisual'), [
       Mode.Visual,
       Mode.VisualLine,
       Mode.VisualBlock,

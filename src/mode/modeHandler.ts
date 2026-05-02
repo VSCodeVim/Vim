@@ -632,9 +632,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // be no need to call all of it.
         this.updateView({ drawSelection: false, revealRange: false });
       } else if (handledAsRemap && isVisualMode(this.vimState.currentMode)) {
-        // If we handled a remap there might be a change in the selection we
-        // need to draw, e.g. when remapping an 'allVisualModeKeyBindings' in
-        // Select mode (Vim temporarily switches to Visual for the remap).
+        // After a visual-mode remap, the remap body may have moved or extended
+        // the selection; redraw so VSCode reflects the new range.
         this.updateView();
       }
     }

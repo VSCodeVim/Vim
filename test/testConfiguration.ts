@@ -138,15 +138,12 @@ export class Configuration implements IConfiguration {
   operatorPendingModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   visualModeKeyBindings: IKeyRemapping[] = [];
   visualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
-  allVisualModeKeyBindings: IKeyRemapping[] = [];
-  allVisualModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   commandLineModeKeyBindings: IKeyRemapping[] = [];
   commandLineModeKeyBindingsNonRecursive: IKeyRemapping[] = [];
   insertModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   normalModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   operatorPendingModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
-  allVisualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   whichwrap = 'b,s';
   report = 2;
