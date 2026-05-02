@@ -258,7 +258,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
               // Store selection for commands like gv
               this.vimState.lastVisualSelection = {
-                mode: Mode.Visual,
+                mode: this.vimState.currentMode,
                 start: this.vimState.cursorStartPosition,
                 end: this.vimState.cursorStopPosition,
               };
@@ -368,8 +368,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       return;
     }
 
-    const toDraw = false;
-
     if (selection) {
       let newPosition = selection.active;
 
@@ -438,7 +436,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           end: this.vimState.cursorStopPosition,
         };
       }
-      this.updateView({ drawSelection: toDraw, revealRange: false });
+      this.updateView({ drawSelection: false, revealRange: false });
     }
   }
 
@@ -921,7 +919,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.recordedState = new RecordedState();
 
       // Return to insert/replace mode after 1 command in this case for <C-o>
-      if (this.vimState.modeToReturnToAfterNormalCommand) {
+      if (this.vimState.modeToReturnToAfterNormalCommand != null) {
         if (this.vimState.actionCount > 0) {
           await this.setCurrentMode(this.vimState.modeToReturnToAfterNormalCommand);
         } else {
@@ -978,7 +976,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // the cursor position should remain even if it is behind the last
         // character in the line
         if (
-          !this.vimState.modeToReturnToAfterNormalCommand &&
+          this.vimState.modeToReturnToAfterNormalCommand == null &&
           (this.vimState.currentMode === Mode.Normal || isVisualMode(this.vimState.currentMode))
         ) {
           const currentStopLineLength = TextEditor.getLineLength(cursor.stop.line);

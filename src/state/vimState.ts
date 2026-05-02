@@ -122,23 +122,6 @@ export class VimState implements vscode.Disposable {
   public actionCount = 0;
 
   /**
-   * Boolean alias for `modeToReturnToAfterNormalCommand`. Both fields cover
-   * the same `<C-o>` flow; they're kept in sync so callers that only care
-   * about "is a return-to-Insert pending?" don't have to reason about which
-   * mode to return to.
-   */
-  public get returnToInsertAfterCommand(): boolean {
-    return this.modeToReturnToAfterNormalCommand !== undefined;
-  }
-  public set returnToInsertAfterCommand(value: boolean) {
-    if (value) {
-      this.modeToReturnToAfterNormalCommand ??= Mode.Insert;
-    } else {
-      this.modeToReturnToAfterNormalCommand = undefined;
-    }
-  }
-
-  /**
    * Every time we invoke a VSCode command which might trigger a view update.
    * We should postpone its view updating phase to avoid conflicting with our internal view updating mechanism.
    * This array is used to cache every VSCode view updating event and they will be triggered once we run the inhouse `viewUpdate`.
@@ -229,7 +212,7 @@ export class VimState implements vscode.Disposable {
    *
    * This should be cleared everytime we leave a visual mode.
    */
-  public modeBeforeEnteringVisualMode?: Mode;
+  public modeBeforeEnteringVisualMode: Mode.Insert | Mode.Replace | undefined;
 
   /**
    * Stores last visual mode as well as what was selected for `gv`
@@ -253,39 +236,26 @@ export class VimState implements vscode.Disposable {
 
   private inputMethodSwitcher?: IInputMethodSwitcher;
   /**
-   * The mode Vim is currently including pseudo-modes like OperatorPendingMode
-   * This is to be used only by the Remappers when getting the remappings or the
-   * 'showmode' to show the mode to user o don't use it anywhere else.
+   * The mode Vim is currently in including pseudo-modes like OperatorPendingMode.
+   * This is to be used only by the Remappers when getting the remappings or by
+   * 'showmode' to show the mode to the user; don't use it anywhere else.
    */
   public get currentModeIncludingPseudoModes(): Mode {
     if (this.recordedState.getOperatorState(this.currentMode) === 'pending') {
       return Mode.OperatorPendingMode;
-    } else if (this.modeToReturnToAfterNormalCommand && this.currentMode === Mode.Normal) {
+    } else if (this.modeToReturnToAfterNormalCommand != null && this.currentMode === Mode.Normal) {
       return this.modeToReturnToAfterNormalCommand === Mode.Insert
         ? Mode.InsertNormal
         : Mode.ReplaceNormal;
-    } else if (
-      isVisualMode(this.currentMode) &&
-      this.modeBeforeEnteringVisualMode !== undefined &&
-      this.modeBeforeEnteringVisualMode !== Mode.Normal
-    ) {
-      const previous: 'insert' | 'replace' | undefined =
-        this.modeBeforeEnteringVisualMode === Mode.Insert
-          ? 'insert'
-          : this.modeBeforeEnteringVisualMode === Mode.Replace
-            ? 'replace'
-            : undefined;
-      if (previous === undefined) {
-        // Defensive: shouldn't happen but exit gracefully with the real mode.
-        return this.currentMode;
-      }
+    } else if (isVisualMode(this.currentMode) && this.modeBeforeEnteringVisualMode != null) {
+      const fromInsert = this.modeBeforeEnteringVisualMode === Mode.Insert;
       switch (this.currentMode) {
         case Mode.Visual:
-          return previous === 'insert' ? Mode.InsertVisual : Mode.ReplaceVisual;
+          return fromInsert ? Mode.InsertVisual : Mode.ReplaceVisual;
         case Mode.VisualLine:
-          return previous === 'insert' ? Mode.InsertVisualLine : Mode.ReplaceVisualLine;
+          return fromInsert ? Mode.InsertVisualLine : Mode.ReplaceVisualLine;
         case Mode.VisualBlock:
-          return previous === 'insert' ? Mode.InsertVisualBlock : Mode.ReplaceVisualBlock;
+          return fromInsert ? Mode.InsertVisualBlock : Mode.ReplaceVisualBlock;
         default:
           return this.currentMode;
       }
@@ -302,7 +272,7 @@ export class VimState implements vscode.Disposable {
 
     await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, modeData.mode);
     if (
-      this.modeToReturnToAfterNormalCommand &&
+      this.modeToReturnToAfterNormalCommand != null &&
       [Mode.Insert, Mode.Replace].includes(modeData.mode)
     ) {
       this.modeToReturnToAfterNormalCommand = undefined;
@@ -340,20 +310,25 @@ export class VimState implements vscode.Disposable {
       // flow); other source modes (Normal, SearchInProgressMode, etc.) go
       // back to Normal on exit, so don't pollute modeBeforeEnteringVisualMode.
       const target = this.modeToReturnToAfterNormalCommand ?? this.currentMode;
-      this.modeBeforeEnteringVisualMode = [Mode.Insert, Mode.Replace].includes(target)
-        ? target
-        : undefined;
+      this.modeBeforeEnteringVisualMode =
+        target === Mode.Insert || target === Mode.Replace ? target : undefined;
     } else if (isVisualMode(this.currentMode) && !isVisualMode(mode)) {
       // Leaving a visual/select mode. If we had stored an Insert/Replace return
       // target and the new mode isn't Insert/Replace itself, force the return.
       // (If the user is going to Insert/Replace deliberately, leave it be.)
-      if (this.modeBeforeEnteringVisualMode && ![Mode.Insert, Mode.Replace].includes(mode)) {
+      if (
+        this.modeBeforeEnteringVisualMode != null &&
+        ![Mode.Insert, Mode.Replace].includes(mode)
+      ) {
         mode = this.modeBeforeEnteringVisualMode;
       }
       this.modeBeforeEnteringVisualMode = undefined;
     }
 
-    if (this.modeToReturnToAfterNormalCommand && [Mode.Insert, Mode.Replace].includes(mode)) {
+    if (
+      this.modeToReturnToAfterNormalCommand != null &&
+      [Mode.Insert, Mode.Replace].includes(mode)
+    ) {
       this.modeToReturnToAfterNormalCommand = undefined;
     }
 

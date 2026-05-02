@@ -345,6 +345,18 @@ export interface IConfiguration {
   keymodel: string;
 
   /**
+   * Derived from `keymodel`: true when the `startsel` token is present.
+   * Read on every shifted-key press; precomputed to avoid string parsing.
+   */
+  keymodelStartsSelection: boolean;
+
+  /**
+   * Derived from `keymodel`: true when the `stopsel` token is present.
+   * Read on every unshifted special-key press in Visual mode.
+   */
+  keymodelStopsSelection: boolean;
+
+  /**
    * Includes trailing whitespace when changing word.
    */
   changeWordIncludesWhitespace: boolean;

@@ -220,7 +220,7 @@ export class ExitInsertMode extends BaseCommand {
     void vscode.commands.executeCommand('editor.action.inlineSuggest.hide');
 
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
-    if (vimState.returnToInsertAfterCommand && position.character !== 0) {
+    if (vimState.modeToReturnToAfterNormalCommand != null && position.character !== 0) {
       vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
     }
 
@@ -576,7 +576,7 @@ class ExecuteOneNormalCommandInInsertMode extends BaseCommand {
   keys = ['<C-o>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.returnToInsertAfterCommand = true;
+    vimState.modeToReturnToAfterNormalCommand = Mode.Insert;
     vimState.actionCount = 0;
     await new ExitInsertMode().exec(position, vimState);
   }
