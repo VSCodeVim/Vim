@@ -204,6 +204,43 @@ suite('smartSelect.grow / shrink on a TypeScript line', () => {
     );
   });
 
+  // The user-reported flow: enter Visual via `v` first, then trigger smart
+  // select via a vmap remap (`=` -> editor.action.smartSelect.grow). The bug
+  // was that the post-remap updateView at modeHandler.ts:659 (since removed)
+  // clobbered editor.selection back to the pre-grow range, so the first `=`
+  // appeared to be a no-op.
+  test('vmap = → smartSelect.grow after `v` actually grows the selection (regression for post-remap updateView clobber)', async () => {
+    await setupWorkspace({
+      fileExtension: '.ts',
+      config: {
+        visualModeKeyBindings: [
+          {
+            before: ['='],
+            commands: ['editor.action.smartSelect.grow'],
+          },
+        ],
+      },
+    });
+    const handler = await getAndUpdateModeHandler();
+    assert.ok(handler);
+    modeHandler = handler;
+    await seedTSFile(modeHandler);
+
+    await modeHandler.handleKeyEvent('v');
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
+
+    await modeHandler.handleKeyEvent('=');
+    await new Promise((r) => setTimeout(r, 50));
+
+    const editor = modeHandler.vimState.editor;
+    const selected = getSelectedText(editor);
+    assert.ok(
+      selected.length > 1,
+      `expected vmap = to grow selection beyond 1 char; got "${selected}" (len ${selected.length})`,
+    );
+    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
+  });
+
   test('vimState.cursor tracks selection after grow #2 (no stale cursor)', async () => {
     const editor = modeHandler.vimState.editor;
     await grow();

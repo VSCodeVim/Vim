@@ -653,10 +653,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // cursor decorations, if in the future we split up the updateView function there should
         // be no need to call all of it.
         this.updateView({ drawSelection: false, revealRange: false });
-      } else if (handledAsRemap && isVisualMode(this.vimState.currentMode)) {
-        // After a visual-mode remap, the remap body may have moved or extended
-        // the selection; redraw so VSCode reflects the new range.
-        this.updateView();
       }
     }
   }
