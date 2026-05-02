@@ -957,7 +957,7 @@ class MoveShiftEnd extends BaseMovement {
 
 @RegisterAction
 class MoveCtrlRightArrow extends BaseMovement {
-  keys = ['<C-right>'];
+  keys = [['<C-right>'], ['<A-right>']];
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -976,7 +976,7 @@ class MoveCtrlRightArrow extends BaseMovement {
 
 @RegisterAction
 class MoveCtrlLeftArrow extends BaseMovement {
-  keys = ['<C-left>'];
+  keys = [['<C-left>'], ['<A-left>']];
   override modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
@@ -1036,7 +1036,7 @@ class MoveCtrlEnd extends BaseMovement {
 
 @RegisterAction
 class MoveCtrlShiftRightArrow extends BaseMovement {
-  keys = ['<C-S-right>'];
+  keys = [['<C-S-right>'], ['<A-S-right>']];
   override modes = [
     Mode.Normal,
     Mode.Visual,
@@ -1061,7 +1061,7 @@ class MoveCtrlShiftRightArrow extends BaseMovement {
 
 @RegisterAction
 class MoveCtrlShiftLeftArrow extends BaseMovement {
-  keys = ['<C-S-left>'];
+  keys = [['<C-S-left>'], ['<A-S-left>']];
   override modes = [
     Mode.Normal,
     Mode.Visual,

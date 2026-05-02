@@ -4,6 +4,7 @@ export class Notation {
     [/ctrl\+|c\-/gi, 'C-'],
     [/cmd\+|d\-/gi, 'D-'],
     [/shift\+|s\-/gi, 'S-'],
+    [/alt\+|a\-/gi, 'A-'],
     [/escape|esc/gi, 'Esc'],
     [/backspace|bs/gi, 'BS'],
     [/delete|del/gi, 'Del'],

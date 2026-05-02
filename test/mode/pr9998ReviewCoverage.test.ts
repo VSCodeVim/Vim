@@ -2,6 +2,8 @@ import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
+import * as packagejson from '../../package.json';
+import { Notation } from '../../src/configuration/notation';
 import { isPseudoMode, isStatusBarMode, isVisualMode, Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
@@ -480,6 +482,92 @@ suite('PR #9998 review — J: click past EOL in Insert leaves mode in Insert', (
       Mode.Insert,
       'past-EOL click in Insert must not flip mode',
     );
+  });
+});
+
+suite('PR #9998 review — L: macOS Option-key word-jump and word-select', () => {
+  setup(async () => {
+    await setupWorkspace();
+  });
+
+  newTest({
+    title: '<A-right> in Normal moves to next small word (alias for <C-right>)',
+    start: ['|hello.world foo'],
+    keysPressed: '<A-right>',
+    end: ['hello|.world foo'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<A-left> in Normal moves back to previous small word (alias for <C-left>)',
+    start: ['hello.wor|ld foo'],
+    keysPressed: '<A-left>',
+    end: ['hello.|world foo'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: '<A-S-right> from Normal enters Visual word-right (alias for <C-S-right>)',
+    config: {
+      keymodel: 'startsel,stopsel',
+      keymodelStartsSelection: true,
+      keymodelStopsSelection: true,
+    },
+    start: ['|hello world'],
+    keysPressed: '<A-S-right>',
+    end: ['hello w|orld'],
+    endMode: Mode.Visual,
+  });
+
+  newTest({
+    title: '<A-S-left> from Normal enters Visual word-left (alias for <C-S-left>)',
+    config: {
+      keymodel: 'startsel,stopsel',
+      keymodelStartsSelection: true,
+      keymodelStopsSelection: true,
+    },
+    start: ['hello wor|ld'],
+    keysPressed: '<A-S-left>',
+    end: ['hello |world'],
+    endMode: Mode.Visual,
+  });
+
+  newTest({
+    title: '<A-S-right> from Insert enters (insert) VISUAL',
+    config: {
+      keymodel: 'startsel,stopsel',
+      keymodelStartsSelection: true,
+      keymodelStopsSelection: true,
+    },
+    start: ['|hello world'],
+    keysPressed: 'i<A-S-right>',
+    end: ['hello w|orld'],
+    endMode: Mode.Visual,
+  });
+});
+
+suite('PR #9998 review — L: alt notation + package.json bindings', () => {
+  test('Notation.NormalizeKey converts "alt+left" to "<A-left>"', () => {
+    assert.strictEqual(Notation.NormalizeKey('alt+left', '\\'), '<A-left>');
+    assert.strictEqual(Notation.NormalizeKey('alt+shift+left', '\\'), '<A-S-left>');
+    assert.strictEqual(Notation.NormalizeKey('a-x', '\\'), '<A-x>');
+  });
+
+  test('package.json alt+arrow bindings are present and gated on isMac', () => {
+    type Keybinding = { key: string; command: string; when?: string };
+    const keybindings = (packagejson as unknown as { contributes: { keybindings: Keybinding[] } })
+      .contributes.keybindings;
+
+    for (const command of [
+      'extension.vim_alt+left',
+      'extension.vim_alt+right',
+      'extension.vim_alt+shift+left',
+      'extension.vim_alt+shift+right',
+    ]) {
+      const kb = keybindings.find((k) => k.command === command);
+      assert.ok(kb, `${command} not bound in package.json`);
+      assert.ok(kb.when?.includes('isMac'), `${command} must be gated on isMac (got: ${kb.when})`);
+    }
   });
 });
 
