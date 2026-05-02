@@ -184,21 +184,25 @@
       },
       {
         "key": "ctrl+left",
+        "mac": "alt+left",
         "command": "extension.vim_ctrl+left",
         "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+right",
+        "mac": "alt+right",
         "command": "extension.vim_ctrl+right",
         "when": "editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
       },
       {
         "key": "ctrl+shift+left",
+        "mac": "alt+shift+left",
         "command": "extension.vim_ctrl+shift+left",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "ctrl+shift+right",
+        "mac": "alt+shift+right",
         "command": "extension.vim_ctrl+shift+right",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
       },
@@ -231,26 +235,6 @@
         "key": "ctrl+shift+end",
         "command": "extension.vim_ctrl+shift+end",
         "when": "editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "alt+left",
-        "command": "extension.vim_alt+left",
-        "when": "isMac && editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "alt+right",
-        "command": "extension.vim_alt+right",
-        "when": "isMac && editorTextFocus && vim.active && vim.mode != 'Insert' && !inDebugRepl"
-      },
-      {
-        "key": "alt+shift+left",
-        "command": "extension.vim_alt+shift+left",
-        "when": "isMac && editorTextFocus && vim.active && !inDebugRepl"
-      },
-      {
-        "key": "alt+shift+right",
-        "command": "extension.vim_alt+shift+right",
-        "when": "isMac && editorTextFocus && vim.active && !inDebugRepl"
       },
       {
         "key": "g g",

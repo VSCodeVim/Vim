@@ -553,20 +553,26 @@ suite('PR #9998 review — L: alt notation + package.json bindings', () => {
     assert.strictEqual(Notation.NormalizeKey('a-x', '\\'), '<A-x>');
   });
 
-  test('package.json alt+arrow bindings are present and gated on isMac', () => {
-    type Keybinding = { key: string; command: string; when?: string };
+  test('ctrl+arrow entries carry a mac override to alt+arrow', () => {
+    type Keybinding = { key: string; mac?: string; command: string; when?: string };
     const keybindings = (packagejson as unknown as { contributes: { keybindings: Keybinding[] } })
       .contributes.keybindings;
 
-    for (const command of [
-      'extension.vim_alt+left',
-      'extension.vim_alt+right',
-      'extension.vim_alt+shift+left',
-      'extension.vim_alt+shift+right',
-    ]) {
+    const expected: Record<string, string> = {
+      'extension.vim_ctrl+left': 'alt+left',
+      'extension.vim_ctrl+right': 'alt+right',
+      'extension.vim_ctrl+shift+left': 'alt+shift+left',
+      'extension.vim_ctrl+shift+right': 'alt+shift+right',
+    };
+
+    for (const [command, macKey] of Object.entries(expected)) {
       const kb = keybindings.find((k) => k.command === command);
-      assert.ok(kb, `${command} not bound in package.json`);
-      assert.ok(kb.when?.includes('isMac'), `${command} must be gated on isMac (got: ${kb.when})`);
+      assert.ok(kb, `${command} not found in package.json`);
+      assert.strictEqual(
+        kb.mac,
+        macKey,
+        `${command} should have mac override "${macKey}" so option+arrow fires it on macOS`,
+      );
     }
   });
 });
