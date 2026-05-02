@@ -586,13 +586,18 @@ class InsertRegisterContent extends BaseCommand {
 
 @RegisterAction
 class ExecuteOneNormalCommandInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
+  modes = [Mode.Insert, Mode.Replace];
   keys = ['<C-o>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.modeToReturnToAfterNormalCommand = Mode.Insert;
+    const sourceMode = vimState.currentMode === Mode.Replace ? Mode.Replace : Mode.Insert;
+    vimState.modeToReturnToAfterNormalCommand = sourceMode;
     vimState.actionCount = 0;
-    await new ExitInsertMode().exec(position, vimState);
+    if (sourceMode === Mode.Insert) {
+      await new ExitInsertMode().exec(position, vimState);
+    } else {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
   }
 }
 

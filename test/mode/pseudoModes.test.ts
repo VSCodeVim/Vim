@@ -1,5 +1,5 @@
 import { Mode } from '../../src/mode/mode';
-import { newTest, newTestSkip } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
 // Pseudo-modes are synthesized labels for Vim states where one mode is
@@ -132,13 +132,8 @@ suite('pseudo-modes', () => {
       endMode: Mode.Insert,
     });
 
-    // Replace + <C-o> is currently a no-op: ExecuteOneNormalCommandInInsertMode
-    // is registered only for Mode.Insert. Closing this gap is one line —
-    // adding Mode.Replace to that action's `modes` and a small tweak to the
-    // exit path so it returns to Replace rather than Insert. Skipping the
-    // test here documents the expected behaviour for whoever closes the gap.
-    newTestSkip({
-      title: 'Replace + <C-o>w returns to Replace (not yet wired)',
+    newTest({
+      title: 'Replace + <C-o>w returns to Replace',
       start: ['hel|lo world'],
       keysPressed: 'R<C-o>w',
       end: ['hello |world'],
@@ -181,21 +176,17 @@ suite('pseudo-modes', () => {
       endMode: Mode.Insert,
     });
 
-    // Replace ↔ VisualLine/VisualBlock pseudo-modes (`(replace) VISUAL LINE`,
-    // `(replace) VISUAL BLOCK`) are reachable only via `R<C-o>V` / `R<C-o><C-v>`,
-    // which depends on the `R<C-o>` flow being wired (see skipped test above).
-    // Once that gap closes, drop these skips.
-    newTestSkip({
-      title: 'Replace + <C-o>V shows `(replace) VISUAL LINE` (not yet wired)',
+    newTest({
+      title: 'Replace + <C-o>V shows `(replace) VISUAL LINE`',
       start: ['hel|lo world'],
       keysPressed: 'R<C-o>V',
-      end: ['hello worl|d'],
+      end: ['hel|lo world'],
       endMode: Mode.VisualLine,
       statusBar: '-- (replace) VISUAL LINE --',
     });
 
-    newTestSkip({
-      title: 'Replace + <C-o><C-v> shows `(replace) VISUAL BLOCK` (not yet wired)',
+    newTest({
+      title: 'Replace + <C-o><C-v> shows `(replace) VISUAL BLOCK`',
       start: ['hel|lo world'],
       keysPressed: 'R<C-o><C-v>',
       end: ['hel|lo world'],

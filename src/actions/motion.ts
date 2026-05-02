@@ -965,7 +965,12 @@ class MoveCtrlRightArrow extends BaseMovement {
       const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
       await vimState.setCurrentMode(newMode);
     }
-    return new MoveFullWordBegin(this.keysPressed, this.isRepeat).execAction(position, vimState);
+    return new MoveWordBegin(this.keysPressed, this.isRepeat).execAction(
+      position,
+      vimState,
+      true,
+      true,
+    );
   }
 }
 
@@ -979,10 +984,7 @@ class MoveCtrlLeftArrow extends BaseMovement {
       const newMode = vimState.modeBeforeEnteringVisualMode ?? Mode.Normal;
       await vimState.setCurrentMode(newMode);
     }
-    return new MoveBeginningFullWord(this.keysPressed, this.isRepeat).execAction(
-      position,
-      vimState,
-    );
+    return new MoveBeginningWord(this.keysPressed, this.isRepeat).execAction(position, vimState);
   }
 }
 
@@ -1918,7 +1920,7 @@ export class MoveWordBegin extends BaseMovement {
 
 @RegisterAction
 export class MoveFullWordBegin extends BaseMovement {
-  keys = [['W'], ['<C-right>']];
+  keys = ['W'];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     if (
@@ -1991,7 +1993,7 @@ class MoveLastFullWordEnd extends BaseMovement {
 
 @RegisterAction
 class MoveBeginningWord extends BaseMovement {
-  keys = [['b'], ['<C-left>']];
+  keys = ['b'];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
     return position.prevWordStart(vimState.document);

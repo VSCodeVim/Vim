@@ -200,6 +200,48 @@ class MoveShiftPageDown extends CommandMoveFullPageDown {
 }
 
 @RegisterAction
+class MoveShiftUpAsPage extends CommandMoveFullPageUp {
+  override keys = [['<S-up>']];
+  override modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !configuration.keymodelStartsSelection && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !configuration.keymodelStartsSelection && super.couldActionApply(vimState, keysPressed);
+  }
+}
+
+@RegisterAction
+class MoveShiftDownAsPage extends CommandMoveFullPageDown {
+  override keys = [['<S-down>']];
+  override modes = [
+    Mode.Normal,
+    Mode.Visual,
+    Mode.VisualLine,
+    Mode.VisualBlock,
+    Mode.Replace,
+    Mode.Insert,
+  ];
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !configuration.keymodelStartsSelection && super.doesActionApply(vimState, keysPressed);
+  }
+
+  public override couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return !configuration.keymodelStartsSelection && super.couldActionApply(vimState, keysPressed);
+  }
+}
+
+@RegisterAction
 class CommandCtrlD extends CommandScrollAndMoveCursor {
   keys = ['<C-d>'];
   to: EditorScrollDirection = 'down';
