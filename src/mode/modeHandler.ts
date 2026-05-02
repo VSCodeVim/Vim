@@ -292,6 +292,29 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
            * anchor because we need to move vscode anchor one to the right of our start when our start
            * is after our stop in order to include the start character on vscodes selection.
            */
+          // Track external Keyboard/undefined-kind selection changes while
+          // already in Visual (e.g. a second `smartSelect.grow`,
+          // `cursorRightSelect`, `expandLineSelection` that grows the existing
+          // selection). Without this, vimState.cursor goes stale and the next
+          // render reverts VSCode's selection to our pre-update cursor range.
+          // The Command-kind branch above already handles this for
+          // command-dispatched updates; this block is the Keyboard/undefined
+          // equivalent (matches the kinds grouped together in the comment at
+          // line ~282).
+          if (
+            (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard || e.kind === undefined) &&
+            !selection.active.isEqual(selection.anchor) &&
+            !isSnippetSelectionChange()
+          ) {
+            Logger.trace('Updating Visual Selection from keyboard event!');
+            this.vimState.cursor = Cursor.fromSelection(selection);
+            this.updateView({ drawSelection: false, revealRange: false });
+            this.vimState.lastVisualSelection = {
+              mode: this.vimState.currentMode,
+              start: this.vimState.cursorStartPosition,
+              end: this.vimState.cursorStopPosition,
+            };
+          }
           return;
         }
 
