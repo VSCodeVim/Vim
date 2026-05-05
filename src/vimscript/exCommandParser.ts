@@ -54,7 +54,7 @@ import { VimError } from '../error';
 import { VimState } from '../state/vimState';
 import { StatusBar } from '../statusBar';
 import { ExCommand } from './exCommand';
-import { LineRange } from './lineRange';
+import { Address, LineRange } from './lineRange';
 import { nameAbbrevParser } from './parserUtils';
 
 type ArgParser = Parser<ExCommand>;
@@ -713,3 +713,28 @@ export const exCommandParser: Parser<{
     }
     return { name, lineRange, command };
   });
+
+// Wire up GlobalCommand.runExCommand to break the circular import.
+// GlobalCommand needs to execute sub-commands but cannot import exCommandParser directly.
+GlobalCommand.runExCommand = async (
+  vimState: VimState,
+  commandText: string,
+  lineNumber: number,
+): Promise<void> => {
+  const parseResult = exCommandParser.parse(`:${commandText}`);
+
+  if (parseResult.status === false) {
+    throw VimError.NotAnEditorCommand(commandText);
+  }
+
+  const { command, lineRange: commandRange } = parseResult.value;
+
+  if (commandRange) {
+    await command.executeWithRange(vimState, commandRange);
+  } else {
+    await command.executeWithRange(
+      vimState,
+      new LineRange(new Address({ type: 'number', num: lineNumber + 1 })),
+    );
+  }
+};

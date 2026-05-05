@@ -1,18 +1,14 @@
 // eslint-disable-next-line id-denylist
 import { Parser, all, optWhitespace, regexp, seq } from 'parsimmon';
 import { Position } from 'vscode';
-import * as vscode from 'vscode';
-import { VimState } from '../../state/vimState';
 import { Cursor } from '../../common/motion/cursor';
-import { ExCommand } from '../../vimscript/exCommand';
-import { LineRange, Address } from '../../vimscript/lineRange';
-import { Pattern, SearchDirection, PatternMatch } from '../../vimscript/pattern';
-import { exCommandParser } from '../../vimscript/exCommandParser';
-import { DeleteCommand } from './delete';
-import { MoveCommand } from './move';
-import { SubstituteCommand } from './substitute';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
+import { globalState } from '../../state/globalState';
+import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
+import { ExCommand } from '../../vimscript/exCommand';
+import { Address, LineRange } from '../../vimscript/lineRange';
+import { Pattern, PatternMatch, SearchDirection } from '../../vimscript/pattern';
 
 export interface IGlobalCommandArguments {
   pattern: Pattern;
@@ -33,9 +29,19 @@ export class GlobalCommand extends ExCommand {
 
   public static readonly vArgParser: Parser<GlobalCommand> = GlobalCommand.createParser(true);
 
+  /**
+   * Injected by exCommandParser.ts to avoid a circular import.
+   * Parses and executes a single ex command string in the context of the given line.
+   */
+  public static runExCommand: (
+    vimState: VimState,
+    commandText: string,
+    lineNumber: number,
+  ) => Promise<void>;
+
   private static createParser(inverse: boolean): Parser<GlobalCommand> {
     return optWhitespace.then(
-      regexp(/[^\w\s\\|"]{1}/)
+      regexp(/[^\w\s\\|"]/)
         .chain((delimiter) =>
           seq(
             Pattern.parser({ direction: SearchDirection.Forward, delimiter }),
@@ -46,7 +52,7 @@ export class GlobalCommand extends ExCommand {
         .or(
           // Handle case where no delimiter is provided - this should be an error
           all.map(() => {
-            throw VimError.fromCode(ErrorCode.InvalidExpression);
+            throw VimError.InvalidExpression('');
           }),
         ),
     );
@@ -56,12 +62,6 @@ export class GlobalCommand extends ExCommand {
 
   constructor(args: IGlobalCommandArguments) {
     super();
-
-    // Validate pattern is not empty (Requirement 6.1)
-    if (!args.pattern || args.pattern.patternString === '') {
-      throw VimError.fromCode(ErrorCode.NoPreviousRegularExpression);
-    }
-
     this.arguments = args;
   }
 
@@ -85,9 +85,15 @@ export class GlobalCommand extends ExCommand {
 
     try {
       const resolvedRange = this.validateAndResolveRange(vimState, range);
-      const matches = this.findPatternMatches(vimState, range);
+      const pattern = this.resolvePattern();
+      const matches = this.findPatternMatches(vimState, range, pattern);
       const matchingLines = this.extractMatchingLines(matches, resolvedRange);
-      const linesToProcess = this.determineLinesToProcess(vimState, matchingLines, resolvedRange);
+      const linesToProcess = this.determineLinesToProcess(
+        vimState,
+        matchingLines,
+        resolvedRange,
+        pattern,
+      );
 
       if (linesToProcess.size === 0) {
         return;
@@ -107,10 +113,25 @@ export class GlobalCommand extends ExCommand {
   private clearMultiCursorSelections(vimState: VimState): void {
     if (vimState.isMultiCursor) {
       const currentPosition = vimState.cursorStopPosition;
-      vimState.editor.selections = [new vscode.Selection(currentPosition, currentPosition)];
       vimState.cursors = [new Cursor(currentPosition, currentPosition)];
       vimState.isFakeMultiCursor = false;
     }
+  }
+
+  private resolvePattern(): Pattern {
+    if (this.arguments.pattern.patternString === '') {
+      // Empty pattern: fall back to the last search pattern
+      const prevSearchState = globalState.searchState;
+      if (
+        prevSearchState === undefined ||
+        prevSearchState.searchString === '' ||
+        prevSearchState.pattern === undefined
+      ) {
+        throw VimError.NoPreviousRegularExpression();
+      }
+      return prevSearchState.pattern;
+    }
+    return this.arguments.pattern;
   }
 
   private validateAndResolveRange(
@@ -120,8 +141,8 @@ export class GlobalCommand extends ExCommand {
     let resolvedRange: { start: number; end: number };
     try {
       resolvedRange = range.resolve(vimState);
-    } catch (error) {
-      throw VimError.fromCode(ErrorCode.InvalidRange);
+    } catch (_e) {
+      throw VimError.InvalidRange();
     }
 
     if (
@@ -129,17 +150,21 @@ export class GlobalCommand extends ExCommand {
       resolvedRange.end >= vimState.document.lineCount ||
       resolvedRange.start > resolvedRange.end
     ) {
-      throw VimError.fromCode(ErrorCode.InvalidRange);
+      throw VimError.InvalidRange();
     }
 
     return resolvedRange;
   }
 
-  private findPatternMatches(vimState: VimState, range: LineRange): PatternMatch[] {
+  private findPatternMatches(
+    vimState: VimState,
+    range: LineRange,
+    pattern: Pattern,
+  ): PatternMatch[] {
     try {
-      return this.arguments.pattern.allMatches(vimState, { lineRange: range });
-    } catch (error) {
-      throw VimError.fromCode(ErrorCode.InvalidExpression);
+      return pattern.allMatches(vimState, { lineRange: range });
+    } catch (_e) {
+      throw VimError.InvalidExpression('');
     }
   }
 
@@ -162,6 +187,7 @@ export class GlobalCommand extends ExCommand {
     vimState: VimState,
     matchingLines: Set<number>,
     resolvedRange: { start: number; end: number },
+    pattern: Pattern,
   ): Set<number> {
     if (this.arguments.inverse) {
       const linesToProcess = new Set<number>();
@@ -173,10 +199,7 @@ export class GlobalCommand extends ExCommand {
       return linesToProcess;
     } else {
       if (matchingLines.size === 0) {
-        StatusBar.displayError(
-          vimState,
-          VimError.fromCode(ErrorCode.PatternNotFound, this.arguments.pattern.patternString),
-        );
+        StatusBar.displayError(vimState, VimError.PatternNotFound(pattern.patternString));
       }
       return matchingLines;
     }
@@ -217,20 +240,10 @@ export class GlobalCommand extends ExCommand {
       const lineCountBefore = vimState.document.lineCount;
 
       try {
-        const parsedCommand = await this.executeCommand(
-          vimState,
-          commandToExecute,
-          currentLineNumber,
-        );
+        await this.executeCommand(vimState, commandToExecute, currentLineNumber);
         const lineCountChange = vimState.document.lineCount - lineCountBefore;
 
-        this.updateLineTracking(
-          parsedCommand,
-          commandToExecute,
-          lineCountChange,
-          currentLineNumber,
-          executionContext,
-        );
+        this.updateLineTracking(lineCountChange, currentLineNumber, executionContext);
 
         this.updateExecutionContext(
           executionContext,
@@ -238,14 +251,8 @@ export class GlobalCommand extends ExCommand {
           currentLineNumber,
           vimState,
         );
-      } catch (error) {
-        this.handleCommandError(
-          vimState,
-          error,
-          commandToExecute,
-          currentLineNumber,
-          executionContext,
-        );
+      } catch (e) {
+        this.handleCommandError(vimState, e, commandToExecute, currentLineNumber, executionContext);
         break;
       }
     }
@@ -253,36 +260,14 @@ export class GlobalCommand extends ExCommand {
 
   private positionCursorAtLine(vimState: VimState, lineNumber: number): void {
     vimState.cursor = Cursor.atPosition(new Position(lineNumber, 0));
-    vimState.editor.selection = new vscode.Selection(position, position);
   }
 
   private async executeCommand(
     vimState: VimState,
     commandToExecute: string,
     currentLineNumber: number,
-  ): Promise<ExCommand> {
-    const parseResult = exCommandParser.parse(`:${commandToExecute}`);
-
-    if (parseResult.status === false) {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.NotAnEditorCommand, commandToExecute),
-      );
-      throw new Error('Command parsing failed');
-    }
-
-    const { command: parsedCommand, lineRange: commandRange } = parseResult.value;
-
-    if (commandRange) {
-      await parsedCommand.executeWithRange(vimState, commandRange);
-    } else {
-      const currentLineRange = new LineRange(
-        new Address({ type: 'number', num: currentLineNumber + 1 }),
-      );
-      await parsedCommand.executeWithRange(vimState, currentLineRange);
-    }
-
-    return parsedCommand;
+  ): Promise<void> {
+    await GlobalCommand.runExCommand(vimState, commandToExecute, currentLineNumber);
   }
 
   private updateExecutionContext(
@@ -301,7 +286,7 @@ export class GlobalCommand extends ExCommand {
 
   private handleCommandError(
     vimState: VimState,
-    error: any,
+    e: unknown,
     commandToExecute: string,
     currentLineNumber: number,
     executionContext: ExecutionContext,
@@ -311,13 +296,10 @@ export class GlobalCommand extends ExCommand {
       Math.min(currentLineNumber, vimState.document.lineCount - 1),
     );
 
-    if (error instanceof VimError) {
-      StatusBar.displayError(vimState, error);
+    if (e instanceof VimError) {
+      StatusBar.displayError(vimState, e);
     } else {
-      StatusBar.displayError(
-        vimState,
-        VimError.fromCode(ErrorCode.NotAnEditorCommand, commandToExecute),
-      );
+      StatusBar.displayError(vimState, VimError.NotAnEditorCommand(commandToExecute));
     }
   }
 
@@ -343,54 +325,23 @@ export class GlobalCommand extends ExCommand {
       finalPosition = vimState.cursorStopPosition;
     }
 
-    vimState.cursorStopPosition = finalPosition;
-    vimState.cursorStartPosition = finalPosition;
-    vimState.editor.selection = new vscode.Selection(finalPosition, finalPosition);
     vimState.cursors = [new Cursor(finalPosition, finalPosition)];
-    vimState.lastVisualSelection = undefined;
   }
 
   /**
    * Updates line tracking based on the executed command and its effects on the document
    */
   private updateLineTracking(
-    parsedCommand: ExCommand | null,
-    commandString: string,
     lineCountChange: number,
     currentLineNumber: number,
     executionContext: ExecutionContext,
   ): void {
-    // Handle different command types and their line count effects
-    if (parsedCommand instanceof DeleteCommand || commandString.startsWith('d')) {
-      // Delete commands: lines are removed, subsequent lines move up
-      executionContext.lineOffset += lineCountChange; // lineCountChange will be negative for deletions
-    } else if (parsedCommand instanceof MoveCommand || commandString.startsWith('m')) {
-      // Move commands: complex line rearrangement
-      // The line count change tells us how many lines were added/removed at the destination
-      executionContext.lineOffset += lineCountChange;
-    } else if (parsedCommand instanceof SubstituteCommand || commandString.startsWith('s')) {
-      // Substitute commands: can add or remove lines based on replacement text
-      executionContext.lineOffset += lineCountChange;
-    } else if (commandString.startsWith('t') || commandString.startsWith('co')) {
-      // Copy commands: lines are added, subsequent lines move down
-      executionContext.lineOffset += lineCountChange; // lineCountChange will be positive for copies
-    } else if (commandString.startsWith('i') || commandString.startsWith('a')) {
-      // Insert/append commands: lines are added
-      executionContext.lineOffset += lineCountChange;
-    } else {
-      // For other commands (like print, normal mode commands), track any line count changes
-      // This handles edge cases where commands might unexpectedly modify line count
-      executionContext.lineOffset += lineCountChange;
-    }
+    executionContext.lineOffset += lineCountChange;
 
-    // Handle edge cases where lines are deleted or moved in complex ways
+    // If lines were deleted, mark the corresponding original lines as processed
+    // to prevent trying to process lines that no longer exist
     if (lineCountChange < 0) {
-      // Lines were deleted - we need to be more careful about subsequent line processing
-      // If we deleted multiple lines, we need to account for that in our tracking
       const linesDeleted = Math.abs(lineCountChange);
-
-      // Mark additional original lines as processed if they were deleted
-      // This prevents trying to process lines that no longer exist
       for (let j = 1; j <= linesDeleted; j++) {
         const deletedOriginalLine = currentLineNumber - executionContext.lineOffset + j;
         if (deletedOriginalLine >= 0) {
