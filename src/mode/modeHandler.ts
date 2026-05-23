@@ -437,7 +437,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     const now = Date.now();
 
-    const printableKey = Notation.printableKey(key, configuration.leader);
+    const printableKey = Notation.printableKey(key, configuration.leader, configuration.localleader);
     Logger.debug(`Handling key: ${printableKey}`);
 
     if (key === SpecialKeys.ExtensionEnable.valueOf()) {
