@@ -106,6 +106,9 @@ export class Configuration implements IConfiguration {
   matchpairs = '(:),{:},[:]';
   visualstar = false;
   mouseSelectionGoesIntoVisualMode = true;
+  keymodel = '';
+  keymodelStartsSelection = false;
+  keymodelStopsSelection = false;
   changeWordIncludesWhitespace = false;
   foldfix = false;
   disableExtension = false;
@@ -143,7 +146,6 @@ export class Configuration implements IConfiguration {
   visualModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   commandLineModeKeyBindingsMap: Map<string, IKeyRemapping> = new Map();
   whichwrap = 'b,s';
-  wrapKeys = {};
   report = 2;
   digraphs = {};
   wrapscan = true;

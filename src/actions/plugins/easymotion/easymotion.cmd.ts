@@ -320,7 +320,7 @@ class EasyMotionCharInputMode extends BaseCommand {
     const key = this.keysPressed[0];
     const action = vimState.easyMotion.searchAction;
     action.searchString =
-      key === '<BS>' || key === '<S-BS>'
+      key === '<BS>' || key === '<C-BS>' || key === '<S-BS>'
         ? action.searchString.slice(0, -1)
         : action.searchString + key;
     if (action.shouldFire()) {

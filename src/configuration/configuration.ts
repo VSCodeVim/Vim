@@ -148,6 +148,11 @@ class Configuration implements IConfiguration {
 
     const validatorResults = await configurationValidator.validate(configuration);
 
+    // set keymodel options
+    const km = this.keymodel.split(',');
+    this.keymodelStartsSelection = km.includes('startsel');
+    this.keymodelStopsSelection = km.includes('stopsel');
+
     // read package.json for bound keys
     // enable/disable certain key combinations
     this.boundKeyCombinations = [];
@@ -416,6 +421,10 @@ class Configuration implements IConfiguration {
   visualstar = false;
 
   mouseSelectionGoesIntoVisualMode = true;
+
+  keymodel = '';
+  keymodelStartsSelection = false;
+  keymodelStopsSelection = false;
 
   changeWordIncludesWhitespace = false;
 
