@@ -23,7 +23,7 @@ const BUFFERED_KEYS_REGEX = new RegExp(SpecialKeys.TimeoutFinished, 'g');
  */
 export class RecordedState {
   constructor() {
-    this.registerName = configuration.useSystemClipboard ? '*' : '"';
+    this.registerName = configuration.clipboardAliasesUnnamedRegister ? '*' : '"';
   }
 
   /**

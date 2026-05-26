@@ -110,7 +110,9 @@ abstract class BasePutCommand extends BaseCommand {
       };
 
       if (this.overwritesRegisterWithSelection) {
-        vimState.recordedState.registerName = configuration.useSystemClipboard ? '*' : '"';
+        vimState.recordedState.registerName = configuration.clipboardAliasesUnnamedRegister
+          ? '*'
+          : '"';
         Register.put(
           vimState,
           vimState.document.getText(replaceRange),

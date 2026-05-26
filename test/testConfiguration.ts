@@ -16,6 +16,7 @@ export class Configuration implements IConfiguration {
   [key: string]: any;
 
   useSystemClipboard = false;
+  clipboard: IConfiguration['clipboard'] = '';
   useCtrlKeys = false;
   overrideCopy = true;
   textwidth = 80;
