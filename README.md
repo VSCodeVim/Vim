@@ -177,6 +177,7 @@ Custom remappings are defined on a per-mode basis.
 
 - Keybinding overrides to use for insert, normal, operatorPending and visual modes.
 - Keybinding overrides can include `"before"`, `"after"`, `"commands"`, and `"silent"`.
+- Command objects inside `"commands"` can also include `"when"`. These `when` expressions are evaluated against contexts published by VSCodeVim itself, such as `vim.active`, `vim.mode`, and `vim.isTextDiffEditor`.
 - Bind `jj` to `<Esc>` in insert mode:
 
 ```json
@@ -317,6 +318,28 @@ Custom remappings are defined on a per-mode basis.
         }
     ]
 ```
+
+    - Conditionally bind `]c` to diff navigation in a text diff editor and to another command otherwise:
+
+    ```json
+      "vim.normalModeKeyBindingsNonRecursive": [
+        {
+          "before": ["]", "c"],
+          "commands": [
+            {
+              "command": "workbench.action.compareEditor.nextChange",
+              "when": "vim.isTextDiffEditor"
+            },
+            {
+              "command": "chatEditor.action.navigateNext",
+              "when": "!vim.isTextDiffEditor"
+            }
+          ]
+        }
+      ]
+    ```
+
+    Supported operators in `when`: `!`, `&&`, `||`, `==`, `!=`, and parentheses.
 
 #### `"vim.insertModeKeyBindingsNonRecursive"`/`"normalModeKeyBindingsNonRecursive"`/`"visualModeKeyBindingsNonRecursive"`/`"operatorPendingModeKeyBindingsNonRecursive"`
 
