@@ -1243,7 +1243,7 @@
     "husky": "^9.0.0",
     "lint-staged": "^17.0.0",
     "minimist": "1.2.8",
-    "mocha": "11.7.5",
+    "mocha": "11.7.6",
     "plugin-error": "2.0.1",
     "prettier": "3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
