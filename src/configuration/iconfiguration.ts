@@ -328,9 +328,14 @@ export interface IConfiguration {
   visualstar: boolean;
 
   /**
-   * Does dragging with the mouse put you into visual mode
+   * Does dragging with the mouse put you into visual mode (except for insert mode)
    */
   mouseSelectionGoesIntoVisualMode: boolean;
+
+  /**
+   * Does dragging with the mouse put you into visual mode when you're in insert mode
+   */
+  mouseSelectionGoesIntoVisualModeFromInsert: boolean;
 
   /**
    * Includes trailing whitespace when changing word.
