@@ -16,6 +16,7 @@ import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
 import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
 import {
+  DotCommandStatus,
   Mode,
   visualBlockGetBottomRightPosition,
   visualBlockGetTopLeftPosition,
@@ -697,6 +698,28 @@ class VisualBlockChange extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
+    // Handle dot command repetition for visual block change
+    if (
+      vimState.dotCommandStatus === DotCommandStatus.Executing &&
+      vimState.dotCommandPreviousVisualSelection
+    ) {
+      const prevSel = vimState.dotCommandPreviousVisualSelection;
+      const prevTopLeft = visualBlockGetTopLeftPosition(prevSel.start, prevSel.end);
+      const prevBottomRight = visualBlockGetBottomRightPosition(prevSel.start, prevSel.end);
+
+      // Calculate the dimensions of the previous visual block selection
+      const numLines = Math.abs(prevBottomRight.line - prevTopLeft.line);
+      const blockWidth = prevBottomRight.character - prevTopLeft.character;
+
+      // Reconstruct the visual block selection from current cursor position
+      const currentPos = vimState.cursorStartPosition;
+      const newStart = currentPos;
+      const newEnd = new Position(currentPos.line + numLines, currentPos.character + blockWidth);
+
+      // Update the cursor to reflect the reconstructed selection
+      vimState.cursors = [new Cursor(newStart, newEnd)];
+    }
+
     const cursors: Cursor[] = [];
     const lines: string[] = [];
     for (const cursor of vimState.cursors) {
