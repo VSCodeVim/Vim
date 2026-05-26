@@ -64,13 +64,13 @@ export class RemappingValidator implements IConfigurationValidator {
         // normalize
         if (remapping.before) {
           remapping.before.forEach(
-            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, config.leader)),
+            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, config.leader, config.localleader)),
           );
         }
 
         if (remapping.after) {
           remapping.after.forEach(
-            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, config.leader)),
+            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, config.leader, config.localleader)),
           );
         }
 

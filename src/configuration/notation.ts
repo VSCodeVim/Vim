@@ -40,7 +40,7 @@ export class Notation {
    * and converts the characters to their literals
    * (e.g. <space>, <cr>, <leader>)
    */
-  public static NormalizeKey(key: string, leaderKey: string): string {
+  public static NormalizeKey(key: string, leaderKey: string, localLeaderKey?: string): string {
     if (typeof key !== 'string') {
       return key;
     }
@@ -57,6 +57,10 @@ export class Notation {
 
     if (key === '<leader>') {
       return leaderKey;
+    }
+
+    if (key === '<localleader>') {
+      return localLeaderKey ?? leaderKey;
     }
 
     if (['<up>', '<down>', '<left>', '<right>'].includes(key)) {
@@ -77,8 +81,8 @@ export class Notation {
   /**
    * Converts a key to a form which will look nice when logged, etc.
    */
-  public static printableKey(key: string, leaderKey: string) {
-    const normalized = this.NormalizeKey(key, leaderKey);
+  public static printableKey(key: string, leaderKey: string, localLeaderKey?: string) {
+    const normalized = this.NormalizeKey(key, leaderKey, localLeaderKey);
     return normalized === ' ' ? '<space>' : normalized === '\n' ? '<enter>' : normalized;
   }
 
