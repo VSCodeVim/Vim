@@ -171,6 +171,7 @@ class CommandEsc extends BaseCommand {
           vscode.commands.executeCommand('closeDirtyDiff'),
           vscode.commands.executeCommand('closeQuickDiff'),
           vscode.commands.executeCommand('editor.action.inlineSuggest.hide'),
+          vscode.commands.executeCommand('workbench.action.exitZenMode'),
         ]);
       }
     } else {
