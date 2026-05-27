@@ -152,6 +152,24 @@ export type VariableStore = Map<string, Variable>;
 export class EvaluationContext {
   private static globalVariables: VariableStore = new Map();
 
+  // Static v: variables whose values never change
+  private static readonly vConstants: ReadonlyMap<string, Value> = new Map([
+    ['true', bool(true)],
+    ['false', bool(false)],
+    ['t_number', int(0)],
+    ['t_string', int(1)],
+    ['t_func', int(2)],
+    ['t_list', int(3)],
+    ['t_dict', int(4)],
+    ['t_float', int(5)],
+    ['t_bool', int(6)],
+    ['t_blob', int(10)],
+    ['numbermax', int(Number.MAX_SAFE_INTEGER)],
+    ['numbermin', int(Number.MIN_SAFE_INTEGER)],
+    // NOTE: In VimScript this refers to a 64 bit integer; we have a 64 bit float because JavaScript
+    ['numbersize', int(64)],
+  ]);
+
   private vimState: VimState | undefined;
   private localScopes: VariableStore[] = [];
   private errors: string[] = [];
@@ -345,35 +363,13 @@ export class EvaluationContext {
       // TODO: v:operator
       // TODO: v:register
       // TODO: v:statusmsg, v:warningmsg, v:errmsg
-      if (varExpr.name === 'true') {
-        return bool(true);
-      } else if (varExpr.name === 'false') {
-        return bool(false);
-      } else if (varExpr.name === 'hlsearch') {
+      const constant = EvaluationContext.vConstants.get(varExpr.name);
+      if (constant !== undefined) {
+        return constant;
+      }
+
+      if (varExpr.name === 'hlsearch') {
         return bool(globalState.hl);
-      } else if (varExpr.name === 't_number') {
-        return int(0);
-      } else if (varExpr.name === 't_string') {
-        return int(1);
-      } else if (varExpr.name === 't_func') {
-        return int(2);
-      } else if (varExpr.name === 't_list') {
-        return int(3);
-      } else if (varExpr.name === 't_dict') {
-        return int(4);
-      } else if (varExpr.name === 't_float') {
-        return int(5);
-      } else if (varExpr.name === 't_bool') {
-        return int(6);
-      } else if (varExpr.name === 't_blob') {
-        return int(10);
-      } else if (varExpr.name === 'numbermax') {
-        return int(Number.MAX_SAFE_INTEGER);
-      } else if (varExpr.name === 'numbermin') {
-        return int(Number.MIN_SAFE_INTEGER);
-      } else if (varExpr.name === 'numbersize') {
-        // NOTE: In VimScript this refers to a 64 bit integer; we have a 64 bit float because JavaScript
-        return int(64);
       } else if (varExpr.name === 'errors') {
         return list(this.errors.map(str));
       } else if (varExpr.name === 'searchforward') {
