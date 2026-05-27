@@ -766,14 +766,51 @@ export class EvaluationContext {
       }
       return args;
     };
+
+    type NumericBuiltinOptions<T extends Value> = {
+      convert: (value: Value) => number;
+      wrap: (value: number) => T;
+    };
+    const numericUnary = <T extends Value>(
+      func: (x: number) => number,
+      options: NumericBuiltinOptions<T>,
+    ): T => {
+      const [x] = getArgs(1);
+      const convert = options.convert;
+      const wrap = options.wrap;
+      return wrap(func(convert(x!)));
+    };
+    const numericBinary = <T extends Value>(
+      func: (x: number, y: number) => number,
+      options: NumericBuiltinOptions<T>,
+    ): T => {
+      const [x, y] = getArgs(2);
+      const convert = options.convert;
+      const wrap = options.wrap;
+      return wrap(func(convert(x!), convert(y!)));
+    };
+    const int1 = (func: (x: number) => number): NumberValue =>
+      numericUnary(func, { convert: toInt, wrap: int });
+    const floatToInt1 = (func: (x: number) => number): NumberValue =>
+      numericUnary(func, { convert: toFloat, wrap: int });
+    const int2 = (func: (x: number, y: number) => number): NumberValue =>
+      numericBinary(func, { convert: toInt, wrap: int });
+    const float1 = (func: (x: number) => number): FloatValue =>
+      numericUnary(func, { convert: toFloat, wrap: float });
+    const float2 = (func: (x: number, y: number) => number): FloatValue =>
+      numericBinary(func, { convert: toFloat, wrap: float });
+    const floatToBool1 = (predicate: (x: number) => boolean): NumberValue =>
+      numericUnary((x) => (predicate(x) ? 1 : 0), {
+        convert: toFloat,
+        wrap: (value) => bool(value !== 0),
+      });
+
     switch (call.func) {
       case 'abs': {
-        const [x] = getArgs(1);
-        return float(Math.abs(toFloat(x!)));
+        return float1(Math.abs);
       }
       case 'acos': {
-        const [x] = getArgs(1);
-        return float(Math.acos(toFloat(x!)));
+        return float1(Math.acos);
       }
       case 'add': {
         const [l, item] = getArgs(2);
@@ -789,17 +826,14 @@ export class EvaluationContext {
         return lst;
       }
       case 'asin': {
-        const [x] = getArgs(1);
-        return float(Math.asin(toFloat(x!)));
+        return float1(Math.asin);
       }
       case 'atan2': {
-        const [x, y] = getArgs(2);
-        return float(Math.atan2(toFloat(x!), toFloat(y!)));
+        return float2(Math.atan2);
       }
       case 'and': {
-        const [x, y] = getArgs(2);
         // eslint-disable-next-line no-bitwise
-        return int(toInt(x!) & toInt(y!));
+        return int2((x, y) => x & y);
       }
       case 'assert_beeps': {
         return assertFailed('VSCodeVim does not support beeps');
@@ -913,8 +947,7 @@ export class EvaluationContext {
         return this.evaluate(funcrefCall(toExpr(func), arglist!.items.map(toExpr)));
       }
       case 'ceil': {
-        const [x] = getArgs(1);
-        return float(Math.ceil(toFloat(x!)));
+        return float1(Math.ceil);
       }
       case 'col': {
         const [s] = getArgs(1);
@@ -925,12 +958,10 @@ export class EvaluationContext {
         return copy(x!, false);
       }
       case 'cos': {
-        const [x] = getArgs(1);
-        return float(Math.cos(toFloat(x!)));
+        return float1(Math.cos);
       }
       case 'cosh': {
-        const [x] = getArgs(1);
-        return float(Math.cosh(toFloat(x!)));
+        return float1(Math.cosh);
       }
       case 'count': {
         let [comp, expr, ic, start] = getArgs(2, 4);
@@ -1014,8 +1045,7 @@ export class EvaluationContext {
       }
       // TODO: exists()
       case 'exp': {
-        const [x] = getArgs(1);
-        return float(Math.exp(toFloat(x!)));
+        return float1(Math.exp);
       }
       // TODO: extend/extendnew()
       // TODO: filecopy()
@@ -1056,16 +1086,13 @@ export class EvaluationContext {
         return list(newItems);
       }
       case 'float2nr': {
-        const [x] = getArgs(1);
-        return int(toFloat(x!));
+        return floatToInt1((x) => x);
       }
       case 'floor': {
-        const [x] = getArgs(1);
-        return float(Math.floor(toFloat(x!)));
+        return float1(Math.floor);
       }
       case 'fmod': {
-        const [x, y] = getArgs(2);
-        return float(toFloat(x!) % toFloat(y!));
+        return float2((x, y) => x % y);
       }
       // TODO: Fix circular dependency
       // case 'fullcommand': {
@@ -1246,21 +1273,17 @@ export class EvaluationContext {
         return lst;
       }
       case 'invert': {
-        const [x] = getArgs(1);
         // eslint-disable-next-line no-bitwise
-        return int(~toInt(x!));
+        return int1((x) => ~x);
       }
       // TODO: isabsolutepath()
       // TODO: isdirectory()
       case 'isinf': {
-        const [x] = getArgs(1);
-        const _x = toFloat(x!);
-        return int(_x === Infinity ? 1 : _x === -Infinity ? -1 : 0);
+        return floatToInt1((x) => (x === Infinity ? 1 : x === -Infinity ? -1 : 0));
       }
       // TODO: islocked()
       case 'isnan': {
-        const [x] = getArgs(1);
-        return bool(isNaN(toFloat(x!)));
+        return floatToBool1((x) => isNaN(x));
       }
       case 'items': {
         const [d] = getArgs(1);
@@ -1359,12 +1382,10 @@ export class EvaluationContext {
         return int(Date.now() / 1000);
       }
       case 'log': {
-        const [x] = getArgs(1);
-        return float(Math.log(toFloat(x!)));
+        return float1(Math.log);
       }
       case 'log10': {
-        const [x] = getArgs(1);
-        return float(Math.log10(toFloat(x!)));
+        return float1(Math.log10);
       }
       case 'map':
       case 'mapnew': {
@@ -1464,13 +1485,11 @@ export class EvaluationContext {
         return int(0);
       }
       case 'or': {
-        const [x, y] = getArgs(2);
         // eslint-disable-next-line no-bitwise
-        return int(toInt(x!) | toInt(y!));
+        return int2((x, y) => x | y);
       }
       case 'pow': {
-        const [x, y] = getArgs(2);
-        return float(Math.pow(toFloat(x!), toFloat(y!)));
+        return float2(Math.pow);
       }
       case 'prevnonblank': {
         const [_line] = getArgs(1);
@@ -1556,20 +1575,16 @@ export class EvaluationContext {
         return int(0);
       }
       case 'round': {
-        const [x] = getArgs(1);
-        const _x = toFloat(x!);
         // Halfway between integers, Math.round() rounds toward infinity while Vim's round() rounds away from 0.
-        return float(_x < 0 ? -Math.round(-_x) : Math.round(_x));
+        return float1((x) => (x < 0 ? -Math.round(-x) : Math.round(x)));
       }
       // TODO: setpos()
       // TODO: setreg()
       case 'sin': {
-        const [x] = getArgs(1);
-        return float(Math.sin(toFloat(x!)));
+        return float1(Math.sin);
       }
       case 'sinh': {
-        const [x] = getArgs(1);
-        return float(Math.sinh(toFloat(x!)));
+        return float1(Math.sinh);
       }
       case 'sort': {
         // TODO: use dict
@@ -1617,8 +1632,7 @@ export class EvaluationContext {
         return list(result.map(str));
       }
       case 'sqrt': {
-        const [x] = getArgs(1);
-        return float(Math.sqrt(toFloat(x!)));
+        return float1(Math.sqrt);
       }
       case 'str2float': {
         // TODO: Support 1e40 (rather than 1.0e40)
@@ -1678,12 +1692,10 @@ export class EvaluationContext {
       // TODO: submatch()
       // TODO: substitute()
       case 'tan': {
-        const [x] = getArgs(1);
-        return float(Math.tan(toFloat(x!)));
+        return float1(Math.tan);
       }
       case 'tanh': {
-        const [x] = getArgs(1);
-        return float(Math.tanh(toFloat(x!)));
+        return float1(Math.tanh);
       }
       // TODO: timer*()
       case 'tolower': {
@@ -1728,8 +1740,7 @@ export class EvaluationContext {
         return str(s);
       }
       case 'trunc': {
-        const [x] = getArgs(1);
-        return float(Math.trunc(toFloat(x!)));
+        return float1(Math.trunc);
       }
       case 'type': {
         let [x] = getArgs(1);
@@ -1793,9 +1804,8 @@ export class EvaluationContext {
       }
       // TODO: wordcount()
       case 'xor': {
-        const [x, y] = getArgs(2);
         // eslint-disable-next-line no-bitwise
-        return int(toInt(x!) ^ toInt(y!));
+        return int2((x, y) => x ^ y);
       }
       default: {
         throw VimError.UnknownFunction_call(call.func);
