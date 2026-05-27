@@ -1419,18 +1419,7 @@ export class EvaluationContext {
       }
       // TODO: matchadd()/matchaddpos()/matcharg()/matchdelete()
       // TODO: match()/matchend()/matchlist()/matchstr()/matchstrpos()
-      case 'max': {
-        const [l] = getArgs(1);
-        let values: Value[];
-        if (l?.type === 'list') {
-          values = l.items;
-        } else if (l?.type === 'dictionary') {
-          values = [...l.items.values()];
-        } else {
-          throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
-        }
-        return int(values.length === 0 ? 0 : Math.max(...values.map(toInt)));
-      }
+      case 'max':
       case 'min': {
         const [l] = getArgs(1);
         let values: Value[];
@@ -1441,7 +1430,8 @@ export class EvaluationContext {
         } else {
           throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
         }
-        return int(values.length === 0 ? 0 : Math.min(...values.map(toInt)));
+        const fn = call.func === 'max' ? Math.max : Math.min;
+        return int(values.length === 0 ? 0 : fn(...values.map(toInt)));
       }
       case 'mode': {
         const [arg] = getArgs(1);
@@ -1467,13 +1457,17 @@ export class EvaluationContext {
             return str(''); // TODO: Other modes
         }
       }
-      case 'nextnonblank': {
+      case 'nextnonblank':
+      case 'prevnonblank': {
         const [_line] = getArgs(1);
         const line = toInt(_line!);
-        if (line <= 0) {
+        const forward = call.func === 'nextnonblank';
+        if (forward ? line <= 0 : line > this.vimState!.document.lineCount) {
           return int(0);
         }
-        for (let i = line - 1; i < this.vimState!.document.lineCount; i++) {
+        const step = forward ? 1 : -1;
+        const limit = forward ? this.vimState!.document.lineCount : -1;
+        for (let i = line - 1; forward ? i < limit : i >= 0; i += step) {
           if (this.vimState!.document.lineAt(i).text.length > 0) {
             return int(i + 1);
           }
@@ -1486,19 +1480,6 @@ export class EvaluationContext {
       }
       case 'pow': {
         return float2(Math.pow);
-      }
-      case 'prevnonblank': {
-        const [_line] = getArgs(1);
-        const line = toInt(_line!);
-        if (line > this.vimState!.document.lineCount) {
-          return int(0);
-        }
-        for (let i = line - 1; i >= 0; i--) {
-          if (this.vimState!.document.lineAt(i).text.length > 0) {
-            return int(i + 1);
-          }
-        }
-        return int(0);
       }
       // TODO: printf()
       // TODO: rand()
