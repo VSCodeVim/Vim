@@ -5,8 +5,8 @@ import preferArrow from 'eslint-plugin-prefer-arrow';
 
 export default [
   { ignores: ['**/*.js', '**/*.mjs', '**/*.cjs', '.vscode-test/'] },
-  ...tsPlugin.configs['flat/recommended'],
   ...tsPlugin.configs['flat/recommended-type-checked'],
+  // TODO: Consider extending from `strict-type-checked` and/or `stylistic-type-checked`
   {
     files: ['**/*.ts'],
     plugins: {
@@ -30,8 +30,6 @@ export default [
       '@typescript-eslint/ban-ts-comment': 'error',
       '@typescript-eslint/consistent-type-assertions': 'error',
       '@typescript-eslint/dot-notation': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/naming-convention': [
         'error',
         {
@@ -81,7 +79,6 @@ export default [
       '@typescript-eslint/no-unsafe-return': 'error',
       '@typescript-eslint/no-unused-expressions': 'error',
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-use-before-define': 'off',
       '@typescript-eslint/no-var-requires': 'error',
       '@typescript-eslint/prefer-as-const': 'error',
       '@typescript-eslint/prefer-for-of': 'error',
