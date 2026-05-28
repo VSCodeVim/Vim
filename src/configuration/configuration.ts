@@ -226,6 +226,8 @@ class Configuration implements IConfiguration {
     this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
 
+  tildeop = false;
+
   handleKeys: IHandleKeys = {};
 
   useSystemClipboard = false;
