@@ -440,12 +440,7 @@ class ToggleCaseOperator extends ChangeCaseOperator {
   }
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    const isVisual =
-      vimState.currentMode === Mode.Visual ||
-      vimState.currentMode === Mode.VisualLine ||
-      vimState.currentMode === Mode.VisualBlock;
-
-    if (isVisual) {
+    if (isVisualMode(vimState.currentMode)) {
       return super.doesActionApply(vimState, keysPressed);
     }
 
