@@ -277,6 +277,7 @@ class Configuration implements IConfiguration {
   easymotionMarkerFontWeight = 'bold';
   easymotionKeys = 'hklyuiopnm,qwertzxcvbasdgjf;';
   easymotionJumpToAnywhereRegex = '\\b[A-Za-z0-9]|[A-Za-z0-9]\\b|_.|#.|[a-z][A-Z]';
+  easymotionOnlyVisibleRange = false;
 
   targets: ITargetsConfiguration = {
     enable: false,
