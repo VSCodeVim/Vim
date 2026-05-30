@@ -87,6 +87,20 @@ suite('surrogate-pair', () => {
     end: ['a|xc😄'],
   });
 
+  newTest({
+    title: 'replace count spanning surrogate pairs',
+    start: ['|😄😄text'],
+    keysPressed: '2rx',
+    end: ['x|xtext'],
+  });
+
+  newTest({
+    title: 'replace count exceeding remaining surrogate-pair chars is a no-op',
+    start: ['|😄'],
+    keysPressed: '2rx',
+    end: ['|😄'],
+  });
+
   // === Toggle case (~) ===
   newTest({
     title: 'toggle case advances past surrogate pair',

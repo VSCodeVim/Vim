@@ -29,11 +29,15 @@ export class ReplaceCharacter extends BaseCommand {
       return;
     }
 
-    if (position.character + timesToRepeat > position.getLineEnd().character) {
+    const endPos = position.getSurrogateAwareRight(vimState.document, timesToRepeat);
+
+    // Refuse if fewer than `timesToRepeat` characters remain on the line.
+    // `endPos` is codepoint-aware, so count codepoints (not UTF-16 code units)
+    // in the spanned range — a surrogate pair counts as a single character.
+    const line = vimState.document.lineAt(position).text;
+    if ([...line.slice(position.character, endPos.character)].length < timesToRepeat) {
       return;
     }
-
-    const endPos = position.getSurrogateAwareRight(vimState.document, timesToRepeat);
 
     if (toReplace === '<tab>') {
       vimState.recordedState.transformer.delete(new Range(position, endPos));
