@@ -122,6 +122,10 @@ suite('Vimscript expressions', () => {
       exprTest('""', { expr: str('') });
       exprTest('"\\""', { expr: str('"') });
       exprTest('"one\\ntwo\\tthree"', { expr: str('one\ntwo\tthree') });
+      exprTest('"\\\\"', { expr: str('\\') }); // "\\" -> single backslash
+      exprTest('"\\n"', { expr: str('\n') });
+      exprTest('"\\t"', { expr: str('\t') });
+      exprTest('"hello world"', { expr: str('hello world') });
     });
 
     suite('Literal strings', () => {
@@ -410,6 +414,12 @@ suite('Vimscript expressions', () => {
       exprTest('4/5', { value: int(0) });
       exprTest('4/5.0', { display: '0.8' });
       exprTest('4.0/5', { display: '0.8' });
+
+      exprTest('10 - 3', { value: int(7) });
+      exprTest('3 - 10', { value: int(-7) });
+      exprTest('10 - 3.0', { display: '7.0' });
+      exprTest('1 + 2 + 3', { value: int(6) });
+      exprTest('1 + 2 - 3', { value: int(0) });
     });
 
     suite('Precedence', () => {
@@ -458,7 +468,17 @@ suite('Vimscript expressions', () => {
 
     suite('Pattern matching', () => {
       exprTest("'apple' =~ '^a.*e$'", { value: bool(true) });
+      exprTest("'apple' =~# '^a.*e$'", { value: bool(true) });
+      exprTest("'apple' =~# '^A.*E$'", { value: bool(false) });
+      exprTest("'apple' =~? '^A.*E$'", { value: bool(true) });
       // TODO
+    });
+
+    suite('Pattern not-matching', () => {
+      exprTest("'apple' !~ '^a.*e$'", { value: bool(false) });
+      exprTest("'apple' !~ '^b'", { value: bool(true) });
+      exprTest("'foo' !~# '^F'", { value: bool(true) });
+      exprTest("'foo' !~? '^F'", { value: bool(false) });
     });
 
     suite('Numeric comparisons', () => {
@@ -608,6 +628,14 @@ suite('Vimscript expressions', () => {
       exprTest("assert_match('^f.*o$', 'foobar')", FAIL);
 
       exprTest('assert_report("whatever")', FAIL);
+
+      exprTest('assert_notequal(1, 2)', PASS);
+      exprTest('assert_notequal(1, 1)', FAIL);
+      exprTest('assert_notequal("abc", "def")', PASS);
+      exprTest('assert_notequal("abc", "abc")', FAIL);
+
+      exprTest("assert_notmatch('^f.*o$', 'bar')", PASS);
+      exprTest("assert_notmatch('^f.*o$', 'foo')", FAIL);
     });
 
     suite('add', () => {
@@ -771,7 +799,10 @@ suite('Vimscript expressions', () => {
     });
 
     suite('invert', () => {
+      exprTest('invert(0)', { value: int(-1) });
+      exprTest('invert(-1)', { value: int(0) });
       exprTest('invert(123)', { value: int(-124) });
+      exprTest('invert(-124)', { value: int(123) });
     });
 
     suite('isnan/isinf', () => {
@@ -936,6 +967,10 @@ suite('Vimscript expressions', () => {
       exprTest('stridx("0123456789", "6")', { value: int(6) });
       exprTest('stridx("0123456789", "456")', { value: int(4) });
       exprTest('stridx("0123456789", "X")', { value: int(-1) });
+      exprTest('stridx("0123456789", "6", 5)', { value: int(6) });
+      exprTest('stridx("0123456789", "6", 7)', { value: int(-1) });
+      exprTest('stridx("abcabc", "b")', { value: int(1) });
+      exprTest('stridx("abcabc", "b", 2)', { value: int(4) });
     });
 
     suite('string', () => {
@@ -1043,6 +1078,91 @@ suite('Vimscript expressions', () => {
       exprTest('sort([4,2,1,3,5], {x,y->x-y})', { display: '[1, 2, 3, 4, 5]' });
       exprTest('sort([4,2,1,3,5], {x,y->y-x})', { display: '[5, 4, 3, 2, 1]' });
       // TODO
+    });
+
+    suite('abs', () => {
+      exprTest('abs(-5)', { value: float(5) });
+      exprTest('abs(5)', { value: float(5) });
+      exprTest('abs(-3.5)', { value: float(3.5) });
+      exprTest('abs(0)', { value: float(0) });
+    });
+
+    suite('and/or/xor', () => {
+      exprTest('and(0xff, 0x0f)', { value: int(15) });
+      exprTest('and(0b1010, 0b1100)', { value: int(8) });
+      exprTest('and(0, 0xff)', { value: int(0) });
+      exprTest('or(0xf0, 0x0f)', { value: int(255) });
+      exprTest('or(0b1010, 0b0101)', { value: int(15) });
+      exprTest('or(0, 0)', { value: int(0) });
+      exprTest('xor(0xff, 0x0f)', { value: int(240) });
+      exprTest('xor(0b1010, 0b1010)', { value: int(0) });
+      exprTest('xor(0b1010, 0b0101)', { value: int(15) });
+    });
+
+    suite('copy/deepcopy', () => {
+      exprTest('copy([1, 2, 3])', { value: list([int(1), int(2), int(3)]) });
+      exprTest('deepcopy([1, 2, 3])', { value: list([int(1), int(2), int(3)]) });
+      exprTest("copy('hello')", { value: str('hello') });
+      exprTest("deepcopy('hello')", { value: str('hello') });
+      exprTest('copy(42)', { value: int(42) });
+    });
+
+    suite('eval', () => {
+      exprTest("eval('1 + 2')", { value: int(3) });
+      exprTest('eval(\'"hello"\')', { value: str('hello') });
+      exprTest("eval('[1, 2, 3]')", { value: list([int(1), int(2), int(3)]) });
+      exprTest("eval('#{a: 1}')", { display: "{'a': 1}" });
+    });
+
+    suite('exp/log/log10/pow', () => {
+      exprTest('exp(0)', { value: float(1) });
+      exprTest('log(1)', { value: float(0) });
+      exprTest('log10(1)', { value: float(0) });
+      exprTest('log10(100)', { value: float(2) });
+      exprTest('pow(2, 10)', { value: float(1024) });
+      exprTest('pow(9, 0.5)', { value: float(3) });
+      exprTest('pow(2, 0)', { value: float(1) });
+    });
+
+    suite('Trigonometric', () => {
+      exprTest('sin(0)', { value: float(0) });
+      exprTest('cos(0)', { value: float(1) });
+      exprTest('tan(0)', { value: float(0) });
+      exprTest('asin(0)', { value: float(0) });
+      exprTest('acos(1)', { value: float(0) });
+      exprTest('atan2(0, 1)', { value: float(0) });
+      exprTest('sinh(0)', { value: float(0) });
+      exprTest('cosh(0)', { value: float(1) });
+      exprTest('tanh(0)', { value: float(0) });
+    });
+
+    suite('has', () => {
+      exprTest("has('vscode')", { value: bool(true) });
+      exprTest("has('nvim')", { value: bool(false) });
+      exprTest("has('gui')", { value: bool(false) });
+    });
+
+    suite('type', () => {
+      exprTest('type(0)', { value: int(0) });
+      exprTest("type('str')", { value: int(1) });
+      exprTest("type(function('abs'))", { value: int(2) });
+      exprTest('type([])', { value: int(3) });
+      exprTest('type({})', { value: int(4) });
+      exprTest('type(0.0)', { value: int(5) });
+      exprTest('type(0z)', { value: int(8) });
+    });
+
+    suite('flattennew', () => {
+      exprTest('flattennew([1, [2, [3, 4]], 5])', { display: '[1, 2, 3, 4, 5]' });
+      exprTest('flattennew([1, [2, [3, 4]], 5], 1)', { display: '[1, 2, [3, 4], 5]' });
+      exprTest('flattennew([1, [2, [3, 4]], 5], 0)', { display: '[1, [2, [3, 4]], 5]' });
+      exprTest('flattennew({})', { error: VimError.ArgumentMustBeAList('flattennew') });
+    });
+
+    suite('mapnew', () => {
+      exprTest('mapnew([10, 20, 30], {k, v -> v * 2})', { display: '[20, 40, 60]' });
+      exprTest("mapnew([10, 20, 30], 'v:val + 1')", { display: '[11, 21, 31]' });
+      exprTest("mapnew([10, 20, 30], 'v:key')", { value: list([int(0), int(1), int(2)]) });
     });
   });
 });
