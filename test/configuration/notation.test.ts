@@ -44,7 +44,7 @@ suite('Notation', () => {
     const testCases: { [key: string]: string } = {
       '<localleader>': ',',
       '<LocalLeader>': ',',
-      'localleader': ',',
+      localleader: ',',
     };
 
     for (const test in testCases) {

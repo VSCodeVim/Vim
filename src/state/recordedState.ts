@@ -48,7 +48,10 @@ export class RecordedState {
 
     let display = result;
     if (configuration.localleader !== configuration.leader) {
-      display = display.replace(new RegExp(configuration.localleader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<localleader>');
+      display = display.replace(
+        new RegExp(configuration.localleader.replace(ESCAPE_REGEX, '\\$&'), 'g'),
+        '<localleader>',
+      );
     }
     return display
       .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
@@ -63,7 +66,10 @@ export class RecordedState {
 
     let display = result;
     if (configuration.localleader !== configuration.leader) {
-      display = display.replace(new RegExp(configuration.localleader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<localleader>');
+      display = display.replace(
+        new RegExp(configuration.localleader.replace(ESCAPE_REGEX, '\\$&'), 'g'),
+        '<localleader>',
+      );
     }
     return display
       .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
