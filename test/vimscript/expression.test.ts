@@ -461,6 +461,27 @@ suite('Vimscript expressions', () => {
       // TODO
     });
 
+    suite('Numeric comparisons', () => {
+      exprTest('1 < 2', { value: bool(true) });
+      exprTest('2 < 1', { value: bool(false) });
+      exprTest('1 < 1', { value: bool(false) });
+      exprTest('1 <= 1', { value: bool(true) });
+      exprTest('2 <= 1', { value: bool(false) });
+      exprTest('1 <= 2', { value: bool(true) });
+      exprTest('2 > 1', { value: bool(true) });
+      exprTest('1 > 2', { value: bool(false) });
+      exprTest('1 > 1', { value: bool(false) });
+      exprTest('2 >= 2', { value: bool(true) });
+      exprTest('1 >= 2', { value: bool(false) });
+      exprTest('2 >= 1', { value: bool(true) });
+      exprTest('1 != 2', { value: bool(true) });
+      exprTest('1 != 1', { value: bool(false) });
+      exprTest('1.5 < 2.5', { value: bool(true) });
+      exprTest('2.5 < 1.5', { value: bool(false) });
+      exprTest('1.0 <= 1.0', { value: bool(true) });
+      exprTest('1.0 != 2.0', { value: bool(true) });
+    });
+
     suite('Different types', () => {
       exprTest("4 == '4'", { value: bool(true) });
       exprTest("4 is '4'", { value: bool(false) });
