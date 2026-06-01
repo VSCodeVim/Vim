@@ -4,6 +4,8 @@ import * as path from 'path';
 import * as fs from 'platform/fs';
 import * as vscode from 'vscode';
 import { window } from 'vscode';
+import { applyOperationToConfig, setOperationParser } from '../cmd_line/commands/setOperation';
+import { VimError } from '../error';
 import { Logger } from '../util/logger';
 import { IConfiguration, IVimrcKeyRemapping } from './iconfiguration';
 import { vimrcKeyRemappingBuilder } from './vimrcKeyRemappingBuilder';
@@ -19,6 +21,32 @@ export class VimrcImpl {
   }
 
   private static readonly SOURCE_REG_REX = /^(source)\s+(.+)/i;
+  private static readonly SET_REG_REX = /^\s*se(?:t)?(?:\s+(.*))?$/;
+
+  public static applySetLine(config: IConfiguration, line: string): boolean {
+    const matches = VimrcImpl.SET_REG_REX.exec(line);
+    if (!matches) {
+      return false;
+    }
+    const tail = matches[1] ?? '';
+    // `setOperationParser` eats leading whitespace, so re-prepend one to make
+    // the bare `set` case (tail === '') still parse to a fallback operation.
+    const parsed = setOperationParser.parse(` ${tail}`);
+    if (!parsed.status) {
+      Logger.warn(`Could not parse vimrc line: '${line.trim()}'`);
+      return true;
+    }
+    try {
+      applyOperationToConfig(config, parsed.value);
+    } catch (err) {
+      if (err instanceof VimError) {
+        Logger.warn(`vimrc '${line.trim()}' failed: ${err.message}`);
+      } else {
+        throw err;
+      }
+    }
+    return true;
+  }
 
   private static buildSource(line: string) {
     const matches = VimrcImpl.SOURCE_REG_REX.exec(line);
@@ -41,6 +69,9 @@ export class VimrcImpl {
           continue;
         }
 
+        if (VimrcImpl.applySetLine(config, line)) {
+          continue;
+        }
         const source = this.buildSource(line);
         if (source) {
           if (!(await fs.existsAsync(source))) {

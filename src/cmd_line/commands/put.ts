@@ -85,7 +85,8 @@ export class PutExCommand extends ExCommand {
       Register.overwriteRegister(vimState, this.arguments.register, stringified, 0);
     }
 
-    const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');
+    const registerName =
+      this.arguments.register || (configuration.clipboardAliasesUnnamedRegister ? '*' : '"');
 
     if (!Register.isValidRegister(registerName)) {
       StatusBar.displayError(vimState, VimError.TrailingCharacters());

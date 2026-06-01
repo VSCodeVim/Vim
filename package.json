@@ -530,6 +530,16 @@
           "description": "Use system clipboard for unnamed register.",
           "default": false
         },
+        "vim.clipboard": {
+          "type": "string",
+          "enum": [
+            "",
+            "unnamed",
+            "unnamedplus"
+          ],
+          "description": "Vim's `clipboard` option. When set to `unnamed` or `unnamedplus`, the unnamed register is aliased to the system clipboard (equivalent to enabling `vim.useSystemClipboard`). Also settable from a vimrc via `set clipboard=unnamed`.",
+          "default": ""
+        },
         "vim.overrideCopy": {
           "type": "boolean",
           "description": "Override VS Code's copy command with our own copy command, which works better with VSCodeVim. Turn this off if copying is not working.",
