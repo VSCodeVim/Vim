@@ -29,20 +29,14 @@ export class ReplaceCharacter extends BaseCommand {
       return;
     }
 
-    if (position.character + timesToRepeat > position.getLineEnd().character) {
+    const endPos = position.getSurrogateAwareRight(vimState.document, timesToRepeat);
+
+    // Refuse if fewer than `timesToRepeat` characters remain on the line.
+    // `endPos` is codepoint-aware, so count codepoints (not UTF-16 code units)
+    // in the spanned range — a surrogate pair counts as a single character.
+    const line = vimState.document.lineAt(position).text;
+    if ([...line.slice(position.character, endPos.character)].length < timesToRepeat) {
       return;
-    }
-
-    let endPos = new Position(position.line, position.character + timesToRepeat);
-
-    // Return if tried to repeat longer than linelength
-    if (endPos.character > vimState.document.lineAt(endPos).text.length) {
-      return;
-    }
-
-    // If last char (not EOL char), add 1 so that replace selection is complete
-    if (endPos.character > vimState.document.lineAt(endPos).text.length) {
-      endPos = new Position(endPos.line, endPos.character + 1);
     }
 
     if (toReplace === '<tab>') {
