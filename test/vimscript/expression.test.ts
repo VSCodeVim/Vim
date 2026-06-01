@@ -27,11 +27,10 @@ function removeIds(value: Value): unknown {
   const { id, ...rest } = value as any;
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const _value: any = { ...rest };
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
   if (value.type === 'list') {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    _value.items = value.items.map(removeIds);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    _value.items = value.items.map(removeIds);
   } else if (value.type === 'dictionary') {
     const items = new Map<string, unknown>();
     for (const [key, val] of value.items) {
