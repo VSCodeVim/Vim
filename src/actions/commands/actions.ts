@@ -1003,11 +1003,7 @@ class ToggleCaseAndMoveForward extends BaseCommand {
   }
 
   public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
-    if (isVisualMode(vimState.currentMode)) {
-      return super.doesActionApply(vimState, keysPressed);
-    }
-
-    if (configuration.tildeop) {
+    if (configuration.tildeop && !isVisualMode(vimState.currentMode)) {
       return false;
     }
 
