@@ -453,6 +453,7 @@
       "properties": {
         "vim.tildeop": {
           "type": "boolean",
+          "markdownDescription": "Makes `~` behave as an operator, requiring a motion (for example, `~w`). When disabled, `~` toggles the case of the character under the cursor.",
           "default": false
         },
         "vim.normalModeKeyBindings": {
