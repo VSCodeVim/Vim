@@ -34,6 +34,8 @@ export const extensionVersion = packagejson.version;
  * Please keep this list up to date and sorted alphabetically.
  */
 export const optionAliases: ReadonlyMap<string, string> = new Map<string, string>([
+  ['top', 'tildeop'],
+  ['notop', 'notildeop'],
   ['ai', 'autoindent'],
   ['et', 'expandtab'],
   ['gd', 'gdefault'],
