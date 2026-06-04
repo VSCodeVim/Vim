@@ -80,4 +80,11 @@ suite('tildeop plugin', () => {
     keysPressed: '~~',
     end: ['|HELLO WORLD'],
   });
+
+  newTest({
+    title: 'top and notop aliases work as expected',
+    start: ['|one two three'],
+    keysPressed: '~wwl:set notop\n~w:set top\n~w',
+    end: ['ONE tWo |THREE'],
+  });
 });
