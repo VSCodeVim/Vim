@@ -436,6 +436,18 @@ class ToggleCaseOperator extends ChangeCaseOperator {
     }
     return newText;
   }
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (isVisualMode(vimState.currentMode)) {
+      return super.doesActionApply(vimState, keysPressed);
+    }
+
+    if (keysPressed.length === 1 && keysPressed[0] === '~' && configuration.tildeop) {
+      return true;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
+  }
 }
 
 @RegisterAction

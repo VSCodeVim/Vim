@@ -34,6 +34,7 @@ export const extensionVersion = packagejson.version;
  * Please keep this list up to date and sorted alphabetically.
  */
 export const optionAliases: ReadonlyMap<string, string> = new Map<string, string>([
+  ['top', 'tildeop'],
   ['ai', 'autoindent'],
   ['et', 'expandtab'],
   ['gd', 'gdefault'],
@@ -225,6 +226,8 @@ class Configuration implements IConfiguration {
     this.commandLineModeKeyBindingsMap = new Map<string, IKeyRemapping>();
     this.operatorPendingModeKeyBindingsMap = new Map<string, IKeyRemapping>();
   }
+
+  tildeop = false;
 
   handleKeys: IHandleKeys = {};
 

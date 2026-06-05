@@ -13,9 +13,10 @@ import { getCursorsAfterSync } from '../../util/util';
 import { SearchDirection } from '../../vimscript/pattern';
 import { shouldWrapKey } from '../wrapping';
 import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
-import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
+import { earlierOf, laterOf, PositionDiff, sorted } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
 import {
+  isVisualMode,
   Mode,
   visualBlockGetBottomRightPosition,
   visualBlockGetTopLeftPosition,
@@ -999,6 +1000,14 @@ class ToggleCaseAndMoveForward extends BaseCommand {
       newText += toggled;
     }
     return newText;
+  }
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (configuration.tildeop && !isVisualMode(vimState.currentMode)) {
+      return false;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
