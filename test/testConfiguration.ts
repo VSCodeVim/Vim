@@ -70,6 +70,7 @@ export class Configuration implements IConfiguration {
   showcmd = true;
   showmodename = true;
   leader = '//';
+  localleader = '\\\\';
   history = 50;
   incsearch = true;
   inccommand = '' as const;
