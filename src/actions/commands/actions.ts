@@ -13,9 +13,10 @@ import { getCursorsAfterSync } from '../../util/util';
 import { SearchDirection } from '../../vimscript/pattern';
 import { shouldWrapKey } from '../wrapping';
 import { ExCommandLine, SearchCommandLine } from './../../cmd_line/commandLine';
-import { PositionDiff, earlierOf, laterOf, sorted } from './../../common/motion/position';
+import { earlierOf, laterOf, PositionDiff, sorted } from './../../common/motion/position';
 import { configuration } from './../../configuration/configuration';
 import {
+  isVisualMode,
   Mode,
   visualBlockGetBottomRightPosition,
   visualBlockGetTopLeftPosition,
@@ -1001,13 +1002,21 @@ class ToggleCaseAndMoveForward extends BaseCommand {
     return newText;
   }
 
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (configuration.tildeop && !isVisualMode(vimState.currentMode)) {
+      return false;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
+  }
+
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     const count = vimState.recordedState.count || 1;
     const range = new vscode.Range(
       position,
       shouldWrapKey(vimState.currentMode, '~')
         ? position.getOffsetThroughLineBreaks(count)
-        : position.getRight(count),
+        : position.getSurrogateAwareRight(vimState.document, count),
     );
 
     vimState.recordedState.transformer.replace(
@@ -1027,8 +1036,10 @@ export class CommandUnicodeName extends BaseCommand {
   }
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    const char = vimState.document.getText(new vscode.Range(position, position.getRight()));
-    const charCode = char.charCodeAt(0);
+    const char = vimState.document.getText(
+      new vscode.Range(position, position.getSurrogateAwareRight(vimState.document)),
+    );
+    const charCode = char.codePointAt(0) ?? 0;
     // TODO: Handle charCode > 127 by also including <M-x>
     StatusBar.setText(
       vimState,

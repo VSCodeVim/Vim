@@ -436,6 +436,18 @@ class ToggleCaseOperator extends ChangeCaseOperator {
     }
     return newText;
   }
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (isVisualMode(vimState.currentMode)) {
+      return super.doesActionApply(vimState, keysPressed);
+    }
+
+    if (keysPressed.length === 1 && keysPressed[0] === '~' && configuration.tildeop) {
+      return true;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
+  }
 }
 
 @RegisterAction
@@ -668,6 +680,24 @@ export class ChangeOperator extends BaseOperator {
     } else if (vimState.currentMode === Mode.Visual && end.isLineEnd(vimState.document)) {
       end = end.getRightThroughLineBreaks();
     } else {
+      end = end.getRight();
+    }
+
+    // Correct surrogate pair boundaries (match DeleteOperator/YankOperator pattern)
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(end.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      end.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(end.character)) &&
+      isHighSurrogate(eLine.charCodeAt(end.character - 1))
+    ) {
       end = end.getRight();
     }
 
