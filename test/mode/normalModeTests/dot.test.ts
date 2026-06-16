@@ -55,6 +55,13 @@ suite('Dot Operator', () => {
   });
 
   newTest({
+    title: 'Can handle dot with I and tab',
+    start: ['on|e', 'two', 'three'],
+    keysPressed: 'I\t<Esc>j.j.',
+    end: ['\tone', '\ttwo', '|\tthree'],
+  });
+
+  newTest({
     title: 'Can repeat actions that require selections',
     start: ['on|e', 'two'],
     keysPressed: 'Vj>.',
@@ -179,6 +186,13 @@ suite('Repeat content change', () => {
     start: ['on|e', 'two'],
     keysPressed: 'a<C-t><Esc>j.',
     end: ['\tone', '\ttw|o'],
+  });
+
+  newTest({
+    title: 'Can repeat tab-only insert count',
+    start: ['|one'],
+    keysPressed: '5i\t<Esc>',
+    end: ['\t\t\t\t|\tone'],
   });
 
   newTest({

@@ -11,6 +11,13 @@ import { DeleteCommand } from '../cmd_line/commands/delete';
 import { DigraphsCommand } from '../cmd_line/commands/digraph';
 import { EchoCommand } from '../cmd_line/commands/echo';
 import { CallCommand, EvalCommand } from '../cmd_line/commands/eval';
+import {
+  ExFoldcloseCommand,
+  ExFoldCommand,
+  ExFolddoclosedCommand,
+  ExFolddoopenCommand,
+  ExFoldopenCommand,
+} from '../cmd_line/commands/exFold';
 import { ExploreCommand } from '../cmd_line/commands/explore';
 import { FileCommand } from '../cmd_line/commands/file';
 import { FileInfoCommand } from '../cmd_line/commands/fileInfo';
@@ -242,11 +249,11 @@ export const builtinExCommands: ReadonlyArray<[[string, string], ArgParser | und
   [['fina', 'lly'], undefined],
   [['fini', 'sh'], undefined],
   [['fir', 'st'], undefined],
-  [['fo', 'ld'], undefined],
-  [['foldc', 'lose'], undefined],
-  [['foldd', 'oopen'], undefined],
-  [['folddoc', 'losed'], undefined],
-  [['foldo', 'pen'], undefined],
+  [['fo', 'ld'], succeed(new ExFoldCommand())],
+  [['foldc', 'lose'], succeed(new ExFoldcloseCommand())],
+  [['foldd', 'oopen'], ExFolddoopenCommand.argParser],
+  [['folddoc', 'losed'], ExFolddoclosedCommand.argParser],
+  [['foldo', 'pen'], succeed(new ExFoldopenCommand())],
   [['for', ''], undefined],
   [['fu', 'nction'], undefined],
   [['g', 'lobal'], undefined],

@@ -382,10 +382,10 @@ const expr4Parser: Parser<Expression> = alt<Expression>(
       alt(
         string('=='),
         string('!='),
-        string('>'),
         string('>='),
-        string('<'),
+        string('>'),
         string('<='),
+        string('<'),
         string('=~'),
         string('!~'),
         string('isnot'),
