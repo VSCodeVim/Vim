@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
@@ -69,6 +70,30 @@ suite('Mode Insert', () => {
     await modeHandler.handleMultipleKeyEvents(['i', 't', 'e', 'x', 't', '<Esc>', 'o']);
 
     return assertEqualLines(['text', '']);
+  });
+
+  test('<Esc> exits snippet mode and prevents cursor jump', async () => {
+    const executeCommandSpy = sinon.spy(vscode.commands, 'executeCommand');
+    try {
+      await modeHandler.handleKeyEvent('i');
+      await vscode.commands.executeCommand('editor.action.insertSnippet', {
+        snippet: '<div>$1</div>',
+      });
+      await modeHandler.handleKeyEvent('<Esc>');
+
+      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+      assert(
+        executeCommandSpy.calledWith('leaveSnippet'),
+        'Expected leaveSnippet to be executed on <Esc>',
+      );
+      assert.strictEqual(
+        vscode.window.activeTextEditor!.selection.start.character,
+        4,
+        'Cursor should remain inside tag at position 4 and not jump to end of line',
+      );
+    } finally {
+      executeCommandSpy.restore();
+    }
   });
 
   test('Stay in insert when entering characters', async () => {
