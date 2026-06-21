@@ -3934,9 +3934,9 @@ linkify-it@^5.0.1:
     uc.micro "^2.0.0"
 
 lint-staged@^17.0.0:
-  version "17.0.7"
-  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-17.0.7.tgz#2ed5ffb49d283425778125386278bb4d7ce24d22"
-  integrity sha512-JrSobt+tW3rH8IOMi8tDZd3foorM5yPEkLD/V2NxobgHrFfHWGee4MOLVuZeScgxftEwbHrPHIFA/ZL+nUJeuA==
+  version "17.0.8"
+  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-17.0.8.tgz#315b16ff5900fd3f8cc3e4888de7d08e10ca9162"
+  integrity sha512-B2P/d+jVW0UXOQ0MVMLrB/9ydA1P+zz6jYfdrbbEd9ur3S2rcbduFWKiUCC02Sm5hbC8nrm7y24WuYMG54HfxA==
   dependencies:
     listr2 "^10.2.1"
     picomatch "^4.0.4"
