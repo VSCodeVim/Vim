@@ -1,0 +1,148 @@
+import { Mode } from '../../src/mode/mode';
+import { newTest } from '../testSimplifier';
+import { setupWorkspace } from './../testUtils';
+
+// Coverage for issue #2224: native VSCode selection-changing commands should
+// promote VSCodeVim out of Normal into Visual so subsequent operators
+// (`d`, `y`, `c`, etc.) act on the selection.
+//
+// `handleSelectionChange` promotes on:
+//   - Command-kind events with non-empty selections
+//     (e.g. `editor.action.smartSelect.grow`)
+//   - Keyboard-kind events with non-empty selections
+//     (e.g. `expandLineSelection`, `cursorRightSelect`)
+//
+// Tests bind each VSCode command to a leader key so the harness can dispatch
+// it and observe the resulting Vim mode. Negative cases (Vim navigation that
+// must NOT promote) live in `selectionPromotion.test.ts`.
+
+suite('issue #2224: VSCode selection commands enter Visual', () => {
+  setup(async () => {
+    await setupWorkspace();
+  });
+
+  newTest({
+    title: 'expandLineSelection from Normal enters Visual',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'l'],
+          commands: ['expandLineSelection'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['the |quick brown fox', 'jumps over the lazy dog'],
+    keysPressed: ' l',
+    end: ['the quick brown fox', '|jumps over the lazy dog'],
+    endMode: Mode.Visual,
+  });
+
+  newTest({
+    title: 'editor.action.smartSelect.grow from Normal enters Visual',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'g'],
+          commands: ['editor.action.smartSelect.grow'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['function fo|o() { return 42; }'],
+    keysPressed: ' g',
+    end: ['function foo|() { return 42; }'],
+    endMode: Mode.Visual,
+  });
+
+  newTest({
+    title: 'cursorRightSelect from Normal enters Visual',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'r'],
+          commands: ['cursorRightSelect'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['a|bcd'],
+    keysPressed: ' r',
+    end: ['ab|cd'],
+    endMode: Mode.Visual,
+  });
+
+  newTest({
+    title: 'cursorDownSelect from Normal enters Visual',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'd'],
+          commands: ['cursorDownSelect'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['ab|cd', 'efgh'],
+    keysPressed: ' d',
+    end: ['abcd', 'ef|gh'],
+    endMode: Mode.Visual,
+  });
+
+  // The actual user-visible promise of #2224: after a VSCode selection command,
+  // Vim operators must act on the promoted selection. Mode-only assertions
+  // above can pass even if cursor.start/cursor.stop are stale; these tests pin
+  // that the selection is operable.
+
+  newTest({
+    title: 'd after expandLineSelection deletes the full line',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'l'],
+          commands: ['expandLineSelection'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['the |quick brown fox', 'jumps over the lazy dog'],
+    keysPressed: ' ld',
+    end: ['|jumps over the lazy dog'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'd after cursorRightSelect deletes the selected char',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'r'],
+          commands: ['cursorRightSelect'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['a|bcd'],
+    keysPressed: ' rd',
+    end: ['a|cd'],
+    endMode: Mode.Normal,
+  });
+
+  newTest({
+    title: 'y after editor.action.smartSelect.grow yanks the grown selection',
+    config: {
+      normalModeKeyBindings: [
+        {
+          before: ['<leader>', 'g'],
+          commands: ['editor.action.smartSelect.grow'],
+        },
+      ],
+      leader: ' ',
+    },
+    start: ['function fo|o() { return 42; }'],
+    keysPressed: ' gy',
+    end: ['function |foo() { return 42; }'],
+    endMode: Mode.Normal,
+    registers: { '"': 'foo' },
+  });
+});
