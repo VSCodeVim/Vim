@@ -17,6 +17,13 @@ suite('Search (/ and ?)', () => {
   });
 
   newTest({
+    title: '/ can search with regex groupings (search for sequence of aX where X is not b)',
+    start: ['|', 'ab ac'],
+    keysPressed: '/a\\([^b]\\)\n',
+    end: ['', 'ab |ac'],
+  });
+
+  newTest({
     title: '/ can search with newline',
     start: ['|asdf', '__asdf', 'asdf'],
     keysPressed: '/\\nasdf\n',
