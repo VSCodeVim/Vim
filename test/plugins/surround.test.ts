@@ -30,6 +30,13 @@ suite('surround plugin', () => {
   });
 
   newTest({
+    title: "'ysiw/' surrounds word without space",
+    start: ['first li|ne test'],
+    keysPressed: 'ysiw/',
+    end: ['first |/line/ test'],
+  });
+
+  newTest({
     title: "'ysw)' surrounds word without space",
     start: ['first |line test'],
     keysPressed: 'ysw)',
@@ -636,6 +643,50 @@ suite('surround plugin', () => {
       start: ['one (tw|o) three, one (two) three'],
       keysPressed: 'gbgbv' + 'cs)[' + '<esc>',
       end: ['one [ tw|o ] three, one [ tw|o ] three'],
+    });
+  });
+
+  suite('non-alphabetic surround characters', () => {
+    newTest({
+      title: "'ysiw_' surrounds word with underscores",
+      start: ['first li|ne test'],
+      keysPressed: 'ysiw_',
+      end: ['first |_line_ test'],
+    });
+
+    newTest({
+      title: "'ysiw$' surrounds word with dollar signs",
+      start: ['first li|ne test'],
+      keysPressed: 'ysiw$',
+      end: ['first |$line$ test'],
+    });
+
+    newTest({
+      title: "'ysiw#' surrounds word with hash",
+      start: ['first li|ne test'],
+      keysPressed: 'ysiw#',
+      end: ['first |#line# test'],
+    });
+
+    newTest({
+      title: "'ds/' deletes surrounding slashes",
+      start: ['first /li|ne/ test'],
+      keysPressed: 'ds/',
+      end: ['first li|ne test'],
+    });
+
+    newTest({
+      title: "'cs/_' changes slash to underscore",
+      start: ['first /li|ne/ test'],
+      keysPressed: 'cs/_',
+      end: ['first _li|ne_ test'],
+    });
+
+    newTest({
+      title: "'ds#' deletes surrounding hashes",
+      start: ['first #li|ne# test'],
+      keysPressed: 'ds#',
+      end: ['first li|ne test'],
     });
   });
 });
