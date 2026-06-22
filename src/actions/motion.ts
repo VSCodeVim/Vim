@@ -407,7 +407,17 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       t = await moveUpByScreenLine.execAction(position, vimState);
       t = t instanceof Position ? t : t.stop;
       const lineChanged = prev.line !== t.line;
-      const colChanged = prev.character !== t.character;
+      // Fixes issue https://github.com/VSCodeVim/Vim/issues/9885
+      // In the case where we are passing a folded line (that is longer than screen width)
+      // moving upwards (using a command like '10k') the first time we actually land on
+      // the folded line we return an adjusted position based on desired column.
+      // The next 'k' movement will then look like it did not move from prev position and
+      // in this case we need to treat this as a column change to keep moving up.
+      const colAdjustmentForDesiredColumnWasDoneLastMoveAndWeShouldTreatThisAsColumnChange =
+        prev?.isEqual(t);
+      const colChanged =
+        colAdjustmentForDesiredColumnWasDoneLastMoveAndWeShouldTreatThisAsColumnChange ||
+        prev.character !== t.character;
       if (lineChanged || !colChanged) {
         break;
       }
