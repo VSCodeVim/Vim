@@ -103,6 +103,7 @@ class Configuration implements IConfiguration {
   [key: string]: any;
 
   private readonly leaderDefault = '\\';
+  private readonly localleaderDefault = '\\';
   private readonly cursorTypeMap: { [key: string]: vscode.TextEditorCursorStyle } = {
     line: vscode.TextEditorCursorStyle.Line,
     block: vscode.TextEditorCursorStyle.Block,
@@ -144,6 +145,7 @@ class Configuration implements IConfiguration {
     }
 
     this.leader = Notation.NormalizeKey(this.leader, this.leaderDefault);
+    this.localleader = Notation.NormalizeKey(this.localleader, this.localleaderDefault);
 
     this.clearKeyBindingsMaps();
 
@@ -169,7 +171,7 @@ class Configuration implements IConfiguration {
       }
 
       this.boundKeyCombinations.push({
-        key: Notation.NormalizeKey(key, this.leader),
+        key: Notation.NormalizeKey(key, this.leader, this.localleader),
         command: keybinding.command,
       });
     }
@@ -311,6 +313,8 @@ class Configuration implements IConfiguration {
   showmodename = true;
 
   leader = this.leaderDefault;
+
+  localleader = this.localleaderDefault;
 
   history = 50;
 
