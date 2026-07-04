@@ -43,13 +43,7 @@ export type BlobValue = {
 };
 
 export type Value =
-  | NumberValue
-  | FloatValue
-  | StringValue
-  | ListValue
-  | DictionaryValue
-  | FuncRefValue
-  | BlobValue;
+  NumberValue | FloatValue | StringValue | ListValue | DictionaryValue | FuncRefValue | BlobValue;
 
 // -------------------- Expressions --------------------
 

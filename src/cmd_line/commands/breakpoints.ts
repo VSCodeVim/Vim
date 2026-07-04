@@ -31,10 +31,7 @@ type AddBreakpointFile = { type: 'file'; line: number; file: string };
 type AddBreakpointFunction = { type: 'func'; function: string };
 type AddBreakpointExpr = { type: 'expr'; expr: string };
 type AddBreakpoint =
-  | AddBreakpointHere
-  | AddBreakpointFile
-  | AddBreakpointFunction
-  | AddBreakpointExpr;
+  AddBreakpointHere | AddBreakpointFile | AddBreakpointFunction | AddBreakpointExpr;
 
 class AddBreakpointCommand extends ExCommand {
   private readonly addBreakpoint: AddBreakpoint;

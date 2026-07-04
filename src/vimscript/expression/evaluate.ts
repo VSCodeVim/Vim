@@ -1755,7 +1755,7 @@ export class EvaluationContext {
         }
         if (l!.items.length > 1) {
           let prev: Value = l!.items[0];
-          for (let i = 1; i < l!.items.length; ) {
+          for (let i = 1; i < l!.items.length;) {
             const val = l!.items[i];
             if (prev.type === val.type && this.evaluateComparison('==', true, prev, val)) {
               l!.items.splice(i, 1);
