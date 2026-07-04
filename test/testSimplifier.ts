@@ -126,7 +126,7 @@ class DocState {
     lines = [...lines];
 
     const cursors: Position[] = [];
-    for (let i = 0; i < lines.length; ) {
+    for (let i = 0; i < lines.length;) {
       const columnIdx = lines[i].indexOf('|');
       if (columnIdx >= 0) {
         lines[i] = lines[i].replace('|', '');

@@ -25,12 +25,10 @@ abstract class CommandLineAction extends BaseCommand {
   protected abstract run(vimState: VimState, commandLine: CommandLine): Promise<void>;
 
   public override async exec(position: vscode.Position, vimState: VimState): Promise<void> {
-    if (
-      !(
-        vimState.modeData.mode === Mode.CommandlineInProgress ||
-        vimState.modeData.mode === Mode.SearchInProgressMode
-      )
-    ) {
+    if (!(
+      vimState.modeData.mode === Mode.CommandlineInProgress ||
+      vimState.modeData.mode === Mode.SearchInProgressMode
+    )) {
       throw new Error(`Unexpected mode ${vimState.modeData.mode} in CommandLineAction`);
     }
 

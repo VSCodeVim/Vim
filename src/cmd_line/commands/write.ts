@@ -188,8 +188,7 @@ export class WriteCommand extends ExCommand {
    */
   private tabContainsDocument(tab: vscode.Tab, uriString: string): boolean {
     const input = tab.input as
-      | { uri?: vscode.Uri; original?: vscode.Uri; modified?: vscode.Uri }
-      | undefined;
+      { uri?: vscode.Uri; original?: vscode.Uri; modified?: vscode.Uri } | undefined;
 
     return (
       input?.uri?.toString() === uriString ||
