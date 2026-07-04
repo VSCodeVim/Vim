@@ -1226,7 +1226,7 @@
     "@types/mocha": "10.0.10",
     "@types/node": "22.19.1",
     "@types/parsimmon": "1.10.9",
-    "@types/sinon": "21.0.1",
+    "@types/sinon": "22.0.0",
     "@types/vscode": "1.74.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
