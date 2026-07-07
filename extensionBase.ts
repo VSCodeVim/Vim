@@ -96,6 +96,8 @@ export async function loadConfiguration() {
 export async function activate(context: vscode.ExtensionContext, handleLocal: boolean = true) {
   ExCommandLine.parser = exCommandParser;
 
+  const compositionState = new CompositionState();
+
   Logger.init();
 
   // before we do anything else, we need to load the configuration
@@ -122,7 +124,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     vscode.workspace.onDidChangeConfiguration,
     async () => {
       Logger.info('Configuration changed');
+      const oldDisableExtension = configuration.disableExtension;
       await loadConfiguration();
+      if (configuration.disableExtension !== oldDisableExtension) {
+        await toggleExtension(configuration.disableExtension, compositionState);
+      }
     },
     false,
   );
@@ -316,8 +322,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     },
   );
 
-  const compositionState = new CompositionState();
-
   // Override VSCode commands
   overrideCommand(context, 'type', async (args: { text: string }) => {
     taskQueue.enqueueTask(async () => {
@@ -454,7 +458,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
   registerCommand(context, 'toggleVim', async () => {
     configuration.disableExtension = !configuration.disableExtension;
-    void toggleExtension(configuration.disableExtension, compositionState);
+    await toggleExtension(configuration.disableExtension, compositionState);
   });
 
   for (const boundKey of configuration.boundKeyCombinations) {
@@ -518,13 +522,19 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
  */
 async function toggleExtension(isDisabled: boolean, compositionState: CompositionState) {
   await VSCodeContext.set('vim.active', !isDisabled);
-  const mh = await getAndUpdateModeHandler();
-  if (mh) {
-    if (isDisabled) {
-      await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
-      compositionState.reset();
-      ModeHandlerMap.clear();
-    } else {
+  if (isDisabled) {
+    for (const [uri, mh] of ModeHandlerMap.entries()) {
+      try {
+        await mh.handleKeyEvent(SpecialKeys.ExtensionDisable);
+      } catch (e) {
+        Logger.error(`Error disabling ModeHandler: ${e}`);
+      }
+    }
+    compositionState.reset();
+    ModeHandlerMap.clear();
+  } else {
+    const mh = await getAndUpdateModeHandler();
+    if (mh) {
       await mh.handleKeyEvent(SpecialKeys.ExtensionEnable);
     }
   }
@@ -567,7 +577,7 @@ export function registerCommand(
       return;
     }
 
-    callback(args);
+    await callback(args);
   });
   context.subscriptions.push(disposable);
 }
