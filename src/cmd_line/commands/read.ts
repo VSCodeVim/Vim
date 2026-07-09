@@ -7,9 +7,7 @@ import { ExCommand } from '../../vimscript/exCommand';
 import { fileNameParser, FileOpt, fileOptParser } from '../../vimscript/parserUtils';
 
 export type IReadCommandArguments =
-  | { opt: FileOpt; cmd: string }
-  | { opt: FileOpt; file: string }
-  | { opt: FileOpt };
+  { opt: FileOpt; cmd: string } | { opt: FileOpt; file: string } | { opt: FileOpt };
 
 //
 //  Implements :read and :read!
