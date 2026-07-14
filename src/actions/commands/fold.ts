@@ -99,9 +99,18 @@ class ToggleFoldRecursively extends BaseCommand {
       nextLine < editor.document.lineCount &&
       !editor.visibleRanges.some((range) => range.contains(new vscode.Position(nextLine, 0)));
 
-    vimState.recordedState.transformer.vscodeCommand(
-      isClosed ? 'editor.unfoldRecursively' : 'editor.foldRecursively',
-    );
+    if (isClosed) {
+      vimState.recordedState.transformer.vscodeCommand('editor.unfoldRecursively');
+    } else {
+      // editor.foldRecursively only closes the innermost fold containing the
+      // cursor; it does not climb through enclosing folds the way Vim's zA/zC
+      // do. editor.fold with direction 'up' walks outward from the cursor
+      // instead, closing each enclosing fold level in turn.
+      vimState.recordedState.transformer.vscodeCommand('editor.fold', {
+        levels: 999,
+        direction: 'up',
+      });
+    }
     await vimState.setCurrentMode(Mode.Normal);
   }
 }
