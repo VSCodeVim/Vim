@@ -77,6 +77,36 @@ class OpenAllFoldsRecursively extends CommandFold {
 }
 
 @RegisterAction
+class ToggleFoldRecursively extends BaseCommand {
+  modes = [Mode.Normal];
+  keys = ['z', 'A'];
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    // Don't run if there's an operator because the Sneak plugin uses <operator>z
+    return (
+      super.doesActionApply(vimState, keysPressed) && vimState.recordedState.operator === undefined
+    );
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    const editor = vimState.editor;
+    const nextLine = position.line + 1;
+
+    // The fold at `position` is closed if the line right after its header
+    // is hidden from the editor's visibleRanges; the header line itself
+    // stays visible even when the fold beneath it is collapsed.
+    const isClosed =
+      nextLine < editor.document.lineCount &&
+      !editor.visibleRanges.some((range) => range.contains(new vscode.Position(nextLine, 0)));
+
+    vimState.recordedState.transformer.vscodeCommand(
+      isClosed ? 'editor.unfoldRecursively' : 'editor.foldRecursively',
+    );
+    await vimState.setCurrentMode(Mode.Normal);
+  }
+}
+
+@RegisterAction
 class AddFold extends BaseOperator {
   override modes = [Mode.Normal, Mode.Visual];
   keys = ['z', 'f'];
