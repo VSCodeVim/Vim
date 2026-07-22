@@ -431,7 +431,9 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
       if (args.after) {
         for (const key of args.after) {
-          await mh.handleKeyEvent(Notation.NormalizeKey(key, configuration.leader));
+          await mh.handleKeyEvent(
+            Notation.NormalizeKey(key, configuration.leader, configuration.localleader),
+          );
         }
       }
 
