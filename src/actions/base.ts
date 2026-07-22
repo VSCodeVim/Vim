@@ -239,10 +239,41 @@ export enum KeypressState {
   NoPossibleMatch,
 }
 
+class ActionMatcher {
+  private readonly instanceOfActionToUseForMatcher: BaseAction;
+  private readonly createActionFunction: new () => BaseAction;
+
+  constructor(
+    instanceOfActionToUseForMatcher: BaseAction,
+    createActionFunction: new () => BaseAction,
+  ) {
+    this.instanceOfActionToUseForMatcher = instanceOfActionToUseForMatcher;
+    this.createActionFunction = createActionFunction;
+  }
+
+  public createActionWithKeysPressedIfApplies(
+    vimState: VimState,
+    keysPressed: string[],
+  ): BaseAction | undefined {
+    if (!this.instanceOfActionToUseForMatcher.doesActionApply(vimState, keysPressed)) {
+      return undefined;
+    }
+    const action = new this.createActionFunction();
+    action.keysPressed = isLiteralMode(vimState.currentMode)
+      ? [...vimState.recordedState.actionKeys]
+      : unmapLiteral(action.keys, vimState.recordedState.actionKeys);
+    return action;
+  }
+
+  public couldActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    return this.instanceOfActionToUseForMatcher.couldActionApply(vimState, keysPressed);
+  }
+}
+
 /**
  * Every Vim action will be added here with the @RegisterAction decorator.
  */
-const actionMap = new Map<Mode, Array<new () => BaseAction>>();
+const actionMap = new Map<Mode, ActionMatcher[]>();
 
 /**
  * Gets the action that should be triggered given a key sequence.
@@ -261,18 +292,13 @@ export function getRelevantAction(
   const possibleActionsForMode = actionMap.get(vimState.currentMode) ?? [];
 
   let hasPotentialMatch = false;
-  for (const actionType of possibleActionsForMode) {
-    // TODO: Constructing up to several hundred Actions every time we hit a key is moronic.
-    //       I think we can make `doesActionApply` and `couldActionApply` static...
-    const action = new actionType();
-    if (action.doesActionApply(vimState, keysPressed)) {
-      action.keysPressed = isLiteralMode(vimState.currentMode)
-        ? [...vimState.recordedState.actionKeys]
-        : unmapLiteral(action.keys, vimState.recordedState.actionKeys);
+  for (const actionMatcher of possibleActionsForMode) {
+    const action = actionMatcher.createActionWithKeysPressedIfApplies(vimState, keysPressed);
+    if (action) {
       return action;
     }
 
-    hasPotentialMatch ||= action.couldActionApply(vimState, keysPressed);
+    hasPotentialMatch ||= actionMatcher.couldActionApply(vimState, keysPressed);
   }
 
   return hasPotentialMatch ? KeypressState.WaitingOnKeys : KeypressState.NoPossibleMatch;
@@ -281,10 +307,10 @@ export function getRelevantAction(
 export function RegisterAction(action: new () => BaseAction): void {
   const actionInstance = new action();
   for (const modeName of actionInstance.modes) {
-    let actions = actionMap.get(modeName);
-    if (!actions) {
-      actions = [];
-      actionMap.set(modeName, actions);
+    let actionMatchers = actionMap.get(modeName);
+    if (!actionMatchers) {
+      actionMatchers = [];
+      actionMap.set(modeName, actionMatchers);
     }
 
     if (actionInstance.keys === undefined) {
@@ -292,6 +318,6 @@ export function RegisterAction(action: new () => BaseAction): void {
       continue;
     }
 
-    actions.push(action);
+    actionMatchers.push(new ActionMatcher(actionInstance, action));
   }
 }
