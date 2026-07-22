@@ -403,6 +403,14 @@ export class HistoryTracker {
 
   private readonly vimState: VimState;
 
+  /**
+   * True while this tracker is applying undo/redo changes to the document.
+   * Prevents onDidChangeTextDocument from creating spurious undo boundaries
+   * for changes triggered by the HistoryTracker itself.
+   * See: https://github.com/VSCodeVim/Vim/issues/2007
+   */
+  public isApplyingChange = false;
+
   constructor(vimState: VimState) {
     this.vimState = vimState;
     this.previousDocumentState = {
@@ -801,8 +809,13 @@ export class HistoryTracker {
       return;
     }
 
-    for (const change of step.changes.slice(0).reverse()) {
-      await change.undo(this.vimState.editor);
+    this.isApplyingChange = true;
+    try {
+      for (const change of step.changes.slice(0).reverse()) {
+        await change.undo(this.vimState.editor);
+      }
+    } finally {
+      this.isApplyingChange = false;
     }
 
     this.ignoreChange();
@@ -837,8 +850,13 @@ export class HistoryTracker {
     }
 
     // TODO: do these transformations in a batch
-    for (const change of step.changes) {
-      await change.do(this.vimState.editor);
+    this.isApplyingChange = true;
+    try {
+      for (const change of step.changes) {
+        await change.do(this.vimState.editor);
+      }
+    } finally {
+      this.isApplyingChange = false;
     }
 
     this.ignoreChange();
@@ -921,8 +939,13 @@ export class HistoryTracker {
     }
 
     if (changesToUndo.length > 0) {
-      for (const change of changesToUndo) {
-        await change.undo(this.vimState.editor);
+      this.isApplyingChange = true;
+      try {
+        for (const change of changesToUndo) {
+          await change.undo(this.vimState.editor);
+        }
+      } finally {
+        this.isApplyingChange = false;
       }
 
       const newStep = new HistoryStep({

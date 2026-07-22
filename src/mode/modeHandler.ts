@@ -76,6 +76,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public focusChanged = false;
 
+  /**
+   * True while we are processing a user-initiated key event.
+   * Used to distinguish user-triggered document changes from external ones
+   * (e.g., format-on-save, Prettier, IntelliSense, AI suggestions).
+   * See: https://github.com/VSCodeVim/Vim/issues/2007
+   */
+  public isHandlingKey = false;
+
   private searchDecorationCacheKey: { searchString: string; documentVersion: number } | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
@@ -435,181 +443,186 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       return;
     }
 
-    const now = Date.now();
+    this.isHandlingKey = true;
+    try {
+      const now = Date.now();
 
-    const printableKey = Notation.printableKey(key, configuration.leader);
-    Logger.debug(`Handling key: ${printableKey}`);
+      const printableKey = Notation.printableKey(key, configuration.leader);
+      Logger.debug(`Handling key: ${printableKey}`);
 
-    if (key === SpecialKeys.ExtensionEnable.valueOf()) {
-      this.vimState.setTextEditorLineNumbersStyle(this.currentMode);
-    }
-
-    if (
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      (key === SpecialKeys.TimeoutFinished ||
-        this.vimState.recordedState.bufferedKeys.length > 0) &&
-      this.vimState.recordedState.bufferedKeysTimeoutObj
-    ) {
-      // Handle the bufferedKeys or append the new key to the previously bufferedKeys
-      clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
-      this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
-      this.vimState.recordedState.commandList = [...this.vimState.recordedState.bufferedKeys];
-      this.vimState.recordedState.bufferedKeys = [];
-    }
-
-    // rewrite copy
-    if (configuration.overrideCopy) {
-      // The conditions when you trigger a "copy" rather than a ctrl-c are
-      // too sophisticated to be covered by the "when" condition in package.json
-      if (key === '<D-c>') {
-        key = '<copy>';
+      if (key === SpecialKeys.ExtensionEnable.valueOf()) {
+        this.vimState.setTextEditorLineNumbersStyle(this.currentMode);
       }
 
-      if (key === '<C-c>' && process.platform !== 'darwin') {
-        if (!configuration.useCtrlKeys || isVisualMode(this.vimState.currentMode)) {
+      if (
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+        (key === SpecialKeys.TimeoutFinished ||
+          this.vimState.recordedState.bufferedKeys.length > 0) &&
+        this.vimState.recordedState.bufferedKeysTimeoutObj
+      ) {
+        // Handle the bufferedKeys or append the new key to the previously bufferedKeys
+        clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
+        this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
+        this.vimState.recordedState.commandList = [...this.vimState.recordedState.bufferedKeys];
+        this.vimState.recordedState.bufferedKeys = [];
+      }
+
+      // rewrite copy
+      if (configuration.overrideCopy) {
+        // The conditions when you trigger a "copy" rather than a ctrl-c are
+        // too sophisticated to be covered by the "when" condition in package.json
+        if (key === '<D-c>') {
           key = '<copy>';
         }
-      }
-    }
 
-    // <C-d> triggers "add selection to next find match" by default,
-    // unless users explicity make <C-d>: true
-    // TODO: Destroy this silliness
-    if (key === '<C-d>' && !(configuration.handleKeys['<C-d>'] === true)) {
-      key = '<D-d>';
-    }
-
-    this.vimState.cursorsInitialState = this.vimState.cursors;
-    this.vimState.recordedState.commandList.push(key);
-
-    const oldMode = this.vimState.currentMode;
-    const oldFullMode = this.vimState.currentModeIncludingPseudoModes;
-    const oldStatusBarText = StatusBar.getText();
-    const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
-
-    let handledAsRemap = false;
-    let handledAsAction = false;
-    try {
-      // Handling special case for '0'. From Vim documentation (:help :map-modes)
-      // Special case: While typing a count for a command in Normal mode, mapping zero
-      // is disabled. This makes it possible to map zero without making it impossible
-      // to type a count with a zero.
-      const preventZeroRemap =
-        key === '0' && this.vimState.recordedState.actionsRun.at(-1) instanceof CommandNumber;
-
-      // Check for remapped keys if:
-      // 1. We are not currently performing a non-recursive remapping
-      // 2. We are not typing '0' after starting to type a count
-      // 3. We are not waiting for another action key
-      //    Example: jj should not remap the second 'j', if jj -> <Esc> in insert mode
-      //             0 should not be remapped if typed after another number, like 10
-      //             for actions with multiple keys like 'gg' or 'fx' the second character
-      //           shouldn't be mapped
-      if (
-        !this.remapState.isCurrentlyPerformingNonRecursiveRemapping &&
-        !preventZeroRemap &&
-        !this.vimState.recordedState.waitingForAnotherActionKey
-      ) {
-        handledAsRemap = await this.remappers.sendKey(
-          this.vimState.recordedState.commandList,
-          this,
-        );
-      }
-
-      this.vimState.recordedState.allowPotentialRemapOnFirstKey = true;
-
-      if (!handledAsRemap) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        if (key === SpecialKeys.TimeoutFinished) {
-          // Remove the <TimeoutFinished> key and get the key before that. If the <TimeoutFinished>
-          // key was the last key, then 'key' will be undefined and won't be sent to handle action.
-          this.vimState.recordedState.commandList.pop();
-          key = this.vimState.recordedState.commandList.at(-1)!;
-        }
-        if (key !== undefined) {
-          handledAsAction = await this.handleKeyAsAnAction(key);
+        if (key === '<C-c>' && process.platform !== 'darwin') {
+          if (!configuration.useCtrlKeys || isVisualMode(this.vimState.currentMode)) {
+            key = '<copy>';
+          }
         }
       }
-    } catch (e) {
-      this.internalSelectionsTracker.stopIgnoringIntermediateSelections();
-      if (e instanceof VimError) {
-        StatusBar.displayError(this.vimState, e);
-        this.vimState.recordedState = new RecordedState();
-        if (this.remapState.isCurrentlyPerformingRemapping) {
-          // If we are handling a remap and we got a VimError stop handling the remap
-          // and discard the rest of the keys. We throw an Exception here to stop any other
-          // remapping handling steps and go straight to the 'finally' step of the remapper.
-          throw ForceStopRemappingError.fromVimError(e);
-        }
-      } else if (e instanceof ForceStopRemappingError) {
-        // If this is a ForceStopRemappingError rethrow it until it gets to the remapper
-        throw e;
-      } else if (e instanceof Error) {
-        e.message = `Failed to handle key \`${key}\`: ${e.message}`;
-        throw e;
-      } else {
-        throw new Error(`Failed to handle key \`${key}\` due to an unknown error.`);
+
+      // <C-d> triggers "add selection to next find match" by default,
+      // unless users explicity make <C-d>: true
+      // TODO: Destroy this silliness
+      if (key === '<C-d>' && !(configuration.handleKeys['<C-d>'] === true)) {
+        key = '<D-d>';
       }
-    }
 
-    this.remapState.lastKeyPressedTimestamp = now;
+      this.vimState.cursorsInitialState = this.vimState.cursors;
+      this.vimState.recordedState.commandList.push(key);
 
-    StatusBar.updateShowCmd(this.vimState);
+      const oldMode = this.vimState.currentMode;
+      const oldFullMode = this.vimState.currentModeIncludingPseudoModes;
+      const oldStatusBarText = StatusBar.getText();
+      const oldWaitingForAnotherActionKey = this.vimState.recordedState.waitingForAnotherActionKey;
 
-    // We don't want to immediately erase any message that resulted from the action just performed
-    if (StatusBar.getText() === oldStatusBarText) {
-      // Clear the status bar of high priority messages if the mode has changed, the view has scrolled
-      // or it is recording a Macro
-      const forceClearStatusBar =
-        (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
-        this.vimState.macro !== undefined;
-      StatusBar.clear(this.vimState, forceClearStatusBar);
-    }
+      let handledAsRemap = false;
+      let handledAsAction = false;
+      try {
+        // Handling special case for '0'. From Vim documentation (:help :map-modes)
+        // Special case: While typing a count for a command in Normal mode, mapping zero
+        // is disabled. This makes it possible to map zero without making it impossible
+        // to type a count with a zero.
+        const preventZeroRemap =
+          key === '0' && this.vimState.recordedState.actionsRun.at(-1) instanceof CommandNumber;
 
-    // We either already ran an action or we have a potential action to run but
-    // the key is already stored on 'actionKeys' in that case we don't need it
-    // anymore on commandList that is only used for the remapper and 'showCmd'
-    // and both had already been handled at this point.
-    // If we got here it means that there is no potential remap for the key
-    // either so we need to clear it from commandList so that it doesn't interfere
-    // with the next remapper check.
-    this.vimState.recordedState.resetCommandList();
+        // Check for remapped keys if:
+        // 1. We are not currently performing a non-recursive remapping
+        // 2. We are not typing '0' after starting to type a count
+        // 3. We are not waiting for another action key
+        //    Example: jj should not remap the second 'j', if jj -> <Esc> in insert mode
+        //             0 should not be remapped if typed after another number, like 10
+        //             for actions with multiple keys like 'gg' or 'fx' the second character
+        //           shouldn't be mapped
+        if (
+          !this.remapState.isCurrentlyPerformingNonRecursiveRemapping &&
+          !preventZeroRemap &&
+          !this.vimState.recordedState.waitingForAnotherActionKey
+        ) {
+          handledAsRemap = await this.remappers.sendKey(
+            this.vimState.recordedState.commandList,
+            this,
+          );
+        }
 
-    Logger.trace(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
+        this.vimState.recordedState.allowPotentialRemapOnFirstKey = true;
 
-    // If we are handling a remap and the last movement failed stop handling the remap
-    // and discard the rest of the keys. We throw an Exception here to stop any other
-    // remapping handling steps and go straight to the 'finally' step of the remapper.
-    if (this.remapState.isCurrentlyPerformingRemapping && this.lastMovementFailed) {
+        if (!handledAsRemap) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+          if (key === SpecialKeys.TimeoutFinished) {
+            // Remove the <TimeoutFinished> key and get the key before that. If the <TimeoutFinished>
+            // key was the last key, then 'key' will be undefined and won't be sent to handle action.
+            this.vimState.recordedState.commandList.pop();
+            key = this.vimState.recordedState.commandList.at(-1)!;
+          }
+          if (key !== undefined) {
+            handledAsAction = await this.handleKeyAsAnAction(key);
+          }
+        }
+      } catch (e) {
+        this.internalSelectionsTracker.stopIgnoringIntermediateSelections();
+        if (e instanceof VimError) {
+          StatusBar.displayError(this.vimState, e);
+          this.vimState.recordedState = new RecordedState();
+          if (this.remapState.isCurrentlyPerformingRemapping) {
+            // If we are handling a remap and we got a VimError stop handling the remap
+            // and discard the rest of the keys. We throw an Exception here to stop any other
+            // remapping handling steps and go straight to the 'finally' step of the remapper.
+            throw ForceStopRemappingError.fromVimError(e);
+          }
+        } else if (e instanceof ForceStopRemappingError) {
+          // If this is a ForceStopRemappingError rethrow it until it gets to the remapper
+          throw e;
+        } else if (e instanceof Error) {
+          e.message = `Failed to handle key \`${key}\`: ${e.message}`;
+          throw e;
+        } else {
+          throw new Error(`Failed to handle key \`${key}\` due to an unknown error.`);
+        }
+      }
+
+      this.remapState.lastKeyPressedTimestamp = now;
+
+      StatusBar.updateShowCmd(this.vimState);
+
+      // We don't want to immediately erase any message that resulted from the action just performed
+      if (StatusBar.getText() === oldStatusBarText) {
+        // Clear the status bar of high priority messages if the mode has changed, the view has scrolled
+        // or it is recording a Macro
+        const forceClearStatusBar =
+          (this.vimState.currentMode !== oldMode && this.vimState.currentMode !== Mode.Normal) ||
+          this.vimState.macro !== undefined;
+        StatusBar.clear(this.vimState, forceClearStatusBar);
+      }
+
+      // We either already ran an action or we have a potential action to run but
+      // the key is already stored on 'actionKeys' in that case we don't need it
+      // anymore on commandList that is only used for the remapper and 'showCmd'
+      // and both had already been handled at this point.
+      // If we got here it means that there is no potential remap for the key
+      // either so we need to clear it from commandList so that it doesn't interfere
+      // with the next remapper check.
+      this.vimState.recordedState.resetCommandList();
+
+      Logger.trace(`handleKeyEvent('${printableKey}') took ${Date.now() - now}ms`);
+
+      // If we are handling a remap and the last movement failed stop handling the remap
+      // and discard the rest of the keys. We throw an Exception here to stop any other
+      // remapping handling steps and go straight to the 'finally' step of the remapper.
+      if (this.remapState.isCurrentlyPerformingRemapping && this.lastMovementFailed) {
+        this.lastMovementFailed = false;
+        throw new ForceStopRemappingError('Last movement failed');
+      }
+
+      // Reset lastMovementFailed. Anyone who needed it has probably already handled it.
+      // And keeping it past this point would make any following remapping force stop.
       this.lastMovementFailed = false;
-      throw new ForceStopRemappingError('Last movement failed');
-    }
 
-    // Reset lastMovementFailed. Anyone who needed it has probably already handled it.
-    // And keeping it past this point would make any following remapping force stop.
-    this.lastMovementFailed = false;
-
-    if (!handledAsAction) {
-      // There was no action run yet but we still want to update the view to be able
-      // to show the potential remapping keys being pressed, the `"` character when
-      // waiting on a register key or the `?` character and any following character
-      // when waiting on digraph keys. The 'oldWaitingForAnotherActionKey' is used
-      // to call the updateView after we are no longer waiting keys so that any
-      // existing overlapped key is removed.
-      if (
-        ((this.vimState.currentMode === Mode.Insert ||
-          this.vimState.currentMode === Mode.Replace) &&
-          (this.vimState.recordedState.bufferedKeys.length > 0 ||
-            this.vimState.recordedState.waitingForAnotherActionKey ||
-            this.vimState.recordedState.waitingForAnotherActionKey !==
-              oldWaitingForAnotherActionKey)) ||
-        this.vimState.currentModeIncludingPseudoModes !== oldFullMode
-      ) {
-        // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
-        // cursor decorations, if in the future we split up the updateView function there should
-        // be no need to call all of it.
-        this.updateView({ drawSelection: false, revealRange: false });
+      if (!handledAsAction) {
+        // There was no action run yet but we still want to update the view to be able
+        // to show the potential remapping keys being pressed, the `"` character when
+        // waiting on a register key or the `?` character and any following character
+        // when waiting on digraph keys. The 'oldWaitingForAnotherActionKey' is used
+        // to call the updateView after we are no longer waiting keys so that any
+        // existing overlapped key is removed.
+        if (
+          ((this.vimState.currentMode === Mode.Insert ||
+            this.vimState.currentMode === Mode.Replace) &&
+            (this.vimState.recordedState.bufferedKeys.length > 0 ||
+              this.vimState.recordedState.waitingForAnotherActionKey ||
+              this.vimState.recordedState.waitingForAnotherActionKey !==
+                oldWaitingForAnotherActionKey)) ||
+          this.vimState.currentModeIncludingPseudoModes !== oldFullMode
+        ) {
+          // TODO: this call to updateView is only used to update the virtualCharacter and halfBlock
+          // cursor decorations, if in the future we split up the updateView function there should
+          // be no need to call all of it.
+          this.updateView({ drawSelection: false, revealRange: false });
+        }
       }
+    } finally {
+      this.isHandlingKey = false;
     }
   }
 
