@@ -292,6 +292,29 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
            * anchor because we need to move vscode anchor one to the right of our start when our start
            * is after our stop in order to include the start character on vscodes selection.
            */
+          // Track external Keyboard/undefined-kind selection changes while
+          // already in Visual (e.g. a second `smartSelect.grow`,
+          // `cursorRightSelect`, `expandLineSelection` that grows the existing
+          // selection). Without this, vimState.cursor goes stale and the next
+          // render reverts VSCode's selection to our pre-update cursor range.
+          // The Command-kind branch above already handles this for
+          // command-dispatched updates; this block is the Keyboard/undefined
+          // equivalent (matches the kinds grouped together in the comment at
+          // line ~282).
+          if (
+            (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard || e.kind === undefined) &&
+            !selection.active.isEqual(selection.anchor) &&
+            !isSnippetSelectionChange()
+          ) {
+            Logger.trace('Updating Visual Selection from keyboard event!');
+            this.vimState.cursor = Cursor.fromSelection(selection);
+            this.updateView({ drawSelection: false, revealRange: false });
+            this.vimState.lastVisualSelection = {
+              mode: this.vimState.currentMode,
+              start: this.vimState.cursorStartPosition,
+              end: this.vimState.cursorStopPosition,
+            };
+          }
           return;
         }
 
@@ -317,6 +340,35 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           return;
         }
 
+        // External Keyboard-kind events that produce a non-empty selection
+        // (e.g. `expandLineSelection`, `cursorRightSelect`, `cursorDownSelect`,
+        // or any extension command that sets a selection without going through
+        // VSCodeVim's keybinding interception) promote us into Visual, mirroring
+        // the Command-kind branch above. Routine Vim navigation (`j`, `k`, `l`,
+        // `h`, etc.) produces empty selections (anchor === active) and is not
+        // affected.
+        if (
+          e.kind === vscode.TextEditorSelectionChangeKind.Keyboard &&
+          !selection.active.isEqual(selection.anchor)
+        ) {
+          const allowedModes = [Mode.Normal];
+          if (!isSnippetSelectionChange()) {
+            allowedModes.push(Mode.Insert, Mode.Replace);
+          }
+          if (allowedModes.includes(this.vimState.currentMode)) {
+            Logger.trace('Creating Visual Selection from keyboard event!');
+            this.vimState.cursor = Cursor.fromSelection(selection);
+            await this.setCurrentMode(Mode.Visual);
+            this.updateView({ drawSelection: false, revealRange: false });
+            this.vimState.lastVisualSelection = {
+              mode: Mode.Visual,
+              start: this.vimState.cursorStartPosition,
+              end: this.vimState.cursorStopPosition,
+            };
+            return;
+          }
+        }
+
         // Here we allow other 'cursorMove' commands to update our cursors in case there is another
         // extension making cursor changes that we need to catch.
         //
@@ -339,31 +391,23 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       return;
     }
 
-    let toDraw = false;
-
     if (selection) {
-      let newPosition = selection.active;
+      const newPosition = selection.active;
 
-      // Only check on a click, not a full selection (to prevent clicking past EOL)
+      // Empty click at/past EOL: dispatch <LeftMouse> so the cursor advances.
+      // For non-Insert modes, the post-action bounds-clamp at line ~977 caps
+      // the cursor to lineEnd-1; Insert keeps the cursor at lineEnd, which is
+      // valid in Insert. lastClickWasPastEol records the past-EOL hit so a
+      // follow-up drag can extend the selection inclusively (line ~411).
       if (newPosition.character >= newPosition.getLineEnd().character && selection.isEmpty) {
         if (this.vimState.currentMode !== Mode.Insert) {
           this.lastClickWasPastEol = true;
-
-          // This prevents you from mouse clicking past the EOL
-          newPosition = newPosition.withColumn(Math.max(newPosition.getLineEnd().character - 1, 0));
-
-          // Switch back to normal mode since it was a click not a selection
-          await this.setCurrentMode(Mode.Normal);
-
-          toDraw = true;
         }
+        await this.handleKeyEvent('<LeftMouse>');
+        return;
       } else if (selection.isEmpty) {
         this.lastClickWasPastEol = false;
       }
-
-      this.vimState.cursorStopPosition = newPosition;
-      this.vimState.cursorStartPosition = newPosition;
-      this.vimState.desiredColumn = newPosition.character;
 
       // start visual mode?
       if (
@@ -379,42 +423,42 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           selectionStart = new Position(selectionStart.line, selectionStart.getLineEnd().character);
         }
 
-        this.vimState.cursorStartPosition = selectionStart;
-
         if (selectionStart.isAfter(newPosition)) {
-          this.vimState.cursorStartPosition = this.vimState.cursorStartPosition.getLeft();
+          selectionStart = selectionStart.getLeft();
         }
+
+        this.vimState.cursor = new Cursor(selectionStart, selection.active);
 
         // If we prevented from clicking past eol but it is part of this selection, include the last char
         if (this.lastClickWasPastEol) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
           this.vimState.editor.selection = new vscode.Selection(newStart, selection.active);
-          this.vimState.cursorStartPosition = selectionStart;
+          this.vimState.cursor = new Cursor(selectionStart, selection.active);
           this.lastClickWasPastEol = false;
         }
 
         if (
           configuration.mouseSelectionGoesIntoVisualMode &&
-          !isVisualMode(this.vimState.currentMode) &&
-          this.currentMode !== Mode.Insert
+          !isVisualMode(this.vimState.currentMode)
         ) {
           await this.setCurrentMode(Mode.Visual);
 
           // double click mouse selection causes an extra character to be selected so take one less character
         }
-      } else if (this.vimState.currentMode !== Mode.Insert) {
-        await this.setCurrentMode(Mode.Normal);
+      } else {
+        await this.handleKeyEvent('<LeftMouse>');
+        return;
       }
 
-      if (isVisualMode(this.vimState.currentMode)) {
-        // Store selection for commands like gv
+      const mode = this.vimState.currentMode;
+      if (isVisualMode(mode)) {
         this.vimState.lastVisualSelection = {
-          mode: this.vimState.currentMode,
+          mode,
           start: this.vimState.cursorStartPosition,
           end: this.vimState.cursorStopPosition,
         };
       }
-      this.updateView({ drawSelection: toDraw, revealRange: false });
+      this.updateView({ drawSelection: false, revealRange: false });
     }
   }
 
@@ -742,7 +786,8 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // We handle the end of selections different to VSCode. In order for VSCode to select
     // including the last character we will at the end of 'runAction' shift our stop position
     // to the right. So here we shift it back by one so that our actions have our correct
-    // position instead of the position sent to VSCode.
+    // position instead of the position sent to VSCode. Charwise Visual only — VisualLine
+    // and VisualBlock manage their selection ranges differently.
     if (this.vimState.currentMode === Mode.Visual) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBefore(c.stop) ? c.withNewStop(c.stop.getLeftThroughLineBreaks(true)) : c,
@@ -869,7 +914,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // Like previously stated we handle the end of selections different to VSCode. In order
     // for VSCode to select including the last character we shift our stop position to the
     // right now that all steps that need that position have already run. On the next action
-    // we will shift it back again on the start of 'runAction'.
+    // we will shift it back again on the start of 'runAction'. Charwise Visual only.
     if (this.vimState.currentMode === Mode.Visual) {
       this.vimState.cursors = this.vimState.cursors.map((c) =>
         c.start.isBeforeOrEqual(c.stop)
@@ -890,10 +935,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     ) {
       this.vimState.recordedState = new RecordedState();
 
-      // Return to insert mode after 1 command in this case for <C-o>
-      if (this.vimState.returnToInsertAfterCommand) {
+      // Return to insert/replace mode after 1 command in this case for <C-o>
+      if (this.vimState.modeToReturnToAfterNormalCommand != null) {
         if (this.vimState.actionCount > 0) {
-          await this.setCurrentMode(Mode.Insert);
+          await this.setCurrentMode(this.vimState.modeToReturnToAfterNormalCommand);
         } else {
           this.vimState.actionCount++;
         }
@@ -948,7 +993,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         // the cursor position should remain even if it is behind the last
         // character in the line
         if (
-          !this.vimState.returnToInsertAfterCommand &&
+          this.vimState.modeToReturnToAfterNormalCommand == null &&
           (this.vimState.currentMode === Mode.Normal || isVisualMode(this.vimState.currentMode))
         ) {
           const currentStopLineLength = TextEditor.getLineLength(cursor.stop.line);
@@ -978,13 +1023,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       });
     }
 
+    const lastVisualMode = this.vimState.currentMode;
     if (
-      isVisualMode(this.vimState.currentMode) &&
+      isVisualMode(lastVisualMode) &&
       this.vimState.dotCommandStatus !== DotCommandStatus.Executing
     ) {
-      // Store selection for commands like gv
+      // Store selection for commands like gv (Visual variants only).
       this.vimState.lastVisualSelection = {
-        mode: this.vimState.currentMode,
+        mode: lastVisualMode,
         start: this.vimState.cursorStartPosition,
         end: this.vimState.cursorStopPosition,
       };
@@ -1038,7 +1084,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       if (result instanceof Position) {
         this.vimState.cursors[i] = this.vimState.cursors[i].withNewStop(result);
 
-        if (!isVisualMode(this.currentMode) && !this.vimState.recordedState.operator) {
+        if (!isVisualMode(this.vimState.currentMode) && !this.vimState.recordedState.operator) {
           this.vimState.cursors[i] = this.vimState.cursors[i].withNewStart(result);
         }
       } else {
@@ -1144,6 +1190,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // Keep track of all cursors (in the case of multi-cursor).
       this.vimState.cursors = resultingCursors;
     }
+
+    this.vimState.recordedState.count = 0;
+    this.vimState.recordedState.operatorCount = 0;
   }
 
   public async rerunRecordedState(transformation: Dot): Promise<void> {
@@ -1496,7 +1545,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       !configuration.getCursorStyleForMode(this.currentMode)
     ) {
       // Fake block cursor with text decoration. Unfortunately we can't have a cursor
-      // in the middle of a selection natively, which is what we need for Visual Mode.
+      // in the middle of a selection natively, which is what we need for Visual mode.
       if (this.currentMode === Mode.Visual) {
         for (const { start: cursorStart, stop: cursorStop } of this.vimState.cursors) {
           if (cursorStart.isBefore(cursorStop)) {
@@ -1684,29 +1733,31 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
   switch (mode) {
     case Mode.Normal:
+    case Mode.InsertNormal:
+    case Mode.ReplaceNormal:
+    case Mode.EasyMotionMode:
+    case Mode.EasyMotionInputMode:
       return VSCodeVimCursorType.Block;
     case Mode.Insert:
       return VSCodeVimCursorType.Native;
     case Mode.Visual:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualBlock:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualLine:
+    case Mode.InsertVisual:
+    case Mode.InsertVisualBlock:
+    case Mode.InsertVisualLine:
+    case Mode.ReplaceVisual:
+    case Mode.ReplaceVisualBlock:
+    case Mode.ReplaceVisualLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.CommandlineInProgress:
+    case Mode.OperatorPendingMode:
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
-    case Mode.EasyMotionMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.EasyMotionInputMode:
-      return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);
-    case Mode.OperatorPendingMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;

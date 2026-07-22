@@ -242,6 +242,9 @@ class ReplaceModeToInsertMode extends BaseCommand {
 @RegisterAction
 class BackspaceInReplaceMode extends BaseCommand {
   modes = [Mode.Replace];
+  // `<C-BS>` aliases `<BS>` here (one char restore), unlike Insert where it
+  // word-deletes. Replace's invariant requires every char be tracked and
+  // restored — skipping past chars via word-back would lose the originals.
   keys = [['<BS>'], ['<S-BS>'], ['<C-BS>'], ['<C-h>']];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
