@@ -112,7 +112,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const shouldStartInsert =
       configuration.startInInsertMode || configuration.startInInsertModeSchemes.includes(scheme);
 
-    await modeHandler.setCurrentMode(shouldStartInsert ? Mode.Insert : Mode.Normal);
+    const initialMode = configuration.disableExtension
+      ? Mode.Disabled
+      : shouldStartInsert
+        ? Mode.Insert
+        : Mode.Normal;
+
+    await modeHandler.setCurrentMode(initialMode);
     modeHandler.syncCursors();
     return modeHandler;
   }
