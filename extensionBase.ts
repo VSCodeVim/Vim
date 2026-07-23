@@ -27,6 +27,19 @@ interface ICodeKeybinding {
   commands?: Array<{ command: string; args: any[] }>;
 }
 
+function isTextDiffEditorActive(): boolean {
+  const activeTab = vscode.window.tabGroups.activeTabGroup?.activeTab;
+  if (!activeTab?.input) {
+    return false;
+  }
+
+  return activeTab.input instanceof vscode.TabInputTextDiff;
+}
+
+async function updateEditorContexts(): Promise<void> {
+  await VSCodeContext.set('vim.isTextDiffEditor', isTextDiffEditorActive());
+}
+
 export async function getAndUpdateModeHandler(
   forceSyncAndUpdate = false,
 ): Promise<ModeHandler | undefined> {
@@ -232,6 +245,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       }
 
       taskQueue.enqueueTask(async () => {
+        await updateEditorContexts();
         const mh = await getAndUpdateModeHandler(true);
         if (mh) {
           globalState.jumpTracker.handleFileJump(
@@ -243,6 +257,15 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     },
     true,
     true,
+  );
+
+  registerEventListener(
+    context,
+    vscode.window.tabGroups.onDidChangeTabs,
+    async () => {
+      await updateEditorContexts();
+    },
+    false,
   );
 
   registerEventListener(
@@ -504,6 +527,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   // Disable automatic keyboard navigation in lists, so it doesn't interfere
   // with our list navigation keybindings
   await VSCodeContext.set('listAutomaticKeyboardNavigation', false);
+  await updateEditorContexts();
 
   await toggleExtension(configuration.disableExtension, compositionState);
 

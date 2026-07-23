@@ -4,6 +4,7 @@ import { configurationValidator } from '../configurationValidator';
 import { IConfiguration, IKeyRemapping } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { Notation } from '../notation';
+import { validateWhenClause } from '../whenExpression';
 
 export class RemappingValidator implements IConfigurationValidator {
   private commandMap!: Map<string, boolean>;
@@ -138,13 +139,23 @@ export class RemappingValidator implements IConfigurationValidator {
         } else if (command.command) {
           cmd = command.command;
 
+          if (command.when !== undefined) {
+            const whenValidationError = validateWhenClause(command.when);
+            if (whenValidationError) {
+              result.append({
+                level: 'error',
+                message: `Remapping of '${remapping.before}' has invalid \"when\" expression: ${whenValidationError}`,
+              });
+            }
+          }
+
           if (!(await this.isCommandValid(cmd))) {
             result.append({ level: 'warning', message: `${cmd} does not exist.` });
           }
         } else {
           result.append({
             level: 'error',
-            message: `Remapping of '${remapping.before}' has wrong "commands" structure. Should be 'string[] | { "command": string, "args": any[] }[]'.`,
+            message: `Remapping of '${remapping.before}' has wrong "commands" structure. Should be 'string[] | { "command": string, "args"?: any[], "when"?: string }[]'.`,
           });
         }
       }
