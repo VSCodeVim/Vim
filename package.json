@@ -717,7 +717,7 @@
         },
         "vim.targets.smartQuotes.aIncludesSurroundingSpaces": {
           "type": "boolean",
-          "markdownDescription": "Whether to use default Vim behavior when using `a` (e.g. `da'`) which include surrounding spaces, or not, as for other text objects.",
+          "markdownDescription": "Whether to use default Vim behavior when using `a` (e.g. `da'`) which includes surrounding spaces, or not, as for other text objects.",
           "default": true
         },
         "vim.sneak": {
@@ -1170,7 +1170,7 @@
         },
         "vim.langmap": {
           "type": "string",
-          "description": "Language map for alternate keyboard layouts. When you are typing text in Insert (or Replace, etc.) mode, the characters are inserted derectly. Otherwise, they are translated based on the provided map."
+          "description": "Language map for alternate keyboard layouts. When you are typing text in Insert (or Replace, etc.) mode, the characters are inserted directly. Otherwise, they are translated based on the provided map."
         }
       }
     },
