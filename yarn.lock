@@ -778,10 +778,10 @@
     https-proxy-agent "^7.0.0"
     tslib "^2.6.2"
 
-"@vscode/test-electron@3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-3.0.0.tgz#6a27d6992e4c89b2a229cbed3e990afe2b3575ef"
-  integrity sha512-TY5mC7aAjxSLDXsyjhrG8cJHgc/HLdiE5lvtW7hABYQrY24Qwozzr5UoO3HiuAM4Hzz4b7K/eZlwrCILj94CcA==
+"@vscode/test-electron@3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@vscode/test-electron/-/test-electron-3.1.0.tgz#46b93d118dcd3b3c89caae296a13f9a7f5eb63c5"
+  integrity sha512-CRqv5u+YYoseuNVJ6Tyo4k0sF0mx4qnKMihRB0PjsUF8Dc0WKtCXo6CNL6nWWm5esfFQsQA/pejMj4ZbpJVLTw==
   dependencies:
     http-proxy-agent "^7.0.2"
     https-proxy-agent "^7.0.5"
