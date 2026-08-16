@@ -117,11 +117,13 @@ export abstract class BaseAction implements IBaseAction {
       const left = one[i];
       const right = two[j];
 
-      if (left === right && right !== configuration.leader) {
+      if (left === right && right !== configuration.leader && right !== configuration.localleader) {
         continue;
       } else if (left === '<any>') {
         continue;
       } else if (left === '<leader>' && right === configuration.leader) {
+        continue;
+      } else if (left === '<localleader>' && right === configuration.localleader) {
         continue;
       } else if (left === '<number>' && this.isSingleNumber.test(right)) {
         continue;
