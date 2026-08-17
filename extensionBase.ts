@@ -371,6 +371,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   overrideCommand(context, 'compositionStart', async () => {
     taskQueue.enqueueTask(async () => {
       compositionState.isInComposition = true;
+      compositionState.composingStart = vscode.window.activeTextEditor?.selection.active;
     });
   });
 
@@ -380,19 +381,27 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (mh) {
         if (compositionState.insertedText) {
           mh.internalSelectionsTracker.startIgnoringIntermediateSelections();
+          // IME candidate selection doesn't trigger `replacePreviousChar` with `editor.editContext` enabled,
+          // so `composingText` may be stale.
+          const editor = mh.vimState.editor;
+          const text = editor.document.getText(
+            new vscode.Range(
+              compositionState.composingStart ?? editor.selection.active,
+              editor.selection.active,
+            ),
+          );
           await vscode.commands.executeCommand('default:replacePreviousChar', {
             text: '',
-            replaceCharCnt: compositionState.composingText.length,
+            replaceCharCnt: text.length,
           });
           mh.vimState.cursorStopPosition = mh.vimState.editor.selection.active;
           mh.vimState.cursorStartPosition = mh.vimState.editor.selection.active;
           mh.internalSelectionsTracker.stopIgnoringIntermediateSelections();
-        }
-        const text = compositionState.composingText;
-        if (compositionState.insertedText) {
-          await mh.handleMultipleKeyEvents([text]);
+          if (text) {
+            await mh.handleMultipleKeyEvents([text]);
+          }
         } else {
-          await mh.handleMultipleKeyEvents(text.split(''));
+          await mh.handleMultipleKeyEvents(compositionState.composingText.split(''));
         }
       }
       compositionState.reset();
