@@ -1554,7 +1554,10 @@ suite('Mode Normal', () => {
     end: ['|t text'],
   });
 
-  for (const key of ['<BS>', '<C-BS>', '<S-BS>']) {
+  // <BS> and <S-BS> in Normal both act as MoveLeft (char-back with
+  // whichwrap='b' support). <C-BS> is the word-back motion (like B); see
+  // pr9998Regressions.test.ts for that.
+  for (const key of ['<BS>', '<S-BS>']) {
     newTest({
       title: `${key} moves one character to the left`,
       start: ['text |text'],

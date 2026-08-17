@@ -156,7 +156,8 @@ export abstract class BaseCommand extends BaseAction {
 
   /**
    * If isCompleteAction is true, then triggering this command is a complete action -
-   * that means that we'll go and try to run it.
+   * that means that after the command is run we can clear recordedState.count because
+   * it will have been handled already.
    */
   public isCompleteAction = true;
 
