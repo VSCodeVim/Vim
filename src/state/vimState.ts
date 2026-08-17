@@ -17,6 +17,7 @@ import { RegisterMode } from './../register/register';
 import { ReplaceState } from './../state/replaceState';
 import { globalState } from './globalState';
 import { RecordedState } from './recordedState';
+import { TextTransformations } from 'src/transformations/transformations';
 
 interface IInputMethodSwitcher {
   switchInputMethod(prevMode: Mode, newMode: Mode): Promise<void>;
@@ -100,6 +101,8 @@ export class VimState implements vscode.Disposable {
   public dotCommandStatus: DotCommandStatus = DotCommandStatus.Waiting;
   public isReplayingMacro: boolean = false;
   public normalCommandState: NormalCommandState = NormalCommandState.Waiting;
+  public queuedTransformations: TextTransformations[] = [];
+  public queuedInsertText: QueuedInsertText | undefined = undefined;
 
   /**
    * The last visual selection before running the dot command
@@ -349,4 +352,14 @@ export class VimState implements vscode.Disposable {
 export interface ViewChange {
   command: string;
   args: any;
+}
+
+export class QueuedInsertText {
+  texts: string[];
+  cursorPos: Position;
+
+  constructor(texts: string[], cursorPos: Position) {
+    this.texts = texts;
+    this.cursorPos = cursorPos;
+  }
 }
