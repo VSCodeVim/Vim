@@ -66,7 +66,20 @@ class OpenAllFolds extends CommandFold {
 class CloseAllFoldsRecursively extends CommandFold {
   override modes = [Mode.Normal];
   keys = ['z', 'C'];
-  commandName = 'editor.foldRecursively';
+  commandName = 'editor.fold';
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    // editor.foldRecursively only closes the innermost fold containing the
+    // cursor; it does not climb through enclosing folds the way Vim's zC
+    // does. editor.fold with direction 'up' and an effectively unlimited
+    // level count walks outward from the cursor instead, closing each
+    // enclosing fold level in turn.
+    vimState.recordedState.transformer.vscodeCommand(this.commandName, {
+      levels: 999,
+      direction: 'up',
+    });
+    await vimState.setCurrentMode(Mode.Normal);
+  }
 }
 
 @RegisterAction
