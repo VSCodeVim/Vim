@@ -2,6 +2,12 @@ import * as vscode from 'vscode';
 
 export type Digraph = [string, number | number[]];
 
+export interface IRemappingCommand {
+  command: string;
+  args?: any[];
+  when?: string;
+}
+
 export interface IModeSpecificStrings<T> {
   normal: T | undefined;
   insert: T | undefined;
@@ -17,7 +23,7 @@ export interface IKeyRemapping {
   silent?: boolean;
   // 'recursive' is calculated when validating, according to the config that stored the remapping
   recursive?: boolean;
-  commands?: Array<{ command: string; args: any[] } | string>;
+  commands?: Array<IRemappingCommand | string>;
   source?: 'vscode' | 'vimrc';
 }
 
