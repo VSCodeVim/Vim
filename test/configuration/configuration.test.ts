@@ -58,6 +58,59 @@ suite('Configuration', () => {
     }
   });
 
+  test('initializes in Mode.Disabled and absolute line numbers if disableExtension is true', async () => {
+    await setupWorkspace({
+      config: {
+        smartRelativeLine: true,
+        disableExtension: true,
+      },
+    });
+
+    const activeTextEditor = vscode.window.activeTextEditor!;
+    const { getAndUpdateModeHandler } = await import('../../extensionBase');
+    const mh = (await getAndUpdateModeHandler())!;
+
+    assert.strictEqual(mh.vimState.currentMode, Mode.Disabled);
+    assert.strictEqual(activeTextEditor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.On);
+  });
+
+  test('switching disableExtension setting toggles the active mode handler', async () => {
+    await setupWorkspace({
+      config: {
+        smartRelativeLine: true,
+        disableExtension: false,
+      },
+    });
+
+    const activeTextEditor = vscode.window.activeTextEditor!;
+    const { getAndUpdateModeHandler } = await import('../../extensionBase');
+    const mh = (await getAndUpdateModeHandler())!;
+    mh.vimState.setTextEditorLineNumbersStyle(mh.vimState.currentMode);
+
+    // Starts in Normal mode with relative line numbers
+    assert.strictEqual(mh.vimState.currentMode, Mode.Normal);
+    assert.strictEqual(
+      activeTextEditor.options.lineNumbers,
+      vscode.TextEditorLineNumbersStyle.Relative,
+    );
+
+    // Call toggleVim command
+    await vscode.commands.executeCommand('toggleVim');
+
+    // Should transition to Disabled mode and absolute line numbers
+    assert.strictEqual(mh.vimState.currentMode, Mode.Disabled);
+    assert.strictEqual(activeTextEditor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.On);
+
+    // Toggle back
+    await vscode.commands.executeCommand('toggleVim');
+    const newMh = (await getAndUpdateModeHandler())!;
+    assert.strictEqual(newMh.vimState.currentMode, Mode.Normal);
+    assert.strictEqual(
+      activeTextEditor.options.lineNumbers,
+      vscode.TextEditorLineNumbersStyle.Relative,
+    );
+  });
+
   newTest({
     title: 'Can handle long key chords',
     start: ['|'],
