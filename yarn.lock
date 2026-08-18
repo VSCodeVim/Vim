@@ -192,16 +192,16 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-1.1.0.tgz#44b5ce3485e95235aca06e628eeaaa3c816bc4cc"
   integrity sha512-Xc3VhU02wqZ1HvHRJUwL09HkZSTvidqY5Ya0NXBSYOxAp+Ln9dcJr9fySI+CkONzP3PekQo9WdzCv0PGER/mOA==
 
-"@es-joy/jsdoccomment@~0.95.0":
-  version "0.95.0"
-  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.95.0.tgz#af929e03dbe51ff929993eaceef7c2e2d12c4909"
-  integrity sha512-jbzwtRPuw1Nzld0lacvr1vwzPU/6zEHFGK5YOTstl2MQYMZBuKmSW3HMuEwsq1v4meK5Do4lizxyd/hi25rCZg==
+"@es-joy/jsdoccomment@~0.95.1":
+  version "0.95.1"
+  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.95.1.tgz#1afb434ae17844b43203d0b8de477476b9aeefeb"
+  integrity sha512-LO/RI08Fo9bhXwB7Od9G+1j3eSNq63+ZS5CQO8YLXHbDg6kx6S/DhTeY0+Fc9uZrjK1zZSyTx8Sg5gv5DIoCnA==
   dependencies:
     "@types/estree" "^1.0.9"
     "@typescript-eslint/types" "^8.67.0"
     comment-parser "1.4.8"
     esquery "^1.7.0"
-    jsdoc-type-pratt-parser "~9.1.1"
+    jsdoc-type-pratt-parser "~9.1.2"
 
 "@es-joy/resolve.exports@1.2.0":
   version "1.2.0"
@@ -2301,11 +2301,11 @@ eslint-config-prettier@^10.0.0:
   integrity sha512-zc1UmCpNltmVY34vuLRV61r1K27sWuX39E+uyUnY8xS2Bex88VV9cugG+UZbRSRGtGyFboj+D8JODyme1plMpw==
 
 eslint-plugin-jsdoc@^64.0.0:
-  version "64.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-64.1.0.tgz#0f260eff7b0eb42737cee9c8536c0c3ad7961a51"
-  integrity sha512-UyAR/zVWn1jgIM/7eDMeLHuqLVtqKtamNVE0M7mdcZtFkWdYlNvDVDzyCCcURmLe66JpTZkMM3ZM3zjiVvIByA==
+  version "64.2.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-64.2.1.tgz#05755c3cdf55d0ce901c67cd3f86220dcb55192e"
+  integrity sha512-6GpSYxLPcbMw38S94Cngrgs1Zv8yLinQS1O17OxJVZ6deLbrMRCERUYQKceweSqEuG2kx5Amn4l3aKPkCp4geQ==
   dependencies:
-    "@es-joy/jsdoccomment" "~0.95.0"
+    "@es-joy/jsdoccomment" "~0.95.1"
     "@es-joy/resolve.exports" "1.2.0"
     are-docs-informative "^0.1.1"
     comment-parser "1.4.8"
@@ -3707,10 +3707,10 @@ js-yaml@^4.1.0, js-yaml@^4.1.1:
   dependencies:
     argparse "^2.0.1"
 
-jsdoc-type-pratt-parser@~9.1.1:
-  version "9.1.1"
-  resolved "https://registry.yarnpkg.com/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-9.1.1.tgz#eeb9e00e430ec812d61844b8377ac612e4e8dc1d"
-  integrity sha512-kojSbQb9iQM2bk2PmHiKa3reG0U4v2gN9U8D8+eCQq+4KM5ZXBUyBVeF8KmR0RiwqyrW4+uVWYWTOLnpsavnkw==
+jsdoc-type-pratt-parser@~9.1.2:
+  version "9.1.2"
+  resolved "https://registry.yarnpkg.com/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-9.1.2.tgz#8b3488a0ec1d6141c1252542c0abfd2587e16336"
+  integrity sha512-9EXymowgk1mb9RY1VxuwKc+AhaxfBk2CV0dWxgGM+l5RURTtiUoAx7MlKwcsiVcEXK5HEPa7FeH/tsRpqjEPRg==
   dependencies:
     "@types/estree" "^1.0.9"
 
