@@ -157,4 +157,8 @@ export class Configuration implements IConfiguration {
     '<C-d>': true,
   };
   langmap = '';
+  mapIMEComposition = {
+    enable: false,
+    map: {},
+  };
 }
