@@ -697,6 +697,8 @@ export class EvaluationContext {
       this.errors.push(msg);
       return int(1);
     };
+    const assertThat = (condition: boolean, msg: Value | undefined, defaultMsg: () => string) =>
+      condition ? assertPassed() : assertFailed(msg ? toString(msg) : defaultMsg());
 
     const getpos = (arg: string) => {
       const pos: Position | undefined = (() => {
@@ -836,16 +838,11 @@ export class EvaluationContext {
       }
       case 'assert_equal': {
         const [expected, actual, msg] = getArgs(2, 3);
-        if (
+        return assertThat(
           expected!.type === actual!.type &&
-          this.evaluateComparison('==', true, expected!, actual!)
-        ) {
-          return assertPassed();
-        }
-        return assertFailed(
-          msg
-            ? toString(msg)
-            : `Expected ${displayValue(expected!)} but got ${displayValue(actual!)}`,
+            this.evaluateComparison('==', true, expected!, actual!),
+          msg,
+          () => `Expected ${displayValue(expected!)} but got ${displayValue(actual!)}`,
         );
       }
       // TODO: assert_equalfile()
@@ -853,36 +850,28 @@ export class EvaluationContext {
       // TODO: assert_fails()
       case 'assert_false': {
         const [actual, msg] = getArgs(1, 2);
-        if (this.evaluateComparison('==', true, bool(false), actual!)) {
-          return assertPassed();
-        }
-        return assertFailed(
-          msg ? toString(msg) : `Expected False but got ${displayValue(actual!)}`,
+        return assertThat(
+          this.evaluateComparison('==', true, bool(false), actual!),
+          msg,
+          () => `Expected False but got ${displayValue(actual!)}`,
         );
       }
       case 'assert_inrange': {
         const [lower, upper, actual, msg] = getArgs(3, 4);
-        if (
+        return assertThat(
           this.evaluateComparison('>=', true, actual!, lower!) &&
-          this.evaluateComparison('<=', true, actual!, upper!)
-        ) {
-          return assertPassed();
-        }
-        return assertFailed(
-          msg
-            ? toString(msg)
-            : `Expected range ${displayValue(lower!)} - ${displayValue(upper!)} but got ${displayValue(actual!)}`,
+            this.evaluateComparison('<=', true, actual!, upper!),
+          msg,
+          () =>
+            `Expected range ${displayValue(lower!)} - ${displayValue(upper!)} but got ${displayValue(actual!)}`,
         );
       }
       case 'assert_match': {
         const [pattern, actual, msg] = getArgs(2, 3);
-        if (this.evaluateComparison('=~', true, actual!, pattern!)) {
-          return assertPassed();
-        }
-        return assertFailed(
-          msg
-            ? toString(msg)
-            : `Pattern '${toString(pattern!)}' does not match '${toString(actual!)}'`,
+        return assertThat(
+          this.evaluateComparison('=~', true, actual!, pattern!),
+          msg,
+          () => `Pattern '${toString(pattern!)}' does not match '${toString(actual!)}'`,
         );
       }
       case 'assert_nobeep': {
@@ -890,20 +879,18 @@ export class EvaluationContext {
       }
       case 'assert_notequal': {
         const [expected, actual, msg] = getArgs(2, 3);
-        if (this.evaluateComparison('!=', true, expected!, actual!)) {
-          return assertPassed();
-        }
-        return assertFailed(
-          msg ? toString(msg) : `Expected not equal to ${displayValue(expected!)}`,
+        return assertThat(
+          this.evaluateComparison('!=', true, expected!, actual!),
+          msg,
+          () => `Expected not equal to ${displayValue(expected!)}`,
         );
       }
       case 'assert_notmatch': {
         const [pattern, actual, msg] = getArgs(2, 3);
-        if (!this.evaluateComparison('=~', true, actual!, pattern!)) {
-          return assertPassed();
-        }
-        return assertFailed(
-          msg ? toString(msg) : `Pattern '${toString(pattern!)}' does match '${toString(actual!)}'`,
+        return assertThat(
+          !this.evaluateComparison('=~', true, actual!, pattern!),
+          msg,
+          () => `Pattern '${toString(pattern!)}' does match '${toString(actual!)}'`,
         );
       }
       case 'assert_report': {
@@ -911,10 +898,11 @@ export class EvaluationContext {
       }
       case 'assert_true': {
         const [actual, msg] = getArgs(1, 2);
-        if (this.evaluateComparison('!=', true, bool(false), actual!)) {
-          return assertPassed();
-        }
-        return assertFailed(msg ? toString(msg) : `Expected True but got ${displayValue(actual!)}`);
+        return assertThat(
+          this.evaluateComparison('!=', true, bool(false), actual!),
+          msg,
+          () => `Expected True but got ${displayValue(actual!)}`,
+        );
       }
       case 'byte2line': {
         const [_byte] = getArgs(1);
