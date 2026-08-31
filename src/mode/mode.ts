@@ -13,8 +13,19 @@ export enum Mode {
   EasyMotionMode,
   EasyMotionInputMode,
   SurroundInputMode,
-  OperatorPendingMode, // Pseudo-Mode, used only when remapping. DON'T SET TO THIS MODE
   Disabled,
+  // The following modes are Pseudo-Modes, used only when remapping or for 'showmode'
+  // to give feedback to user.
+  // DON'T SET TO THESE MODES!!!
+  OperatorPendingMode,
+  InsertNormal,
+  ReplaceNormal,
+  InsertVisual,
+  InsertVisualBlock,
+  InsertVisualLine,
+  ReplaceVisual,
+  ReplaceVisualBlock,
+  ReplaceVisualLine,
 }
 
 export enum VSCodeVimCursorType {
@@ -59,6 +70,25 @@ export function isStatusBarMode(
   mode: Mode,
 ): mode is Mode.CommandlineInProgress | Mode.SearchInProgressMode {
   return [Mode.SearchInProgressMode, Mode.CommandlineInProgress].includes(mode);
+}
+
+/**
+ * Is the given mode a pseudo mode? Pseudo-modes are never set as the real
+ * `currentMode`; they are synthesized via `currentModeIncludingPseudoModes`
+ * for use by the remapper and statusBar (e.g. `-- (insert) VISUAL --`).
+ */
+export function isPseudoMode(mode: Mode): boolean {
+  return [
+    Mode.OperatorPendingMode,
+    Mode.InsertNormal,
+    Mode.ReplaceNormal,
+    Mode.InsertVisual,
+    Mode.InsertVisualLine,
+    Mode.InsertVisualBlock,
+    Mode.ReplaceVisual,
+    Mode.ReplaceVisualLine,
+    Mode.ReplaceVisualBlock,
+  ].includes(mode);
 }
 
 export function getCursorStyle(cursorType: VSCodeVimCursorType) {

@@ -8,7 +8,13 @@ import { SurroundState } from '../actions/plugins/surround';
 import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { Cursor } from '../common/motion/cursor';
 import { configuration } from '../configuration/configuration';
-import { DotCommandStatus, Mode, NormalCommandState } from '../mode/mode';
+import {
+  DotCommandStatus,
+  isPseudoMode,
+  isVisualMode,
+  Mode,
+  NormalCommandState,
+} from '../mode/mode';
 import { ModeData } from '../mode/modeData';
 import { Logger } from '../util/logger';
 import { SearchDirection } from '../vimscript/pattern';
@@ -109,10 +115,10 @@ export class VimState implements vscode.Disposable {
   public surround: SurroundState | undefined = undefined;
 
   /**
-   * Used for `<C-o>` in insert mode, which allows you run one normal mode
-   * command, then go back to insert mode.
+   * Used for `<C-o>` in insert/replace mode, which allows you run one normal mode
+   * command, then go back to insert/replace mode.
    */
-  public returnToInsertAfterCommand = false;
+  public modeToReturnToAfterNormalCommand: Mode.Insert | Mode.Replace | undefined;
   public actionCount = 0;
 
   /**
@@ -199,6 +205,16 @@ export class VimState implements vscode.Disposable {
   }
 
   /**
+   * Stores the mode that vimState had before entering the current visual mode.
+   * This is used to create the pseudo modes of Insert/Replace visual modes, like
+   * when you select with `<S-arrowKey>` when in InsertMode, or when you use `<C-o>`
+   * on InsertMode and then enter visual mode with `v`, `V` or `<C-v>`.
+   *
+   * This should be cleared everytime we leave a visual mode.
+   */
+  public modeBeforeEnteringVisualMode: Mode.Insert | Mode.Replace | undefined;
+
+  /**
    * Stores last visual mode as well as what was selected for `gv`
    */
   public lastVisualSelection:
@@ -220,14 +236,44 @@ export class VimState implements vscode.Disposable {
 
   private inputMethodSwitcher?: IInputMethodSwitcher;
   /**
-   * The mode Vim is currently including pseudo-modes like OperatorPendingMode
-   * This is to be used only by the Remappers when getting the remappings so don't
-   * use it anywhere else.
+   * The pseudo-mode synthesized from `currentMode` plus the Insert/Replace
+   * return targets (`modeToReturnToAfterNormalCommand`,
+   * `modeBeforeEnteringVisualMode`). Does NOT account for operator-pending —
+   * see `currentModeIncludingPseudoModes` for that.
+   */
+  public get currentModeWithoutOperatorPending(): Mode {
+    if (this.modeToReturnToAfterNormalCommand != null && this.currentMode === Mode.Normal) {
+      return this.modeToReturnToAfterNormalCommand === Mode.Insert
+        ? Mode.InsertNormal
+        : Mode.ReplaceNormal;
+    } else if (isVisualMode(this.currentMode) && this.modeBeforeEnteringVisualMode != null) {
+      const fromInsert = this.modeBeforeEnteringVisualMode === Mode.Insert;
+      switch (this.currentMode) {
+        case Mode.Visual:
+          return fromInsert ? Mode.InsertVisual : Mode.ReplaceVisual;
+        case Mode.VisualLine:
+          return fromInsert ? Mode.InsertVisualLine : Mode.ReplaceVisualLine;
+        case Mode.VisualBlock:
+          return fromInsert ? Mode.InsertVisualBlock : Mode.ReplaceVisualBlock;
+        default:
+          return this.currentMode;
+      }
+    } else {
+      return this.currentMode;
+    }
+  }
+
+  /**
+   * The mode Vim is currently in including pseudo-modes like OperatorPendingMode.
+   * This is to be used only by the Remappers when getting the remappings; the
+   * status bar uses `currentModeWithoutOperatorPending` so the bar keeps
+   * showing the underlying mode while an operator is pending (matching Vim).
    */
   public get currentModeIncludingPseudoModes(): Mode {
-    return this.recordedState.getOperatorState(this.currentMode) === 'pending'
-      ? Mode.OperatorPendingMode
-      : this.currentMode;
+    if (this.recordedState.getOperatorState(this.currentMode) === 'pending') {
+      return Mode.OperatorPendingMode;
+    }
+    return this.currentModeWithoutOperatorPending;
   }
 
   public async setModeData(modeData: ModeData): Promise<void> {
@@ -237,8 +283,11 @@ export class VimState implements vscode.Disposable {
     }
 
     await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, modeData.mode);
-    if (this.returnToInsertAfterCommand && modeData.mode === Mode.Insert) {
-      this.returnToInsertAfterCommand = false;
+    if (
+      this.modeToReturnToAfterNormalCommand != null &&
+      [Mode.Insert, Mode.Replace].includes(modeData.mode)
+    ) {
+      this.modeToReturnToAfterNormalCommand = undefined;
     }
 
     if (modeData.mode === Mode.SearchInProgressMode) {
@@ -262,6 +311,37 @@ export class VimState implements vscode.Disposable {
     if (mode === undefined) {
       // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
       throw new Error('Tried setting currentMode to undefined');
+    }
+    if (isPseudoMode(mode)) {
+      throw new Error(`Can't set current mode to a pseudo mode like '${Mode[mode]}'`);
+    }
+
+    if (isVisualMode(mode) && !isVisualMode(this.currentMode)) {
+      // Entering a visual/select mode. Remember where to return to ONLY if we
+      // came from Insert or Replace (the `<C-o>` / `<S-arrow>` from-Insert
+      // flow); other source modes (Normal, SearchInProgressMode, etc.) go
+      // back to Normal on exit, so don't pollute modeBeforeEnteringVisualMode.
+      const target = this.modeToReturnToAfterNormalCommand ?? this.currentMode;
+      this.modeBeforeEnteringVisualMode =
+        target === Mode.Insert || target === Mode.Replace ? target : undefined;
+    } else if (isVisualMode(this.currentMode) && !isVisualMode(mode)) {
+      // Leaving a visual/select mode. If we had stored an Insert/Replace return
+      // target and the new mode isn't Insert/Replace itself, force the return.
+      // (If the user is going to Insert/Replace deliberately, leave it be.)
+      if (
+        this.modeBeforeEnteringVisualMode != null &&
+        ![Mode.Insert, Mode.Replace].includes(mode)
+      ) {
+        mode = this.modeBeforeEnteringVisualMode;
+      }
+      this.modeBeforeEnteringVisualMode = undefined;
+    }
+
+    if (
+      this.modeToReturnToAfterNormalCommand != null &&
+      [Mode.Insert, Mode.Replace].includes(mode)
+    ) {
+      this.modeToReturnToAfterNormalCommand = undefined;
     }
 
     await this.setModeData(
