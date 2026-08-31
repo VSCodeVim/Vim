@@ -8,6 +8,7 @@ import { setupWorkspace } from './../testUtils';
 
 const testConfig: Partial<IConfiguration> = {
   leader: '<space>',
+  localleader: ',',
   normalModeKeyBindingsNonRecursive: [
     {
       before: ['leader', 'o'],
@@ -15,6 +16,10 @@ const testConfig: Partial<IConfiguration> = {
     },
     {
       before: ['<leader>', 'f', 'e', 's'],
+      after: ['v'],
+    },
+    {
+      before: ['<localleader>', 't'],
       after: ['v'],
     },
   ],
@@ -63,6 +68,15 @@ suite('Configuration', () => {
     start: ['|'],
     // <leader>fes
     keysPressed: ' fes',
+    end: ['|'],
+    endMode: Mode.Visual,
+  });
+
+  newTest({
+    title: 'Can handle localleader key chords',
+    start: ['|'],
+    // <localleader>t
+    keysPressed: ',t',
     end: ['|'],
     endMode: Mode.Visual,
   });

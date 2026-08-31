@@ -93,9 +93,10 @@ export const fileCmdParser: Parser<FileCmd | undefined> = string('+')
 
 // TODO: re-create parser when leader changes
 const leaderParser = regexp(/<leader>/).map(() => configuration.leader); // lazy evaluation of configuration.leader
+const localleaderParser = regexp(/<localleader>/).map(() => configuration.localleader);
 const specialCharacters = regexp(/<(?:Esc|C-\w|A-\w|C-A-\w)>/);
 
-const specialCharacterParser = alt(specialCharacters, leaderParser);
+const specialCharacterParser = alt(specialCharacters, leaderParser, localleaderParser);
 
 // TODO: Add more special characters
 const escapedParser = string('\\')
