@@ -243,7 +243,7 @@ Custom remappings are defined on a per-mode basis.
             ]
         },
         {
-            "before": ["leader", "w"],
+            "before": ["<leader>", "w"],
             "commands": [
                 "workbench.action.files.save",
             ]
