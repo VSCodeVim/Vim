@@ -53,6 +53,7 @@ export const optionAliases: ReadonlyMap<string, string> = new Map<string, string
   ['scr', 'scroll'],
   ['so', 'scrolloff'],
   ['scs', 'smartcase'],
+  ['sel', 'selection'],
   ['smd', 'showmode'],
   ['sol', 'startofline'],
   ['to', 'timeout'],
@@ -419,6 +420,8 @@ class Configuration implements IConfiguration {
   visualstar = false;
 
   mouseSelectionGoesIntoVisualMode = true;
+
+  selection: 'old' | 'inclusive' | 'exclusive' = 'inclusive';
 
   changeWordIncludesWhitespace = false;
 

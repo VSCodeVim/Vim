@@ -1102,6 +1102,17 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         [start, stop] = [stop, start];
       }
 
+      // Character-wise Visual selections are represented internally as inclusive ranges.
+      // Vim's selection=exclusive instead treats the ordered range as half-open. Keep a
+      // one-character selection inclusive, as Vim does, so Visual mode can never be empty.
+      if (
+        startingMode === Mode.Visual &&
+        configuration.selection === 'exclusive' &&
+        !start.isEqual(stop)
+      ) {
+        stop = stop.getLeftThroughLineBreaks(true);
+      }
+
       if (!isVisualMode(startingMode) && startingRegisterMode !== RegisterMode.LineWise) {
         stop = stop.getLeftThroughLineBreaks(true);
       }
@@ -1325,7 +1336,13 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
              * but if we hit b we expect to select abcd, so we need to getRight() on the
              * start of the selection when it precedes where we started visual mode.
              */
-            if (start.isAfterOrEqual(stop)) {
+            if (configuration.selection === 'exclusive' && start.isBefore(stop)) {
+              const exclusiveStop = stop.getLeftThroughLineBreaks(true);
+              // Vim treats a one-character Visual selection as inclusive.
+              if (!exclusiveStop.isEqual(start)) {
+                stop = exclusiveStop;
+              }
+            } else if (start.isAfterOrEqual(stop)) {
               start = start.getRight();
             }
 
