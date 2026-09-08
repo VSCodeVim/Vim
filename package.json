@@ -486,6 +486,11 @@
           "markdownDescription": "What key should `<leader>` map to in remappings?",
           "default": "\\"
         },
+        "vim.localleader": {
+          "type": "string",
+          "markdownDescription": "What key should `<localleader>` map to in remappings?",
+          "default": "\\"
+        },
         "vim.searchHighlightColor": {
           "type": "string",
           "markdownDescription": "Background color of non-current search matches. The color must not be opaque so as not to hide underlying decorations. Uses `#editor.findMatchHighlightColor#` from current theme if undefined."
