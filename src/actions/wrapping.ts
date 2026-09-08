@@ -8,9 +8,9 @@ import { Mode } from './../mode/mode';
  */
 export const shouldWrapKey = (mode: Mode, key: string): boolean => {
   let k: string;
-  if (key === '<left>') {
+  if (key === '<left>' || key === '<S-left>') {
     k = [Mode.Insert, Mode.Replace].includes(mode) ? '[' : '<';
-  } else if (key === '<right>') {
+  } else if (key === '<right>' || key === '<S-right>') {
     k = [Mode.Insert, Mode.Replace].includes(mode) ? ']' : '>';
   } else if (['<BS>', '<C-BS>', '<S-BS>'].includes(key)) {
     k = 'b';

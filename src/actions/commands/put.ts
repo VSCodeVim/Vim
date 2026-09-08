@@ -73,7 +73,7 @@ abstract class BasePutCommand extends BaseCommand {
 
     const newCursorPosition = this.getCursorPosition({
       document: vimState.document,
-      returnToInsertAfterCommand: vimState.returnToInsertAfterCommand,
+      returnToInsertAfterCommand: vimState.modeToReturnToAfterNormalCommand != null,
       mode,
       replaceRange,
       registerMode,

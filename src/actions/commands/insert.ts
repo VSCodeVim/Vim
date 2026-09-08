@@ -222,7 +222,7 @@ export class ExitInsertMode extends BaseCommand {
     void vscode.commands.executeCommand('editor.action.inlineSuggest.hide');
 
     vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getLeft()));
-    if (vimState.returnToInsertAfterCommand && position.character !== 0) {
+    if (vimState.modeToReturnToAfterNormalCommand != null && position.character !== 0) {
       vimState.cursors = vimState.cursors.map((x) => x.withNewStop(x.stop.getRight()));
     }
 
@@ -410,7 +410,7 @@ class DecreaseIndent extends IndentCommand {
 @RegisterAction
 export class BackspaceInInsertMode extends BaseCommand {
   modes = [Mode.Insert];
-  keys = [['<BS>'], ['<C-h>']];
+  keys = [['<BS>'], ['<C-h>'], ['<S-BS>']];
 
   override runsOnceForEveryCursor() {
     return false;
@@ -418,6 +418,20 @@ export class BackspaceInInsertMode extends BaseCommand {
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
     vimState.recordedState.transformer.vscodeCommand('deleteLeft');
+  }
+}
+
+@RegisterAction
+class CtrlBackspaceInInsertMode extends BaseCommand {
+  modes = [Mode.Insert];
+  keys = ['<C-BS>'];
+
+  override runsOnceForEveryCursor() {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.recordedState.transformer.vscodeCommand('deleteWordLeft');
   }
 }
 
@@ -574,13 +588,18 @@ class InsertRegisterContent extends BaseCommand {
 
 @RegisterAction
 class ExecuteOneNormalCommandInInsertMode extends BaseCommand {
-  modes = [Mode.Insert];
+  modes = [Mode.Insert, Mode.Replace];
   keys = ['<C-o>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.returnToInsertAfterCommand = true;
+    const sourceMode = vimState.currentMode === Mode.Replace ? Mode.Replace : Mode.Insert;
+    vimState.modeToReturnToAfterNormalCommand = sourceMode;
     vimState.actionCount = 0;
-    await new ExitInsertMode().exec(position, vimState);
+    if (sourceMode === Mode.Insert) {
+      await new ExitInsertMode().exec(position, vimState);
+    } else {
+      await vimState.setCurrentMode(Mode.Normal);
+    }
   }
 }
 

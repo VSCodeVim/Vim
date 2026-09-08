@@ -4,11 +4,15 @@ export class Notation {
     [/ctrl\+|c\-/gi, 'C-'],
     [/cmd\+|d\-/gi, 'D-'],
     [/shift\+|s\-/gi, 'S-'],
+    [/alt\+|a\-/gi, 'A-'],
     [/escape|esc/gi, 'Esc'],
     [/backspace|bs/gi, 'BS'],
     [/delete|del/gi, 'Del'],
     [/home/gi, 'Home'],
     [/end/gi, 'End'],
+    [/pageup/gi, 'PageUp'],
+    [/pagedown/gi, 'PageDown'],
+    [/leftmouse/gi, 'LeftMouse'],
     [/insert/gi, 'Insert'],
     [/<space>/gi, ' '],
     [/<cr>|<enter>|<return>/gi, '\n'],
@@ -30,7 +34,11 @@ export class Notation {
   public static IsControlKey(key: string): boolean {
     key = key.toLocaleUpperCase();
     return (
-      this.isSurroundedByAngleBrackets(key) && key !== '<BS>' && key !== '<S-BS>' && key !== '<TAB>'
+      this.isSurroundedByAngleBrackets(key) &&
+      key !== '<BS>' &&
+      key !== '<C-BS>' &&
+      key !== '<S-BS>' &&
+      key !== '<TAB>'
     );
   }
 
