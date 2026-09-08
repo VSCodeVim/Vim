@@ -37,6 +37,14 @@ suite('Configuration', () => {
     assert.deepStrictEqual(normalizedKeybinds[0].after, ['o', '<Esc>', 'k']);
   });
 
+  newTest({
+    title: 'textwidth can be overridden with the set command',
+    config: { textwidth: 80 },
+    start: ['|1 12 1 1'],
+    keysPressed: ':set tw=2\ngqq:set tw=80\n', // Reset textwidth to original state after testing
+    end: ['|1', '12', '1', '1'],
+  });
+
   test('textwidth is configurable per-language', async () => {
     const globalVimConfig = vscode.workspace.getConfiguration('vim');
     const jsVimConfig = vscode.workspace.getConfiguration('vim', { languageId: 'javascript' });
