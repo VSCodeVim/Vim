@@ -8,6 +8,8 @@ import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
 import { ActionType, IBaseAction } from './types';
 
+export type ActionKey = RegExp | string;
+
 export abstract class BaseAction implements IBaseAction {
   abstract readonly actionType: ActionType;
 
@@ -42,7 +44,7 @@ export abstract class BaseAction implements IBaseAction {
   /**
    * The sequence of keys you use to trigger the action, or a list of such sequences.
    */
-  public abstract keys: readonly string[] | readonly string[][];
+  public abstract keys: readonly ActionKey[] | readonly ActionKey[][];
 
   /**
    * The keys pressed at the time that this action was triggered.
@@ -96,7 +98,7 @@ export abstract class BaseAction implements IBaseAction {
   }
 
   public static CompareKeypressSequence(
-    one: readonly string[] | readonly string[][],
+    one: readonly ActionKey[] | readonly ActionKey[][],
     two: readonly string[],
   ): boolean {
     if (BaseAction.is2DArray(one)) {
@@ -117,7 +119,11 @@ export abstract class BaseAction implements IBaseAction {
       const left = one[i];
       const right = two[j];
 
-      if (left === right && right !== configuration.leader) {
+      if (
+        right !== configuration.leader &&
+        ((typeof left === 'string' && left === right) ||
+          (left instanceof RegExp && left.test(right)))
+      ) {
         continue;
       } else if (left === '<any>') {
         continue;
@@ -129,7 +135,11 @@ export abstract class BaseAction implements IBaseAction {
         continue;
       } else if (left === '<macro>' && this.isMacroRegister.test(right)) {
         continue;
-      } else if (['<character>', '<register>'].includes(left) && !Notation.IsControlKey(right)) {
+      } else if (
+        typeof left === 'string' &&
+        ['<character>', '<register>'].includes(left) &&
+        !Notation.IsControlKey(right)
+      ) {
         continue;
       } else {
         return false;

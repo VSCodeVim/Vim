@@ -1,3 +1,4 @@
+import { ActionKey } from 'src/actions/base';
 import { SetCommand } from '../cmd_line/commands/set';
 import { Mode } from '../mode/mode';
 import { configuration } from './configuration';
@@ -101,7 +102,7 @@ function unmapKey(key: string): string {
 // We expect this to jump to the next occurence of "a".
 // Thus, we need to revert "a" to its unmapped state.
 export function unmapLiteral(
-  reference: readonly string[] | readonly string[][],
+  reference: readonly ActionKey[] | readonly ActionKey[][],
   keys: readonly string[],
 ): string[] {
   if (reference.length === 0 || keys.length === 0) return [];
