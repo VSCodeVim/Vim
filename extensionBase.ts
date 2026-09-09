@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { ExCommandLine, SearchCommandLine } from './src/cmd_line/commandLine';
 import { configuration } from './src/configuration/configuration';
+import { isLiteralMode } from './src/configuration/langmap';
 import { Notation } from './src/configuration/notation';
 import { Globals } from './src/globals';
 import { Jump } from './src/jumps/jump';
@@ -15,6 +16,7 @@ import { StatusBar } from './src/statusBar';
 import { taskQueue } from './src/taskQueue';
 import { Logger } from './src/util/logger';
 import { SpecialKeys } from './src/util/specialKeys';
+import { interruptIMEComposition } from './src/util/util';
 import { VSCodeContext } from './src/util/vscodeContext';
 import { exCommandParser } from './src/vimscript/exCommandParser';
 
@@ -66,6 +68,23 @@ export async function getAndUpdateModeHandler(
   }
 
   return curHandler;
+}
+
+/**
+ * A synchronous and quick way to check the current vim mode.
+ */
+export function peek_mode(): Mode | undefined {
+  const activeTextEditor = vscode.window.activeTextEditor;
+  if (activeTextEditor === undefined || activeTextEditor.document.isClosed) {
+    return undefined;
+  }
+
+  const editorId = activeTextEditor.document.uri;
+  const curHandler = ModeHandlerMap.get(editorId);
+  if (curHandler == null) {
+    return undefined;
+  }
+  return curHandler.vimState.currentMode;
 }
 
 /**
@@ -319,11 +338,19 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   const compositionState = new CompositionState();
 
   // Override VSCode commands
-  overrideCommand(context, 'type', async (args: { text: string }) => {
+  overrideCommand(context, 'type', (args: { text: string }) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
-        if (compositionState.isInComposition) {
+        if (configuration.mapIMEComposition.enable && !isLiteralMode(mh.vimState.currentMode)) {
+          for (let key of args.text) {
+            if (key in configuration.mapIMEComposition.map) {
+              compositionState.reset();
+              key = configuration.mapIMEComposition.map[key];
+            }
+            await mh.handleKeyEvent(key);
+          }
+        } else if (compositionState.isInComposition) {
           compositionState.composingText += args.text;
           if (mh.vimState.currentMode === Mode.Insert) {
             compositionState.insertedText = true;
@@ -339,7 +366,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   overrideCommand(
     context,
     'replacePreviousChar',
-    async (args: { replaceCharCnt: number; text: string }) => {
+    (args: { replaceCharCnt: number; text: string }) => {
       taskQueue.enqueueTask(async () => {
         const mh = await getAndUpdateModeHandler();
         if (mh) {
@@ -368,13 +395,17 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     },
   );
 
-  overrideCommand(context, 'compositionStart', async () => {
+  overrideCommand(context, 'compositionStart', () => {
+    const mode = peek_mode();
+    if (configuration.mapIMEComposition.enable && mode != null && !isLiteralMode(mode)) {
+      void interruptIMEComposition();
+    }
     taskQueue.enqueueTask(async () => {
       compositionState.isInComposition = true;
     });
   });
 
-  overrideCommand(context, 'compositionEnd', async () => {
+  overrideCommand(context, 'compositionEnd', () => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh) {
@@ -416,7 +447,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     }
   });
 
-  registerCommand(context, 'vim.remap', async (args: ICodeKeybinding) => {
+  registerCommand(context, 'vim.remap', (args: ICodeKeybinding) => {
     taskQueue.enqueueTask(async () => {
       const mh = await getAndUpdateModeHandler();
       if (mh === undefined) {
@@ -452,7 +483,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
     });
   });
 
-  registerCommand(context, 'toggleVim', async () => {
+  registerCommand(context, 'toggleVim', () => {
     configuration.disableExtension = !configuration.disableExtension;
     void toggleExtension(configuration.disableExtension, compositionState);
   });
@@ -471,7 +502,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
             await mh.handleKeyEvent(`${boundKey.key}`);
           }
         };
-    registerCommand(context, boundKey.command, async () => {
+    registerCommand(context, boundKey.command, () => {
       taskQueue.enqueueTask(command);
     });
   }
@@ -535,7 +566,7 @@ function overrideCommand(
   command: string,
   callback: (...args: any[]) => any,
 ) {
-  const disposable = vscode.commands.registerCommand(command, async (args) => {
+  const disposable = vscode.commands.registerCommand(command, (args) => {
     if (configuration.disableExtension) {
       return vscode.commands.executeCommand('default:' + command, args);
     }
@@ -562,7 +593,7 @@ export function registerCommand(
   callback: (...args: any[]) => any,
   requiresActiveEditor: boolean = true,
 ) {
-  const disposable = vscode.commands.registerCommand(command, async (args) => {
+  const disposable = vscode.commands.registerCommand(command, (args) => {
     if (requiresActiveEditor && !vscode.window.activeTextEditor) {
       return;
     }
