@@ -8,4 +8,12 @@ export class CompositionState {
     this.insertedText = false;
     this.composingText = '';
   }
+
+  clone() {
+    const cloned = new CompositionState();
+    cloned.isInComposition = this.isInComposition;
+    cloned.insertedText = this.insertedText;
+    cloned.composingText = this.composingText;
+    return cloned;
+  }
 }
