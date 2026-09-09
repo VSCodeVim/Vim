@@ -1250,7 +1250,7 @@
     "minimist": "1.2.8",
     "mocha": "11.7.6",
     "plugin-error": "2.0.1",
-    "prettier": "3.9.4",
+    "prettier": "3.9.6",
     "prettier-plugin-organize-imports": "^4.3.0",
     "sinon": "22.1.0",
     "ts-loader": "9.6.2",
