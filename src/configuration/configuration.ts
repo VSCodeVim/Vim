@@ -118,6 +118,8 @@ class Configuration implements IConfiguration {
   }
 
   public async load(): Promise<ValidatorResults> {
+    this._textwidth = undefined;
+
     const vimConfigs: { [key: string]: any } = Globals.isTesting
       ? Globals.mockConfiguration
       : this.getConfiguration('vim');
@@ -496,14 +498,27 @@ class Configuration implements IConfiguration {
   langmapReverseBindingsMap: Map<string, string> = new Map();
   langmap = '';
 
+  private _textwidth: number | undefined = undefined;
+
   get textwidth(): number {
-    const textwidth = this.getConfiguration('vim').get('textwidth', 80);
+    if (this._textwidth !== undefined) {
+      return this._textwidth;
+    }
+
+    const textwidth =
+      (Globals.isTesting
+        ? Globals.mockConfiguration.textwidth
+        : this.getConfiguration('vim').get('textwidth', 80)) ?? 80;
 
     if (typeof textwidth !== 'number') {
       return 80;
     }
 
     return textwidth;
+  }
+
+  set textwidth(textwidth: number) {
+    this._textwidth = textwidth;
   }
 
   private static unproxify(obj: { [key: string]: any }): object {
