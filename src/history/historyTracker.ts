@@ -9,7 +9,6 @@
  *
  * Undo/Redo will advance forward or backwards through Steps.
  */
-import * as DiffMatchPatch from 'diff-match-patch';
 import * as vscode from 'vscode';
 
 import { Position } from 'vscode';
@@ -23,11 +22,15 @@ import { StatusBar } from '../statusBar';
 import { Logger } from '../util/logger';
 import { VimState } from './../state/vimState';
 import { TextEditor } from './../textEditor';
+import {
+  applyTextChanges,
+  diffTextsToChanges,
+  mergeDocumentChanges,
+  unapplyTextChanges,
+  type ITextChange,
+} from './textChange';
 
-const diffEngine = new DiffMatchPatch.diff_match_patch();
-diffEngine.Diff_Timeout = 1; // 1 second
-
-class DocumentChange {
+class DocumentChange implements ITextChange {
   /**
    * The Position at which this change starts
    */
@@ -165,49 +168,34 @@ class HistoryStep {
   }
 
   /**
-   * Collapse individual character changes into larger blocks of changes
+   * Collapse the changes of this step into an equivalent, canonical change list.
+   *
+   * A step can accumulate changes from several diffs (macros, multi-action remaps,
+   * `:normal`, `U`, ...). Merging them pairwise by intersecting ranges is only correct
+   * when every overlap lines up at the tail of the previous change; anything else —
+   * an edit inside an earlier edit's span, overlapping replaces — silently corrupts
+   * the step and breaks later undo/redo (see VSCodeVim/Vim#2007). Instead, delegate to
+   * `mergeDocumentChanges()`, which re-derives the step from base to current text.
    */
   public merge(document: vscode.TextDocument): void {
     if (this.changes.length < 2) {
       return;
     }
 
-    // merged will replace this.changes
-    const merged: DocumentChange[] = [];
-    // manually reduce() this.changes with variables `current` and `next`
-    // we can't use reduce() directly because the loop can emit multiple elements
-    let current = this.changes[0];
-    for (const next of this.changes.slice(1)) {
-      if (current.before.length + current.after.length === 0) {
-        // current is eliminated, replace it with top of merged, or adopt next as current
-        // see also add+del case
-        if (merged.length > 0) {
-          current = merged.pop()!;
-        } else {
-          current = next;
-          continue;
-        }
-      }
+    const merged = mergeDocumentChanges(this.changes, document.getText());
+    this.changes = merged.map((change) =>
+      DocumentChange.replace(change.start, change.before, change.after),
+    );
+  }
 
-      const intersect = current.afterRange.intersection(next.beforeRange);
-      if (intersect) {
-        const [first, second] = current.start.isBeforeOrEqual(next.start)
-          ? [current, next]
-          : [next, current];
-        const intersectLength =
-          document.offsetAt(intersect.end) - document.offsetAt(intersect.start);
-        current = DocumentChange.replace(
-          first.start,
-          first.before + second.before.slice(intersectLength),
-          first.after.slice(0, first.after.length - intersectLength) + second.after,
-        );
-      } else {
-        merged.push(current);
-        current = next;
-      }
-    }
-    merged.push(current);
-    this.changes = merged;
+  /**
+   * The net change in document length produced by applying this step's changes.
+   */
+  public netLengthDelta(): number {
+    return this.changes.reduce(
+      (sum, change) => sum + change.after.length - change.before.length,
+      0,
+    );
   }
 
   /**
@@ -317,6 +305,17 @@ class UndoStack {
     this.historySteps.push(step);
   }
 
+  /**
+   * Discards all history. Only used when the tracker is rebound to a different document,
+   * in which case none of the recorded steps (nor the local marks versioned with them)
+   * can meaningfully apply anymore.
+   */
+  public clear(): void {
+    this.historySteps = [];
+    this.currentStepIndex = -1;
+    this.initialMarks = [];
+  }
+
   public getCurrentMarkList(): IMark[] {
     const step = this.getCurrentHistoryStep();
     return step?.marks ?? this.initialMarks;
@@ -395,19 +394,40 @@ export class HistoryTracker {
   /**
    * The state of the document the last time HistoryTracker.addChange() or HistoryTracker.ignoreChange() was called.
    * This is used to avoid retrieiving the document text and doing a full diff when it isn't necessary.
+   *
+   * Besides text and version this also records the document's identity: without it, a
+   * handler reused across documents would diff one file's text against another's and
+   * record a bogus delete-everything/insert-everything step (see VSCodeVim/Vim#2007).
    */
   private previousDocumentState: {
     text: string;
     versionNumber: number;
+    document: vscode.TextDocument | undefined;
+    documentUri: string | undefined;
   };
+
+  /**
+   * Native (non-Vim) undo/redo operations observed since the last sync, oldest first.
+   *
+   * Latched by `noteNativeUndoRedo()` from the global `onDidChangeTextDocument` listener
+   * (which is the only place that sees the event's `reason`) and consumed by `addChange()`.
+   * Capped: beyond `maxPendingNativeUndoRedo` we stop trusting the sequence and fall back
+   * to recording the net diff, exactly like before.
+   */
+  private pendingNativeUndoRedo: Array<'undo' | 'redo'> = [];
+  private pendingNativeUndoRedoOverflowed = false;
+  private static readonly maxPendingNativeUndoRedo = 100;
 
   private readonly vimState: VimState;
 
   constructor(vimState: VimState) {
     this.vimState = vimState;
+    const document = this.vimState.editor?.document;
     this.previousDocumentState = {
       text: this.getDocumentText(),
       versionNumber: this.getDocumentVersion(),
+      document,
+      documentUri: document?.uri.toString(),
     };
   }
 
@@ -682,7 +702,24 @@ export class HistoryTracker {
    * Determines what changed by diffing the document against what it used to look like.
    */
   public addChange(force: boolean = false): boolean {
-    if (this.getDocumentVersion() === this.previousDocumentState.versionNumber) {
+    const document = this.vimState.editor?.document;
+    const versionNumber = document?.version ?? -1;
+
+    if (
+      document !== this.previousDocumentState.document ||
+      document?.uri.toString() !== this.previousDocumentState.documentUri
+    ) {
+      // The handler is looking at a different document than we last synced (this should
+      // barely happen since handlers are keyed by document, but it must never produce a
+      // cross-document diff). Rebind instead of recording a bogus whole-file change.
+      this.rebindToDocument(document);
+      return false;
+    }
+
+    if (versionNumber === this.previousDocumentState.versionNumber) {
+      // Nothing changed since the last sync. (A document change event always bumps the
+      // version, so any latched native undo/redo would be stale — drop it.)
+      this.clearPendingNativeUndoRedo();
       return false;
     }
 
@@ -698,11 +735,27 @@ export class HistoryTracker {
       // We can ignore changes while we're in insert/replace mode, since we can't interact with them (via undo, etc.) until we're back to normal mode
       // This allows us to avoid a little bit of work per keystroke, but more importantly, it means we'll get bigger contiguous edit chunks to merge.
       // This is particularly impactful when there are multiple cursors, which are otherwise difficult to optimize.
+      // NOTE: latched native undo/redo is deliberately *not* consumed here; it persists
+      // until the insert/replace session is flushed and reconciled below.
       return false;
     }
 
     const newText = this.getDocumentText();
+
+    if (this.pendingNativeUndoRedo.length > 0) {
+      // The document was (at least partially) changed by native undo/redo. If those
+      // operations exactly undid/redid our own steps, mirror them onto the stack instead
+      // of recording them as new forward changes; otherwise fall through and record the
+      // net diff exactly like before.
+      if (this.tryMirrorNativeUndoRedo(newText)) {
+        return false;
+      }
+    }
+
     if (newText === this.previousDocumentState.text) {
+      // The version bumped but the text is identical (e.g. something was natively undone
+      // and redone). Sync the version so we don't re-diff on every subsequent keypress.
+      this.previousDocumentState.versionNumber = versionNumber;
       return false;
     }
 
@@ -716,34 +769,137 @@ export class HistoryTracker {
 
     // Couldn't we also ditch this diffing approach entirely and just use `TextDocumentContentChangeEvent`s?
 
-    const diffs = diffEngine.diff_main(this.previousDocumentState.text, newText);
-    diffEngine.diff_cleanupEfficiency(diffs);
-
-    let currentPosition = new Position(0, 0);
-
-    for (const diff of diffs) {
-      const [whatHappened, text] = diff;
-      const added = whatHappened === DiffMatchPatch.DIFF_INSERT;
-      const removed = whatHappened === DiffMatchPatch.DIFF_DELETE;
-
-      if (added || removed) {
-        this.undoStack.pushChange(
-          added
-            ? DocumentChange.insert(currentPosition, text)
-            : DocumentChange.delete(currentPosition, text),
-        );
-      }
-
-      if (!removed) {
-        currentPosition = currentPosition.advancePositionByText(text);
-      }
+    for (const change of diffTextsToChanges(this.previousDocumentState.text, newText)) {
+      this.undoStack.pushChange(DocumentChange.replace(change.start, change.before, change.after));
     }
 
-    this.previousDocumentState = {
-      text: newText,
-      versionNumber: this.getDocumentVersion(),
-    };
+    this.previousDocumentState.text = newText;
+    this.previousDocumentState.versionNumber = versionNumber;
 
+    return true;
+  }
+
+  /**
+   * Rebinds the tracker to `document`, which differs from the last synced one.
+   *
+   * If the text is identical (rename, save-as, or swapping between identical files) the
+   * geometry is unchanged, so recorded steps still apply and only the identity is
+   * re-stamped. Otherwise all history is dropped — a fresh handler would start empty —
+   * instead of recording a bogus delete-everything/insert-everything step.
+   */
+  private rebindToDocument(document: vscode.TextDocument | undefined): void {
+    const newText = document?.getText() ?? '';
+    if (newText === this.previousDocumentState.text) {
+      this.previousDocumentState.document = document;
+      this.previousDocumentState.documentUri = document?.uri.toString();
+      this.previousDocumentState.versionNumber = document?.version ?? -1;
+    } else {
+      this.undoStack.clear();
+      this.previousDocumentState = {
+        text: newText,
+        versionNumber: document?.version ?? -1,
+        document,
+        documentUri: document?.uri.toString(),
+      };
+    }
+    this.clearPendingNativeUndoRedo();
+  }
+
+  /**
+   * Records a native (non-Vim) undo/redo of the tracked document.
+   *
+   * Called from the global `onDidChangeTextDocument` listener in `extensionBase.ts`, which
+   * is the only place that observes the change event's `reason`. Anything else (including
+   * our own programmatic edits, whose `reason` is `undefined`) is ignored.
+   */
+  public noteNativeUndoRedo(reason: vscode.TextDocumentChangeReason | undefined): void {
+    if (reason === vscode.TextDocumentChangeReason.Undo) {
+      this.pushPendingNativeUndoRedo('undo');
+    } else if (reason === vscode.TextDocumentChangeReason.Redo) {
+      this.pushPendingNativeUndoRedo('redo');
+    }
+  }
+
+  private pushPendingNativeUndoRedo(op: 'undo' | 'redo'): void {
+    if (this.pendingNativeUndoRedo.length >= HistoryTracker.maxPendingNativeUndoRedo) {
+      this.pendingNativeUndoRedoOverflowed = true;
+      return;
+    }
+    this.pendingNativeUndoRedo.push(op);
+  }
+
+  private clearPendingNativeUndoRedo(): void {
+    this.pendingNativeUndoRedo = [];
+    this.pendingNativeUndoRedoOverflowed = false;
+  }
+
+  /**
+   * Attempts to mirror latched native undo/redo operations onto the undo stack.
+   *
+   * Simulates the latched sequence against the last synced text: an `undo` un-applies the
+   * current tip step, a `redo` re-applies the next one. If the simulation lands exactly on
+   * `newText`, the stack pointer is silently moved there (as if the user had pressed `u` /
+   * `Ctrl-r`), the state is synced, and no phantom forward change is recorded. Marks need
+   * no updating: they are versioned per step, so moving the pointer restores them.
+   *
+   * If anything doesn't line up (mixed with other edits, only partially overlapping our
+   * steps, stack boundaries, overflow, ...), returns false and the caller falls back to
+   * recording the net diff as a forward change — the previous behavior. Mirroring can
+   * therefore never corrupt the stack; it only avoids recording when it is provably exact.
+   *
+   * @returns true if the operations were mirrored (and the state synced).
+   */
+  private tryMirrorNativeUndoRedo(newText: string): boolean {
+    const ops = this.pendingNativeUndoRedo;
+    const overflowed = this.pendingNativeUndoRedoOverflowed;
+    this.clearPendingNativeUndoRedo();
+
+    if (overflowed || ops.length === 0) {
+      return false;
+    }
+
+    // Cheap precheck: simulate only the net length deltas before touching any strings.
+    let index = this.undoStack.getCurrentHistoryStepIndex();
+    let expectedLength = this.previousDocumentState.text.length;
+    for (const op of ops) {
+      const step =
+        op === 'undo'
+          ? this.undoStack.getHistoryStepAtIndex(index)
+          : this.undoStack.getHistoryStepAtIndex(index + 1);
+      if (step === undefined) {
+        return false;
+      }
+      expectedLength += op === 'undo' ? -step.netLengthDelta() : step.netLengthDelta();
+      index += op === 'undo' ? -1 : 1;
+    }
+    if (expectedLength !== newText.length) {
+      return false;
+    }
+
+    // Full simulation against the last synced text.
+    let simulated = this.previousDocumentState.text;
+    index = this.undoStack.getCurrentHistoryStepIndex();
+    for (const op of ops) {
+      // Existence was verified by the precheck above.
+      const step = this.undoStack.getHistoryStepAtIndex(op === 'undo' ? index : index + 1)!;
+      simulated =
+        op === 'undo'
+          ? unapplyTextChanges(simulated, step.changes)
+          : applyTextChanges(simulated, step.changes);
+      index += op === 'undo' ? -1 : 1;
+    }
+    if (simulated !== newText) {
+      return false;
+    }
+
+    for (const op of ops) {
+      if (op === 'undo') {
+        this.undoStack.stepBackward();
+      } else {
+        this.undoStack.stepForward();
+      }
+    }
+    this.ignoreChange();
     return true;
   }
 
@@ -753,9 +909,12 @@ export class HistoryTracker {
    * the HistoryTracker.
    */
   public ignoreChange(): void {
+    const document = this.vimState.editor?.document;
     this.previousDocumentState = {
       text: this.getDocumentText(),
       versionNumber: this.getDocumentVersion(),
+      document,
+      documentUri: document?.uri.toString(),
     };
   }
 
