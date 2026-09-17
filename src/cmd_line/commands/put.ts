@@ -2,18 +2,18 @@ import { configuration } from '../../configuration/configuration';
 import { VimState } from '../../state/vimState';
 
 // eslint-disable-next-line id-denylist
-import { Parser, alt, any, optWhitespace, seq, string } from 'parsimmon';
+import { Parser, all, alt, any, optWhitespace, seq, string } from 'parsimmon';
 import { Position } from 'vscode';
 import { PutBeforeFromCmdLine, PutFromCmdLine } from '../../actions/commands/put';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { Register } from '../../register/register';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
+import { EvaluationContext, toString } from '../../vimscript/expression/evaluate';
+import { expressionParser } from '../../vimscript/expression/parser';
+import { Expression } from '../../vimscript/expression/types';
 import { LineRange } from '../../vimscript/lineRange';
 import { bangParser } from '../../vimscript/parserUtils';
-import { Expression } from '../../vimscript/expression/types';
-import { expressionParser } from '../../vimscript/expression/parser';
-import { EvaluationContext, toString } from '../../vimscript/expression/evaluate';
 
 export interface IPutCommandArguments {
   bang: boolean;
@@ -33,8 +33,20 @@ export class PutExCommand extends ExCommand {
       alt<Partial<IPutCommandArguments>>(
         string('=')
           .then(optWhitespace)
-          .then(expressionParser)
-          .map((expression) => ({ fromExpression: expression })),
+          .then(seq(expressionParser.fallback(undefined), all))
+          .map(([expression, trailing]) => {
+            trailing = trailing.trim();
+            if (expression === undefined) {
+              if (trailing) {
+                throw VimError.InvalidExpression(trailing);
+              }
+              return { register: '=' };
+            }
+            if (trailing) {
+              throw VimError.TrailingCharacters(trailing);
+            }
+            return { fromExpression: expression };
+          }),
         // eslint-disable-next-line id-denylist
         any.map((register) => ({ register })).fallback({ register: undefined }),
       ),
@@ -67,7 +79,7 @@ export class PutExCommand extends ExCommand {
 
       this.arguments.register = '=';
 
-      const value = new EvaluationContext().evaluate(this.arguments.fromExpression);
+      const value = new EvaluationContext(vimState).evaluate(this.arguments.fromExpression);
       const stringified =
         value.type === 'list' ? value.items.map(toString).join('\n') : toString(value);
       Register.overwriteRegister(vimState, this.arguments.register, stringified, 0);
@@ -76,7 +88,7 @@ export class PutExCommand extends ExCommand {
     const registerName = this.arguments.register || (configuration.useSystemClipboard ? '*' : '"');
 
     if (!Register.isValidRegister(registerName)) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.TrailingCharacters));
+      StatusBar.displayError(vimState, VimError.TrailingCharacters());
       return;
     }
 

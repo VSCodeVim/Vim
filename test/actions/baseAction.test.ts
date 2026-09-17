@@ -5,7 +5,6 @@ import { BaseAction } from '../../src/actions/base';
 import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Mode } from '../../src/mode/mode';
 import { VimState } from '../../src/state/vimState';
-import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 class TestAction1D extends BaseAction {
   keys = ['a', 'b'];
@@ -28,12 +27,9 @@ suite('base action', () => {
   let vimState: VimState;
 
   suiteSetup(async () => {
-    await setupWorkspace();
     vimState = new VimState(vscode.window.activeTextEditor!, new EasyMotion());
     await vimState.load();
   });
-
-  suiteTeardown(cleanUpWorkspace);
 
   test('compare key presses', () => {
     const testCases: Array<[string[] | string[][], string[], boolean]> = [

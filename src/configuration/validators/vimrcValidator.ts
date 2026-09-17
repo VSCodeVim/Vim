@@ -1,6 +1,6 @@
+import { configurationValidator } from '../configurationValidator';
 import { IConfiguration } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
-import { configurationValidator } from '../configurationValidator';
 
 export class VimrcValidator implements IConfigurationValidator {
   async validate(config: IConfiguration): Promise<ValidatorResults> {

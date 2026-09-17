@@ -1,7 +1,7 @@
-import { Logger } from '../../util/logger';
-import { Mode } from '../../mode/mode';
-import { configuration } from '../../configuration/configuration';
 import { exec } from 'child_process';
+import { configuration } from '../../configuration/configuration';
+import { Mode } from '../../mode/mode';
+import { Logger } from '../../util/logger';
 
 /**
  * This function executes a shell command and returns the standard output as a string.

@@ -446,21 +446,21 @@ suite('Mode Visual Line', () => {
       title: 'multiline insert from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'VkkI_',
-      end: ['111', '_|222', '_333', '_444', '555'],
+      end: ['111', '_|222', '_|333', '_|444', '555'],
     });
 
     newTest({
       title: 'multiline insert from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'VjjI_',
-      end: ['111', '_|222', '_333', '_444', '555'],
+      end: ['111', '_|222', '_|333', '_|444', '555'],
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'VjjI_',
-      end: ['111', '_|222', ' ', '_444', '555'],
+      end: ['111', '_|222', ' ', '_|444', '555'],
     });
   });
 
@@ -469,21 +469,21 @@ suite('Mode Visual Line', () => {
       title: 'multiline append from bottom up selection',
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'VkkA_',
-      end: ['111', '222_|', '333_', '444_', '555'],
+      end: ['111', '222_|', '333_|', '444_|', '555'],
     });
 
     newTest({
       title: 'multiline append from top down selection',
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'VjjA_',
-      end: ['111', '222_|', '333_', '444_', '555'],
+      end: ['111', '222_|', '333_|', '444_|', '555'],
     });
 
     newTest({
       title: 'skips blank lines',
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'VjjA_',
-      end: ['111', '222_|', ' ', '444_', '555'],
+      end: ['111', '222_|', ' ', '444_|', '555'],
     });
 
     newTest({
@@ -584,5 +584,27 @@ suite('Mode Visual Line', () => {
         endMode: Mode.Insert,
       });
     }
+  });
+
+  suite('Vi{ should not select the ending brace, if it is on a new line.', () => {
+    test('Vi{ selection content test', async () => {
+      // Insert the full block using insert mode simulation
+      await modeHandler.handleMultipleKeyEvents('i{\nsome text on new line\n}'.split(''));
+
+      // Back to normal mode
+      await modeHandler.handleKeyEvent('<Esc>');
+
+      // Move cursor to start of "some text..."
+      await modeHandler.handleMultipleKeyEvents(['g', 'g', 'j', 'l', 'l', 'l', 'l']);
+
+      // Simulate Vi{
+      await modeHandler.handleMultipleKeyEvents(['V', 'i', '{']);
+
+      const doc = modeHandler.vimState.editor.document;
+      const sel = modeHandler.vimState.editor.selection;
+      const selectedText = doc.getText(sel);
+
+      assert.strictEqual(selectedText, '  some text on new line');
+    });
   });
 });

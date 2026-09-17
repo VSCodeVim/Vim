@@ -153,7 +153,7 @@ export async function executeTransformations(
     switch (transformation.type) {
       case 'insertTextVSCode':
         await TextEditor.insert(vimState.editor, transformation.text);
-        vimState.cursors[0] = Cursor.FromVSCodeSelection(vimState.editor.selection);
+        vimState.cursor = Cursor.fromSelection(vimState.editor.selection);
         break;
 
       case 'replayRecordedState':
@@ -260,7 +260,7 @@ export async function executeTransformations(
     selections = vimState.editor.selections;
   } else {
     selections = vimState.editor.selections.map((sel) => {
-      let range = Cursor.FromVSCodeSelection(sel);
+      let range = Cursor.fromSelection(sel);
       if (range.start.isBefore(range.stop)) {
         range = range.withNewStop(range.stop.getLeftThroughLineBreaks(true));
       }
@@ -289,7 +289,7 @@ export async function executeTransformations(
             cursor.start.add(vimState.document, diff),
             cursor.stop.add(vimState.document, diff),
           ),
-        Cursor.FromVSCodeSelection(sel),
+        Cursor.fromSelection(sel),
       );
     });
 

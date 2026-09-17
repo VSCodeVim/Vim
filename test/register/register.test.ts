@@ -140,25 +140,57 @@ suite('register', () => {
     }
   });
 
-  newTest({
-    title: 'Small deletion using x is stored in small delete register',
-    start: ['|test1', 'test2', 'test3'],
-    keysPressed: '2x' + 'j' + '"-p',
-    end: ['st1', 'tt|eest2', 'test3'],
-  });
+  suite('Small delete register (-)', () => {
+    newTest({
+      title: '`x` sets small delete register',
+      start: ['|test1', 'test2', 'test3'],
+      keysPressed: '2x' + 'j' + '"-p',
+      end: ['st1', 'tt|eest2', 'test3'],
+    });
 
-  newTest({
-    title: 'Small deletion using Del is stored in small delete register',
-    start: ['|test1', 'test2', 'test3'],
-    keysPressed: '<Del>' + 'j' + '"-p',
-    end: ['est1', 't|test2', 'test3'],
-  });
+    newTest({
+      title: '`Del` sets small delete register',
+      start: ['|test1', 'test2', 'test3'],
+      keysPressed: '<Del>' + 'j' + '"-p',
+      end: ['est1', 't|test2', 'test3'],
+    });
 
-  newTest({
-    title: 'Small deletion using X is stored in small delete register',
-    start: ['te|st1', 'test2', 'test3'],
-    keysPressed: '2X' + 'j' + '"-p',
-    end: ['st1', 'tt|eest2', 'test3'],
+    newTest({
+      title: '`X` sets small delete register',
+      start: ['te|st1', 'test2', 'test3'],
+      keysPressed: '2X' + 'j' + '"-p',
+      end: ['st1', 'tt|eest2', 'test3'],
+    });
+
+    newTest({
+      title: '`d$` sets small delete register',
+      start: ['te|st1', 'test2', 'test3'],
+      keysPressed: 'd$',
+      end: ['t|e', 'test2', 'test3'],
+      registers: {
+        '-': 'st1',
+      },
+    });
+
+    newTest({
+      title: '`dd` does not set small delete register',
+      start: ['te|st1', 'test2', 'test3'],
+      keysPressed: 'dd',
+      end: ['|test2', 'test3'],
+      registers: {
+        '-': undefined,
+      },
+    });
+
+    newTest({
+      title: 'Small delete register is not set when another register is specified',
+      start: ['|test1', 'test2', 'test3'],
+      keysPressed: '"xD',
+      end: ['|', 'test2', 'test3'],
+      registers: {
+        '-': undefined,
+      },
+    });
   });
 
   test('Search register (/) is set by forward search', async () => {

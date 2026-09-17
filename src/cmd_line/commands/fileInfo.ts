@@ -21,6 +21,6 @@ export class FileInfoCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     // TODO: Use `this.args`
-    reportFileInfo(vimState.cursors[0].start, vimState);
+    reportFileInfo(vimState.cursor.start, vimState);
   }
 }

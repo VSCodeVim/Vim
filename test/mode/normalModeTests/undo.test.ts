@@ -148,6 +148,9 @@ suite('Undo', () => {
       keysPressed: 'R' + '123' + '<C-g>u' + '456' + '<Esc>' + 'u',
       end: ['123|DEF'],
     });
+
+    // TODO: Make change X, git revert, make change Y, undo
+    // TODO: Test interaction with VS Code's native undo
   });
 
   suite('U', () => {

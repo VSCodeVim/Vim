@@ -1,11 +1,11 @@
 import assert from 'assert';
 import { Position, Selection, TextDocument, window, workspace } from 'vscode';
+import { failedMovement } from '../../src/actions/baseMotion';
 import { BaseMarkMovement, MarkMovement, MarkMovementBOL } from '../../src/actions/motion';
 import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Cursor } from '../../src/common/motion/cursor';
 import { VimState } from '../../src/state/vimState';
-import { cleanUpWorkspace, replaceContent, setupWorkspace } from '../testUtils';
-import { failedMovement } from '../../src/actions/baseMotion';
+import { replaceContent, setupWorkspace } from '../testUtils';
 
 class Location {
   public position: Position;
@@ -53,10 +53,6 @@ suite('mark movement', () => {
     });
   });
 
-  teardown(async () => {
-    await cleanUpWorkspace();
-  });
-
   const newMarkTests = (
     testCases: IMarkTestCase[],
     movementFactory: (testCase: IMarkTestCase, markName: string) => BaseMarkMovement,
@@ -83,7 +79,7 @@ suite('mark movement', () => {
           selection,
         });
 
-        vimState.cursors[0] = Cursor.FromVSCodeSelection(selection);
+        vimState.cursor = Cursor.fromSelection(selection);
         vimState.editor = editor;
 
         const markToUse = markName || 'a';

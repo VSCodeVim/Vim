@@ -71,7 +71,7 @@ export abstract class CommandLine {
    */
   public abstract ctrlF(vimState: VimState): Promise<void>;
 
-  public async historyBack(): Promise<void> {
+  public historyBack(): void {
     if (this.historyIndex === 0) {
       return;
     }
@@ -88,7 +88,7 @@ export abstract class CommandLine {
     this.cursorIndex = this.text.length;
   }
 
-  public async historyForward(): Promise<void> {
+  public historyForward(): void {
     if (this.historyIndex === undefined) {
       return;
     }
@@ -134,28 +134,28 @@ export abstract class CommandLine {
   /**
    * Called when `<Home>` is pressed
    */
-  public async home(): Promise<void> {
+  public home(): void {
     this.cursorIndex = 0;
   }
 
   /**
    * Called when `<End>` is pressed
    */
-  public async end(): Promise<void> {
+  public end(): void {
     this.cursorIndex = this.text.length;
   }
 
   /**
    * Called when `<C-Left>` is pressed
    */
-  public async wordLeft(): Promise<void> {
+  public wordLeft(): void {
     this.cursorIndex = getWordLeftInText(this.text, this.cursorIndex, WordType.Big) ?? 0;
   }
 
   /**
    * Called when `<C-Right>` is pressed
    */
-  public async wordRight(): Promise<void> {
+  public wordRight(): void {
     this.cursorIndex =
       getWordRightInText(this.text, this.cursorIndex, WordType.Big) ?? this.text.length;
   }
@@ -163,7 +163,7 @@ export abstract class CommandLine {
   /**
    * Called when `<C-BS>` is pressed
    */
-  public async deleteWord(): Promise<void> {
+  public deleteWord(): void {
     const wordStart = getWordLeftInText(this.text, this.cursorIndex, WordType.Normal);
     if (wordStart !== undefined) {
       this.text = this.text.substring(0, wordStart).concat(this.text.slice(this.cursorIndex));
@@ -174,12 +174,12 @@ export abstract class CommandLine {
   /**
    * Called when `<C-BS>` is pressed
    */
-  public async deleteToBeginning(): Promise<void> {
+  public deleteToBeginning(): void {
     this.text = this.text.slice(this.cursorIndex);
     this.cursorIndex = 0;
   }
 
-  public async typeCharacter(char: string): Promise<void> {
+  public typeCharacter(char: string): void {
     const modifiedString = this.text.split('');
     modifiedString.splice(this.cursorIndex, 0, char);
     this.text = modifiedString.join('');
@@ -241,6 +241,10 @@ export class ExCommandLine extends CommandLine {
 
   public getSearchState(): SearchState | undefined {
     return undefined;
+  }
+
+  public getCommand(): ExCommand | undefined {
+    return this.command;
   }
 
   public getDecorations(vimState: VimState): SearchDecorations | undefined {
@@ -476,7 +480,7 @@ export class SearchCommandLine extends CommandLine {
     globalState.hl = true;
 
     if (this.searchState.getMatchRanges(vimState).length === 0) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.PatternNotFound, this.text));
+      StatusBar.displayError(vimState, VimError.PatternNotFound(this.text));
       return;
     }
 
@@ -485,12 +489,9 @@ export class SearchCommandLine extends CommandLine {
     if (currentMatch === undefined) {
       StatusBar.displayError(
         vimState,
-        VimError.fromCode(
-          this.searchState.direction === SearchDirection.Backward
-            ? ErrorCode.SearchHitTop
-            : ErrorCode.SearchHitBottom,
-          this.text,
-        ),
+        this.searchState.direction === SearchDirection.Backward
+          ? VimError.SearchHitTop(this.text)
+          : VimError.SearchHitBottom(this.text),
       );
       return;
     }
@@ -525,7 +526,7 @@ export class SearchCommandLine extends CommandLine {
   /**
    * Called when <C-g> or <C-t> is pressed during SearchInProgress mode
    */
-  public async advanceCurrentMatch(vimState: VimState, direction: SearchDirection): Promise<void> {
+  public advanceCurrentMatch(vimState: VimState, direction: SearchDirection): void {
     // <C-g> always moves forward in the document, and <C-t> always moves back, regardless of search direction.
     // To compensate, multiply the desired direction by the searchState's direction, so that
     // effectiveDirection == direction * (searchState.direction)^2 == direction.

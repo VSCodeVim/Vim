@@ -1,5 +1,5 @@
 import { configuration } from '../configuration/configuration';
-import { ErrorCode, VimError } from '../error';
+import { VimError } from '../error';
 
 class ExternalCommand {
   private previousExternalCommand: string | undefined;
@@ -24,7 +24,7 @@ class ExternalCommand {
           result.push('!');
         } else if (!this.previousExternalCommand) {
           // no previous command available to substitute
-          throw VimError.fromCode(ErrorCode.NoPreviousCommand);
+          throw VimError.NoPreviousCommand();
         } else {
           result.push(this.previousExternalCommand);
         }

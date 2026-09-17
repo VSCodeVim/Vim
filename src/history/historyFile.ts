@@ -1,7 +1,7 @@
+import { HistoryBase } from 'platform/history';
 import { ExtensionContext } from 'vscode';
 import { configuration } from '../configuration/configuration';
 import { Globals } from '../globals';
-import { HistoryBase } from 'platform/history';
 
 // TODO(jfields): What's going on here? Just combine HistoryFile and HistoryBase...
 export class HistoryFile {

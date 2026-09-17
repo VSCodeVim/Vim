@@ -128,28 +128,28 @@ suite('put operator', () => {
         title: 'Yank character-wise, <count>p in VisualBlock mode',
         start: ['ABCDE', '|TESTabcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'd4l' + 'l<C-v>jjll' + '2p',
-        end: ['ABCDE', 'aTESTTES|Te', '1TESTTEST5', 'vTESTTESTz', 'VWXYZ'],
+        end: ['ABCDE', 'aTESTTES|Te', '1TESTTES|T5', 'vTESTTES|Tz', 'VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank line-wise, <count>p in VisualBlock mode',
         start: ['ABCDE', '|TEST', 'abcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'dd' + 'l<C-v>jjll' + '2p',
-        end: ['ABCDE', 'ae', '15', 'vz', '|TEST', 'TEST', 'VWXYZ'],
+        end: ['ABCDE', 'ae', '1|5', 'v|z', '|TEST', 'TEST', 'VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>p in VisualBlock mode (into smaller block)',
         start: ['|[1]ABCD', '[2]abcd', '[3]wxyz', 'WXYZ'],
         keysPressed: '<C-v>lljj' + 'd' + 'jl<C-v>lj' + '2p',
-        end: ['ABCD', 'a|[1][1]d', 'w[2][2]z', 'W[3][3]XYZ'],
+        end: ['ABCD', 'a|[1][1]d', 'w[2][2|]z', 'W[3][3]XYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>p in VisualBlock mode (into larger block)',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'jl<C-v>ljj' + '2p',
-        end: ['ABCD', 'a|[1][1]d', 'w[2][2]z', 'WZ'],
+        end: ['ABCD', 'a|[1][1]d', 'w[2][2|]z', 'W|Z'], // TODO(#9831)
       });
     });
   });
@@ -259,28 +259,28 @@ suite('put operator', () => {
         title: 'Yank character-wise, <count>P in VisualBlock mode',
         start: ['ABCDE', '|TESTabcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'd4l' + 'l<C-v>jjll' + '2P',
-        end: ['ABCDE', 'aTESTTES|Te', '1TESTTEST5', 'vTESTTESTz', 'VWXYZ'],
+        end: ['ABCDE', 'aTESTTES|Te', '1TESTTES|T5', 'vTESTTES|Tz', 'VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank line-wise, <count>P in VisualBlock mode',
         start: ['ABCDE', '|TEST', 'abcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'dd' + 'l<C-v>jjll' + '2P',
-        end: ['ABCDE', '|TEST', 'TEST', 'ae', '15', 'vz', 'VWXYZ'],
+        end: ['ABCDE', '|TEST', 'TEST', 'ae', '1|5', 'v|z', 'VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>P in VisualBlock mode (into smaller block)',
         start: ['|[1]ABCD', '[2]abcd', '[3]wxyz', 'WXYZ'],
         keysPressed: '<C-v>lljj' + 'd' + 'jl<C-v>lj' + '2P',
-        end: ['ABCD', 'a|[1][1]d', 'w[2][2]z', 'W[3][3]XYZ'],
+        end: ['ABCD', 'a|[1][1]d', 'w[2][2|]z', 'W[3][3]XYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>P in VisualBlock mode (into larger block)',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'jl<C-v>ljj' + '2P',
-        end: ['ABCD', 'a|[1][1]d', 'w[2][2]z', 'WZ'],
+        end: ['ABCD', 'a|[1][1]d', 'w[2][2|]z', 'W|Z'], // TODO(#9831)
       });
     });
   });
@@ -397,28 +397,28 @@ suite('put operator', () => {
         title: 'Yank character-wise, <count>gp in VisualBlock mode',
         start: ['ABCDE', '|TESTabcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'd4l' + 'l<C-v>jjll' + '2gp',
-        end: ['ABCDE', 'aTESTTEST|e', '1TESTTEST5', 'vTESTTESTz', 'VWXYZ'],
+        end: ['ABCDE', 'aTESTTEST|e', '1TESTTES|T5', 'vTESTTES|Tz', 'VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank line-wise, <count>gp in VisualBlock mode',
         start: ['ABCDE', '|TEST', 'abcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'dd' + 'l<C-v>jjll' + '2gp',
-        end: ['ABCDE', 'ae', '15', 'vz', 'TEST', 'TEST', '|VWXYZ'],
+        end: ['ABCDE', 'ae', '1|5', 'v|z', 'TEST', 'TEST', '|VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>gp in VisualBlock mode (into smaller block)',
         start: ['|[1]ABCD', '[2]abcd', '[3]wxyz', 'WXYZ'],
         keysPressed: '<C-v>lljj' + 'd' + 'jl<C-v>lj' + '2gp',
-        end: ['ABCD', 'a[1][1]d', 'w[2][2]z', 'W[3][3]|XYZ'],
+        end: ['ABCD', 'a[1][1]d', 'w[2][2|]z', 'W[3][3]|XYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>gp in VisualBlock mode (into larger block)',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'jl<C-v>ljj' + '2gp',
-        end: ['ABCD', 'a[1][1]d', 'w[2][2]|z', 'WZ'],
+        end: ['ABCD', 'a[1][1]d', 'w[2][2|]|z', 'W|Z'], // TODO(#9831)
       });
     });
   });
@@ -535,28 +535,28 @@ suite('put operator', () => {
         title: 'Yank character-wise, <count>gP in VisualBlock mode',
         start: ['ABCDE', '|TESTabcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'd4l' + 'l<C-v>jjll' + '2gP',
-        end: ['ABCDE', 'aTESTTEST|e', '1TESTTEST5', 'vTESTTESTz', 'VWXYZ'],
+        end: ['ABCDE', 'aTESTTEST|e', '1TESTTES|T5', 'vTESTTES|Tz', 'VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank line-wise, <count>gP in VisualBlock mode',
         start: ['ABCDE', '|TEST', 'abcde', '12345', 'vwxyz', 'VWXYZ'],
         keysPressed: 'dd' + 'l<C-v>jjll' + '2gP',
-        end: ['ABCDE', 'TEST', 'TEST', '|ae', '15', 'vz', 'VWXYZ'],
+        end: ['ABCDE', 'TEST', 'TEST', '|ae', '1|5', 'v|z', 'VWXYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>gP in VisualBlock mode (into smaller block)',
         start: ['|[1]ABCD', '[2]abcd', '[3]wxyz', 'WXYZ'],
         keysPressed: '<C-v>lljj' + 'd' + 'jl<C-v>lj' + '2gP',
-        end: ['ABCD', 'a[1][1]d', 'w[2][2]z', 'W[3][3]|XYZ'],
+        end: ['ABCD', 'a[1][1]d', 'w[2][2|]z', 'W[3][3]|XYZ'], // TODO(#9831)
       });
 
       newTest({
         title: 'Yank block-wise, <count>gP in VisualBlock mode (into larger block)',
         start: ['|[1]ABCD', '[2]abcd', 'wxyz', 'WXYZ'],
         keysPressed: '<C-v>llj' + 'd' + 'jl<C-v>ljj' + '2gP',
-        end: ['ABCD', 'a[1][1]d', 'w[2][2]|z', 'WZ'],
+        end: ['ABCD', 'a[1][1]d', 'w[2][2|]|z', 'W|Z'], // TODO(#9831)
       });
     });
   });

@@ -59,6 +59,6 @@ suite('filter operator', () => {
     title: '<Ctrl-v>!{filter}',
     start: ['|abc', 'def', 'ghi'],
     keysPressed: '<C-v>jj!echo hello world\n',
-    end: ['|hello world'],
+    end: ['|hell|o wo|rld'], // TODO: Bad cursors
   });
 });

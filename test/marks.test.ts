@@ -5,7 +5,7 @@ import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { newTest, newTestSkip } from './testSimplifier';
-import { cleanUpWorkspace, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('Marks', () => {
   let modeHandler: ModeHandler;
@@ -15,15 +15,12 @@ suite('Marks', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  suiteTeardown(cleanUpWorkspace);
-
-  const jumpToNewFile = async (content?: string) => {
+  const jumpToNewFile = async () => {
     await setupWorkspace({
       config: {
         tabstop: 4,
         expandtab: false,
       },
-      newFileContent: content,
       forceNewFile: true,
       disableCleanUp: true,
     });
@@ -49,6 +46,19 @@ suite('Marks', () => {
       title: "'> set by Visual mode",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'vjl<Esc>' + 'gg' + '`>',
+      end: ['one', 'two', 'th|ree'],
+    });
+
+    newTest({
+      title: "'< set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`<',
+      end: ['one', 't|wo', 'three'],
+    });
+    newTest({
+      title: "'> set by Visual mode (backward selection)",
+      start: ['one', 't|wo', 'three'],
+      keysPressed: 'vjlo<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 'th|ree'],
     });
 
@@ -137,7 +147,7 @@ suite('Marks', () => {
     });
 
     teardown(async () => {
-      ModeHandlerMap.delete(otherModeHandler.vimState.documentUri);
+      ModeHandlerMap.delete(otherModeHandler.vimState.document.uri);
     });
 
     newTest({
@@ -145,7 +155,7 @@ suite('Marks', () => {
       start: ['|'],
       keysPressed: "'A",
       end: ['|'],
-      endFsPath: () => modeHandler.vimState.documentUri.fsPath,
+      endFsPath: () => modeHandler.vimState.document.uri.fsPath,
     });
   });
 });

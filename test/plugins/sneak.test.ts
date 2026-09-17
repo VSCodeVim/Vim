@@ -1,12 +1,9 @@
-import { Globals } from '../../src/globals';
 import { newTest } from '../testSimplifier';
-import { setupWorkspace, reloadConfiguration } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 suite('sneak plugin', () => {
   suiteSetup(async () => {
-    await setupWorkspace();
-    Globals.mockConfiguration.sneak = true;
-    await reloadConfiguration();
+    await setupWorkspace({ config: { sneak: true } });
   });
 
   newTest({
@@ -159,10 +156,7 @@ suite('sneak plugin', () => {
 
 suite('sneakReplacesF', () => {
   suiteSetup(async () => {
-    await setupWorkspace();
-    Globals.mockConfiguration.sneak = true;
-    Globals.mockConfiguration.sneakReplacesF = true;
-    await reloadConfiguration();
+    await setupWorkspace({ config: { sneak: true, sneakReplacesF: true } });
   });
 
   newTest({

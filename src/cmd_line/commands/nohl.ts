@@ -1,5 +1,5 @@
-import { VimState } from '../../state/vimState';
 import { globalState } from '../../state/globalState';
+import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
 

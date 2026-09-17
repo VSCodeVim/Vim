@@ -1,7 +1,7 @@
 import { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
 
-import * as error from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { bangParser } from '../../vimscript/parserUtils';
@@ -23,11 +23,11 @@ export class CloseCommand extends ExCommand {
 
   async execute(vimState: VimState): Promise<void> {
     if (vimState.document.isDirty && !this.bang) {
-      throw error.VimError.fromCode(error.ErrorCode.NoWriteSinceLastChange);
+      throw VimError.NoWriteSinceLastChange();
     }
 
     if (vscode.window.visibleTextEditors.length === 1) {
-      throw error.VimError.fromCode(error.ErrorCode.CannotCloseLastWindow);
+      throw VimError.CannotCloseLastWindow();
     }
 
     const oldViewColumn = vimState.editor.viewColumn;

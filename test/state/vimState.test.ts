@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Position } from 'vscode';
+import { EasyMotion } from '../../src/actions/plugins/easymotion/easymotion';
 import { Cursor } from '../../src/common/motion/cursor';
 import { VimState } from '../../src/state/vimState';
 

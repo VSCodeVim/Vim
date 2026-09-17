@@ -38,7 +38,7 @@ export class ShiftCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    void this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
+    await this.executeWithRange(vimState, new LineRange(new Address({ type: 'current_line' })));
   }
 
   public override async executeWithRange(vimState: VimState, range: LineRange): Promise<void> {

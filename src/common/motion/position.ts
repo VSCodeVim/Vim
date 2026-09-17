@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
 
-import { configuration } from './../../configuration/configuration';
-import { TextEditor } from './../../textEditor';
-import { clamp } from '../../util/util';
+import { Position } from 'vscode';
 import { getSentenceBegin, getSentenceEnd } from '../../textobject/sentence';
 import {
   WordType,
   nextWordEnd,
+  nextWordStart,
   prevWordEnd,
   prevWordStart,
-  nextWordStart,
 } from '../../textobject/word';
-import { Position } from 'vscode';
+import { clamp, isHighSurrogate, isLowSurrogate } from '../../util/util';
+import { configuration } from './../../configuration/configuration';
+import { TextEditor } from './../../textEditor';
 
 /**
  * Controls how a PositionDiff affects the Position it's applied to.
@@ -151,6 +151,17 @@ declare module 'vscode' {
      */
     getUp(count?: number): Position;
 
+    /**
+     * Like getRight(), but skips past surrogate pairs so the cursor never
+     * lands between the high and low surrogate of an emoji.
+     */
+    getSurrogateAwareRight(document: vscode.TextDocument, count?: number): Position;
+    /**
+     * Like getLeft(), but skips past surrogate pairs so the cursor never
+     * lands between the high and low surrogate of an emoji.
+     */
+    getSurrogateAwareLeft(document: vscode.TextDocument, count?: number): Position;
+
     getLeftThroughLineBreaks(includeEol?: boolean): Position;
     getRightThroughLineBreaks(includeEol?: boolean): Position;
     getOffsetThroughLineBreaks(offset: number): Position;
@@ -212,11 +223,6 @@ declare module 'vscode' {
     getLineEnd(): Position;
 
     /**
-     * @returns a new Position at the end of this Position's line, including the invisible newline character.
-     */
-    getLineEndIncludingEOL(): Position;
-
-    /**
      * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
      */
     getLeftIfEOL(): Position;
@@ -252,7 +258,7 @@ declare module 'vscode' {
      */
     obeyStartOfLine(document: vscode.TextDocument): Position;
 
-    isValid(textEditor: vscode.TextEditor): boolean;
+    isValid(document: vscode.TextDocument): boolean;
   }
 }
 
@@ -320,6 +326,49 @@ Position.prototype.getRight = function (this: Position, count = 1): Position {
     this.line,
     Math.min(this.character + count, TextEditor.getLineLength(this.line)),
   );
+};
+
+Position.prototype.getSurrogateAwareRight = function (
+  this: Position,
+  document: vscode.TextDocument,
+  count = 1,
+): Position {
+  const line = document.lineAt(this.line).text;
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  let pos: Position = this;
+  for (let i = 0; i < count; i++) {
+    const prev = pos;
+    pos = pos.getRight();
+    if (
+      pos.character < line.length &&
+      isLowSurrogate(line.charCodeAt(pos.character)) &&
+      isHighSurrogate(line.charCodeAt(prev.character))
+    ) {
+      pos = pos.getRight();
+    }
+  }
+  return pos;
+};
+
+Position.prototype.getSurrogateAwareLeft = function (
+  this: Position,
+  document: vscode.TextDocument,
+  count = 1,
+): Position {
+  const line = document.lineAt(this.line).text;
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  let pos: Position = this;
+  for (let i = 0; i < count; i++) {
+    pos = pos.getLeft();
+    if (
+      pos.character > 0 &&
+      isLowSurrogate(line.charCodeAt(pos.character)) &&
+      isHighSurrogate(line.charCodeAt(pos.character - 1))
+    ) {
+      pos = pos.getLeft();
+    }
+  }
+  return pos;
 };
 
 /**
@@ -483,14 +532,6 @@ Position.prototype.getLineEnd = function (this: Position): Position {
 };
 
 /**
- * @returns a new Position at the end of this Position's line, including the invisible newline character.
- */
-Position.prototype.getLineEndIncludingEOL = function (this: Position): Position {
-  // TODO: isn't this one too far?
-  return new Position(this.line, TextEditor.getLineLength(this.line) + 1);
-};
-
-/**
  * @returns a new Position one to the left if this Position is on the EOL. Otherwise, returns this position.
  */
 Position.prototype.getLeftIfEOL = function (this: Position): Position {
@@ -572,17 +613,13 @@ Position.prototype.obeyStartOfLine = function (
     : this;
 };
 
-Position.prototype.isValid = function (this: Position, textEditor: vscode.TextEditor): boolean {
+Position.prototype.isValid = function (this: Position, document: vscode.TextDocument): boolean {
   try {
-    // line
-    // TODO: this `|| 1` seems dubious...
-    const lineCount = TextEditor.getLineCount(textEditor) || 1;
-    if (this.line >= lineCount) {
+    if (this.line >= document.lineCount) {
       return false;
     }
 
-    // char
-    const charCount = TextEditor.getLineLength(this.line);
+    const charCount = document.lineAt(this.line).range.end.character;
     if (this.character > charCount + 1) {
       return false;
     }

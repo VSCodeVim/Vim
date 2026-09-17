@@ -1,17 +1,12 @@
 const gulp = require('gulp');
 const bump = require('gulp-bump');
-const git = require('gulp-git');
 const tag_version = require('gulp-tag-version');
 const ts = require('gulp-typescript');
 const PluginError = require('plugin-error');
 const minimist = require('minimist');
 const path = require('path');
-const webpack = require('webpack');
-const webpack_stream = require('webpack-stream');
 const es = require('event-stream');
-
-const webpack_config = require('./webpack.config.js');
-const webpack_dev_config = require('./webpack.dev.js');
+const shell = require('gulp-shell');
 
 const releaseOptions = {
   semver: '',
@@ -39,10 +34,6 @@ function validateArgs(done) {
 
 function createGitTag() {
   return gulp.src(['./package.json']).pipe(tag_version());
-}
-
-function createGitCommit() {
-  return gulp.src(['./package.json', './yarn.lock']).pipe(git.commit('bump version'));
 }
 
 function updateVersion(done) {
@@ -102,33 +93,6 @@ gulp.task('tsc', function () {
   return tsResult.js.pipe(updatePath()).pipe(gulp.dest('out'));
 });
 
-gulp.task('webpack', function () {
-  return webpack_stream(
-    {
-      config: webpack_config,
-      entry: ['./extension.ts', './extensionWeb.ts'],
-    },
-    webpack,
-  ).pipe(gulp.dest('out'));
-});
-
-gulp.task('webpack-dev', function () {
-  return webpack_stream(
-    {
-      config: webpack_dev_config,
-      entry: ['./extension.ts'],
-    },
-    webpack,
-  ).pipe(gulp.dest('out'));
-});
-
-gulp.task('commit-hash', function (done) {
-  git.revParse({ args: 'HEAD', quiet: true }, function (err, hash) {
-    require('fs').writeFileSync('out/version.txt', hash);
-    done();
-  });
-});
-
 // test
 gulp.task('run-test', function (done) {
   // the flag --grep takes js regex as a string and filters by test and test suite names
@@ -182,9 +146,15 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('build', gulp.series('webpack', 'commit-hash'));
-gulp.task('build-dev', gulp.series('webpack-dev', 'commit-hash'));
 gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
 gulp.task('test', gulp.series('prepare-test', 'run-test'));
-gulp.task('release', gulp.series(validateArgs, updateVersion, createGitCommit, createGitTag));
-gulp.task('default', gulp.series('build', 'test'));
+gulp.task(
+  'release',
+  gulp.series(
+    validateArgs,
+    updateVersion,
+    shell.task('git commit -am "bump version"'),
+    createGitTag,
+  ),
+);
+gulp.task('default', shell.task('yarn build-dev'));

@@ -380,12 +380,11 @@ abstract class ChangeCaseOperator extends BaseOperator {
 
       const range = new vscode.Range(startPos, new Position(endPos.line, endPos.character + 1));
 
-      vimState.recordedState.transformer.addTransformation({
-        type: 'replaceText',
+      vimState.recordedState.transformer.replace(
         range,
-        text: this.transformText(vimState.document.getText(range)),
-        diff: PositionDiff.exactPosition(startPos),
-      });
+        this.transformText(vimState.document.getText(range)),
+        PositionDiff.exactPosition(startPos),
+      );
     }
 
     await vimState.setCurrentMode(Mode.Normal);
@@ -436,6 +435,18 @@ class ToggleCaseOperator extends ChangeCaseOperator {
       newText += toggled;
     }
     return newText;
+  }
+
+  public override doesActionApply(vimState: VimState, keysPressed: string[]): boolean {
+    if (isVisualMode(vimState.currentMode)) {
+      return super.doesActionApply(vimState, keysPressed);
+    }
+
+    if (keysPressed.length === 1 && keysPressed[0] === '~' && configuration.tildeop) {
+      return true;
+    }
+
+    return super.doesActionApply(vimState, keysPressed);
   }
 }
 
@@ -542,7 +553,7 @@ class IndentOperatorVisualBlock extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursors = [new Cursor(start, start)];
+    vimState.cursors = [Cursor.atPosition(start)];
   }
 }
 @RegisterAction
@@ -653,7 +664,7 @@ class OutdentOperatorVisualBlock extends BaseOperator {
     }
 
     await vimState.setCurrentMode(Mode.Normal);
-    vimState.cursors = [new Cursor(start, start)];
+    vimState.cursors = [Cursor.atPosition(start)];
   }
 }
 
@@ -669,6 +680,24 @@ export class ChangeOperator extends BaseOperator {
     } else if (vimState.currentMode === Mode.Visual && end.isLineEnd(vimState.document)) {
       end = end.getRightThroughLineBreaks();
     } else {
+      end = end.getRight();
+    }
+
+    // Correct surrogate pair boundaries (match DeleteOperator/YankOperator pattern)
+    const sLine = vimState.document.lineAt(start.line).text;
+    const eLine = vimState.document.lineAt(end.line).text;
+    if (
+      start.character !== 0 &&
+      isLowSurrogate(sLine.charCodeAt(start.character)) &&
+      isHighSurrogate(sLine.charCodeAt(start.character - 1))
+    ) {
+      start = start.getLeft();
+    }
+    if (
+      end.character !== 0 &&
+      isLowSurrogate(eLine.charCodeAt(end.character)) &&
+      isHighSurrogate(eLine.charCodeAt(end.character - 1))
+    ) {
       end = end.getRight();
     }
 
@@ -1126,13 +1155,12 @@ class ActionVisualReflowParagraph extends BaseOperator {
     let textToReflow = vimState.document.getText(new vscode.Range(start, end));
     textToReflow = this.reflowParagraph(textToReflow);
 
-    vimState.recordedState.transformer.addTransformation({
-      type: 'replaceText',
-      text: textToReflow,
-      range: new vscode.Range(start, end),
+    vimState.recordedState.transformer.replace(
+      new vscode.Range(start, end),
+      textToReflow,
       // Move cursor to front of line to realign the view
-      diff: PositionDiff.exactCharacter({ character: 0 }),
-    });
+      PositionDiff.exactCharacter({ character: 0 }),
+    );
 
     await vimState.setCurrentMode(Mode.Normal);
   }

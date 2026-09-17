@@ -1,7 +1,7 @@
 import { optWhitespace, Parser } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { PositionDiff } from '../../common/motion/position';
-import { ErrorCode, VimError } from '../../error';
+import { VimError } from '../../error';
 import { VimState } from '../../state/vimState';
 import { StatusBar } from '../../statusBar';
 import { ExCommand } from '../../vimscript/exCommand';
@@ -25,7 +25,7 @@ export class CopyCommand extends ExCommand {
   private copyLines(vimState: VimState, sourceStart: number, sourceEnd: number) {
     const dest = this.address?.resolve(vimState, 'left', false);
     if (dest === undefined || dest < -1 || dest > vimState.document.lineCount) {
-      StatusBar.displayError(vimState, VimError.fromCode(ErrorCode.InvalidAddress));
+      StatusBar.displayError(vimState, VimError.InvalidAddress());
       return;
     }
 
@@ -61,7 +61,7 @@ export class CopyCommand extends ExCommand {
   }
 
   public async execute(vimState: VimState): Promise<void> {
-    const line = vimState.cursors[0].stop.line;
+    const line = vimState.cursor.stop.line;
     this.copyLines(vimState, line, line);
   }
 

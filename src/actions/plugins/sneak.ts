@@ -1,8 +1,8 @@
+import { Position } from 'vscode';
 import { VimState } from '../../state/vimState';
+import { BaseMovement, IMovement } from '../baseMotion';
 import { configuration } from './../../configuration/configuration';
 import { RegisterAction } from './../base';
-import { BaseMovement, IMovement } from '../baseMotion';
-import { Position } from 'vscode';
 
 @RegisterAction
 export class SneakForward extends BaseMovement {

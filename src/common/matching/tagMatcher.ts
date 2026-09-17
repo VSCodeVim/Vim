@@ -1,5 +1,5 @@
-import { TextEditor } from '../../textEditor';
 import { VimState } from '../../state/vimState';
+import { TextEditor } from '../../textEditor';
 
 type Tag = { name: string; type: 'close' | 'open'; startPos: number; endPos: number };
 type MatchedTag = {
