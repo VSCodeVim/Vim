@@ -131,6 +131,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
    * This loses some information, so it should only be done when necessary.
    */
   public syncCursors() {
+    if (this.vimState.document.isClosed) {
+      return;
+    }
     // TODO: getCursorsAfterSync() is basically this, but stupider
     const { selections } = this.vimState.editor;
     // TODO: this if block is a workaround for a problem described here https://github.com/VSCodeVim/Vim/pull/8426
@@ -386,7 +389,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
 
         // If we prevented from clicking past eol but it is part of this selection, include the last char
-        if (this.lastClickWasPastEol) {
+        if (this.lastClickWasPastEol && !this.vimState.document.isClosed) {
           const newStart = new Position(selection.anchor.line, selection.anchor.character + 1);
           this.vimState.editor.selection = new vscode.Selection(newStart, selection.active);
           this.vimState.cursorStartPosition = selectionStart;
@@ -1245,6 +1248,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   private updateSearchHighlights(showHighlights: boolean) {
+    if (this.vimState.document.isClosed) {
+      return;
+    }
     const cacheKey = this.searchDecorationCacheKey;
     this.searchDecorationCacheKey = undefined;
 
@@ -1298,6 +1304,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       revealRange: true,
     },
   ): void {
+    if (this.vimState.document.isClosed) {
+      return;
+    }
+
     // Draw selection (or cursor)
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
