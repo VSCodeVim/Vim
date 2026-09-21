@@ -1,5 +1,6 @@
 // eslint-disable-next-line id-denylist
 import { all, alt, optWhitespace, Parser, seq, string, whitespace } from 'parsimmon';
+import { dirname, isAbsolute, resolve as path_resolve } from 'path';
 import { SUPPORT_READ_COMMAND } from 'platform/constants';
 import { readFileAsync } from 'platform/fs';
 import { VimState } from '../../state/vimState';
@@ -53,7 +54,11 @@ export class ReadCommand extends ExCommand {
 
   async getTextToInsert(vimState: VimState): Promise<string> {
     if ('file' in this.arguments) {
-      return readFileAsync(this.arguments.file, 'utf8');
+      const filePath = isAbsolute(this.arguments.file)
+        ? this.arguments.file
+        : path_resolve(dirname(vimState.document.uri.fsPath), this.arguments.file);
+
+      return readFileAsync(filePath, 'utf8');
     } else if ('cmd' in this.arguments) {
       if (this.arguments.cmd.length > 0) {
         if (SUPPORT_READ_COMMAND) {
