@@ -152,6 +152,70 @@ class MoveToUpperPane extends BaseCommand {
 }
 
 @RegisterAction
+class MovePaneLeft extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['<C-w>', 'H']];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.moveActiveEditorGroupLeft',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class MovePaneRight extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['<C-w>', 'L']];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.moveActiveEditorGroupRight',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class MovePaneDown extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['<C-w>', 'J']];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.moveActiveEditorGroupDown',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
+class MovePaneUp extends BaseCommand {
+  modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
+  keys = [['<C-w>', 'K']];
+  override runsOnceForEveryCursor(): boolean {
+    return false;
+  }
+
+  public override async exec(position: Position, vimState: VimState): Promise<void> {
+    vimState.postponedCodeViewChanges.push({
+      command: 'workbench.action.moveActiveEditorGroupUp',
+      args: {},
+    });
+  }
+}
+
+@RegisterAction
 class CycleThroughPanes extends BaseCommand {
   modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
   keys = [
