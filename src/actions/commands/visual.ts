@@ -13,6 +13,7 @@ class EnterVisualMode extends BaseCommand {
     if (vimState.currentMode === Mode.Normal && vimState.recordedState.count > 1) {
       vimState.cursorStopPosition = position.getRight(vimState.recordedState.count - 1);
     }
+    vimState.nextSelectionToUseForVisualGv = vimState.lastVisualSelection;
     await vimState.setCurrentMode(Mode.Visual);
   }
 }
@@ -75,15 +76,20 @@ class ExitVisualBlockMode extends BaseCommand {
 
 @RegisterAction
 class RestoreVisualSelection extends BaseCommand {
-  modes = [Mode.Normal];
+  modes = [Mode.Normal, Mode.Visual];
   keys = ['g', 'v'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (vimState.lastVisualSelection === undefined) {
+    let selectionFromHistoryToSelect = vimState.lastVisualSelection;
+    if (vimState.currentMode === Mode.Visual) {
+      selectionFromHistoryToSelect = vimState.nextSelectionToUseForVisualGv;
+      vimState.nextSelectionToUseForVisualGv = vimState.lastVisualSelection;
+    }
+    if (selectionFromHistoryToSelect === undefined) {
       return;
     }
 
-    let { start, end, mode } = vimState.lastVisualSelection;
+    let { start, end, mode } = selectionFromHistoryToSelect;
     if (mode !== Mode.Visual || !start.isEqual(end)) {
       if (end.line <= vimState.document.lineCount - 1) {
         if (mode === Mode.Visual && start.isBefore(end)) {

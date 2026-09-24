@@ -24,6 +24,13 @@ suite('Mode Visual', () => {
   });
 
   newTest({
+    title: 'gv while in visual mode exhanges the previous visual area with current area',
+    start: ['|abcd'],
+    keysPressed: 'vyllvgvlp',
+    end: ['|acd'],
+  });
+
+  newTest({
     title: '[count]v',
     start: ['a|bcde'],
     keysPressed: '3vd',
