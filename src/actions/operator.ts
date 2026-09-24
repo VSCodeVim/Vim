@@ -102,8 +102,27 @@ export class DeleteOperator extends BaseOperator {
   public keys = ['d'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
 
+  // If the position passed matches the end of a visibleRange that is not the
+  // end of the document, then this is a folded block.
+  // This function then returns the end Position of the folded block.
+  // Otherwise, it returns the original position passed.
+  public getEndOfFoldedBlock(vimState: VimState, end: Position): Position {
+    const visibleRanges = vimState.editor.visibleRanges;
+    for (let i = 0; i < visibleRanges.length - 1; i++) {
+      if (end.isEqual(visibleRanges[i].end)) {
+        const finalLine = visibleRanges[i + 1].start.line;
+        return vimState.editor.document.lineAt(finalLine).range.end;
+      }
+    }
+    return end;
+  }
+
   public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
     // TODO: this is off by one when character-wise and not including last EOL
+
+    // If we're deleting a line holding a folded block we should delete the
+    // whole block as well.
+    end = this.getEndOfFoldedBlock(vimState, end);
     const numLinesDeleted = Math.abs(start.line - end.line) + 1;
 
     if (vimState.currentRegisterMode === RegisterMode.LineWise) {
