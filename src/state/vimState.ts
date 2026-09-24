@@ -206,6 +206,7 @@ export class VimState implements vscode.Disposable {
         mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock;
         start: Position;
         end: Position;
+        multiCursorIndexSecondaryCursorMap?: Map<number, Cursor> | undefined;
       }
     | undefined = undefined;
 
