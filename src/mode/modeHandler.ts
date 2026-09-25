@@ -266,7 +266,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
             } else if (!selection.active.isEqual(selection.anchor)) {
               Logger.trace('Creating Visual Selection from command!');
               this.vimState.cursor = Cursor.fromSelection(selection);
-              await this.setCurrentMode(Mode.Visual);
               this.updateView({ drawSelection: false, revealRange: false });
 
               // Store selection for commands like gv
