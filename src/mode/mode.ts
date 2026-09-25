@@ -25,6 +25,7 @@ export enum VSCodeVimCursorType {
   TextDecoration,
   Native,
   UnderlineThin,
+  Hidden,
 }
 
 export enum NormalCommandState {
@@ -75,6 +76,8 @@ export function getCursorStyle(cursorType: VSCodeVimCursorType) {
       return vscode.TextEditorCursorStyle.UnderlineThin;
     case VSCodeVimCursorType.TextDecoration:
       return vscode.TextEditorCursorStyle.LineThin;
+    case VSCodeVimCursorType.Hidden:
+      return vscode.TextEditorCursorStyle.BlockOutline;
     case VSCodeVimCursorType.Native:
     default:
       return vscode.TextEditorCursorStyle.Block;
