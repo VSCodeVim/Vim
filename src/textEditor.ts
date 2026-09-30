@@ -30,10 +30,14 @@ export class TextEditor {
     if (!letVSCodeHandleKeystrokes) {
       await editor.edit((editBuilder) => {
         if (!at) {
-          at = editor.selection.active;
+          if (editor.selection.isEmpty) {
+            editBuilder.insert(editor.selection.active, text);
+          } else {
+            editBuilder.replace(editor.selection, text);
+          }
+        } else {
+          editBuilder.insert(at, text);
         }
-
-        editBuilder.insert(at, text);
       });
     } else {
       await vscode.commands.executeCommand('default:type', { text });
