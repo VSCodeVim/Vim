@@ -28,17 +28,23 @@ export class TextEditor {
     letVSCodeHandleKeystrokes ??= text.length === 1;
 
     if (!letVSCodeHandleKeystrokes) {
+      let didReplace = false;
       await editor.edit((editBuilder) => {
         if (!at) {
           if (editor.selection.isEmpty) {
             editBuilder.insert(editor.selection.active, text);
           } else {
             editBuilder.replace(editor.selection, text);
+            didReplace = true;
           }
         } else {
           editBuilder.insert(at, text);
         }
       });
+      if (didReplace) {
+        // Collapse it to a cursor
+        editor.selection = new vscode.Selection(editor.selection.end, editor.selection.end);
+      }
     } else {
       await vscode.commands.executeCommand('default:type', { text });
     }
