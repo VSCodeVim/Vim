@@ -305,10 +305,13 @@ export class Pattern {
         caseOverride,
         ignoreSmartcase: args.ignoreSmartcase ?? false,
       });
+
+      const jsPatternString = Pattern.convertToJsCompatiblePattern(patternString);
+
       return new Pattern(
         patternString,
         args.direction,
-        Pattern.compileRegex(patternString, ignoreCase),
+        Pattern.compileRegex(jsPatternString, ignoreCase),
         inSelection ?? false,
         closed,
         emptyBranch,
@@ -326,6 +329,10 @@ export class Pattern {
       return false;
     }
     return configuration.ignorecase;
+  }
+
+  private static convertToJsCompatiblePattern(patternString: string): string {
+    return patternString.replace(/\\\(/g, '(').replace(/\\\)/g, ')');
   }
 
   private constructor(
