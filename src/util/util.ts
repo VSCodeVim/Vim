@@ -65,3 +65,13 @@ export function findTabInActiveTabGroup(name: string): [number, vscode.Tab] {
   }
   return foundBuffers[0];
 }
+
+/**
+ * VSCode does not provide the ability to interrupt IME composition,
+ * so here some trick techniques are used to achieve this
+ * by switching the current focus target to interrupt the IME composition state.
+ */
+export async function interruptIMEComposition() {
+  await vscode.commands.executeCommand('workbench.action.focusTitleBar');
+  await vscode.commands.executeCommand('workbench.action.focusPreviousGroup');
+}
