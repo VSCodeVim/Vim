@@ -121,7 +121,7 @@ This is my hack to simulate a click event based API in an IDE that doesn't have 
 
 ## Release
 
-Before you push a release, be sure to make sure the changelog is updated!
+Before you push a release, be sure the changelog is updated!
 
 To push a release:
 
