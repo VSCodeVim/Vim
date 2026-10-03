@@ -36,7 +36,7 @@ export class RemappingValidator implements IConfigurationValidator {
         keybindings.push(pluginMapping);
       }
 
-      const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
+      const isRecursive = !modeKeyBindingsKey.includes('NonRecursive');
 
       const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
       let modeKeyBindingsMap = config[modeMapName + 'Map'] as Map<string, IKeyRemapping>;
