@@ -713,4 +713,20 @@ suite('Mode Insert', () => {
       assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
     });
   });
+
+  newTest({
+    title: '<C-BS> in Insert deletes the previous word',
+    start: ['|'],
+    keysPressed: 'ihello world<C-BS>',
+    end: ['hello |'],
+    endMode: Mode.Insert,
+  });
+
+  newTest({
+    title: '<S-BS> in Insert deletes a single character (acts like <BS>)',
+    start: ['|'],
+    keysPressed: 'iabc<S-BS>',
+    end: ['ab|'],
+    endMode: Mode.Insert,
+  });
 });
