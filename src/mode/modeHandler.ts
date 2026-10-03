@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 import * as process from 'process';
 import { Position, Range, Uri } from 'vscode';
-import { BaseMovement } from '../actions/baseMotion';
+import { BaseMovement, IMovement } from '../actions/baseMotion';
 import { DocumentContentChangeAction } from '../actions/commands/documentChange';
 import { QuitRecordMacro } from '../actions/commands/macro';
 import { ReplaceCharacter } from '../actions/commands/replace';
@@ -999,41 +999,23 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const cursorsToRemove: number[] = [];
 
     for (let i = 0; i < this.vimState.cursors.length; i++) {
-      /**
-       * Essentially what we're doing here is pretending like the
-       * current VimState only has one cursor (the cursor that we just
-       * iterated to).
-       *
-       * We set the cursor position to be equal to the iterated one,
-       * and then set it back immediately after we're done.
-       *
-       * The slightly more complicated logic here allows us to write
-       * Action definitions without having to think about multiple
-       * cursors in almost all cases.
-       */
-      const oldCursorPositionStart = this.vimState.cursorStartPosition;
-      const oldCursorPositionStop = this.vimState.cursorStopPosition;
+      // Temporarily make this the primary cursor so movements can be written as if there's only
+      // one cursor. Movements report where the cursor ends up via their result, so any changes
+      // they make to the cursor directly are discarded.
+      const primaryCursor = this.vimState.cursor;
       movement.multicursorIndex = i;
+      this.vimState.cursor = this.vimState.cursors[i];
 
-      this.vimState.cursorStartPosition = this.vimState.cursors[i].start;
-      const cursorPosition = this.vimState.cursors[i].stop;
-      this.vimState.cursorStopPosition = cursorPosition;
-
-      const result = await movement.execActionWithCount(
-        cursorPosition,
-        this.vimState,
-        recordedState.count,
-      );
-
-      // We also need to update the specific cursor, in case the cursor position was modified inside
-      // the handling functions (e.g. 'it')
-      this.vimState.cursors[i] = new Cursor(
-        this.vimState.cursorStartPosition,
-        this.vimState.cursorStopPosition,
-      );
-
-      this.vimState.cursorStartPosition = oldCursorPositionStart;
-      this.vimState.cursorStopPosition = oldCursorPositionStop;
+      let result: Position | IMovement;
+      try {
+        result = await movement.execActionWithCount(
+          this.vimState.cursor.stop,
+          this.vimState,
+          recordedState.count,
+        );
+      } finally {
+        this.vimState.cursor = primaryCursor;
+      }
 
       if (result instanceof Position) {
         this.vimState.cursors[i] = this.vimState.cursors[i].withNewStop(result);
