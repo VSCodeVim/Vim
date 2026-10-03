@@ -1917,6 +1917,30 @@ suite('Mode Normal', () => {
   });
 
   newTest({
+    title: 'gqq does not treat Markdown italic as comment',
+    start: [
+      '|*foo* bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar',
+    ],
+    keysPressed: 'gqq',
+    end: [
+      '|*foo* bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar bar',
+      'bar bar bar bar bar bar bar bar bar bar',
+    ],
+  });
+
+  newTest({
+    title: 'gqq treats asterisk followed by space as bullet point',
+    start: [
+      '|* this is a bullet point with many words that will wrap to the next line because it is very long',
+    ],
+    keysPressed: 'gqq',
+    end: [
+      '|* this is a bullet point with many words that will wrap to the next line',
+      '* because it is very long',
+    ],
+  });
+
+  newTest({
     title: 'gq breaks before textwidth',
     start: [
       '|1 3 5 7 911 3 5 7 921 3 5 7 931 3 5 7 941 3 5 7 951 3 5 7 961 3 5 7 971 3 5 7 9xs split',
