@@ -9,6 +9,7 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
 import { StatusBar } from '../../src/statusBar';
+import { VSCodeContext } from '../../src/util/vscodeContext';
 import { Configuration } from '../testConfiguration';
 import { assertEqualLines, setupWorkspace } from '../testUtils';
 
@@ -377,6 +378,54 @@ suite('Remapper', () => {
     }
 
     // assert
+    assert.strictEqual(actual, true);
+    assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
+  });
+
+  test('conditional commands are skipped when when is false', async () => {
+    await setupWithBindings({
+      normalModeKeyBindingsNonRecursive: [
+        {
+          before: [leaderKey, 'w'],
+          commands: [
+            {
+              command: 'workbench.action.closeActiveEditor',
+              when: 'vim.isTextDiffEditor',
+            },
+          ],
+        },
+      ],
+    });
+
+    await VSCodeContext.set('vim.isTextDiffEditor', false);
+
+    const remapper = new Remappers();
+    const actual = await remapper.sendKey([leaderKey, 'w'], modeHandler);
+
+    assert.strictEqual(actual, true);
+    assert.strictEqual(vscode.window.visibleTextEditors.length, 1);
+  });
+
+  test('conditional commands are executed when when is true', async () => {
+    await setupWithBindings({
+      normalModeKeyBindingsNonRecursive: [
+        {
+          before: [leaderKey, 'w'],
+          commands: [
+            {
+              command: 'workbench.action.closeActiveEditor',
+              when: 'vim.isTextDiffEditor',
+            },
+          ],
+        },
+      ],
+    });
+
+    await VSCodeContext.set('vim.isTextDiffEditor', true);
+
+    const remapper = new Remappers();
+    const actual = await remapper.sendKey([leaderKey, 'w'], modeHandler);
+
     assert.strictEqual(actual, true);
     assert.strictEqual(vscode.window.visibleTextEditors.length, 0);
   });
