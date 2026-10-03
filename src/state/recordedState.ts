@@ -46,7 +46,14 @@ export class RecordedState {
       return this.commandList.join('');
     }
 
-    return result
+    let display = result;
+    if (configuration.localleader !== configuration.leader) {
+      display = display.replace(
+        new RegExp(configuration.localleader.replace(ESCAPE_REGEX, '\\$&'), 'g'),
+        '<localleader>',
+      );
+    }
+    return display
       .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
       .replace(BUFFERED_KEYS_REGEX, '');
   }
@@ -57,7 +64,14 @@ export class RecordedState {
   public get pendingCommandString(): string {
     const result = this.actionKeys.join('') + this.bufferedKeys.join('');
 
-    return result
+    let display = result;
+    if (configuration.localleader !== configuration.leader) {
+      display = display.replace(
+        new RegExp(configuration.localleader.replace(ESCAPE_REGEX, '\\$&'), 'g'),
+        '<localleader>',
+      );
+    }
+    return display
       .replace(new RegExp(configuration.leader.replace(ESCAPE_REGEX, '\\$&'), 'g'), '<leader>')
       .replace(BUFFERED_KEYS_REGEX, '');
   }

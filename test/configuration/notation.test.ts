@@ -37,4 +37,22 @@ suite('Notation', () => {
       }
     }
   });
+
+  test('Normalize LocalLeader', () => {
+    const leaderKey = '//';
+    const localLeaderKey = ',';
+    const testCases: { [key: string]: string } = {
+      '<localleader>': ',',
+      '<LocalLeader>': ',',
+      localleader: ',',
+    };
+
+    for (const test in testCases) {
+      if (testCases.hasOwnProperty(test)) {
+        const expected = testCases[test];
+        const actual = Notation.NormalizeKey(test, leaderKey, localLeaderKey);
+        assert.strictEqual(actual, expected);
+      }
+    }
+  });
 });
