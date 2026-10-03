@@ -305,3 +305,30 @@ suite('Record and execute a macro', () => {
     });
   });
 });
+
+suite('Undo/redo integrity after macros and remaps (#2007)', () => {
+  setup(async () => {
+    await setupWorkspace();
+  });
+
+  newTest({
+    title: 'Can undo and redo a macro that edits inside its own earlier edits',
+    start: ['|12'],
+    keysPressed: 'qaiABC<Esc>hhiXY<Esc>q@au<C-r>',
+    end: ['X|XYABCYABC12'],
+  });
+
+  newTestWithRemaps({
+    title: 'Can undo and redo a remap that edits inside its own earlier edits',
+    start: ['|word'],
+    remaps: ['nmap X ciw[]<Esc>P'],
+    steps: [
+      {
+        keysPressed: 'Xu<C-r>',
+        stepResult: {
+          end: ['|[word]'],
+        },
+      },
+    ],
+  });
+});
