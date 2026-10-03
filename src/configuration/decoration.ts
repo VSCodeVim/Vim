@@ -180,17 +180,9 @@ class DecorationImpl {
 
   public load(configuration: IConfiguration) {
     this.default = vscode.window.createTextEditorDecorationType({
-      backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
-      borderColor: new vscode.ThemeColor('editorCursor.foreground'),
-      dark: {
-        color: 'rgb(81,80,82)',
-      },
-      light: {
-        // used for light colored themes
-        color: 'rgb(255, 255, 255)',
-      },
-      borderStyle: 'solid',
-      borderWidth: '1px',
+      // Use outline instead of background to show the cursor without decorating the character itself.
+      // The character remains perfectly visible without any blinking effect on the text.
+      outlineColor: new vscode.ThemeColor('editorCursor.foreground'),
     });
 
     const searchHighlightBackgroundColor = configuration.searchHighlightColor
