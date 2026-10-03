@@ -29,11 +29,10 @@ export class TextEditor {
 
     if (!letVSCodeHandleKeystrokes) {
       await editor.edit((editBuilder) => {
-        if (!at) {
-          at = editor.selection.active;
+        const positions = at === undefined ? editor.selections.map((s) => s.active) : [at];
+        for (const pos of positions) {
+          editBuilder.insert(pos, text);
         }
-
-        editBuilder.insert(at, text);
       });
     } else {
       await vscode.commands.executeCommand('default:type', { text });
