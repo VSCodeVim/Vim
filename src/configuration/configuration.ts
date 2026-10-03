@@ -419,6 +419,7 @@ class Configuration implements IConfiguration {
   visualstar = false;
 
   mouseSelectionGoesIntoVisualMode = true;
+  mouseSelectionGoesIntoVisualModeFromInsert = false;
 
   changeWordIncludesWhitespace = false;
 
