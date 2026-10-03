@@ -180,6 +180,7 @@ export interface SubstituteFlags {
   printLastMatchedLineWithNumber?: true;
   printLastMatchedLineWithList?: true;
   usePreviousPattern?: true;
+  preserveCase?: boolean;
 }
 
 // TODO: `:help sub-replace-special`
@@ -233,7 +234,7 @@ const replaceStringParser = (delimiter: string): Parser<ReplaceString> =>
 
 const substituteFlagsParser: Parser<SubstituteFlags> = seq(
   string('&').fallback(undefined),
-  oneOf('cegiInp#lr').many(),
+  oneOf('cegiInp#lrP').many(),
 ).map(([amp, flagChars]) => {
   const flags: SubstituteFlags = {};
   if (amp === '&') {
@@ -261,6 +262,9 @@ const substituteFlagsParser: Parser<SubstituteFlags> = seq(
         break;
       case 'p':
         flags.printLastMatchedLine = true;
+        break;
+      case 'P':
+        flags.preserveCase = true;
         break;
       case '#':
         flags.printLastMatchedLineWithNumber = true;
@@ -415,7 +419,12 @@ export class SubstituteCommand extends ExCommand {
       return 0;
     }
 
-    const replaceText = this.arguments.replace.resolve(vimState, match.groups);
+    let replaceText = this.arguments.replace.resolve(vimState, match.groups);
+
+    if (this.arguments.flags.preserveCase) {
+      const originalText = vimState.document.getText(match.range);
+      replaceText = this.preserveCase(originalText, replaceText);
+    }
 
     if (this.arguments.flags.confirmEach) {
       if (await this.confirmReplacement(vimState, match, replaceText)) {
@@ -675,5 +684,18 @@ export class SubstituteCommand extends ExCommand {
         }`,
       );
     }
+  }
+
+  private preserveCase(original: string, replacement: string): string {
+    if (original === original.toUpperCase() && original !== original.toLowerCase()) {
+      return replacement.toUpperCase();
+    }
+    if (original === original.toLowerCase() && original !== original.toUpperCase()) {
+      return replacement.toLowerCase();
+    }
+    if (original.length > 0 && original[0] === original[0].toUpperCase()) {
+      return replacement.charAt(0).toUpperCase() + replacement.slice(1).toLowerCase();
+    }
+    return replacement;
   }
 }

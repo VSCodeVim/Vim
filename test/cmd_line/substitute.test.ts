@@ -524,6 +524,13 @@ suite('Basic substitute', () => {
       end: ['1', '2', "[3, '4']", '', 'two', '1', '2', "[3, '4']", '|'],
     });
 
+    newTest({
+      title: 'Replace with preserve case `P` flag (UPPER, lower, Title)',
+      start: ['|FOO foo Foo'],
+      keysPressed: sub('foo', 'bar', { lineRange: '%', flags: 'P' }),
+      end: ['|BAR bar Bar'],
+    });
+
     // TODO: Test submatch()
   });
 });
