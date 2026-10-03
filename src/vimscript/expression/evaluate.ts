@@ -310,7 +310,7 @@ export class EvaluationContext {
           ),
         );
       default: {
-        const guard: never = expression;
+        expression satisfies never;
         throw new Error(`evaluate() got unexpected expression type`);
       }
     }
@@ -1182,7 +1182,7 @@ export class EvaluationContext {
           const ctrlV = '\x16';
           return str(`${ctrlV}${width}`);
         }
-        const guard: never = reg.registerMode;
+        reg.registerMode satisfies never;
         return str('');
       }
       case 'gettext': {
@@ -1730,7 +1730,7 @@ export class EvaluationContext {
           case 'blob':
             return int(8);
           default:
-            const guard: never = x;
+            x satisfies never;
             throw new Error('type() got unexpected type');
         }
       }
