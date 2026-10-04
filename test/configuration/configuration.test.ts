@@ -59,6 +59,14 @@ suite('Configuration', () => {
   });
 
   newTest({
+    title: 'textwidth can be overridden with the set command',
+    config: { textwidth: 80 },
+    start: ['|1 12 1 1'],
+    keysPressed: ':set tw=2\ngqq',
+    end: ['|1', '12', '1', '1'],
+  });
+
+  newTest({
     title: 'Can handle long key chords',
     start: ['|'],
     // <leader>fes
