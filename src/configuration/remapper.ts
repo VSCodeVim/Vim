@@ -6,8 +6,10 @@ import { ModeHandler } from '../mode/modeHandler';
 import { StatusBar } from '../statusBar';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
+import { VSCodeContext } from '../util/vscodeContext';
 import { exCommandParser } from '../vimscript/exCommandParser';
 import { IKeyRemapping } from './iconfiguration';
+import { evaluateWhenClause } from './whenExpression';
 
 interface IRemapper {
   /**
@@ -491,6 +493,7 @@ export class Remapper implements IRemapper {
         for (const command of remapping.commands) {
           let commandString: string;
           let commandArgs: string[];
+          let shouldExecuteCommand = true;
           if (typeof command === 'string') {
             commandString = command;
             commandArgs = [];
@@ -501,6 +504,16 @@ export class Remapper implements IRemapper {
               : command.args
                 ? [command.args]
                 : [];
+
+            if (command.when) {
+              shouldExecuteCommand = evaluateWhenClause(command.when, (contextKey) =>
+                VSCodeContext.get(contextKey),
+              );
+            }
+          }
+
+          if (!shouldExecuteCommand) {
+            continue;
           }
 
           if (commandString.slice(0, 1) === ':') {
