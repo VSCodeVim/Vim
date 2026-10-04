@@ -280,7 +280,7 @@ export class SetCommand extends ExCommand {
         break;
       }
       default:
-        const guard: never = this.operation;
+        this.operation satisfies never;
         throw new Error('Got unexpected SetOperation.type');
     }
 

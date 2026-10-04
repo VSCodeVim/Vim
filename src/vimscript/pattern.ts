@@ -427,8 +427,9 @@ export class SearchOffset {
       case 'chars_from_end':
         return match.end.getOffsetThroughLineBreaks(this.data.delta - 1);
       case 'pattern': // TODO(#3919): Support `;` offset (`:help //;`)
+        throw new Error("';' search offset is not yet supported");
       default:
-        const guard: unknown = this.data;
+        this.data satisfies never;
         throw new Error('Unexpected SearchOffset type');
     }
   }
