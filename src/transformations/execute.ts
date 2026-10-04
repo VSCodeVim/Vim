@@ -16,8 +16,8 @@ import {
 } from '../vimscript/parserUtils';
 import {
   Dot,
-  ExecuteNormalTransformation,
   InsertTextVSCodeTransformation,
+  ExecuteNormalTransformation,
   TextTransformations,
   Transformation,
   areAllSameTransformation,
@@ -61,37 +61,6 @@ export async function executeTransformations(
 
   const accumulatedPositionDifferences: { [key: number]: PositionDiff[] } = {};
 
-  const doTextEditorEdit = (command: TextTransformations, edit: vscode.TextEditorEdit) => {
-    switch (command.type) {
-      case 'insertText':
-        edit.insert(command.position, command.text);
-        break;
-      case 'replaceText':
-        edit.replace(command.range, command.text);
-        break;
-      case 'deleteRange':
-        edit.delete(command.range);
-        break;
-      case 'moveCursor':
-        break;
-      default:
-        Logger.warn(`Unhandled text transformation type: ${command.type}.`);
-        break;
-    }
-
-    if (command.diff) {
-      if (command.cursorIndex === undefined) {
-        throw new Error('No cursor index - this should never ever happen!');
-      }
-
-      if (!accumulatedPositionDifferences[command.cursorIndex]) {
-        accumulatedPositionDifferences[command.cursorIndex] = [];
-      }
-
-      accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
-    }
-  };
-
   if (textTransformations.length > 0) {
     const overlapping = overlappingTransformations(textTransformations);
     if (overlapping !== undefined) {
@@ -104,7 +73,13 @@ export async function executeTransformations(
       // TODO: Select one transformation for every cursor and run them all
       // in parallel. Repeat till there are no more transformations.
       for (const transformation of textTransformations) {
-        await vimState.editor.edit((edit) => doTextEditorEdit(transformation, edit));
+        if (vimState.normalCommandState === NormalCommandState.Queuing) {
+          vimState.queuedTransformations.push(transformation);
+          continue;
+        }
+        await vimState.editor.edit((edit) =>
+          doTextEditorEdit(transformation, edit, accumulatedPositionDifferences),
+        );
       }
     } else {
       // This is the common case!
@@ -117,7 +92,11 @@ export async function executeTransformations(
       try {
         await vimState.editor.edit((edit) => {
           for (const command of textTransformations) {
-            doTextEditorEdit(command, edit);
+            if (vimState.normalCommandState === NormalCommandState.Queuing) {
+              vimState.queuedTransformations.push(command);
+              continue;
+            }
+            doTextEditorEdit(command, edit, accumulatedPositionDifferences);
           }
         });
       } catch (e) {
@@ -240,7 +219,7 @@ export async function executeTransformations(
         break;
 
       case 'executeNormal':
-        await doExecuteNormal(modeHandler, transformation);
+        await doExecuteNormal(modeHandler, transformation, accumulatedPositionDifferences);
         break;
 
       case 'vscodeCommand':
@@ -303,9 +282,45 @@ export async function executeTransformations(
   vimState.recordedState.transformer = new Transformer();
 }
 
+const doTextEditorEdit = (
+  command: TextTransformations,
+  edit: vscode.TextEditorEdit,
+  accumulatedPositionDifferences: { [key: number]: PositionDiff[] },
+) => {
+  switch (command.type) {
+    case 'insertText':
+      edit.insert(command.position, command.text);
+      break;
+    case 'replaceText':
+      edit.replace(command.range, command.text);
+      break;
+    case 'deleteRange':
+      edit.delete(command.range);
+      break;
+    case 'moveCursor':
+      break;
+    default:
+      Logger.warn(`Unhandled text transformation type: ${command.type}.`);
+      break;
+  }
+
+  if (command.diff) {
+    if (command.cursorIndex === undefined) {
+      throw new Error('No cursor index - this should never ever happen!');
+    }
+
+    if (!accumulatedPositionDifferences[command.cursorIndex]) {
+      accumulatedPositionDifferences[command.cursorIndex] = [];
+    }
+
+    accumulatedPositionDifferences[command.cursorIndex].push(command.diff);
+  }
+};
+
 const doExecuteNormal = async (
   modeHandler: IModeHandler,
   transformation: ExecuteNormalTransformation,
+  accumulatedPositionDifferences: { [key: number]: PositionDiff[] },
 ) => {
   const vimState = modeHandler.vimState;
   const { keystrokes, range } = transformation;
@@ -331,7 +346,7 @@ const doExecuteNormal = async (
     }
   }
 
-  vimState.normalCommandState = NormalCommandState.Executing;
+  vimState.normalCommandState = NormalCommandState.Queuing;
   vimState.recordedState = new RecordedState();
   await vimState.setCurrentMode(Mode.Normal);
   for (const lineNumber of resultLineNumbers) {
@@ -344,5 +359,15 @@ const doExecuteNormal = async (
       await modeHandler.handleKeyEvent('<Esc>');
     }
   }
+  vimState.normalCommandState = NormalCommandState.Executing;
+  for (const command of vimState.queuedTransformations) {
+    await vimState.editor.edit((edit) =>
+      doTextEditorEdit(command, edit, accumulatedPositionDifferences),
+    );
+  }
+  if (vimState.currentMode === Mode.Insert) {
+    await modeHandler.handleKeyEvent('<Esc>');
+  }
+  vimState.queuedTransformations = [];
   vimState.normalCommandState = NormalCommandState.Finished;
 };
