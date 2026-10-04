@@ -56,15 +56,6 @@ export async function getAndUpdateModeHandler(
 
   previousActiveEditorUri = activeTextEditor.document.uri;
 
-  if (curHandler.focusChanged) {
-    curHandler.focusChanged = false;
-
-    if (previousActiveEditorUri) {
-      const prevHandler = ModeHandlerMap.get(previousActiveEditorUri);
-      prevHandler!.focusChanged = true;
-    }
-  }
-
   return curHandler;
 }
 
@@ -161,6 +152,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       if (mh.vimState.currentMode === Mode.Insert) {
         mh.vimState.historyTracker.currentContentChanges.push(...event.contentChanges);
       }
+
+      // Let the history tracker know about native undo/redo so it can mirror them onto
+      // its own undo stack instead of recording them as new forward changes (see #2007).
+      // Anything else (including our own programmatic edits) carries no reason and is ignored.
+      mh.vimState.historyTracker.noteNativeUndoRedo(event.reason);
     }
   });
 
@@ -277,11 +273,6 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       // We may receive changes from other panels when, having selections in them containing the same file
       // and changing text before the selection in current panel.
       if (e.textEditor !== mh.vimState.editor) {
-        return;
-      }
-
-      if (mh.focusChanged) {
-        mh.focusChanged = false;
         return;
       }
 

@@ -74,8 +74,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   public lastMovementFailed: boolean = false;
 
-  public focusChanged = false;
-
   private searchDecorationCacheKey: { searchString: string; documentVersion: number } | undefined;
 
   private readonly disposables: vscode.Disposable[] = [];
@@ -904,14 +902,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.dotCommandStatus = DotCommandStatus.Waiting;
     }
 
-    // track undo history
-    if (!this.focusChanged) {
-      // important to ensure that focus didn't change, otherwise
-      // we'll grab the text of the incorrect active window and assume the
-      // whole document changed!
-
-      this.vimState.historyTracker.addChange();
-    }
+    // Track undo history. Cross-document protection lives in HistoryTracker itself,
+    // which refuses to diff across documents by checking the document identity.
+    this.vimState.historyTracker.addChange();
 
     // Don't record an undo point for every action of a macro, only at the very end
     if (
