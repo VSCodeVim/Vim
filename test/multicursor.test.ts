@@ -190,6 +190,31 @@ suite('Multicursor', () => {
     assert.strictEqual(modeHandler.vimState.cursors.length, 2);
   });
 
+  test('gv with multicursors restores last visual selection foreach cursor', async () => {
+    await setupWorkspace({ fileContent: ['cat', 'cat', 'cat'] });
+    await modeHandler.handleMultipleKeyEvents([
+      'g',
+      'g',
+      'g',
+      'b',
+      'g',
+      'b',
+      'g',
+      'b',
+      '<ESC>',
+      '0',
+      'v',
+      '<ESC>',
+      'g',
+      'v',
+      'y',
+      'p',
+    ]);
+
+    assertEqualLines(['ccat', 'ccat', 'ccat']);
+    assert.strictEqual(modeHandler.vimState.cursors.length, 3);
+  });
+
   newTest({
     title: 'Can use "/" search with multicursors',
     start: ['|line 1', 'line 2', 'line 3', 'line 4', 'line 5'],

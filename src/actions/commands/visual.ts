@@ -1,3 +1,4 @@
+import { Cursor } from 'src/common/motion/cursor';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
 import { VimState } from '../../state/vimState';
@@ -79,11 +80,23 @@ class RestoreVisualSelection extends BaseCommand {
   keys = ['g', 'v'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    if (vimState.lastVisualSelection === undefined) {
+    const lastVisualSelection = vimState.lastVisualSelection;
+    if (lastVisualSelection === undefined) {
       return;
     }
 
-    let { start, end, mode } = vimState.lastVisualSelection;
+    let { start, end, mode } = lastVisualSelection;
+    const isCurrentlyHandlingSecondaryCursor = this.multicursorIndex && this.multicursorIndex > 0;
+    if (isCurrentlyHandlingSecondaryCursor) {
+      const secondarySelection = this.getSecondarySelectionByMultiCursorIndex(
+        this.multicursorIndex,
+        lastVisualSelection.multiCursorIndexSecondaryCursorMap,
+      );
+      if (secondarySelection) {
+        start = secondarySelection.start;
+        end = secondarySelection.stop;
+      }
+    }
     if (mode !== Mode.Visual || !start.isEqual(end)) {
       if (end.line <= vimState.document.lineCount - 1) {
         if (mode === Mode.Visual && start.isBefore(end)) {
@@ -95,5 +108,18 @@ class RestoreVisualSelection extends BaseCommand {
         vimState.cursorStopPosition = end;
       }
     }
+  }
+
+  getSecondarySelectionByMultiCursorIndex(
+    multiCursorIndex: number | undefined,
+    multiCursorIndexSecondaryCursorMap: Map<number, Cursor> | undefined,
+  ): Cursor | undefined {
+    if (!multiCursorIndex) {
+      return undefined;
+    }
+    if (!multiCursorIndexSecondaryCursorMap) {
+      return undefined;
+    }
+    return multiCursorIndexSecondaryCursorMap.get(multiCursorIndex);
   }
 }
