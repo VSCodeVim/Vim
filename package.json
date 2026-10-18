@@ -1013,11 +1013,13 @@
         "vim.vimrc.enable": {
           "type": "boolean",
           "markdownDescription": "Use key mappings from a `.vimrc` file.",
-          "default": false
+          "default": false,
+          "scope": "machine"
         },
         "vim.vimrc.path": {
           "type": "string",
-          "markdownDescription": "Path to a Vim configuration file. If unset, it will check for `$HOME/.vscodevimrc`, `$HOME/.vimrc`, `$HOME/_vimrc`, and `$HOME/.config/nvim/init.vim`, in that order."
+          "markdownDescription": "Path to a Vim configuration file. If unset, it will check for `$HOME/.vscodevimrc`, `$HOME/.vimrc`, `$HOME/_vimrc`, and `$HOME/.config/nvim/init.vim`, in that order.",
+          "scope": "machine"
         },
         "vim.substituteGlobalFlag": {
           "type": "boolean",
