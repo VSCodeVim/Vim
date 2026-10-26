@@ -10,6 +10,7 @@ import { Cursor } from '../common/motion/cursor';
 import { configuration } from '../configuration/configuration';
 import { DotCommandStatus, Mode, NormalCommandState } from '../mode/mode';
 import { ModeData } from '../mode/modeData';
+import { TextEditor } from '../textEditor';
 import { Logger } from '../util/logger';
 import { SearchDirection } from '../vimscript/pattern';
 import { HistoryTracker } from './../history/historyTracker';
@@ -54,6 +55,9 @@ export class VimState implements vscode.Disposable {
    * will be 20, even if you press j and the next column is only 5 characters.
    * This is because if the third column is 25 characters, the cursor will go
    * back to the 20th column.
+   *
+   * This is a visible column (tabs are expanded), not a character index, so that
+   * moving between lines with different indentation keeps the cursor visually aligned.
    */
   public desiredColumn = 0;
 
@@ -65,6 +69,35 @@ export class VimState implements vscode.Disposable {
 
   public get document(): vscode.TextDocument {
     return this.editor.document;
+  }
+
+  private get tabSize(): number {
+    return Number(this.editor.options.tabSize);
+  }
+
+  /**
+   * Sets `desiredColumn` to the visible column of `position`
+   */
+  public setDesiredColumn(position: Position): void {
+    this.desiredColumn = TextEditor.getVisualColumn(
+      this.document.lineAt(position.line).text,
+      position.character,
+      this.tabSize,
+    );
+  }
+
+  /**
+   * @returns the Position on `line` closest to the visible column `desiredColumn`
+   */
+  public positionAtDesiredColumn(line: number, desiredColumn = this.desiredColumn): Position {
+    return new Position(
+      line,
+      TextEditor.getCharacterAtVisualColumn(
+        this.document.lineAt(line).text,
+        desiredColumn,
+        this.tabSize,
+      ),
+    );
   }
 
   /**
