@@ -145,7 +145,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       !this.vimState.cursorStartPosition.isEqual(selections[0].anchor) ||
       !this.vimState.cursorStopPosition.isEqual(selections[0].active)
     ) {
-      this.vimState.desiredColumn = selections[0].active.character;
+      this.vimState.setDesiredColumn(selections[0].active);
     }
 
     this.vimState.cursors = selections.map(({ active, anchor }) =>
@@ -329,7 +329,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           }`,
         );
         this.vimState.cursor = Cursor.fromSelection(selection);
-        this.vimState.desiredColumn = selection.active.character;
+        this.vimState.setDesiredColumn(selection.active);
         this.updateView({ drawSelection: false, revealRange: false });
       }
       return;
@@ -363,7 +363,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       this.vimState.cursorStopPosition = newPosition;
       this.vimState.cursorStartPosition = newPosition;
-      this.vimState.desiredColumn = newPosition.character;
+      this.vimState.setDesiredColumn(newPosition);
 
       // start visual mode?
       if (
@@ -858,11 +858,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         if (action instanceof MoveLineEnd && !recordedState.operator) {
           this.vimState.desiredColumn = Number.POSITIVE_INFINITY;
         } else {
-          this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
+          this.vimState.setDesiredColumn(this.vimState.cursorStopPosition);
         }
       } else if (this.vimState.currentMode !== Mode.VisualBlock) {
         // TODO: explain why not VisualBlock
-        this.vimState.desiredColumn = this.vimState.cursorStopPosition.character;
+        this.vimState.setDesiredColumn(this.vimState.cursorStopPosition);
       }
     }
 

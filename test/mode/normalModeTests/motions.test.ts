@@ -1055,6 +1055,52 @@ suite('Motions in Normal Mode', () => {
     end: ['{', '|}'],
   });
 
+  suite('j/k keep the visual column across tabs', () => {
+    // These rely on the default test tabstop of 2
+
+    newTest({
+      title: 'k onto a line with a tab',
+      start: ['\tabc', '012|345'],
+      keysPressed: 'k',
+      end: ['\ta|bc', '012345'],
+    });
+
+    newTest({
+      title: 'j from a line with a tab',
+      start: ['\ta|bc', '012345'],
+      keysPressed: 'j',
+      end: ['\tabc', '012|345'],
+    });
+
+    newTest({
+      title: 'j between lines with different amounts of tabs',
+      start: ['\t\t|foo', '\tbarbaz'],
+      keysPressed: 'j',
+      end: ['\t\tfoo', '\tba|rbaz'],
+    });
+
+    newTest({
+      title: 'j onto the middle of a tab puts the cursor on the tab',
+      start: ['abc|d', '\t\tx'],
+      keysPressed: 'j',
+      end: ['abcd', '\t|\tx'],
+    });
+
+    newTest({
+      title: 'j keeps the visual column through a shorter line',
+      start: ['abcdef|g', '\tx', '\tabcdefg'],
+      keysPressed: 'jj',
+      end: ['abcdefg', '\tx', '\tabcd|efg'],
+    });
+
+    newTest({
+      title: 'j after $ still goes to the end of the line',
+      start: ['\ta|bc', 'abcdefgh'],
+      keysPressed: '$j',
+      end: ['\tabc', 'abcdefg|h'],
+    });
+  });
+
   suite("doesn't update desiredColumn when it shouldn't", () => {
     newTest({
       title: 'Preserves desired cursor position when pressing zz',
