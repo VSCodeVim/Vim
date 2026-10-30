@@ -278,7 +278,7 @@
   dependencies:
     "@humanfs/types" "^0.15.0"
 
-"@humanfs/node@^0.16.6":
+"@humanfs/node@^0.16.8":
   version "0.16.8"
   resolved "https://registry.yarnpkg.com/@humanfs/node/-/node-0.16.8.tgz#8f800cccc13f4f8cd3116e2d9c0a94939da3e3ed"
   integrity sha512-gE1eQNZ3R++kTzFUpdGlpmy8kDZD/MLyHqDwqjkVQI0JMdI1D51sy1H958PNXYkM2rAac7e5/CnIKZrHtPh3BQ==
@@ -533,7 +533,12 @@
   resolved "https://registry.yarnpkg.com/@types/esrecurse/-/esrecurse-4.3.1.tgz#6f636af962fbe6191b830bd676ba5986926bccec"
   integrity sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw==
 
-"@types/estree@^1.0.6", "@types/estree@^1.0.8", "@types/estree@^1.0.9":
+"@types/estree@^1.0.6", "@types/estree@^1.0.8":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.10.tgz#8a4a266065af8c2fcf5983153cd97c11b313d0c6"
+  integrity sha512-lTyOMnOcmRBzdCv6/4zUZCrEhV0xrqQiUZBZtVcbmLHBXKLnN8q89v/wKRF/Q0HbwVsqbIG3o5HDoFl9sduM+g==
+
+"@types/estree@^1.0.9":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.9.tgz#cf3f0e876d7bee15a93ab925b82bf570a3904a24"
   integrity sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==
@@ -961,10 +966,15 @@ acorn-jsx@^5.3.2:
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.3.2.tgz#7ed5bb55908b3b2f1bc55c6af1653bada7f07937"
   integrity sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==
 
-acorn@^8.15.0, acorn@^8.16.0:
+acorn@^8.15.0:
   version "8.18.0"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.18.0.tgz#4faf01b2d6d326bfeed97aea1f52220b5f4c1940"
   integrity sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==
+
+acorn@^8.16.0:
+  version "8.19.0"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.19.0.tgz#6b26fd97ce1cc9dc50bdf7ad305e9f1384d4f28a"
+  integrity sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw==
 
 agent-base@^7.0.2:
   version "7.1.1"
@@ -2067,9 +2077,9 @@ eslint-visitor-keys@^5.0.0, eslint-visitor-keys@^5.0.1:
   integrity sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==
 
 eslint@^10.0.0:
-  version "10.12.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-10.12.0.tgz#4f2f7e679bdce9d71438c2900f2c8d4d297332b0"
-  integrity sha512-npHjrHb2o4ehH3mE+YuxABR+0gyb0aVWCIolgJDArwCiHEIsonBm3ZKjel5b0U5+a+MbEvIyRCGCzD3eKKK2NA==
+  version "10.14.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-10.14.0.tgz#b7574df08d11d9eaa04222f09606674a0ea51db9"
+  integrity sha512-T0pNsxkb9IKmtQjhpK3d7nWOpFv+YHuMbTJnSVMoQblF0onvXfErrtp4V1jHtsQPan7dKaGVD0q1WCXnzMF31A==
   dependencies:
     "@eslint-community/eslint-utils" "^4.8.0"
     "@eslint-community/regexpp" "^4.12.2"
@@ -2077,7 +2087,7 @@ eslint@^10.0.0:
     "@eslint/config-helpers" "^0.7.0"
     "@eslint/core" "^1.2.1"
     "@eslint/plugin-kit" "^0.7.3"
-    "@humanfs/node" "^0.16.6"
+    "@humanfs/node" "^0.16.8"
     "@humanwhocodes/module-importer" "^1.0.1"
     "@humanwhocodes/retry" "^0.4.2"
     "@types/estree" "^1.0.6"
@@ -2098,7 +2108,7 @@ eslint@^10.0.0:
     imurmurhash "^0.1.4"
     is-glob "^4.0.0"
     json-stable-stringify-without-jsonify "^1.0.1"
-    minimatch "^10.2.5"
+    minimatch "^10.2.6"
     natural-compare "^1.4.0"
     optionator "^0.9.3"
 
@@ -3678,7 +3688,7 @@ mimic-function@^5.0.0:
   resolved "https://registry.yarnpkg.com/mimic-function/-/mimic-function-5.0.1.tgz#acbe2b3349f99b9deaca7fb70e48b83e94e67076"
   integrity sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==
 
-minimatch@^10.2.2, minimatch@^10.2.4, minimatch@^10.2.5, minimatch@^10.2.6:
+minimatch@^10.2.2, minimatch@^10.2.4, minimatch@^10.2.6:
   version "10.2.6"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-10.2.6.tgz#fd956bbe0b77241e9f15ac5dccb1c638060968ef"
   integrity sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==
