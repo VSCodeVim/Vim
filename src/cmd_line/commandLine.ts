@@ -26,12 +26,14 @@ export abstract class CommandLine {
   public previousMode: Mode;
   protected historyIndex: number | undefined;
   private savedText: string;
+  private historyPrefix: string;
 
   constructor(text: string, previousMode: Mode) {
     this.cursorIndex = text.length;
-    this.historyIndex = this.getHistory().get().length;
+    this.historyIndex = undefined;
     this.previousMode = previousMode;
     this.savedText = text;
+    this.historyPrefix = text;
   }
 
   /**
@@ -71,37 +73,53 @@ export abstract class CommandLine {
    */
   public abstract ctrlF(vimState: VimState): Promise<void>;
 
-  public historyBack(): void {
-    if (this.historyIndex === 0) {
+  public historyBack(matchPrefix: boolean): void {
+    const historyEntries = this.getHistory().get();
+    this.updateHistoryPrefix(historyEntries);
+
+    const prefix = matchPrefix ? this.historyPrefix : '';
+    const start = Math.min(this.historyIndex ?? historyEntries.length, historyEntries.length);
+    for (let i = start - 1; i >= 0; i--) {
+      if (historyEntries[i].startsWith(prefix)) {
+        this.recallHistoryEntry(historyEntries, i);
+        return;
+      }
+    }
+  }
+
+  public historyForward(matchPrefix: boolean): void {
+    if (this.historyIndex === undefined) {
       return;
     }
 
     const historyEntries = this.getHistory().get();
-    if (this.historyIndex === undefined) {
-      this.historyIndex = historyEntries.length - 1;
-      this.savedText = this.text;
-    } else if (this.historyIndex > 0) {
-      this.historyIndex--;
+    this.updateHistoryPrefix(historyEntries);
+
+    const prefix = matchPrefix ? this.historyPrefix : '';
+    for (let i = this.historyIndex + 1; i < historyEntries.length; i++) {
+      if (historyEntries[i].startsWith(prefix)) {
+        this.recallHistoryEntry(historyEntries, i);
+        return;
+      }
     }
 
-    this.text = historyEntries[this.historyIndex];
+    this.historyIndex = undefined;
+    this.text = this.savedText;
     this.cursorIndex = this.text.length;
   }
 
-  public historyForward(): void {
-    if (this.historyIndex === undefined) {
-      return;
+  private updateHistoryPrefix(historyEntries: readonly string[]): void {
+    const editedSinceRecall =
+      this.historyIndex !== undefined && this.text !== historyEntries[this.historyIndex];
+    if (this.historyIndex === undefined || editedSinceRecall) {
+      this.savedText = this.text;
+      this.historyPrefix = this.text.slice(0, this.cursorIndex);
     }
+  }
 
-    const historyEntries = this.getHistory().get();
-    if (this.historyIndex === historyEntries.length - 1) {
-      this.historyIndex = undefined;
-      this.text = this.savedText;
-    } else if (this.historyIndex < historyEntries.length - 1) {
-      this.historyIndex++;
-      this.text = historyEntries[this.historyIndex];
-    }
-
+  private recallHistoryEntry(historyEntries: readonly string[], index: number): void {
+    this.historyIndex = index;
+    this.text = historyEntries[index];
     this.cursorIndex = this.text.length;
   }
 
@@ -261,7 +279,7 @@ export class ExCommandLine extends CommandLine {
   public async run(vimState: VimState): Promise<void> {
     Logger.info(`Executing :${this.text}`);
     void ExCommandLine.history.add(this.text);
-    this.historyIndex = ExCommandLine.history.get().length;
+    this.historyIndex = undefined;
 
     if (!(this.command instanceof RegisterCommand)) {
       // TODO(jfields): Wait...why are we saving the `:` register as a RecordedState?
