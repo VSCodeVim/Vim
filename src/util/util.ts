@@ -73,5 +73,5 @@ export function findTabInActiveTabGroup(name: string): [number, vscode.Tab] {
  */
 export async function interruptIMEComposition() {
   await vscode.commands.executeCommand('workbench.action.focusTitleBar');
-  await vscode.commands.executeCommand('workbench.action.focusPreviousGroup');
+  await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
 }
