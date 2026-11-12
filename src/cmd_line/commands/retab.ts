@@ -62,10 +62,6 @@ export class RetabCommand extends ExCommand {
     return result;
   }
 
-  private hasTabs(str: string): boolean {
-    return str.indexOf('\t') >= 0;
-  }
-
   expandtab(str: string, start = 0, tabstop = configuration.tabstop): string {
     let expanded = '';
 
@@ -90,7 +86,7 @@ export class RetabCommand extends ExCommand {
     start: number,
     tabstop = configuration.tabstop,
   ): UpdatedLineSegment {
-    const retab = this.arguments.replaceSpaces || this.hasTabs(segment);
+    const retab = this.arguments.replaceSpaces || segment.includes('\t');
 
     if (!retab) {
       return {

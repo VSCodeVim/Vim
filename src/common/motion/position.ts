@@ -93,7 +93,7 @@ export class PositionDiff {
       case PositionDiffType.EndOfLine:
         return `[ Diff: EndOfLine ${this.line} ]`;
       default:
-        const guard: never = this.type;
+        this.type satisfies never;
         throw new Error(`Unknown PositionDiffType: ${this.type}`);
     }
   }

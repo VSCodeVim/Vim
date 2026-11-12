@@ -137,7 +137,7 @@ export function toExpr(value: Value): Expression {
       data: value.data,
     };
   }
-  const guard: never = value;
+  value satisfies never;
   throw new Error(`Unknown value type in toExpr()`);
 }
 

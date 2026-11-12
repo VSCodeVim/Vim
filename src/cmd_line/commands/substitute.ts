@@ -68,7 +68,7 @@ export class ReplaceString {
         } else if (component.type === 'change_case_end') {
           return '\\E';
         } else {
-          const guard: never = component;
+          (component) satisfies never;
           return '';
         }
       })
@@ -114,7 +114,7 @@ export class ReplaceString {
       } else if (component.type === 'change_case_end') {
         changeCase = undefined;
       } else {
-        const guard: never = component;
+        (component) satisfies never;
       }
 
       if (_result) {
