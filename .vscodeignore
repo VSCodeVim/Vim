@@ -11,9 +11,8 @@ src/**
 build/**
 test/**
 typings/**
-out/src/**
-out/test/**
-out/*.map
+out/**
+dist/*.map
 node_modules/**
 images/design/**
 

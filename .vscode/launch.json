@@ -10,7 +10,7 @@
       "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"],
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
       "preLaunchTask": "npm: build-dev",
       "internalConsoleOptions": "openOnSessionStart"
     },
@@ -22,7 +22,7 @@
       "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"]
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"]
     },
     {
       "name": "Run Tests",
@@ -30,12 +30,12 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}",
+        "--extensionDevelopmentPath=${workspaceRoot}/out",
         "--extensionTestsPath=${workspaceRoot}/out/test"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"],
+      "outFiles": ["${workspaceRoot}/out/**/*.js"],
       "preLaunchTask": "npm: build-test",
       "internalConsoleOptions": "openOnSessionStart"
     },
@@ -45,7 +45,7 @@
       "debugWebWorkerHost": true,
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionDevelopmentKind=web"],
-      "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"]
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"]
     }
   ]
 }

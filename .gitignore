@@ -1,4 +1,5 @@
 out
+dist
 testing
 node_modules
 *.sw?

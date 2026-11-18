@@ -42,8 +42,8 @@
     "onCommand:type"
   ],
   "qna": "https://github.com/VSCodeVim/Vim/discussions",
-  "main": "./out/extension",
-  "browser": "./out/extensionWeb",
+  "main": "./dist/extension",
+  "browser": "./dist/extensionWeb",
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": true
@@ -1196,8 +1196,8 @@
     "vscode:prepublish": "pnpm build",
     "build": "webpack -c webpack.config.js && npm run commit-hash",
     "build-dev": "webpack -c webpack.dev.js && npm run commit-hash",
-    "build-test": "tsc -p tsconfig.json --noEmitOnError && tsc-alias -p tsconfig.json && node -e \"require('fs').copyFileSync('package.json', 'out/package.json')\"",
-    "commit-hash": "git rev-parse HEAD > out/version.txt",
+    "build-test": "tsc -p tsconfig.json --noEmitOnError --incremental && tsc-alias -p tsconfig.json && node build/writeTestManifest.js",
+    "commit-hash": "git rev-parse HEAD > dist/version.txt",
     "test": "node ./out/test/runTest.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
