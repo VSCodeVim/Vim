@@ -8,6 +8,8 @@ suite('Record and execute a macro', () => {
       config: {
         // for testing with <leader>
         camelCaseMotion: { enable: true },
+        // the remap tests wait on this, so keep it short
+        timeout: 100,
       },
     });
   });

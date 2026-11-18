@@ -9,7 +9,6 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
 import { StatusBar } from '../../src/statusBar';
-import { Configuration } from '../testConfiguration';
 import { assertEqualLines, setupWorkspace } from '../testUtils';
 
 suite('Remapper', () => {
@@ -96,15 +95,18 @@ suite('Remapper', () => {
     normalModeKeyBindings,
     normalModeKeyBindingsNonRecursive,
     visualModeKeyBindings,
+    timeout,
   }: {
     insertModeKeyBindings?: IKeyRemapping[];
     normalModeKeyBindings?: IKeyRemapping[];
     normalModeKeyBindingsNonRecursive?: IKeyRemapping[];
     visualModeKeyBindings?: IKeyRemapping[];
+    timeout?: number;
   }) => {
     await setupWorkspace({
       config: {
         leader: leaderKey,
+        ...(timeout !== undefined && { timeout }),
         insertModeKeyBindings: insertModeKeyBindings || [],
         normalModeKeyBindings: normalModeKeyBindings || [],
         normalModeKeyBindingsNonRecursive: normalModeKeyBindingsNonRecursive || [],
@@ -573,6 +575,12 @@ suite('Remapper', () => {
   });
 
   test('ambiguous and potential remaps and timeouts', async () => {
+    // Shorter than the default timeout to keep the test fast, but long enough to leave slack for
+    // the elapsed-time assertions below on slow machines
+    const timeout = 400;
+    // Offset because the timeout might not finish exactly on time.
+    const timeoutOffset = 100;
+
     // setup
     await setupWithBindings({
       normalModeKeyBindings: [
@@ -589,12 +597,8 @@ suite('Remapper', () => {
           after: ['d', 'd'],
         },
       ],
+      timeout,
     });
-
-    // Using the default timeout
-    const timeout = new Configuration().timeout;
-    // Offset because the timeout might not finish exactly on time.
-    const timeoutOffset = 250;
 
     assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
@@ -778,9 +782,7 @@ suite('Remapper', () => {
       'Cursor is not on the right position, should be on second line',
     );
 
-    // wait for 500 miliseconds (half of timeout) to simulate the time the user takes
-    // between presses. Not using a fixed value here in case the default configuration
-    // gets changed to use a lower value for timeout.
+    // wait for half of the timeout to simulate the time the user takes between presses
     const waited: boolean = await new Promise((wResolve, wReject) => {
       setTimeout(() => {
         wResolve(true);
