@@ -33,7 +33,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 1. Install prerequisites:
    - [Visual Studio Code](https://code.visualstudio.com/), latest stable or insiders
    - [Node.js](https://nodejs.org/) v22.x or higher
-   - [pnpm](https://pnpm.io/) v10.x (`corepack enable` will install the version pinned in `package.json`)
+   - [pnpm](https://pnpm.io/installation) v12.x. With Corepack 0.36 or newer (`npm install -g corepack@latest`), `corepack enable` installs the version pinned in `package.json`. pnpm 10 and older Corepack versions can't run pnpm 12.
    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 
 2. Fork and clone repository:
