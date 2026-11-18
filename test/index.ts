@@ -35,8 +35,11 @@ export async function run(): Promise<void> {
 
   const testsRoot = path.resolve(__dirname, '.');
 
-  // Add files to the test suite
-  const files = await glob('**/**.test.js', { cwd: testsRoot });
+  // Add files to the test suite. glob v9+ doesn't sort results; keep the stable order glob v7 used,
+  // since some tests are sensitive to what ran before them.
+  const files = (await glob('**/**.test.js', { cwd: testsRoot })).sort((a, b) =>
+    a.localeCompare(b, 'en'),
+  );
   files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
 
   return new Promise((c, e) => {
