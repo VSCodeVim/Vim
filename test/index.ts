@@ -28,6 +28,9 @@ export function run(): Promise<void> {
     color: true,
     timeout: 5000,
     grep: mochaGrep,
+    rootHooks: {
+      afterAll: async () => (await import('./testUtils')).removeTestTempDir(),
+    },
   });
 
   const testsRoot = path.resolve(__dirname, '.');

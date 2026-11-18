@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
+import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { join } from 'path';
 import * as vscode from 'vscode';
 
 import { ExCommandLine } from '../src/cmd_line/commandLine';
@@ -61,10 +61,31 @@ export class TestExtensionContext implements vscode.ExtensionContext {
 }
 
 export function rndName(): string {
-  return Math.random()
-    .toString(36)
-    .replace(/[^a-z]+/g, '')
-    .substring(0, 10);
+  return randomBytes(6).toString('hex');
+}
+
+let testTempDir: string | undefined;
+
+/**
+ * A directory holding this test run's temporary files, created on first use.
+ * It is deleted by `removeTestTempDir` when the run finishes.
+ */
+export function getTestTempDir(): string {
+  testTempDir ??= fs.mkdtempSync(path.join(os.tmpdir(), 'vscodevim-test-'));
+  return testTempDir;
+}
+
+export async function removeTestTempDir(): Promise<void> {
+  if (testTempDir === undefined) {
+    return;
+  }
+  try {
+    await fs.promises.rm(testTempDir, { recursive: true, force: true, maxRetries: 3 });
+    testTempDir = undefined;
+  } catch (error) {
+    // Don't fail the run over leftover temp files (e.g. a file still locked on Windows)
+    console.warn(`Failed to remove test temp dir '${testTempDir}':`, error);
+  }
 }
 
 export async function createFile(
@@ -77,13 +98,13 @@ export async function createFile(
   if (args.fileExtension) {
     assert.ok(args.fileExtension.startsWith('.'));
   }
-  args.fsPath ??= join(os.tmpdir(), rndName() + (args.fileExtension ?? ''));
+  args.fsPath ??= path.join(getTestTempDir(), rndName() + (args.fileExtension ?? ''));
   await fs.promises.writeFile(args.fsPath, args.contents ?? '');
   return args.fsPath;
 }
 
 export async function createDir(fsPath?: string): Promise<string> {
-  fsPath ??= join(os.tmpdir(), rndName());
+  fsPath ??= path.join(getTestTempDir(), rndName());
   await fs.promises.mkdir(fsPath);
   return fsPath;
 }
