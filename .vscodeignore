@@ -1,6 +1,6 @@
 .github/**
 .husky/**
-.yarn/**
+pnpm-lock.yaml
 .vscode/**
 .vscode-test/**
 

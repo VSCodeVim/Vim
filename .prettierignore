@@ -1,2 +1,3 @@
 .vscode-test
 out
+pnpm-lock.yaml

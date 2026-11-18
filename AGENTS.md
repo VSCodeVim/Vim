@@ -5,17 +5,17 @@ VSCodeVim is a VS Code extension (TypeScript) that emulates Vim modal editing. I
 ## Build & Test
 
 ```bash
-yarn build-dev       # Fast dev build
-yarn build           # Production build
-yarn watch           # Rebuild on file changes
+pnpm build-dev       # Fast dev build
+pnpm build           # Production build
+pnpm watch           # Rebuild on file changes
 
-yarn build-test && yarn test   # Run tests locally (close all VS Code instances first)
+pnpm build-test && pnpm test   # Run tests locally (close all VS Code instances first)
 npx gulp test                  # Run tests in Docker (preferred)
 npx gulp test --grep <REGEX>   # Run filtered tests in Docker
 
-yarn lint            # Check code style
-yarn lint:fix        # Auto-fix linting issues
-yarn prettier        # Format code
+pnpm lint            # Check code style
+pnpm lint:fix        # Auto-fix linting issues
+pnpm prettier        # Format code
 ```
 
 ## Architecture
