@@ -1237,7 +1237,7 @@
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-jsdoc": "^65.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "fork-ts-checker-webpack-plugin": "9.1.0",
+    "fork-ts-checker-webpack-plugin": "9.2.0",
     "glob": "14.0.6",
     "gulp": "5.0.1",
     "gulp-bump": "3.2.0",
