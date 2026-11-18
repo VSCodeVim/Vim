@@ -1,4 +1,5 @@
 import { strict as assert } from 'assert';
+import _ from 'lodash';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
@@ -28,7 +29,9 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
   );
 
   testFunc(testObj.title, async () => {
-    const prevConfig = { ...Globals.mockConfiguration };
+    // Remap tests mutate the config (including its remap arrays, in place), so snapshot deeply
+    const mutatesConfig = testObj.config !== undefined || 'remaps' in testObj;
+    const prevConfig = mutatesConfig ? _.cloneDeep(Globals.mockConfiguration) : undefined;
     try {
       if (testObj.config) {
         Object.assign(Globals.mockConfiguration, testObj.config);
@@ -47,7 +50,7 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
       }
       throw reason;
     } finally {
-      if (testObj.config) {
+      if (prevConfig) {
         await reloadConfiguration(prevConfig);
       }
     }
@@ -224,6 +227,12 @@ function tokenizeKeySequence(sequence: string): string[] {
   return result;
 }
 
+function resetGlobalState(): void {
+  globalState.lastInvokedMacro = undefined;
+  globalState.jumpTracker.clearJumps();
+  Register.clearAllRegisters();
+}
+
 async function applyDocState(editor: vscode.TextEditor, docState: DocState): Promise<void> {
   assert.ok(
     await editor.edit((builder) => {
@@ -274,14 +283,11 @@ export async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
-  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
+  const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
 
   assertDocState(modeHandler.vimState, start);
 
-  globalState.lastInvokedMacro = undefined;
-  globalState.jumpTracker.clearJumps();
-
-  Register.clearAllRegisters();
+  resetGlobalState();
 
   const stub = testObj.stub
     ? sinon
@@ -361,7 +367,9 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
 
   // Generate a brand new ModeHandler for this editor
   ModeHandlerMap.clear();
-  const [modeHandler, _] = await ModeHandlerMap.getOrCreate(editor);
+  const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
+
+  resetGlobalState();
 
   const config = Globals.mockConfiguration;
 
