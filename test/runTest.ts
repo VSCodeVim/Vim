@@ -6,7 +6,8 @@ async function main() {
   try {
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`
-    const extensionDevelopmentPath = path.resolve(__dirname, '../../');
+    // This is out/, not the repo root, so tests run against the tsc build rather than the bundle
+    const extensionDevelopmentPath = path.resolve(__dirname, '../');
 
     // The path to the extension test runner script
     // Passed to --extensionTestsPath
