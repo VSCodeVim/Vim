@@ -73,6 +73,8 @@ When submitting a PR, please fill out the template that is presented by GitHub w
    pnpm test                     # Test (must close all instances of VS Code)
    ```
 
+   The Docker container installs dependencies and builds the tests itself, keeping them (and its VS Code download) in `vscodevim-*` Docker volumes rather than your checkout. To start from scratch, remove them with `docker volume rm $(docker volume ls -q --filter name=vscodevim-)`.
+
 6. Package and install extension:
 
    ```bash

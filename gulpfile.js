@@ -78,12 +78,26 @@ gulp.task('run-test', function (done) {
 
     const dockerRunArgs = [
       'run',
-      '-it',
+      // Docker refuses `-it` without a terminal (e.g. when run from a script or agent)
+      ...(process.stdin.isTTY ? ['-i'] : []),
+      ...(process.stdout.isTTY ? ['-t'] : []),
       '--rm',
+      // Docker's default 64MB /dev/shm is too small for VS Code's renderer, which crashes
+      '--shm-size=2g',
       '--env',
       `MOCHA_GREP=${options.grep}`,
       '-v',
       process.cwd() + ':/app',
+      // Keep the container's Linux dependencies, build output, VS Code download, and caches in
+      // volumes rather than the host checkout
+      '-v',
+      `${dockerTag}-node_modules:/app/node_modules`,
+      '-v',
+      `${dockerTag}-out:/app/out`,
+      '-v',
+      `${dockerTag}-vscode-test:/app/.vscode-test`,
+      '-v',
+      `${dockerTag}-cache:/cache`,
       dockerTag,
     ];
     console.log('Running tests inside container...');
@@ -98,7 +112,7 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('test', gulp.series(shell.task('pnpm build-test'), 'run-test'));
+gulp.task('test', gulp.series('run-test'));
 gulp.task(
   'release',
   gulp.series(
