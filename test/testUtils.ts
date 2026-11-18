@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { join } from 'path';
-import { promisify } from 'util';
 import * as vscode from 'vscode';
 
 import { ExCommandLine } from '../src/cmd_line/commandLine';
@@ -79,13 +78,13 @@ export async function createFile(
     assert.ok(args.fileExtension.startsWith('.'));
   }
   args.fsPath ??= join(os.tmpdir(), rndName() + (args.fileExtension ?? ''));
-  await promisify(fs.writeFile)(args.fsPath, args.contents ?? '');
+  await fs.promises.writeFile(args.fsPath, args.contents ?? '');
   return args.fsPath;
 }
 
 export async function createDir(fsPath?: string): Promise<string> {
   fsPath ??= join(os.tmpdir(), rndName());
-  await promisify(fs.mkdir)(fsPath);
+  await fs.promises.mkdir(fsPath);
   return fsPath;
 }
 

@@ -1,6 +1,4 @@
 import * as fs from 'fs';
-import * as util from 'util';
-import { promisify } from 'util';
 import * as vscode from 'vscode';
 
 export const constants = {
@@ -72,8 +70,10 @@ export async function doesFileExist(fileUri: vscode.Uri) {
     }
   } else {
     // fallback to local fs
-    const fsExists = util.promisify(fs.exists);
-    return fsExists(fileUri.fsPath);
+    return fs.promises.access(fileUri.fsPath).then(
+      () => true,
+      () => false,
+    );
   }
 }
 
@@ -91,12 +91,12 @@ export async function unlink(path: string): Promise<void> {
 }
 
 export async function readFileAsync(path: string, encoding: BufferEncoding): Promise<string> {
-  return promisify(fs.readFile)(path, encoding);
+  return fs.promises.readFile(path, encoding);
 }
 
 export async function mkdirAsync(path: string, options: any): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  await promisify(fs.mkdir)(path, options);
+  await fs.promises.mkdir(path, options);
 }
 
 export async function writeFileAsync(
@@ -104,15 +104,15 @@ export async function writeFileAsync(
   content: string,
   encoding: BufferEncoding,
 ): Promise<void> {
-  await promisify(fs.writeFile)(path, content, encoding);
+  await fs.promises.writeFile(path, content, encoding);
 }
 
 export async function accessAsync(path: string, mode: number) {
-  return promisify(fs.access)(path, mode);
+  return fs.promises.access(path, mode);
 }
 
 export async function chmodAsync(path: string, mode: string | number) {
-  return promisify(fs.chmod)(path, mode);
+  return fs.promises.chmod(path, mode);
 }
 
 export async function getMode(path: string): Promise<number> {
