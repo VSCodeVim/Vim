@@ -21,6 +21,6 @@ images/design/**
 .prettierignore
 
 tsconfig.json
-webpack.*.js
+esbuild.mjs
 gulpfile.js
 renovate.json
