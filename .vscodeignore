@@ -1,6 +1,7 @@
 .github/**
 .husky/**
 pnpm-lock.yaml
+pnpm-workspace.yaml
 .vscode/**
 .vscode-test/**
 

@@ -1264,10 +1264,5 @@
     "*.{ts,js,json,md,yml}": "prettier --write",
     "*.ts": "eslint --fix"
   },
-  "packageManager": "pnpm@10.23.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@vscode/vsce-sign"
-    ]
-  }
+  "packageManager": "pnpm@12.21.0"
 }

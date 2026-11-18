@@ -1,0 +1,8 @@
+allowBuilds:
+  # Downloads the platform binary vsce uses to sign/verify packages
+  '@vscode/vsce-sign': true
+
+# pnpm 11+ refuses packages published less than a day ago (including ones already in the lockfile),
+# which breaks installs right after a dependency bump. Disabled for now; revisit alongside
+# Renovate's `minimumReleaseAge` so its PRs never add packages younger than the cutoff.
+minimumReleaseAge: 0
