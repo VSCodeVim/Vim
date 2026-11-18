@@ -36,6 +36,22 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # @vscode/test-electron downloads the latest stable VS Code unless it's already in .vscode-test
+      - name: Get latest VS Code version
+        id: vscode-version
+        continue-on-error: true
+        shell: bash
+        run: |
+          version=$(curl -sf 'https://update.code.visualstudio.com/api/releases/stable?released=true' | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8"))[0]')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Cache VS Code
+        if: steps.vscode-version.outputs.version
+        uses: actions/cache@v6
+        with:
+          path: .vscode-test/vscode-*
+          key: vscode-${{ runner.os }}-${{ steps.vscode-version.outputs.version }}
+
       - name: Test
         run: |
           pnpm build-test
