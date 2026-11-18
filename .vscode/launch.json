@@ -11,7 +11,7 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"],
-      "preLaunchTask": "gulp: build-dev",
+      "preLaunchTask": "npm: build-dev",
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
@@ -36,7 +36,7 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": ["${workspaceRoot}/{out, node_modules}/**/*.js"],
-      "preLaunchTask": "gulp: prepare-test",
+      "preLaunchTask": "npm: build-test",
       "internalConsoleOptions": "openOnSessionStart"
     },
     {

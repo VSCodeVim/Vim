@@ -1,11 +1,8 @@
 const gulp = require('gulp');
 const bump = require('gulp-bump');
 const tag_version = require('gulp-tag-version');
-const ts = require('gulp-typescript');
 const PluginError = require('plugin-error');
 const minimist = require('minimist');
-const path = require('path');
-const es = require('event-stream');
 const shell = require('gulp-shell');
 
 const releaseOptions = {
@@ -47,51 +44,6 @@ function updateVersion(done) {
       done();
     });
 }
-
-function updatePath() {
-  const input = es.through();
-  const output = input.pipe(
-    es.mapSync((f) => {
-      const contents = f.contents.toString('utf8');
-      const filePath = f.path;
-      let platformRelativepath = path.relative(
-        path.dirname(filePath),
-        path.resolve(process.cwd(), 'out/src/platform/node'),
-      );
-      platformRelativepath = platformRelativepath.replace(/\\/g, '/');
-      f.contents = Buffer.from(
-        contents.replace(
-          /\(\"platform\/([^"]*)\"\)/g,
-          '("' + (platformRelativepath === '' ? './' : platformRelativepath + '/') + '$1")',
-        ),
-        'utf8',
-      );
-      return f;
-    }),
-  );
-  return es.duplex(input, output);
-}
-
-function copyPackageJson() {
-  return gulp.src('./package.json').pipe(gulp.dest('out'));
-}
-
-gulp.task('tsc', function () {
-  var isError = false;
-
-  var tsProject = ts.createProject('tsconfig.json', { noEmitOnError: true });
-  var tsResult = tsProject
-    .src()
-    .pipe(tsProject())
-    .on('error', () => {
-      isError = true;
-    })
-    .on('finish', () => {
-      isError && process.exit(1);
-    });
-
-  return tsResult.js.pipe(updatePath()).pipe(gulp.dest('out'));
-});
 
 // test
 gulp.task('run-test', function (done) {
@@ -146,8 +98,7 @@ gulp.task('run-test', function (done) {
   });
 });
 
-gulp.task('prepare-test', gulp.parallel('tsc', copyPackageJson));
-gulp.task('test', gulp.series('prepare-test', 'run-test'));
+gulp.task('test', gulp.series(shell.task('pnpm build-test'), 'run-test'));
 gulp.task(
   'release',
   gulp.series(

@@ -14,14 +14,14 @@
       "problemMatcher": "$tsc-watch"
     },
     {
-      "type": "gulp",
-      "task": "build-dev",
+      "type": "npm",
+      "script": "build-dev",
       "problemMatcher": []
     },
     {
-      "type": "gulp",
-      "task": "prepare-test",
-      "problemMatcher": []
+      "type": "npm",
+      "script": "build-test",
+      "problemMatcher": "$tsc"
     }
   ]
 }
