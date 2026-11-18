@@ -20,7 +20,7 @@ class TestMemento implements vscode.Memento {
   get<T>(key: string, defaultValue: T): T;
   get(key: any, defaultValue?: any) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-    return this.mapping.get(key) || defaultValue;
+    return this.mapping.has(key) ? this.mapping.get(key) : defaultValue;
   }
 
   setKeysForSync(keys: string[]): void {
@@ -94,27 +94,34 @@ export async function createDir(fsPath?: string): Promise<string> {
  * given expected number of text editors.
  *
  * @param numExpectedEditors Expected number of editors in the window
+ * @param timeoutMs How long to wait before failing; kept below Mocha's timeout so this message wins
  */
-export async function waitForEditorsToClose(numExpectedEditors: number = 0): Promise<void> {
-  const waitForTextEditorsToClose = new Promise<void>((c, e) => {
-    if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
-      return c();
-    }
+export async function waitForEditorsToClose(
+  numExpectedEditors: number = 0,
+  timeoutMs: number = 3000,
+): Promise<void> {
+  if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
+    return;
+  }
 
+  await new Promise<void>((resolve, reject) => {
     const subscription = vscode.window.onDidChangeVisibleTextEditors(() => {
       if (vscode.window.visibleTextEditors.length === numExpectedEditors) {
+        clearTimeout(timer);
         subscription.dispose();
-        c();
+        resolve();
       }
     });
+    const timer = setTimeout(() => {
+      subscription.dispose();
+      reject(
+        new Error(
+          `Expected ${numExpectedEditors} visible editors, ` +
+            `found ${vscode.window.visibleTextEditors.length} after ${timeoutMs}ms`,
+        ),
+      );
+    }, timeoutMs);
   });
-
-  try {
-    await waitForTextEditorsToClose;
-  } catch (error) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    assert.fail(error);
-  }
 }
 
 export function assertEqualLines(expectedLines: string[]) {
@@ -207,14 +214,16 @@ export async function reloadConfiguration(config: IConfiguration) {
  * For those, a timeout is given
  */
 export async function waitForTabChange(): Promise<void> {
-  await new Promise((resolve, reject) => {
-    setTimeout(resolve, 500);
-
-    const subscription = vscode.window.onDidChangeActiveTextEditor((textEditor) => {
+  await new Promise<void>((resolve) => {
+    const subscription = vscode.window.onDidChangeActiveTextEditor(() => {
+      clearTimeout(timer);
       subscription.dispose();
-
-      resolve(textEditor);
+      resolve();
     });
+    const timer = setTimeout(() => {
+      subscription.dispose();
+      resolve();
+    }, 500);
   });
 }
 

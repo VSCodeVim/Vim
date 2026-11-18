@@ -41,8 +41,10 @@ function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
 
       await innerTest(testObj);
     } catch (reason) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      reason.stack = stack;
+      if (reason instanceof Error) {
+        // Keep the original stack (useful when the extension itself throws) and point at the test
+        reason.stack = `${reason.stack}\n  --- test defined at:\n${stack}`;
+      }
       throw reason;
     } finally {
       if (testObj.config) {
@@ -281,16 +283,16 @@ export async function testIt(testObj: ITestObject): Promise<ModeHandler> {
 
   Register.clearAllRegisters();
 
-  if (testObj.stub) {
-    const confirmStub = sinon
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
-      .resolves(testObj.stub.returnValue);
+  const stub = testObj.stub
+    ? sinon
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
+        .resolves(testObj.stub.returnValue)
+    : undefined;
+  try {
     await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
-    confirmStub.restore();
-  } else {
-    // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
+  } finally {
+    stub?.restore();
   }
 
   assertDocState(modeHandler.vimState, end);
