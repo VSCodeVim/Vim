@@ -151,6 +151,23 @@ class DocState {
   public readonly lines: string[];
 }
 
+const namedKeyRegex =
+  /^<(esc|bs|del|cr|enter|return|tab|space|up|down|left|right|home|end|insert|pageup|pagedown|leader|bar|f\d{1,2})>$/i;
+const modifiedKeyRegex = /^<((c|s|a|d|m|ctrl|alt|shift|cmd)[-+])+[^<>]+>$/i;
+
+/**
+ * Throws if `key` looks like `<...>` but isn't a key we know about.
+ * This catches sequences like `'m<' + 'j' + 'm>'`, which would otherwise be tokenized as `<jm>`.
+ */
+function assertValidBracketedKey(key: string, sequence: string): void {
+  if (!namedKeyRegex.test(key) && !modifiedKeyRegex.test(key)) {
+    throw new Error(
+      `Unrecognized key '${key}' in keysPressed '${sequence}'. ` +
+        `If '<' and '>' are meant literally, separate them (e.g. with '<Esc>').`,
+    );
+  }
+}
+
 /**
  * Tokenize a string like `"abc<Esc>d<C-c>"` into `["a", "b", "c", "<Esc>", "d", "<C-c>"]`
  */
@@ -184,6 +201,9 @@ function tokenizeKeySequence(sequence: string): string[] {
     }
 
     if (char === '>') {
+      if (isBracketedKey && key !== '<>') {
+        assertValidBracketedKey(key, sequence);
+      }
       isBracketedKey = false;
     }
 
