@@ -36,7 +36,6 @@
   "extensionKind": [
     "ui"
   ],
-  "sideEffects": false,
   "activationEvents": [
     "onStartupFinished",
     "onCommand:type"
@@ -1194,8 +1193,8 @@
   },
   "scripts": {
     "vscode:prepublish": "pnpm build",
-    "build": "webpack -c webpack.config.js && npm run commit-hash",
-    "build-dev": "webpack -c webpack.dev.js && npm run commit-hash",
+    "build": "tsc -p tsconfig.json --noEmit && node esbuild.mjs --production && npm run commit-hash",
+    "build-dev": "node esbuild.mjs && npm run commit-hash",
     "build-test": "tsc -p tsconfig.json --noEmitOnError --incremental && tsc-alias -p tsconfig.json && node build/writeTestManifest.js",
     "commit-hash": "git rev-parse HEAD > dist/version.txt",
     "test": "node ./out/test/runTest.js",
@@ -1203,12 +1202,13 @@
     "lint:fix": "eslint . --fix",
     "prettier": "npx prettier --write .",
     "prettier:check": "npx prettier --check .",
-    "watch": "webpack -c webpack.dev.js --watch",
+    "watch": "node esbuild.mjs --watch",
     "package": "vsce package --no-dependencies --allow-star-activation",
     "prepare": "husky"
   },
   "dependencies": {
     "diff-match-patch": "1.0.5",
+    "events": "3.3.0",
     "lodash": "^4.17.21",
     "neovim": "5.4.0",
     "os-browserify": "0.3.0",
@@ -1231,13 +1231,11 @@
     "@typescript-eslint/parser": "^8.0.0",
     "@vscode/test-electron": "3.1.0",
     "@vscode/vsce": "^4.0.0",
-    "circular-dependency-plugin": "^5.2.2",
-    "clean-webpack-plugin": "4.0.0",
+    "esbuild": "0.28.2",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-jsdoc": "^65.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "fork-ts-checker-webpack-plugin": "9.1.0",
     "glob": "14.0.6",
     "gulp": "5.0.1",
     "gulp-bump": "3.2.0",
@@ -1251,12 +1249,8 @@
     "prettier": "3.9.4",
     "prettier-plugin-organize-imports": "^4.3.0",
     "sinon": "22.1.0",
-    "ts-loader": "9.6.2",
     "tsc-alias": "1.9.10",
-    "typescript": "6.0.3",
-    "webpack": "5.112.2",
-    "webpack-cli": "7.3.1",
-    "webpack-merge": "6.0.1"
+    "typescript": "6.0.3"
   },
   "lint-staged": {
     "*.{ts,js,json,md,yml}": "prettier --write",

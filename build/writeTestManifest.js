@@ -1,5 +1,5 @@
 // Writes out/package.json so that out/ can be loaded as the extension under test. Tests must run
-// against the tsc build in out/ (not the webpack bundle in dist/) so that they share module state,
+// against the tsc build in out/ (not the esbuild bundle in dist/) so that they share module state,
 // such as `Globals`, with the extension.
 const fs = require('fs');
 const path = require('path');
