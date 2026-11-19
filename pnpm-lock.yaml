@@ -215,9 +215,6 @@ importers:
       '@types/lodash':
         specifier: 4.17.23
         version: 4.17.23
-      '@types/minimatch':
-        specifier: 5.1.2
-        version: 5.1.2
       '@types/mocha':
         specifier: 10.0.10
         version: 10.0.10
