@@ -1,6 +1,6 @@
 import { ChildProcess, spawn } from 'child_process';
 import { Neovim } from 'neovim/lib/api/Neovim';
-import { attach } from 'neovim/lib/attach';
+import { attach } from 'neovim/lib/attach/attach';
 import { dirname } from 'path';
 import { existsAsync } from 'platform/fs';
 import * as vscode from 'vscode';
