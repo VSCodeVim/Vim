@@ -672,6 +672,13 @@ export class HistoryTracker {
     return HistoryStep.globalMarks;
   }
 
+  /**
+   * Removes all global marks. Used to isolate tests from each other.
+   */
+  public static clearGlobalMarks(): void {
+    HistoryStep.globalMarks = [];
+  }
+
   public getMarks(): readonly IMark[] {
     return [...this.getLocalMarks(), ...HistoryStep.globalMarks];
   }

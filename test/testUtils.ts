@@ -5,13 +5,42 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExCommandLine } from '../src/cmd_line/commandLine';
+import { ExCommandLine, SearchCommandLine } from '../src/cmd_line/commandLine';
+import { PutExCommand } from '../src/cmd_line/commands/put';
 import { IConfiguration } from '../src/configuration/iconfiguration';
 import { Globals } from '../src/globals';
+import { HistoryTracker } from '../src/history/historyTracker';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
+import { Register } from '../src/register/register';
+import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
+import { EvaluationContext } from '../src/vimscript/expression/evaluate';
 import { Configuration } from './testConfiguration';
+
+/**
+ * Resets state shared across editors, so that tests don't depend on what ran before them.
+ * Runs before every test, ahead of its `setup` hooks (see `rootHooks` in `index.ts`), so state a
+ * suite's `setup` creates on purpose is kept.
+ */
+export function resetGlobalState(): void {
+  globalState.jumpTracker.clearJumps();
+  globalState.previousFullAction = undefined;
+  globalState.lastInvokedMacro = undefined;
+  globalState.substituteState = undefined;
+  globalState.searchState = undefined;
+  globalState.hl = true;
+
+  Register.clearAllRegisters();
+  HistoryTracker.clearGlobalMarks();
+  SearchCommandLine.previousSearchStates.length = 0;
+
+  // These are private; bracket access lets us reset them without widening their visibility
+  /* eslint-disable @typescript-eslint/dot-notation */
+  PutExCommand['lastExpression'] = undefined;
+  EvaluationContext['globalVariables'].clear();
+  /* eslint-enable @typescript-eslint/dot-notation */
+}
 
 class TestMemento implements vscode.Memento {
   private mapping = new Map<string, any>();

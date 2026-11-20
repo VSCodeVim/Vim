@@ -227,12 +227,6 @@ function tokenizeKeySequence(sequence: string): string[] {
   return result;
 }
 
-function resetGlobalState(): void {
-  globalState.lastInvokedMacro = undefined;
-  globalState.jumpTracker.clearJumps();
-  Register.clearAllRegisters();
-}
-
 async function applyDocState(editor: vscode.TextEditor, docState: DocState): Promise<void> {
   assert.ok(
     await editor.edit((builder) => {
@@ -286,8 +280,6 @@ export async function testIt(testObj: ITestObject): Promise<ModeHandler> {
   const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
 
   assertDocState(modeHandler.vimState, start);
-
-  resetGlobalState();
 
   const stub = testObj.stub
     ? sinon
@@ -380,8 +372,6 @@ async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHan
     void promise.finally(() => keyEventsInFlight.delete(promise)).catch(() => undefined);
     return promise;
   };
-
-  resetGlobalState();
 
   const config = Globals.mockConfiguration;
 

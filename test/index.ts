@@ -29,6 +29,7 @@ export async function run(): Promise<void> {
     timeout: 5000,
     grep: mochaGrep,
     rootHooks: {
+      beforeEach: async () => (await import('./testUtils')).resetGlobalState(),
       afterAll: async () => (await import('./testUtils')).removeTestTempDir(),
     },
   });
