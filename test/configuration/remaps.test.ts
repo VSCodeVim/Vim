@@ -629,7 +629,7 @@ suite('Remaps', () => {
         title: 'jkfil typed by the user should handle all keys',
         keysPressed: 'vjkfil',
         stepResult: {
-          end: ['|Hello World again!', 'Hello World!'],
+          end: ['H|ello World again!', 'Hello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World agai|n!', 'Hello World!'],
           endModeAfterTimeout: Mode.Normal,
@@ -641,7 +641,7 @@ suite('Remaps', () => {
           'jkfil typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
         keysPressed: 'j0vjkfil',
         stepResult: {
-          end: ['Hello World again!', '|Hello World!'],
+          end: ['Hello World again!', 'H|ello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World again!', 'H|ello World!'],
           endModeAfterTimeout: Mode.Normal,
@@ -652,7 +652,7 @@ suite('Remaps', () => {
         title: 'jkfil typed via remap should handle all keys if there is no failed action',
         keysPressed: 'k0vjkff',
         stepResult: {
-          end: ['|Hello World again!', 'Hello World!'],
+          end: ['H|ello World again!', 'Hello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World agai|n!', 'Hello World!'],
           endModeAfterTimeout: Mode.Normal,
@@ -664,7 +664,7 @@ suite('Remaps', () => {
           'jkfil typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
         keysPressed: 'j0vjkff',
         stepResult: {
-          end: ['Hello World again!', '|Hello World!'],
+          end: ['Hello World again!', 'H|ello World!'],
           endMode: Mode.Visual,
           endAfterTimeout: ['Hello World again!', '|Hello World!'],
           endModeAfterTimeout: Mode.Normal,

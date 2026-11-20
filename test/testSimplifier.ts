@@ -14,89 +14,97 @@ import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { Register } from '../src/register/register';
 import { globalState } from '../src/state/globalState';
-import { VimState } from '../src/state/vimState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
-import { assertEqualLines, reloadConfiguration, setupWorkspace } from './testUtils';
+import { reloadConfiguration, setupWorkspace } from './testUtils';
 
-function newTestGeneric<T extends ITestObject | ITestWithRemapsObject>(
-  testObj: T,
-  testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
-  innerTest: (testObj: T) => Promise<ModeHandler>,
-): void {
-  const stack = ((s) => (s ? s.split('\n').splice(2, 1).join('\n') : 'no stack available :('))(
-    new Error().stack,
-  );
-
-  testFunc(testObj.title, async () => {
-    // Remap tests mutate the config (including its remap arrays, in place), so snapshot deeply
-    const mutatesConfig = testObj.config !== undefined || 'remaps' in testObj;
-    const prevConfig = mutatesConfig ? _.cloneDeep(Globals.mockConfiguration) : undefined;
-    try {
-      if (testObj.config) {
-        Object.assign(Globals.mockConfiguration, testObj.config);
-        await reloadConfiguration(Globals.mockConfiguration);
-      }
-
-      if (vscode.window.activeTextEditor === undefined) {
-        await setupWorkspace();
-      }
-
-      await innerTest(testObj);
-    } catch (reason) {
-      if (reason instanceof Error) {
-        // Keep the original stack (useful when the extension itself throws) and point at the test
-        reason.stack = `${reason.stack}\n  --- test defined at:\n${stack}`;
-      }
-      throw reason;
-    } finally {
-      if (prevConfig) {
-        await reloadConfiguration(prevConfig);
-      }
-    }
-  });
-}
-
-export const newTest = (testObj: ITestObject) => newTestGeneric(testObj, test, testIt);
-
-export const newTestOnly = (testObj: ITestObject) => {
-  console.warn('!!! Running single test !!!');
-  return newTestGeneric(testObj, test.only, testIt);
-};
-
-export const newTestSkip = (testObj: ITestObject, skipCondition: boolean = true) =>
-  newTestGeneric(testObj, skipCondition ? test.skip : test, testIt);
-
-export const newTestWithRemaps = (testObj: ITestWithRemapsObject) =>
-  newTestGeneric(testObj, test, testItWithRemaps);
-export const newTestWithRemapsOnly = (testObj: ITestWithRemapsObject) => {
-  console.warn('!!! Running single test !!!');
-  return newTestGeneric(testObj, test.only, testItWithRemaps);
-};
-export const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
-  newTestGeneric(testObj, test.skip, testItWithRemaps);
-
-interface ITestObject {
-  title: string;
-  config?: Partial<IConfiguration>;
-  editorOptions?: vscode.TextEditorOptions;
-  start: string[];
-  keysPressed: string;
+/**
+ * What to check after a step's keys are handled.
+ */
+type Expectation = {
+  /** The document after the keys; `|` marks each cursor */
   end: string[];
   endMode?: Mode;
   endFsPath?: string | (() => string);
   registers?: { [name: string]: string | undefined };
   statusBar?: string;
+  /**
+   * Lines of the jump list, with `|` marking the current jump. The jump list carries over from
+   * earlier steps.
+   */
   jumps?: string[];
+};
+
+type StepBody = Expectation & {
+  keysPressed: string;
+  /** What to check once the remap timeout has fired and anything it started has finished */
+  afterTimeout?: Expectation;
+};
+
+type Step = StepBody & {
+  title?: string;
+};
+
+type TestBase = {
+  title: string;
+  config?: Partial<IConfiguration>;
+  /** Remaps in .vimrc syntax, e.g. `nmap J jj`; applied on top of `config` */
+  remaps?: string[];
+  editorOptions?: vscode.TextEditorOptions;
+  start: string[];
   stub?: {
     stubClass: any;
     methodName: string;
     returnValue: any;
   };
   saveDocBeforeTest?: boolean;
+};
+
+/** A test that presses one sequence of keys */
+export type ITestObject = TestBase & StepBody & { steps?: never };
+
+/** A test with several steps, each starting where the previous one ended */
+export type IMultiStepTestObject = TestBase & {
+  steps: Step[];
+  keysPressed?: never;
+  end?: never;
+};
+
+export type TestObject = ITestObject | IMultiStepTestObject;
+
+function newTestGeneric(
+  testObj: TestObject,
+  testFunc: Mocha.TestFunction | Mocha.ExclusiveTestFunction | Mocha.PendingTestFunction,
+): void {
+  const stack = ((s) => (s ? s.split('\n').splice(2, 1).join('\n') : 'no stack available :('))(
+    new Error().stack,
+  );
+
+  testFunc(testObj.title, async () => {
+    try {
+      await testIt(testObj);
+    } catch (reason) {
+      if (reason instanceof Error) {
+        // Keep the original stack (useful when the extension itself throws) and point at the test
+        reason.stack = `${reason.stack}\n  --- test defined at:\n${stack}`;
+      }
+      throw reason;
+    }
+  });
 }
 
-type Step = {
+export const newTest = (testObj: TestObject) => newTestGeneric(testObj, test);
+
+export const newTestOnly = (testObj: TestObject) => {
+  console.warn('!!! Running single test !!!');
+  return newTestGeneric(testObj, test.only);
+};
+
+export const newTestSkip = (testObj: TestObject, skipCondition: boolean = true) =>
+  newTestGeneric(testObj, skipCondition ? test.skip : test);
+
+// TODO: Remove once the remap tests are converted to `newTest`
+type RemapsStep = {
   title?: string;
   keysPressed: string;
   stepResult: {
@@ -123,8 +131,51 @@ interface ITestWithRemapsObject {
         operatorPendingModeKeyBindingsNonRecursive?: IKeyRemapping[];
       }
     | string[];
-  steps: Step[];
+  steps: RemapsStep[];
 }
+
+function fromRemapsTestObject(testObj: ITestWithRemapsObject): IMultiStepTestObject {
+  let config = testObj.config;
+  let remaps: string[] | undefined;
+  if (testObj.remaps instanceof Array) {
+    remaps = testObj.remaps;
+  } else if (testObj.remaps) {
+    config = {
+      ...config,
+      normalModeKeyBindings: testObj.remaps.normalModeKeyBindings ?? [],
+      normalModeKeyBindingsNonRecursive: testObj.remaps.normalModeKeyBindingsNonRecursive ?? [],
+      insertModeKeyBindings: testObj.remaps.insertModeKeyBindings ?? [],
+      insertModeKeyBindingsNonRecursive: testObj.remaps.insertModeKeyBindingsNonRecursive ?? [],
+      visualModeKeyBindings: testObj.remaps.visualModeKeyBindings ?? [],
+      visualModeKeyBindingsNonRecursive: testObj.remaps.visualModeKeyBindingsNonRecursive ?? [],
+      operatorPendingModeKeyBindings: testObj.remaps.operatorPendingModeKeyBindings ?? [],
+      operatorPendingModeKeyBindingsNonRecursive:
+        testObj.remaps.operatorPendingModeKeyBindingsNonRecursive ?? [],
+    };
+  }
+  return {
+    title: testObj.title,
+    config,
+    remaps,
+    start: testObj.start,
+    steps: testObj.steps.map(({ title, keysPressed, stepResult }) => ({
+      title,
+      keysPressed,
+      end: stepResult.end,
+      endMode: stepResult.endMode,
+      afterTimeout: stepResult.endAfterTimeout
+        ? { end: stepResult.endAfterTimeout, endMode: stepResult.endModeAfterTimeout }
+        : undefined,
+    })),
+  };
+}
+
+export const newTestWithRemaps = (testObj: ITestWithRemapsObject) =>
+  newTest(fromRemapsTestObject(testObj));
+export const newTestWithRemapsOnly = (testObj: ITestWithRemapsObject) =>
+  newTestOnly(fromRemapsTestObject(testObj));
+export const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
+  newTestSkip(fromRemapsTestObject(testObj));
 
 class DocState {
   public static parse(lines: string[]): DocState {
@@ -237,8 +288,12 @@ async function applyDocState(editor: vscode.TextEditor, docState: DocState): Pro
   editor.selections = docState.cursors.map((cursor) => new vscode.Selection(cursor, cursor));
 }
 
-function assertDocState(vimState: VimState, docState: DocState): void {
-  assertEqualLines(docState.lines);
+function assertDocState(modeHandler: ModeHandler, docState: DocState, label: string): void {
+  assert.equal(
+    vscode.window.activeTextEditor?.document.getText(),
+    docState.lines.join(os.EOL),
+    `${label}Document content does not match.`,
+  );
 
   const simplify = (position: Position) => ({ line: position.line, character: position.character });
   const compare = (
@@ -252,90 +307,64 @@ function assertDocState(vimState: VimState, docState: DocState): void {
   };
   // TODO: Assert selections match vimState.cursors
   assert.deepEqual(
-    vimState.cursors.map((cursor) => simplify(cursor.stop)).sort(compare),
+    modeHandler.vimState.cursors.map((cursor) => simplify(cursor.stop)).sort(compare),
     docState.cursors.map(simplify).sort(compare),
-    'Cursors are wrong.',
+    `${label}Cursors are wrong.`,
   );
 }
 
-export async function testIt(testObj: ITestObject): Promise<ModeHandler> {
-  const editor = vscode.window.activeTextEditor;
-  assert(editor, 'Expected an active editor');
+async function assertExpectation(
+  modeHandler: ModeHandler,
+  expectation: Expectation,
+  label: string,
+): Promise<void> {
+  const end = DocState.parse(expectation.end);
+  assertDocState(modeHandler, end, label);
 
-  const start = DocState.parse(testObj.start);
-  const end = DocState.parse(testObj.end);
-
-  if (testObj.editorOptions) {
-    editor.options = testObj.editorOptions;
-  }
-
-  await applyDocState(editor, start);
-
-  if (testObj.saveDocBeforeTest) {
-    assert.ok(await editor.document.save(), 'Save failed');
-  }
-
-  // Generate a brand new ModeHandler for this editor
-  ModeHandlerMap.clear();
-  const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
-
-  assertDocState(modeHandler.vimState, start);
-
-  const stub = testObj.stub
-    ? sinon
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
-        .resolves(testObj.stub.returnValue)
-    : undefined;
-  try {
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(testObj.keysPressed), false);
-  } finally {
-    stub?.restore();
-  }
-
-  assertDocState(modeHandler.vimState, end);
-
-  if (testObj.endMode !== undefined) {
+  if (expectation.endMode !== undefined) {
     assert.equal(
       Mode[modeHandler.vimState.currentMode],
-      Mode[testObj.endMode],
-      "Didn't enter correct mode.",
+      Mode[expectation.endMode],
+      `${label}Didn't enter correct mode.`,
     );
   }
 
-  if (testObj.endFsPath !== undefined) {
+  if (expectation.endFsPath !== undefined) {
     assert.equal(
       vscode.window.activeTextEditor?.document.uri.fsPath,
-      typeof testObj.endFsPath === 'string' ? testObj.endFsPath : testObj.endFsPath(),
-      'Active document is wrong.',
+      typeof expectation.endFsPath === 'string' ? expectation.endFsPath : expectation.endFsPath(),
+      `${label}Active document is wrong.`,
     );
   }
 
-  if (testObj.registers !== undefined) {
-    for (const reg in testObj.registers) {
-      if (testObj.registers[reg] !== undefined) {
-        assert.equal((await Register.get(reg))?.text, testObj.registers[reg]);
+  if (expectation.registers !== undefined) {
+    for (const reg in expectation.registers) {
+      if (expectation.registers[reg] !== undefined) {
+        assert.equal(
+          (await Register.get(reg))?.text,
+          expectation.registers[reg],
+          `${label}Register '${reg}' is wrong.`,
+        );
       } else {
-        assert.equal(await Register.get(reg), undefined);
+        assert.equal(await Register.get(reg), undefined, `${label}Register '${reg}' is wrong.`);
       }
     }
   }
 
-  if (testObj.statusBar !== undefined) {
+  if (expectation.statusBar !== undefined) {
     assert.equal(
       StatusBar.getText(),
-      testObj.statusBar.replace('{FILENAME}', modeHandler.vimState.document.fileName),
-      'Status bar text is wrong.',
+      expectation.statusBar.replace('{FILENAME}', modeHandler.vimState.document.fileName),
+      `${label}Status bar text is wrong.`,
     );
   }
 
-  // jumps: check jumps are correct if given
-  if (testObj.jumps !== undefined) {
+  if (expectation.jumps !== undefined) {
     // TODO: Jumps should be specified by Positions, not line contents
     assert.deepEqual(
       globalState.jumpTracker.jumps.map((j) => end.lines[j.position.line] || '<MISSING>'),
-      testObj.jumps.map((t) => t.replace('|', '')),
-      'Incorrect jumps found',
+      expectation.jumps.map((t) => t.replace('|', '')),
+      `${label}Incorrect jumps found`,
     );
 
     const stripBar = (text: string | undefined) => (text ? text.replace('|', '') : text);
@@ -343,221 +372,44 @@ export async function testIt(testObj: ITestObject): Promise<ModeHandler> {
       (globalState.jumpTracker.currentJump &&
         end.lines[globalState.jumpTracker.currentJump.position.line]) ||
       '<FRONT>';
-    const expectedJumpPosition = stripBar(testObj.jumps.find((t) => t.includes('|'))) || '<FRONT>';
+    const expectedJumpPosition =
+      stripBar(expectation.jumps.find((t) => t.includes('|'))) || '<FRONT>';
 
-    assert.deepEqual(actualJumpPosition, expectedJumpPosition, 'Incorrect jump position found');
+    assert.deepEqual(
+      actualJumpPosition,
+      expectedJumpPosition,
+      `${label}Incorrect jump position found`,
+    );
   }
-
-  return modeHandler;
 }
 
-async function testItWithRemaps(testObj: ITestWithRemapsObject): Promise<ModeHandler> {
-  const editor = vscode.window.activeTextEditor;
-  assert(editor, 'Expected an active editor');
-
-  await applyDocState(editor, DocState.parse(testObj.start));
-
-  // Generate a brand new ModeHandler for this editor
-  ModeHandlerMap.clear();
-  const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
-
-  // When the remap timeout fires, the remapper calls handleKeyEvent(<TimeoutFinished>) without
-  // awaiting it. Track those calls so the checks below can wait for them to finish instead of
-  // assuming they finish within a fixed time, which isn't true on slow CI runners.
-  const keyEventsInFlight = new Set<Promise<void>>();
-  const handleKeyEvent = modeHandler.handleKeyEvent.bind(modeHandler);
-  modeHandler.handleKeyEvent = (key: string) => {
-    const promise = handleKeyEvent(key);
-    keyEventsInFlight.add(promise);
-    void promise.finally(() => keyEventsInFlight.delete(promise)).catch(() => undefined);
-    return promise;
-  };
-
-  const config = Globals.mockConfiguration;
-
-  // Change remappings
-  if (testObj.remaps) {
-    if (!(testObj.remaps instanceof Array)) {
-      config.normalModeKeyBindings = testObj.remaps?.normalModeKeyBindings ?? [];
-      config.normalModeKeyBindingsNonRecursive =
-        testObj.remaps?.normalModeKeyBindingsNonRecursive ?? [];
-      config.insertModeKeyBindings = testObj.remaps?.insertModeKeyBindings ?? [];
-      config.insertModeKeyBindingsNonRecursive =
-        testObj.remaps?.insertModeKeyBindingsNonRecursive ?? [];
-      config.visualModeKeyBindings = testObj.remaps?.visualModeKeyBindings ?? [];
-      config.visualModeKeyBindingsNonRecursive =
-        testObj.remaps?.visualModeKeyBindingsNonRecursive ?? [];
-      config.operatorPendingModeKeyBindings = testObj.remaps?.operatorPendingModeKeyBindings ?? [];
-      config.operatorPendingModeKeyBindingsNonRecursive =
-        testObj.remaps?.operatorPendingModeKeyBindingsNonRecursive ?? [];
-    } else {
-      await parseVimRCMappings(testObj.remaps);
-    }
+/**
+ * Applies the test's `config` and `remaps`, returning a function that restores the previous config.
+ */
+async function applyConfig(testObj: TestObject): Promise<() => Promise<void>> {
+  if (testObj.config === undefined && testObj.remaps === undefined) {
+    return async () => undefined;
   }
 
-  const timeout = config.timeout;
-  const timeoutOffset = timeout / 2;
-
+  // Remaps are mutated in place when the config is validated, so snapshot deeply
+  const prevConfig = _.cloneDeep(Globals.mockConfiguration);
+  const config = Globals.mockConfiguration;
+  if (testObj.config) {
+    Object.assign(config, _.cloneDeep(testObj.config));
+  }
+  if (testObj.remaps) {
+    await addVimrcRemaps(config, testObj.remaps);
+  }
   await reloadConfiguration(config);
 
-  for (const [index, step] of testObj.steps.entries()) {
-    const resolvedStep = (() => {
-      let start: DocState;
-      if (index === 0) {
-        start = DocState.parse(testObj.start);
-      } else {
-        const prevStepResult = testObj.steps[index - 1].stepResult;
-        start = DocState.parse(prevStepResult.endAfterTimeout ?? prevStepResult.end);
-      }
-
-      const stepResult = testObj.steps[index].stepResult;
-      return {
-        start,
-        end: DocState.parse(stepResult.end),
-        endAfterTimeout: stepResult.endAfterTimeout
-          ? DocState.parse(stepResult.endAfterTimeout)
-          : undefined,
-      };
-    })();
-
-    const stepTitleOrIndex = step.title ? `nr. ${index} - "${step.title}"` : index;
-
-    const jumpTracker = globalState.jumpTracker;
-    jumpTracker.clearJumps();
-
-    // Checks if this step should wait for timeout or not
-    const waitsForTimeout = step.stepResult.endAfterTimeout !== undefined;
-
-    type ResultType = {
-      lines: string;
-      position: vscode.Position;
-      endMode: Mode;
-    };
-
-    const p1 = () => {
-      return new Promise<ResultType>((p1Resolve, p1Reject) => {
-        setTimeout(() => {
-          // Get lines, position and mode after half timeout finishes
-          p1Resolve({
-            lines: modeHandler.vimState.document.getText(),
-            position: modeHandler.vimState.editor.selection.start,
-            endMode: modeHandler.vimState.currentMode,
-          });
-        }, timeoutOffset);
-      });
-    };
-
-    const p2 = () => {
-      return new Promise<ResultType | undefined>((p2Resolve, p2Reject) => {
-        if (waitsForTimeout) {
-          setTimeout(async () => {
-            // The timeout should have fired by now, but its handling (and any remap it starts) may
-            // still be running, or the timer itself may be late. Wait until it all settles.
-            const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
-            while (
-              modeHandler.vimState.recordedState.bufferedKeysTimeoutObj !== undefined ||
-              keyEventsInFlight.size > 0 ||
-              modeHandler.remapState.isCurrentlyPerformingRemapping
-            ) {
-              await wait(10);
-            }
-            // Get lines, position and mode after timeout + offset finishes
-            p2Resolve({
-              lines: modeHandler.vimState.document.getText(),
-              position: modeHandler.vimState.editor.selection.start,
-              endMode: modeHandler.vimState.currentMode,
-            });
-          }, timeout + timeoutOffset);
-        } else {
-          p2Resolve(undefined);
-        }
-      });
-    };
-
-    // Assumes key presses are single characters for now
-    await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed), false);
-
-    // Only start the end check promises after the keys were handled to make sure they don't
-    // finish before all the keys are pressed. The keys handler above will resolve when the
-    // keys are handled even if it buffered some keys to wait for a timeout.
-    const [result1, result2] = await Promise.all([p1(), p2()]);
-
-    // Lines after keys pressed but before any timeout
-
-    // Check given end output is correct
-    assert.equal(
-      result1.lines,
-      resolvedStep.end.lines.join(os.EOL),
-      `Document content does not match on step ${stepTitleOrIndex}.`,
-    );
-
-    // Check end cursor position
-    const actualEndPosition = result1.position;
-    const expectedEndPosition = resolvedStep.end.cursors[0];
-    assert.deepEqual(
-      { line: actualEndPosition.line, character: actualEndPosition.character },
-      { line: expectedEndPosition.line, character: expectedEndPosition.character },
-      `Cursor position is wrong on step ${stepTitleOrIndex}.`,
-    );
-
-    // endMode: check end mode is correct if given
-    const expectedEndMode = step.stepResult.endMode;
-    if (expectedEndMode !== undefined) {
-      assert.equal(
-        Mode[result1.endMode],
-        Mode[expectedEndMode],
-        `Didn't enter correct mode on step ${stepTitleOrIndex}.`,
-      );
-    }
-
-    if (result2) {
-      // After the timeout finishes (plus an offset to be sure it finished)
-      assert.notEqual(result2, undefined);
-
-      // Check given endAfterTimeout output is correct
-      assert.equal(
-        result2.lines,
-        resolvedStep.endAfterTimeout?.lines.join(os.EOL),
-        `Document content does not match on step ${stepTitleOrIndex} after timeout.`,
-      );
-
-      // Check endAfterTimeout cursor position
-      const actualEndAfterTimeoutPosition = result2.position;
-      const expectedEndAfterTimeoutPosition = resolvedStep.endAfterTimeout!.cursors[0];
-      assert.deepEqual(
-        {
-          line: actualEndAfterTimeoutPosition.line,
-          character: actualEndAfterTimeoutPosition.character,
-        },
-        {
-          line: expectedEndAfterTimeoutPosition.line,
-          character: expectedEndAfterTimeoutPosition.character,
-        },
-        `Cursor position is wrong on step ${stepTitleOrIndex} after Timeout.`,
-      );
-
-      // endMode: check end mode is correct if given
-      const expectedEndAfterTimeoutMode = step.stepResult.endModeAfterTimeout;
-      if (expectedEndAfterTimeoutMode !== undefined) {
-        assert.equal(
-          Mode[result2.endMode],
-          Mode[expectedEndAfterTimeoutMode],
-          `Didn't enter correct mode on step ${stepTitleOrIndex} after Timeout.`,
-        );
-      }
-    }
-  }
-  return modeHandler;
+  return async () => reloadConfiguration(prevConfig);
 }
 
-async function parseVimRCMappings(lines: string[]): Promise<void> {
-  const config = Globals.mockConfiguration;
-
+async function addVimrcRemaps(config: IConfiguration, lines: string[]): Promise<void> {
   // Remove all the old remappings from the .vimrc file
   VimrcImpl.removeAllRemapsFromConfig(config);
 
   const vscodeCommands = await vscode.commands.getCommands();
-  // Add the new remappings
   for (const line of lines) {
     const remap = await vimrcKeyRemappingBuilder.build(line, vscodeCommands);
     if (remap) {
@@ -577,4 +429,103 @@ async function parseVimRCMappings(lines: string[]): Promise<void> {
   }
 }
 
-export type { ITestObject };
+const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Runs a test: sets up the document, then for each step presses its keys and checks the result.
+ *
+ * @returns the ModeHandler the keys were sent to, for checks the test object can't express. By then,
+ *   the test's `config` and `remaps` have been undone.
+ */
+export async function testIt(testObj: TestObject): Promise<ModeHandler> {
+  // Do this first: setupWorkspace replaces the whole config
+  if (vscode.window.activeTextEditor === undefined) {
+    await setupWorkspace();
+  }
+
+  const restoreConfig = await applyConfig(testObj);
+  try {
+    return await runSteps(testObj);
+  } finally {
+    await restoreConfig();
+  }
+}
+
+async function runSteps(testObj: TestObject): Promise<ModeHandler> {
+  const editor = vscode.window.activeTextEditor;
+  assert(editor, 'Expected an active editor');
+
+  const start = DocState.parse(testObj.start);
+
+  if (testObj.editorOptions) {
+    editor.options = testObj.editorOptions;
+  }
+
+  await applyDocState(editor, start);
+
+  if (testObj.saveDocBeforeTest) {
+    assert.ok(await editor.document.save(), 'Save failed');
+  }
+
+  // Generate a brand new ModeHandler for this editor
+  ModeHandlerMap.clear();
+  const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
+
+  assertDocState(modeHandler, start, 'Before keys are pressed: ');
+
+  // When the remap timeout fires, the remapper calls handleKeyEvent(<TimeoutFinished>) without
+  // awaiting it. Track those calls so the checks below can wait for them to finish instead of
+  // assuming they finish within a fixed time, which isn't true on slow CI runners.
+  const keyEventsInFlight = new Set<Promise<void>>();
+  const handleKeyEvent = modeHandler.handleKeyEvent.bind(modeHandler);
+  modeHandler.handleKeyEvent = (key: string) => {
+    const promise = handleKeyEvent(key);
+    keyEventsInFlight.add(promise);
+    void promise.finally(() => keyEventsInFlight.delete(promise)).catch(() => undefined);
+    return promise;
+  };
+  const settle = async () => {
+    while (
+      keyEventsInFlight.size > 0 ||
+      modeHandler.vimState.recordedState.bufferedKeysTimeoutObj !== undefined ||
+      modeHandler.remapState.isCurrentlyPerformingRemapping
+    ) {
+      await wait(10);
+    }
+  };
+
+  const steps: Step[] = testObj.steps ?? [testObj];
+
+  const stub = testObj.stub
+    ? sinon
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
+        .resolves(testObj.stub.returnValue)
+    : undefined;
+  try {
+    for (const [index, step] of steps.entries()) {
+      const label =
+        steps.length === 1 ? '' : `Step ${index}${step.title ? ` "${step.title}"` : ''}: `;
+
+      await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed), false);
+      // Let calls made without awaiting finish; keys buffered waiting for the timeout stay buffered
+      while (keyEventsInFlight.size > 0) {
+        await Promise.allSettled([...keyEventsInFlight]);
+      }
+
+      await assertExpectation(modeHandler, step, label);
+
+      if (step.afterTimeout) {
+        // The timeout started when the keys were handled, so it has fired by the end of this wait.
+        // Its handling (and any remap it starts) may still be running, or the timer may be late.
+        await wait(Globals.mockConfiguration.timeout);
+        await settle();
+        await assertExpectation(modeHandler, step.afterTimeout, `${label}After timeout: `);
+      }
+    }
+  } finally {
+    stub?.restore();
+  }
+
+  return modeHandler;
+}
