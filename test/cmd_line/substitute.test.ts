@@ -426,6 +426,20 @@ suite('Basic substitute', () => {
       end: ['|foo tr tz'],
     });
 
+    newTest({
+      title: '\\o matches octal digits',
+      start: ['|0123456789'],
+      keysPressed: sub('\\o', 'x', { flags: 'g' }),
+      end: ['|xxxxxxxx89'],
+    });
+
+    newTest({
+      title: '\\O matches non-octal digits',
+      start: ['|0123456789'],
+      keysPressed: sub('\\O', 'x', { flags: 'g' }),
+      end: ['|01234567xx'],
+    });
+
     suite('Change case', () => {
       newTest({
         title: '\\U',

@@ -226,7 +226,7 @@ export class Pattern {
               return '[^0-9A-Fa-f]'; // Non-hex digit
             } else if (escaped === 'o') {
               return '[0-7]'; // Octal digit
-            } else if (escaped === 'o') {
+            } else if (escaped === 'O') {
               return '[^0-7]'; // Non-octal digit
             } else if (escaped === 'h') {
               return '[A-Za-z_]'; // Head of word character
