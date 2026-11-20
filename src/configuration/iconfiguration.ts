@@ -224,6 +224,11 @@ export interface IConfiguration {
   leader: string;
 
   /**
+   * What key should <localleader> map to in key remappings?
+   */
+  localleader: string;
+
+  /**
    * How much search or command history should be remembered
    */
   history: number;

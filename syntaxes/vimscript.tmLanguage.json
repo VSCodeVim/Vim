@@ -38,6 +38,10 @@
     },
     {
       "name": "constant",
+      "match": "(?i)<LocalLeader>"
+    },
+    {
+      "name": "constant",
       "match": "(?i)<(CR|Enter|Return)>"
     },
     {
