@@ -1227,15 +1227,12 @@
     "@types/parsimmon": "1.10.9",
     "@types/sinon": "22.0.0",
     "@types/vscode": "1.74.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
     "@vscode/test-electron": "3.1.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "0.28.2",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-jsdoc": "^65.0.0",
-    "eslint-plugin-prefer-arrow": "^1.2.3",
     "glob": "14.0.6",
     "gulp": "5.0.1",
     "gulp-bump": "3.2.0",
@@ -1250,7 +1247,8 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "sinon": "22.1.0",
     "tsc-alias": "1.9.10",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.73.0"
   },
   "lint-staged": {
     "*.{ts,js,json,md,yml}": "prettier --write",

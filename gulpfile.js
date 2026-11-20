@@ -46,9 +46,10 @@ function updateVersion(done) {
 }
 
 // test
-gulp.task('run-test', function (done) {
+gulp.task('run-test', (done) => {
   // the flag --grep takes js regex as a string and filters by test and test suite names
   var knownOptions = {
+    // eslint-disable-next-line id-denylist -- minimist option name
     string: 'grep',
     default: { grep: '' },
   };
@@ -67,8 +68,8 @@ gulp.task('run-test', function (done) {
     },
   );
 
-  dockerBuildCmd.on('exit', function (exitCode) {
-    if (exitCode !== 0) {
+  dockerBuildCmd.on('exit', (buildExitCode) => {
+    if (buildExitCode !== 0) {
       return done(
         new PluginError('test', {
           message: 'Docker build failed.',
@@ -106,7 +107,7 @@ gulp.task('run-test', function (done) {
       stdio: 'inherit',
     });
 
-    dockerRunCmd.on('exit', function (exitCode) {
+    dockerRunCmd.on('exit', (exitCode) => {
       done(exitCode);
     });
   });
