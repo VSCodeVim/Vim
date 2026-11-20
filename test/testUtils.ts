@@ -134,10 +134,20 @@ export async function waitForEditorsToClose(
     });
     const timer = setTimeout(() => {
       subscription.dispose();
+      const editors = vscode.window.visibleTextEditors.map((e) => e.document.uri.toString());
+      const tabs = vscode.window.tabGroups.all.flatMap((group) =>
+        group.tabs.map(
+          (tab) =>
+            `${group.viewColumn}:${tab.label}` +
+            `${tab.isActive ? ' (active)' : ''}${tab.isPreview ? ' (preview)' : ''}` +
+            `${group.isActive ? '' : ' (inactive group)'}`,
+        ),
+      );
       reject(
         new Error(
           `Expected ${numExpectedEditors} visible editors, ` +
-            `found ${vscode.window.visibleTextEditors.length} after ${timeoutMs}ms`,
+            `found ${editors.length} after ${timeoutMs}ms. ` +
+            `Editors: ${JSON.stringify(editors)}. Tabs: ${JSON.stringify(tabs)}`,
         ),
       );
     }, timeoutMs);
