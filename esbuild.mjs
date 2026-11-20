@@ -1,9 +1,12 @@
 // @ts-check
 
 import * as esbuild from 'esbuild';
+import { readFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
+const testWeb = process.argv.includes('--test-web');
 
 /**
  * Fails the build if modules in src/ import each other in a cycle. Dynamic `import()`s are allowed
@@ -92,7 +95,7 @@ const common = {
 };
 
 /** @type {esbuild.BuildOptions[]} */
-const configs = [
+const extensionConfigs = [
   {
     ...common,
     entryPoints: ['extension.ts'],
@@ -117,6 +120,42 @@ const configs = [
     plugins: [excludeNodeOnlyModules, noCircularImports],
   },
 ];
+
+/**
+ * Mocha's browser build is a UMD bundle, but Mocha's package.json says `"type": "module"`, so esbuild
+ * inlines it unwrapped and it replaces the test bundle's `module.exports` with itself. Loading it
+ * outside the file namespace (which is where package.json applies) makes esbuild wrap it as CommonJS.
+ * @type {esbuild.Plugin}
+ */
+const mochaAsCommonJS = {
+  name: 'mocha-as-commonjs',
+  setup(build) {
+    build.onResolve({ filter: /^mocha\/mocha$/ }, () => ({
+      path: fileURLToPath(import.meta.resolve('mocha/mocha.js')),
+      namespace: 'mocha-cjs',
+    }));
+    build.onLoad({ filter: /.*/, namespace: 'mocha-cjs' }, async (args) => ({
+      contents: await readFile(args.path, 'utf8'),
+      loader: 'js',
+    }));
+  },
+};
+
+/**
+ * Smoke tests that `pnpm test-web` runs against dist/extensionWeb.js in a browser
+ * @type {esbuild.BuildOptions}
+ */
+const testWebConfig = {
+  ...common,
+  entryPoints: ['test/web/index.ts'],
+  outfile: 'out/test-web/index.js',
+  platform: 'browser',
+  minify: false,
+  sourcemap: true,
+  plugins: [mochaAsCommonJS],
+};
+
+const configs = testWeb ? [testWebConfig] : extensionConfigs;
 
 if (watch) {
   for (const config of configs) {

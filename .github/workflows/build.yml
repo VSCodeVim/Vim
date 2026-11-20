@@ -30,6 +30,8 @@ jobs:
       # Needed for prettier-plugin-organize-imports
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
       - name: Prettier
         run: pnpm prettier:check
@@ -51,6 +53,8 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
       - name: Lint
         run: pnpm lint
@@ -77,6 +81,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          # Chromium is only for the web extension tests, which run on Linux
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: ${{ matrix.os == 'windows-latest' && '1' || '' }}
 
       - name: Build
         run: pnpm build
@@ -102,6 +109,10 @@ jobs:
         run: |
           pnpm build-test
           xvfb-run -a pnpm test
+
+      - name: Test web extension
+        if: matrix.os != 'windows-latest'
+        run: pnpm test-web
 
       - name: Test on windows-latest
         if: matrix.os == 'windows-latest'

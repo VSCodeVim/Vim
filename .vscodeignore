@@ -4,6 +4,7 @@ pnpm-lock.yaml
 pnpm-workspace.yaml
 .vscode/**
 .vscode-test/**
+.vscode-test-web/**
 
 **/*.ts
 *.yml
