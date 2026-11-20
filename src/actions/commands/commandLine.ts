@@ -271,19 +271,37 @@ class CommandLineWordRight extends CommandLineAction {
 
 @RegisterAction
 class CommandLineHistoryBack extends CommandLineAction {
-  keys = [['<up>'], ['<C-p>']];
+  keys = ['<up>'];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    commandLine.historyBack();
+    commandLine.historyBack(true);
+  }
+}
+
+@RegisterAction
+class CommandLineHistoryBackUnfiltered extends CommandLineAction {
+  keys = ['<C-p>'];
+
+  protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
+    commandLine.historyBack(false);
   }
 }
 
 @RegisterAction
 class CommandLineHistoryForward extends CommandLineAction {
-  keys = [['<down>'], ['<C-n>']];
+  keys = ['<down>'];
 
   protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
-    commandLine.historyForward();
+    commandLine.historyForward(true);
+  }
+}
+
+@RegisterAction
+class CommandLineHistoryForwardUnfiltered extends CommandLineAction {
+  keys = ['<C-n>'];
+
+  protected async run(vimState: VimState, commandLine: CommandLine): Promise<void> {
+    commandLine.historyForward(false);
   }
 }
 

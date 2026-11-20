@@ -122,9 +122,73 @@ suite('cmd_line/search command', () => {
     await modeHandler.handleKeyEvent('<C-n>');
     assertStatusBarEqual(':s/x/y|');
     await modeHandler.handleKeyEvent('<C-n>');
+    assertStatusBarEqual(':w|');
+  });
 
-    // TODO: Really, this should be `:w|`. See #4093.
-    assertStatusBarEqual(':|');
+  test('<up> recalls the previous search that starts with the typed text', async () => {
+    await modeHandler.handleMultipleKeyEvents('/abc\n'.split(''));
+    await modeHandler.handleMultipleKeyEvents('/def\n'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['/', 'a', '<up>']);
+    assertStatusBarEqual('/abc|');
+  });
+
+  suite('<up>/<down> filter history by the typed text', () => {
+    test('<up> skips entries that do not match, <down> skips them on the way back', async () => {
+      await modeHandler.handleMultipleKeyEvents('/hpone\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents('/zzz\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents('/hptwo\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents('/zzz2\n'.split(''));
+
+      await modeHandler.handleMultipleKeyEvents(['/', 'h', 'p', '<up>']);
+      assertStatusBarEqual('/hptwo|');
+      await modeHandler.handleKeyEvent('<up>');
+      assertStatusBarEqual('/hpone|');
+
+      await modeHandler.handleKeyEvent('<down>');
+      assertStatusBarEqual('/hptwo|');
+      await modeHandler.handleKeyEvent('<down>');
+      assertStatusBarEqual('/hp|', 'Failed to restore the typed text');
+    });
+
+    test('<up> with no matching entry keeps the typed text', async () => {
+      await modeHandler.handleMultipleKeyEvents('/hpnomatch-entry\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents('/hq-no-such-entry'.split(''));
+      await modeHandler.handleKeyEvent('<up>');
+      assertStatusBarEqual('/hq-no-such-entry|');
+    });
+
+    test('<up> filters command line history', async () => {
+      await modeHandler.handleMultipleKeyEvents(':s/a/b\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents(':noh\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents([':', 's', '<up>']);
+      assertStatusBarEqual(':s/a/b|');
+    });
+
+    test('<up> only matches the text before the cursor', async () => {
+      await modeHandler.handleMultipleKeyEvents(':s/a/b\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents(':noh\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents([':', 's', 'x', '<left>', '<up>']);
+      assertStatusBarEqual(':s/a/b|');
+    });
+
+    test('editing a recalled entry makes the edited text the new prefix', async () => {
+      await modeHandler.handleMultipleKeyEvents('/hpaone\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents('/hpbtwo\n'.split(''));
+      await modeHandler.handleMultipleKeyEvents('/hpathree\n'.split(''));
+
+      await modeHandler.handleMultipleKeyEvents(['/', 'h', 'p', 'b', '<up>']);
+      assertStatusBarEqual('/hpbtwo|');
+
+      await modeHandler.handleMultipleKeyEvents(['<BS>', '<BS>', '<BS>', '<BS>', 'a']);
+      assertStatusBarEqual('/hpa|');
+      await modeHandler.handleKeyEvent('<up>');
+      assertStatusBarEqual('/hpaone|');
+
+      await modeHandler.handleKeyEvent('<down>');
+      assertStatusBarEqual('/hpathree|');
+      await modeHandler.handleKeyEvent('<down>');
+      assertStatusBarEqual('/hpa|');
+    });
   });
 
   test('<C-r> <C-w> insert word under cursor on command line', async () => {
