@@ -12,6 +12,49 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout VSCodeVim
+        uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Needed for prettier-plugin-organize-imports
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier
+        run: pnpm prettier:check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout VSCodeVim
+        uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
   build:
     strategy:
       matrix:
@@ -34,14 +77,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Prettier
-        if: matrix.os != 'windows-latest'
-        run: pnpm prettier:check
-
-      - name: Lint
-        if: matrix.os != 'windows-latest'
-        run: pnpm lint
 
       - name: Build
         run: pnpm build
