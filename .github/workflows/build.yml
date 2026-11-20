@@ -4,12 +4,20 @@ on:
   push:
     branches:
       - 'master'
+  pull_request:
+
+# Cancel superseded runs on the same PR, but let every push to master finish
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # PRs only test on Linux; Windows runs after merging to master. Branch protection requires
+        # the `build (ubuntu-latest)` check, so keep the job and matrix names stable.
+        os: ${{ github.event_name == 'push' && fromJSON('["ubuntu-latest", "windows-latest"]') || fromJSON('["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout VSCodeVim
