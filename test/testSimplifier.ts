@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 
 import * as os from 'os';
 import { Position } from 'vscode';
-import { IConfiguration, IKeyRemapping } from '../src/configuration/iconfiguration';
+import { IConfiguration } from '../src/configuration/iconfiguration';
 import { VimrcImpl } from '../src/configuration/vimrc';
 import { vimrcKeyRemappingBuilder } from '../src/configuration/vimrcKeyRemappingBuilder';
 import { Globals } from '../src/globals';
@@ -102,80 +102,6 @@ export const newTestOnly = (testObj: TestObject) => {
 
 export const newTestSkip = (testObj: TestObject, skipCondition: boolean = true) =>
   newTestGeneric(testObj, skipCondition ? test.skip : test);
-
-// TODO: Remove once the remap tests are converted to `newTest`
-type RemapsStep = {
-  title?: string;
-  keysPressed: string;
-  stepResult: {
-    end: string[];
-    endAfterTimeout?: string[];
-    endMode?: Mode;
-    endModeAfterTimeout?: Mode;
-  };
-};
-
-interface ITestWithRemapsObject {
-  title: string;
-  config?: Partial<IConfiguration>;
-  start: string[];
-  remaps?:
-    | {
-        normalModeKeyBindings?: IKeyRemapping[];
-        normalModeKeyBindingsNonRecursive?: IKeyRemapping[];
-        insertModeKeyBindings?: IKeyRemapping[];
-        insertModeKeyBindingsNonRecursive?: IKeyRemapping[];
-        visualModeKeyBindings?: IKeyRemapping[];
-        visualModeKeyBindingsNonRecursive?: IKeyRemapping[];
-        operatorPendingModeKeyBindings?: IKeyRemapping[];
-        operatorPendingModeKeyBindingsNonRecursive?: IKeyRemapping[];
-      }
-    | string[];
-  steps: RemapsStep[];
-}
-
-function fromRemapsTestObject(testObj: ITestWithRemapsObject): IMultiStepTestObject {
-  let config = testObj.config;
-  let remaps: string[] | undefined;
-  if (testObj.remaps instanceof Array) {
-    remaps = testObj.remaps;
-  } else if (testObj.remaps) {
-    config = {
-      ...config,
-      normalModeKeyBindings: testObj.remaps.normalModeKeyBindings ?? [],
-      normalModeKeyBindingsNonRecursive: testObj.remaps.normalModeKeyBindingsNonRecursive ?? [],
-      insertModeKeyBindings: testObj.remaps.insertModeKeyBindings ?? [],
-      insertModeKeyBindingsNonRecursive: testObj.remaps.insertModeKeyBindingsNonRecursive ?? [],
-      visualModeKeyBindings: testObj.remaps.visualModeKeyBindings ?? [],
-      visualModeKeyBindingsNonRecursive: testObj.remaps.visualModeKeyBindingsNonRecursive ?? [],
-      operatorPendingModeKeyBindings: testObj.remaps.operatorPendingModeKeyBindings ?? [],
-      operatorPendingModeKeyBindingsNonRecursive:
-        testObj.remaps.operatorPendingModeKeyBindingsNonRecursive ?? [],
-    };
-  }
-  return {
-    title: testObj.title,
-    config,
-    remaps,
-    start: testObj.start,
-    steps: testObj.steps.map(({ title, keysPressed, stepResult }) => ({
-      title,
-      keysPressed,
-      end: stepResult.end,
-      endMode: stepResult.endMode,
-      afterTimeout: stepResult.endAfterTimeout
-        ? { end: stepResult.endAfterTimeout, endMode: stepResult.endModeAfterTimeout }
-        : undefined,
-    })),
-  };
-}
-
-export const newTestWithRemaps = (testObj: ITestWithRemapsObject) =>
-  newTest(fromRemapsTestObject(testObj));
-export const newTestWithRemapsOnly = (testObj: ITestWithRemapsObject) =>
-  newTestOnly(fromRemapsTestObject(testObj));
-export const newTestWithRemapsSkip = (testObj: ITestWithRemapsObject) =>
-  newTestSkip(fromRemapsTestObject(testObj));
 
 class DocState {
   public static parse(lines: string[]): DocState {

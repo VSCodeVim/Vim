@@ -1,5 +1,5 @@
 import { Mode } from '../src/mode/mode';
-import { newTest, newTestWithRemaps } from './testSimplifier';
+import { newTest } from './testSimplifier';
 import { setupWorkspace } from './testUtils';
 
 suite('Record and execute a macro', () => {
@@ -254,22 +254,15 @@ suite('Record and execute a macro', () => {
       endMode: Mode.Normal,
     });
 
-    newTestWithRemaps({
+    newTest({
       title: 'test with remaps: simple',
       start: [`|J`, ...start],
       remaps: ['nmap J jj'],
-      steps: [
-        {
-          // Step 0:
-          keysPressed: `"${register}dd` + `@${register}`,
-          stepResult: {
-            end: ['one', 'two', '|three'],
-          },
-        },
-      ],
+      keysPressed: `"${register}dd` + `@${register}`,
+      end: ['one', 'two', '|three'],
     });
 
-    newTestWithRemaps({
+    newTest({
       title: 'test with remaps: repeat',
       start: [`|Pm`, ...start],
       remaps: ['nmap Pm Cabc<Esc>'],
@@ -277,33 +270,22 @@ suite('Record and execute a macro', () => {
         {
           // Step 0:
           keysPressed: `"${register}dd` + `@${register}`,
-          stepResult: {
-            end: ['ab|c', 'two', 'three'],
-          },
+          end: ['ab|c', 'two', 'three'],
         },
         {
           // Step 1:
           keysPressed: 'j0' + `@@`,
-          stepResult: {
-            end: ['abc', 'ab|c', 'three'],
-          },
+          end: ['abc', 'ab|c', 'three'],
         },
       ],
     });
 
-    newTestWithRemaps({
+    newTest({
       title: 'test with remaps: leader',
       start: [`|<leader>J`, ...start],
       remaps: ['nmap <leader>J jj'],
-      steps: [
-        {
-          // Step 0:
-          keysPressed: `"${register}dd` + `@${register}`,
-          stepResult: {
-            end: ['one', 'two', '|three'],
-          },
-        },
-      ],
+      keysPressed: `"${register}dd` + `@${register}`,
+      end: ['one', 'two', '|three'],
     });
   });
 });

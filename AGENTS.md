@@ -76,7 +76,7 @@ newTest({
 });
 ```
 
-Optional fields include `endMode`, `config` (a partial configuration applied for that test only), `registers`, `statusBar`, and `jumps`. Use `newTestWithRemaps` for remap behavior, and `newTestOnly` / `newTestSkip` to focus on or skip a test. Call `setupWorkspace()` from `test/testUtils.ts` in `suiteSetup` when a suite needs a specific file type or config.
+Optional fields include `endMode`, `config` (a partial configuration applied for that test only), `remaps` (.vimrc lines such as `'nmap J jj'`), `registers`, `statusBar`, and `jumps`. For a test with several steps, each starting where the previous one ended, replace `keysPressed` and the expected fields with `steps`, a list of `{ title?, keysPressed, end, ... }`. A step can also check the state after the remap timeout fires with `afterTimeout: { end, ... }`. Use `newTestOnly` / `newTestSkip` to focus on or skip a test. Call `setupWorkspace()` from `test/testUtils.ts` in `suiteSetup` when a suite needs a specific file type or config.
 
 ## Conventions
 
