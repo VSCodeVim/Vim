@@ -202,12 +202,15 @@ export abstract class BaseCommand extends BaseAction {
       return;
     }
 
-    const cursorsToIterateOver = [...vimState.cursors].sort((a, b) =>
-      a.start.line > b.start.line ||
-      (a.start.line === b.start.line && a.start.character > b.start.character)
-        ? 1
-        : -1,
-    );
+    const cursorsToIterateOver =
+      vimState.cursors.length > 1
+        ? [...vimState.cursors].sort((a, b) =>
+            a.start.line > b.start.line ||
+            (a.start.line === b.start.line && a.start.character > b.start.character)
+              ? 1
+              : -1,
+          )
+        : vimState.cursors;
 
     const resultingCursors: Cursor[] = [];
 
