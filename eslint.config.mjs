@@ -1,21 +1,23 @@
-import tsPlugin from '@typescript-eslint/eslint-plugin';
+// @ts-check
+
 import prettier from 'eslint-config-prettier';
 import jsdoc from 'eslint-plugin-jsdoc';
-import preferArrow from 'eslint-plugin-prefer-arrow';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
 
-export default [
-  { ignores: ['**/*.js', '**/*.mjs', '**/*.cjs', '.vscode-test/'] },
-  ...tsPlugin.configs['flat/recommended-type-checked'],
-  // TODO: Consider extending from `strict-type-checked` and/or `stylistic-type-checked`
+export default defineConfig(
+  { ignores: ['dist/', 'out/', '.vscode-test/'] },
+  // TODO: Extend from `eslint:recommended` (`@eslint/js`) too, then drop the core rules below that it
+  // covers. It currently reports ~70 errors, mostly `no-case-declarations` and `no-useless-escape`.
+  tseslint.configs.recommendedTypeChecked,
+  // TODO: Consider extending from `strictTypeChecked` and/or `stylisticTypeChecked`
   {
-    files: ['**/*.ts'],
     plugins: {
       jsdoc,
-      'prefer-arrow': preferArrow,
     },
     languageOptions: {
       parserOptions: {
-        project: 'tsconfig.json',
+        projectService: true,
       },
     },
     rules: {
@@ -58,9 +60,10 @@ export default [
         },
       ],
       '@typescript-eslint/unified-signatures': 'error',
-      'constructor-super': 'error',
       eqeqeq: ['error', 'smart'],
+      'func-style': ['error', 'declaration', { allowArrowFunctions: true }],
       'guard-for-in': 'error',
+      // Type names make confusing variable names
       'id-denylist': [
         'error',
         'any',
@@ -77,50 +80,27 @@ export default [
       'no-bitwise': 'error',
       'no-caller': 'error',
       'no-cond-assign': 'error',
-      'no-console': [
-        'error',
-        {
-          allow: [
-            'log',
-            'warn',
-            'dir',
-            'timeLog',
-            'assert',
-            'clear',
-            'count',
-            'countReset',
-            'group',
-            'groupEnd',
-            'table',
-            'dirxml',
-            'error',
-            'groupCollapsed',
-            'Console',
-            'profile',
-            'profileEnd',
-            'timeStamp',
-            'context',
-          ],
-        },
-      ],
       'no-debugger': 'error',
       'no-empty': 'error',
       'no-eval': 'error',
       'no-fallthrough': 'error',
       'no-loss-of-precision': 'error',
       'no-new-wrappers': 'error',
+      // Debugging leftovers; use the extension's logger instead
+      'no-restricted-properties': [
+        'error',
+        ...['debug', 'info', 'time', 'timeEnd', 'trace'].map((property) => ({
+          object: 'console',
+          property,
+        })),
+      ],
       'no-throw-literal': 'error',
       'no-undef-init': 'error',
       'no-unsafe-finally': 'error',
       'no-unused-labels': 'error',
       'object-shorthand': 'error',
       'one-var': ['error', 'never'],
-      'prefer-arrow/prefer-arrow-functions': [
-        'error',
-        {
-          allowStandaloneDeclarations: true,
-        },
-      ],
+      'prefer-arrow-callback': 'error',
       'prefer-const': [
         'error',
         {
@@ -151,5 +131,13 @@ export default [
       '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
+  {
+    // Build scripts aren't part of the TypeScript project
+    files: ['**/*.{js,mjs,cjs}'],
+    extends: [tseslint.configs.disableTypeChecked],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
   prettier,
-];
+);
