@@ -1657,6 +1657,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
   }
 
   dispose() {
+    // Don't let a pending remap timeout handle keys after this ModeHandler is gone
+    clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
+    this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
     for (const d of this.disposables) {
       d.dispose();
     }
