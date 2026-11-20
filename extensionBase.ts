@@ -107,8 +107,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   extensionContext.subscriptions.push(StatusBar);
 
   // Load state
-  Register.loadFromDisk(handleLocal);
-  await Promise.all([ExCommandLine.loadHistory(context), SearchCommandLine.loadHistory(context)]);
+  await Promise.all([
+    Register.loadFromDisk(handleLocal),
+    ExCommandLine.loadHistory(context),
+    SearchCommandLine.loadHistory(context),
+  ]);
 
   const document = vscode.window.activeTextEditor?.document;
   if (document) {

@@ -1,5 +1,6 @@
-import { readFileAsync, writeFileAsync } from 'platform/fs';
+import { mkdirAsync, readFileAsync, writeFileAsync } from 'platform/fs';
 import { Globals } from '../globals';
+import { Logger } from '../util/logger';
 import { RecordedState } from './../state/recordedState';
 import { VimState } from './../state/vimState';
 import { Clipboard } from './../util/clipboard';
@@ -337,37 +338,49 @@ export class Register {
           serializableRegisters.push([key, contentByCursor]);
         }
       }
-      return import('path').then((path) => {
-        return writeFileAsync(
-          path.join(Globals.extensionStoragePath, '.registers'),
-          JSON.stringify({
-            version: REGISTER_FORMAT_VERSION,
-            registers: serializableRegisters,
-          }),
-          'utf8',
-        );
-      });
+      const path = await import('path');
+      // VS Code doesn't create the extension's global storage directory
+      await mkdirAsync(Globals.extensionStoragePath, { recursive: true });
+      await writeFileAsync(
+        path.join(Globals.extensionStoragePath, '.registers'),
+        JSON.stringify({
+          version: REGISTER_FORMAT_VERSION,
+          registers: serializableRegisters,
+        }),
+        'utf8',
+      );
     }
   }
 
-  public static loadFromDisk(supportNode: boolean): void {
+  public static async loadFromDisk(supportNode: boolean): Promise<void> {
+    Register.registers = new Map();
     if (supportNode) {
-      Register.registers = new Map();
-      void import('path').then((path) => {
-        void readFileAsync(path.join(Globals.extensionStoragePath, '.registers'), 'utf8').then(
-          (savedRegisters) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const parsed = JSON.parse(savedRegisters);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (parsed.version === REGISTER_FORMAT_VERSION) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-              Register.registers = new Map(parsed.registers);
-            }
-          },
-        );
-      });
-    } else {
-      Register.registers = new Map();
+      const path = await import('path');
+      const registersPath = path.join(Globals.extensionStoragePath, '.registers');
+      let savedRegisters: string;
+      try {
+        savedRegisters = await readFileAsync(registersPath, 'utf8');
+      } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (err.code === 'ENOENT') {
+          Logger.debug(`Registers file does not exist. path=${registersPath}`);
+        } else {
+          Logger.warn(`Failed to load registers. path=${registersPath} err=${err}.`);
+        }
+        return;
+      }
+
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const parsed = JSON.parse(savedRegisters);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (parsed.version === REGISTER_FORMAT_VERSION) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          Register.registers = new Map(parsed.registers);
+        }
+      } catch (err) {
+        Logger.warn(`Failed to parse registers. path=${registersPath} err=${err}.`);
+      }
     }
   }
 }
