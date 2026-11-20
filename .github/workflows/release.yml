@@ -35,6 +35,9 @@ jobs:
           pnpm build-test
           xvfb-run -a pnpm test
 
+      - name: Test web extension
+        run: pnpm test-web
+
       - name: Build extension package
         id: build_vsix
         run: |

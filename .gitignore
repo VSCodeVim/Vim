@@ -4,6 +4,7 @@ testing
 node_modules
 *.sw?
 .vscode-test
+.vscode-test-web
 .DS_Store
 *.vsix
 *.log

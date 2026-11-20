@@ -12,6 +12,7 @@ pnpm watch           # Rebuild on file changes
 pnpm build-test && pnpm test   # Run tests locally (close all VS Code instances first)
 npx gulp test                  # Run tests in Docker (preferred)
 npx gulp test --grep <REGEX>   # Run filtered tests in Docker
+pnpm build-dev && pnpm test-web  # Run web extension smoke tests (test/web/) in headless Chromium
 
 pnpm lint            # Check code style
 pnpm lint:fix        # Auto-fix linting issues

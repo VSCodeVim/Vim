@@ -73,6 +73,13 @@ When submitting a PR, please fill out the template that is presented by GitHub w
    pnpm test                     # Test (must close all instances of VS Code)
    ```
 
+   The web extension (`extensionWeb.ts`) has its own smoke tests in `test/web/`, which run the bundled extension in headless Chromium:
+
+   ```bash
+   pnpm build-dev                # Build
+   pnpm test-web                 # Run web extension smoke tests
+   ```
+
    The Docker container installs dependencies and builds the tests itself, keeping them (and its VS Code download) in `vscodevim-*` Docker volumes rather than your checkout. To start from scratch, remove them with `docker volume rm $(docker volume ls -q --filter name=vscodevim-)`.
 
 6. Package and install extension:

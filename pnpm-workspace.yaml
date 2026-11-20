@@ -3,6 +3,8 @@ allowBuilds:
   '@vscode/vsce-sign': true
   # Its postinstall only verifies the platform binary; esbuild runs fine without it
   esbuild: false
+  # Downloads the headless Chromium that @vscode/test-web runs the web extension tests in
+  '@playwright/browser-chromium': true
 
 # pnpm 11+ refuses packages published less than a day ago (including ones already in the lockfile),
 # which breaks installs right after a dependency bump. Disabled for now; revisit alongside
