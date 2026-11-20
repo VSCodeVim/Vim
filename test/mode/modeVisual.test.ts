@@ -51,11 +51,59 @@ suite('Mode Visual', () => {
     assert.strictEqual(sel.end.line, 0);
   });
 
+  test('selection=exclusive renders a half-open, nonempty selection', async () => {
+    await reloadConfiguration(new Configuration({ selection: 'exclusive' }));
+    await modeHandler.handleMultipleKeyEvents('iHello world!'.split(''));
+    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v']);
+
+    let selection = modeHandler.vimState.editor.selection;
+    assert.strictEqual(selection.start.character, 0);
+    assert.strictEqual(selection.end.character, 1);
+
+    await modeHandler.handleKeyEvent('w');
+
+    selection = modeHandler.vimState.editor.selection;
+    assert.strictEqual(selection.start.character, 0);
+    assert.strictEqual(selection.end.character, 6);
+  });
+
   test('Can handle wd', async () => {
     await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'd']);
 
     assertEqualLines(['wo three']);
+  });
+
+  newTest({
+    title: 'selection=exclusive excludes the final character from a forward selection',
+    config: { selection: 'exclusive' },
+    start: ['|Hello world!'],
+    keysPressed: 'vwd',
+    end: ['|world!'],
+  });
+
+  newTest({
+    title: 'selection=exclusive excludes the final character from a backward selection',
+    config: { selection: 'exclusive' },
+    start: ['abc|def'],
+    keysPressed: 'vbd',
+    end: ['|def'],
+  });
+
+  newTest({
+    title: 'selection=exclusive keeps a one-character selection inclusive',
+    config: { selection: 'exclusive' },
+    start: ['|abc'],
+    keysPressed: 'vx',
+    end: ['|bc'],
+  });
+
+  newTest({
+    title: ':set selection=exclusive changes Visual selection semantics',
+    config: { selection: 'inclusive' },
+    start: ['|Hello world!'],
+    keysPressed: ':set selection=exclusive\nvwd',
+    end: ['|world!'],
   });
 
   test('Can handle x', async () => {

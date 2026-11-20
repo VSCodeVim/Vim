@@ -332,6 +332,9 @@ export interface IConfiguration {
    */
   mouseSelectionGoesIntoVisualMode: boolean;
 
+  /** Controls whether the final character of a Visual mode selection is included. */
+  selection: 'old' | 'inclusive' | 'exclusive';
+
   /**
    * Includes trailing whitespace when changing word.
    */
