@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
+import { newTest } from '../testSimplifier';
 import { assertStatusBarEqual, setupWorkspace } from '../testUtils';
 
 suite('cmd_line/search command', () => {
@@ -12,33 +13,22 @@ suite('cmd_line/search command', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
-  test('command <C-w> can remove word in cmd line', async () => {
-    await modeHandler.handleMultipleKeyEvents([':', 'a', 'b', 'c', '-', '1', '2', '3', '<C-w>']);
-    assertStatusBarEqual(':abc-|', 'Failed to remove "123"');
-
-    await modeHandler.handleKeyEvent('<C-w>');
-    assertStatusBarEqual(':abc|', 'Failed to remove "-"');
-
-    await modeHandler.handleKeyEvent('<C-w>');
-    assertStatusBarEqual(':|', 'Failed to remove "abc"');
-
-    await modeHandler.handleKeyEvent('<C-w>');
-    assertStatusBarEqual(':|', 'Failed to remove nothing');
-  });
-
-  test('command <C-w> can remove word in search mode', async () => {
-    await modeHandler.handleMultipleKeyEvents(['/', 'a', 'b', 'c', '-', '1', '2', '3', '<C-w>']);
-    assertStatusBarEqual('/abc-|', 'Failed to remove "123"');
-
-    await modeHandler.handleKeyEvent('<C-w>');
-    assertStatusBarEqual('/abc|', 'Failed to remove "-"');
-
-    await modeHandler.handleKeyEvent('<C-w>');
-    assertStatusBarEqual('/|', 'Failed to remove "abc"');
-
-    await modeHandler.handleKeyEvent('<C-w>');
-    assertStatusBarEqual('/|', 'Failed to remove nothing');
-  });
+  for (const prompt of [':', '/']) {
+    newTest({
+      title: `<C-w> can remove word in ${prompt === ':' ? 'cmd line' : 'search mode'}`,
+      start: ['|'],
+      steps: [
+        {
+          title: 'removes "123"',
+          keysPressed: `${prompt}abc-123<C-w>`,
+          statusBar: `${prompt}abc-|`,
+        },
+        { title: 'removes "-"', keysPressed: '<C-w>', statusBar: `${prompt}abc|` },
+        { title: 'removes "abc"', keysPressed: '<C-w>', statusBar: `${prompt}|` },
+        { title: 'removes nothing', keysPressed: '<C-w>', statusBar: `${prompt}|` },
+      ],
+    });
+  }
 
   test('command <C-w> can remove word in cmd line while retrain cmd on the right of the cursor', async () => {
     await modeHandler.handleMultipleKeyEvents([
@@ -106,25 +96,25 @@ suite('cmd_line/search command', () => {
     assertStatusBarEqual(':s/abc/xyz|');
   });
 
-  test('<C-p>/<C-n> go to the previous/next command', async () => {
-    // Establish a history - :s/a/b, then :s/x/y.
-    // :w is the current one, not yet confirmed
-    await modeHandler.handleMultipleKeyEvents(':s/a/b\n'.split(''));
-    await modeHandler.handleMultipleKeyEvents(':s/x/y\n'.split(''));
-    await modeHandler.handleMultipleKeyEvents([':', 'w', '<C-p>']);
-
-    // Going backward - :s/x/y, then :s/a/b
-    assertStatusBarEqual(':s/x/y|');
-    await modeHandler.handleKeyEvent('<C-p>');
-    assertStatusBarEqual(':s/a/b|');
-
-    // Going forward again - :s/x/y, then :w (the one we started typing)
-    await modeHandler.handleKeyEvent('<C-n>');
-    assertStatusBarEqual(':s/x/y|');
-    await modeHandler.handleKeyEvent('<C-n>');
-
-    // TODO: Really, this should be `:w|`. See #4093.
-    assertStatusBarEqual(':|');
+  newTest({
+    title: '<C-p>/<C-n> go to the previous/next command',
+    start: ['|'],
+    steps: [
+      {
+        // Establish a history - :s/a/b, then :s/x/y. :w is the current one, not yet confirmed
+        title: 'goes back to :s/x/y',
+        keysPressed: ':s/a/b\n:s/x/y\n:w<C-p>',
+        statusBar: ':s/x/y|',
+      },
+      { title: 'goes back to :s/a/b', keysPressed: '<C-p>', statusBar: ':s/a/b|' },
+      { title: 'goes forward to :s/x/y', keysPressed: '<C-n>', statusBar: ':s/x/y|' },
+      {
+        title: 'goes forward to the command being typed',
+        keysPressed: '<C-n>',
+        // TODO: Really, this should be `:w|`. See #4093.
+        statusBar: ':|',
+      },
+    ],
   });
 
   test('<C-r> <C-w> insert word under cursor on command line', async () => {

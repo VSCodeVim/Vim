@@ -9,6 +9,7 @@ import { ModeHandler } from '../../src/mode/modeHandler';
 import { IRegisterContent, Register } from '../../src/register/register';
 import { VimState } from '../../src/state/vimState';
 import { StatusBar } from '../../src/statusBar';
+import { newTest } from '../testSimplifier';
 import { assertEqualLines, setupWorkspace } from '../testUtils';
 
 suite('Remapper', () => {
@@ -439,110 +440,48 @@ suite('Remapper', () => {
     assert.strictEqual(actual?.text, expected);
   });
 
-  test('jj -> <Esc> after ciw operator through modehandler', async () => {
-    // setup
-    await setupWithBindings({
-      insertModeKeyBindings: [
-        {
-          before: ['j', 'j'],
-          after: ['<Esc>'],
-        },
+  suite('jj -> <Esc> through modehandler', () => {
+    setup(async () => {
+      await setupWorkspace();
+    });
+
+    const jjToEsc = { insertModeKeyBindings: [{ before: ['j', 'j'], after: ['<Esc>'] }] };
+
+    newTest({
+      title: 'after ciw operator',
+      config: jjToEsc,
+      start: ['|word1 word2'],
+      steps: [
+        { keysPressed: 'ciw', end: ['| word2'], endMode: Mode.Insert },
+        { keysPressed: 'jj', endMode: Mode.Normal },
       ],
     });
 
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-    await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', '0']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-    // act
-    await modeHandler.handleMultipleKeyEvents(['c', 'i', 'w']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
-    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
-
-    // assert
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
-
-  test('jj -> <Esc> after using <Count>i=jj should insert ===', async () => {
-    // setup
-    await setupWithBindings({
-      insertModeKeyBindings: [
-        {
-          before: ['j', 'j'],
-          after: ['<Esc>'],
-        },
+    newTest({
+      title: 'after using <Count>i=jj should insert ===',
+      config: jjToEsc,
+      start: ['word1 |word2'],
+      steps: [
+        { keysPressed: '3i=', end: ['word1 =|word2'], endMode: Mode.Insert },
+        { keysPressed: 'jj', end: ['word1 ==|=word2'], endMode: Mode.Normal },
       ],
     });
 
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-    await modeHandler.handleMultipleKeyEvents(['i', 'word1 word2', '<Esc>', 'b']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-    // act
-    await modeHandler.handleMultipleKeyEvents(['3', 'i', '=']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
-    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
-
-    // assert
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    assertEqualLines(['word1 ===word2']);
-  });
-
-  test('jj -> <Esc> does not leave behind character a j', async () => {
-    // setup
-    await setupWithBindings({
-      insertModeKeyBindings: [
+    newTest({
+      title: 'does not leave behind a j, and does not modify the undo stack',
+      config: jjToEsc,
+      start: ['fo|o'],
+      steps: [
+        { keysPressed: 'abar', end: ['foobar|'], endMode: Mode.Insert },
         {
-          before: ['j', 'j'],
-          after: ['<Esc>'],
+          title: 'does not leave behind a j',
+          keysPressed: 'jj',
+          end: ['fooba|r'],
+          endMode: Mode.Normal,
         },
+        { title: 'does not modify the undo stack', keysPressed: 'u', end: ['fo|o'] },
       ],
     });
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-    // act
-    await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
-    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
-    assertEqualLines(['foobar']);
-
-    // assert
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
-
-  test('jj -> <Esc> does not modify undo stack', async () => {
-    // setup
-    await setupWithBindings({
-      insertModeKeyBindings: [
-        {
-          before: ['j', 'j'],
-          after: ['<Esc>'],
-        },
-      ],
-    });
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-    await modeHandler.handleMultipleKeyEvents(['i', 'foo', '<Esc>']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-    // act
-    await modeHandler.handleMultipleKeyEvents(['a', 'bar']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
-    await modeHandler.handleMultipleKeyEvents(['j', 'j']);
-    assertEqualLines(['foobar']);
-
-    // assert
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-    await modeHandler.handleMultipleKeyEvents(['u']);
-    assertEqualLines(['foo']);
   });
 
   test('Recursive remap throws E223', async () => {

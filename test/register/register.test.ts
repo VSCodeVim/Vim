@@ -193,58 +193,63 @@ suite('register', () => {
     });
   });
 
-  test('Search register (/) is set by forward search', async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0']),
-    );
-
-    // Register changed by forward search
-    await modeHandler.handleMultipleKeyEvents('/katu\n'.split(''));
-    assert.strictEqual((await Register.get('/'))?.text, 'katu');
-
-    // Register changed even if search doesn't exist
-    await modeHandler.handleMultipleKeyEvents('0/notthere\n'.split(''));
-    assert.strictEqual((await Register.get('/'))?.text, 'notthere');
-
-    // Not changed if search is canceled
-    await modeHandler.handleMultipleKeyEvents('0/Alaska'.split('').concat(['<Esc>']));
-    assert.strictEqual((await Register.get('/'))?.text, 'notthere');
+  newTest({
+    title: 'Search register (/) is set by forward search',
+    start: ['|Wake up early in Karakatu, Alaska'],
+    steps: [
+      {
+        title: 'changed by forward search',
+        keysPressed: '/katu\n',
+        end: ['Wake up early in Kara|katu, Alaska'],
+        registers: { '/': 'katu' },
+      },
+      {
+        title: "changed even if search doesn't exist",
+        keysPressed: '0/notthere\n',
+        end: ['|Wake up early in Karakatu, Alaska'],
+        registers: { '/': 'notthere' },
+      },
+      {
+        title: 'not changed if search is canceled',
+        keysPressed: '0/Alaska<Esc>',
+        registers: { '/': 'notthere' },
+      },
+    ],
   });
 
-  test('Search register (/) is set by backward search', async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '$']),
-    );
-
-    // Register changed by forward search
-    await modeHandler.handleMultipleKeyEvents('?katu\n'.split(''));
-    assert.strictEqual((await Register.get('/'))?.text, 'katu');
-
-    // Register changed even if search doesn't exist
-    await modeHandler.handleMultipleKeyEvents('$?notthere\n'.split(''));
-    assert.strictEqual((await Register.get('/'))?.text, 'notthere');
-
-    // Not changed if search is canceled
-    await modeHandler.handleMultipleKeyEvents('$?Alaska'.split('').concat(['<Esc>']));
-    assert.strictEqual((await Register.get('/'))?.text, 'notthere');
+  newTest({
+    title: 'Search register (/) is set by backward search',
+    start: ['Wake up early in Karakatu, Alask|a'],
+    steps: [
+      {
+        title: 'changed by backward search',
+        keysPressed: '?katu\n',
+        end: ['Wake up early in Kara|katu, Alaska'],
+        registers: { '/': 'katu' },
+      },
+      {
+        title: "changed even if search doesn't exist",
+        keysPressed: '$?notthere\n',
+        end: ['Wake up early in Karakatu, Alask|a'],
+        registers: { '/': 'notthere' },
+      },
+      {
+        title: 'not changed if search is canceled',
+        keysPressed: '$?Alaska<Esc>',
+        registers: { '/': 'notthere' },
+      },
+    ],
   });
 
-  test('Search register (/) is set by star search', async () => {
-    await modeHandler.handleMultipleKeyEvents(
-      'iWake up early in Karakatu, Alaska'.split('').concat(['<Esc>', '0']),
-    );
-
-    await modeHandler.handleKeyEvent('*');
-    assert.strictEqual((await Register.get('/'))?.text, '\\<Wake\\>');
-
-    await modeHandler.handleMultipleKeyEvents(['g', '*']);
-    assert.strictEqual((await Register.get('/'))?.text, 'Wake');
-
-    await modeHandler.handleKeyEvent('#');
-    assert.strictEqual((await Register.get('/'))?.text, '\\<Wake\\>');
-
-    await modeHandler.handleMultipleKeyEvents(['g', '#']);
-    assert.strictEqual((await Register.get('/'))?.text, 'Wake');
+  newTest({
+    title: 'Search register (/) is set by star search',
+    start: ['|Wake up early in Karakatu, Alaska'],
+    steps: [
+      { keysPressed: '*', registers: { '/': '\\<Wake\\>' } },
+      { keysPressed: 'g*', registers: { '/': 'Wake' } },
+      { keysPressed: '#', registers: { '/': '\\<Wake\\>' } },
+      { keysPressed: 'g#', registers: { '/': 'Wake' } },
+    ],
   });
 
   test('Command register (:) is set by command line', async () => {
