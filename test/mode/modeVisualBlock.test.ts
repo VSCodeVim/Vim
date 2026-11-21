@@ -1,29 +1,9 @@
-import * as assert from 'assert';
-import * as vscode from 'vscode';
-
-import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { assertEqualLines, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 suite('VisualBlock mode', () => {
-  let modeHandler: ModeHandler;
-
-  setup(async () => {
-    await setupWorkspace();
-    modeHandler = (await getAndUpdateModeHandler())!;
-  });
-
-  test('can be activated', async () => {
-    modeHandler.vimState.editor = vscode.window.activeTextEditor!;
-
-    await modeHandler.handleKeyEvent('<C-v>');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-
-    await modeHandler.handleKeyEvent('<C-v>');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
+  setup(setupWorkspace);
 
   newTest({
     title: '`[count]<C-v>` selects [count characters]',
@@ -240,24 +220,22 @@ suite('VisualBlock mode', () => {
       return;
     }
 
-    test('`<C-c>` copies and sets mode to normal', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'Y', 'p', 'p']);
-
-      assertEqualLines(['one two three', 'one two three', 'one two three']);
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', '<C-v>', 'e', 'j', 'j', '<C-c>']);
-
-      // ensuring we're back in normal
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-      // test copy by pasting back
-      await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
-
-      // TODO: should be
-      // assertEqualLines(['oneone two three', 'oneone two three', 'oneone two three']);
-      // unfortunately it is
-      assertEqualLines(['one', 'one', 'one', 'one two three', 'one two three', 'one two three']);
+    newTest({
+      title: '`<C-c>` copies and sets mode to normal',
+      start: ['|one two three'],
+      steps: [
+        { keysPressed: 'Ypp', end: ['one two three', 'one two three', '|one two three'] },
+        {
+          keysPressed: 'H<C-v>ejj<C-c>',
+          end: ['one two three', 'one two three', 'on|e two three'],
+        },
+        {
+          // TODO: Should paste a block: ['oneone two three', 'oneone two three', 'oneone two three']
+          title: 'Paste from the clipboard',
+          keysPressed: 'H"+P',
+          end: ['|one', 'one', 'one', 'one two three', 'one two three', 'one two three'],
+        },
+      ],
     });
   });
 

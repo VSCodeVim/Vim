@@ -1,26 +1,9 @@
-import * as assert from 'assert';
-
-import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { assertEqualLines, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
-  let modeHandler: ModeHandler;
-
-  setup(async () => {
-    await setupWorkspace();
-    modeHandler = (await getAndUpdateModeHandler())!;
-  });
-
-  test('can be activated', async () => {
-    await modeHandler.handleKeyEvent('V');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-
-    await modeHandler.handleKeyEvent('V');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
+  setup(setupWorkspace);
 
   newTest({
     title: '<count>V selects <count> lines',
@@ -28,132 +11,6 @@ suite('Mode Visual Line', () => {
     keysPressed: 'j3V',
     end: ['Line 1', '[Line 2', 'Line 3', '|L]ine 4', 'Line 5'],
     endMode: Mode.VisualLine,
-  });
-
-  test('Can handle wd', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'd']);
-
-    assertEqualLines(['wo three']);
-  });
-
-  test('Can handle x', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'x']);
-
-    assertEqualLines(['ne two three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
-
-  test('Can handle x across a selection', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'x']);
-
-    assertEqualLines(['wo three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
-
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three foar'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree foar']);
-  });
-
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree']);
-  });
-
-  test('Can do vwd multiple times', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three four'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-    ]);
-
-    assertEqualLines(['our']);
-  });
-
-  test('handles case where we go from selecting on right side to selecting on left side', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l',
-      'v',
-      'w',
-      'b',
-      'b',
-      'd',
-    ]);
-
-    assertEqualLines(['wo three']);
-  });
-
-  test('handles case where we delete over a newline', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two\n\nthree four'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'k', 'k', 'v', '}', 'd']);
-
-    assertEqualLines(['three four']);
-  });
-
-  test('handles change operator', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
-
-    assertEqualLines(['wo three']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
-  });
-
-  suite("Vim's EOL handling is weird", () => {
-    test('delete through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'g', 'g', 'v', 'l', 'l', 'l', 'd']);
-
-      assertEqualLines(['two']);
-    });
-
-    test('join 2 lines by deleting through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'l', 'v', 'l', 'l', 'd']);
-
-      assertEqualLines(['otwo']);
-    });
-
-    test("d$ doesn't delete whole line", async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'd', '$']);
-
-      assertEqualLines(['', 'two']);
-    });
-
-    test('vd$ does delete whole line', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', '$', 'd']);
-
-      assertEqualLines(['two']);
-    });
   });
 
   suite('Arrow keys work perfectly in Visual Line Mode', () => {
@@ -270,23 +127,19 @@ suite('Mode Visual Line', () => {
       return;
     }
 
-    test('<C-c> copies and sets mode to normal', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'Y', 'p']);
-
-      assertEqualLines(['one two three', 'one two three']);
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', 'V', '<C-c>']);
-
-      // ensuring we're back in normal
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-      // test copy by pasting back from clipboard
-      await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
-
-      // TODO: should be assertEqualLines(['one two three', 'one two three', 'one two three']);
-      // unfortunately it is
-      assertEqualLines(['one two threeone two three', 'one two three']);
+    newTest({
+      title: '<C-c> copies and sets mode to normal',
+      start: ['|one two three'],
+      steps: [
+        { keysPressed: 'Yp', end: ['one two three', '|one two three'] },
+        { keysPressed: 'HV<C-c>', end: ['|one two three', 'one two three'] },
+        {
+          // TODO: Should paste a line: ['one two three', 'one two three', 'one two three']
+          title: 'Paste from the clipboard',
+          keysPressed: 'H"+P',
+          end: ['one two thre|eone two three', 'one two three'],
+        },
+      ],
     });
   });
 

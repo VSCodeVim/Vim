@@ -5,7 +5,7 @@ import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
-import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
+import { reloadConfiguration, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
@@ -13,14 +13,6 @@ suite('Mode Visual', () => {
   setup(async () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
-  });
-
-  test('can be activated', async () => {
-    await modeHandler.handleKeyEvent('v');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-    await modeHandler.handleKeyEvent('v');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -45,81 +37,53 @@ suite('Mode Visual', () => {
     endMode: Mode.Visual,
   });
 
-  test('Can handle wd', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'd']);
-
-    assertEqualLines(['wo three']);
+  newTest({
+    title: 'Can handle wd',
+    start: ['|one two three'],
+    keysPressed: 'vwd',
+    end: ['|wo three'],
   });
 
-  test('Can handle x', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'x']);
-
-    assertEqualLines(['ne two three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+  newTest({
+    title: 'Can handle x',
+    start: ['|one two three'],
+    keysPressed: 'vx',
+    end: ['|ne two three'],
   });
 
-  test('Can handle x across a selection', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'x']);
-
-    assertEqualLines(['wo three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+  newTest({
+    title: 'Can handle x across a selection',
+    start: ['|one two three'],
+    keysPressed: 'vwx',
+    end: ['|wo three'],
   });
 
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three foar'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree foar']);
+  newTest({
+    title: 'Can do vwd in middle of sentence',
+    start: ['one |two three foar'],
+    keysPressed: 'vwd',
+    end: ['one |hree foar'],
   });
 
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree']);
+  newTest({
+    title: 'Can do vwd in middle of sentence (last word)',
+    start: ['one |two three'],
+    keysPressed: 'vwd',
+    end: ['one |hree'],
   });
 
-  test('Can do vwd multiple times', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three four'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-    ]);
-
-    assertEqualLines(['our']);
+  newTest({
+    title: 'Can do vwd multiple times',
+    start: ['|one two three four'],
+    keysPressed: 'vwd' + 'vwd' + 'vwd',
+    end: ['|our'],
   });
 
-  test('handles case where we go from selecting on right side to selecting on left side', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l',
-      'v',
-      'w',
-      'b',
-      'b',
-      'd',
-    ]);
-
-    assertEqualLines(['wo three']);
+  newTest({
+    title: 'handles case where we go from selecting on right side to selecting on left side',
+    start: ['one |two three'],
+    keysPressed: 'vwbbd',
+    end: ['|wo three'],
   });
 
   newTest({
@@ -137,52 +101,48 @@ suite('Mode Visual', () => {
     end: ['blah', 'duh', '|r', 'hur'],
   });
 
-  test('handles case where we delete over a newline', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two\n\nthree four'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'k', 'k', 'v', '}', 'd']);
-
-    assertEqualLines(['three four']);
+  newTest({
+    title: 'handles case where we delete over a newline',
+    start: ['|one two', '', 'three four'],
+    keysPressed: 'v}d',
+    end: ['|three four'],
   });
 
-  test('handles change operator', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
-
-    assertEqualLines(['wo three']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
+  newTest({
+    title: 'handles change operator',
+    start: ['|one two three'],
+    keysPressed: 'vwc',
+    end: ['|wo three'],
+    endMode: Mode.Insert,
   });
 
   suite("Vim's EOL handling is weird", () => {
-    test('delete through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'g', 'g', 'v', 'l', 'l', 'l', 'd']);
-
-      assertEqualLines(['two']);
+    newTest({
+      title: 'delete through eol',
+      start: ['|one', 'two'],
+      keysPressed: 'vllld',
+      end: ['|two'],
     });
 
-    test('join 2 lines by deleting through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'l', 'v', 'l', 'l', 'd']);
-
-      assertEqualLines(['otwo']);
+    newTest({
+      title: 'join 2 lines by deleting through eol',
+      start: ['o|ne', 'two'],
+      keysPressed: 'vlld',
+      end: ['o|two'],
     });
 
-    test("d$ doesn't delete whole line", async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'd', '$']);
-
-      assertEqualLines(['', 'two']);
+    newTest({
+      title: "d$ doesn't delete whole line",
+      start: ['|one', 'two'],
+      keysPressed: 'd$',
+      end: ['|', 'two'],
     });
 
-    test('vd$ does delete whole line', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', '$', 'd']);
-
-      assertEqualLines(['two']);
+    newTest({
+      title: 'vd$ does delete whole line',
+      start: ['|one', 'two'],
+      keysPressed: 'v$d',
+      end: ['|two'],
     });
 
     newTest({
@@ -1176,18 +1136,13 @@ suite('Mode Visual', () => {
       return;
     }
 
-    test('<C-c> copies and sets mode to normal', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'e', '<C-c>']);
-
-      // ensuring we're back in normal
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-      assertEqualLines(['one two three']);
-
-      // test copy by pasting back
-      await modeHandler.handleMultipleKeyEvents(['^', '"', '+', 'P']);
-
-      assertEqualLines(['oneone two three']);
+    newTest({
+      title: '<C-c> copies and sets mode to normal',
+      start: ['|one two three'],
+      steps: [
+        { keysPressed: 've<C-c>', end: ['on|e two three'] },
+        { title: 'Paste from the clipboard', keysPressed: '^"+P', end: ['on|eone two three'] },
+      ],
     });
   });
 
@@ -1201,68 +1156,28 @@ suite('Mode Visual', () => {
   });
 
   suite('Transition between visual mode', () => {
-    test('vv will back to normal mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    });
-
-    test('vV will transit to visual line mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-    });
-
-    test('v<C-v> will transit to visual block mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-    });
-
-    test('Vv will transit to visual (char) mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-    });
-
-    test('VV will back to normal mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    });
-
-    test('V<C-v> will transit to visual block mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-    });
-
-    test('<C-v>v will transit to visual (char) mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-    });
-
-    test('<C-v>V will back to visual line mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-    });
-
-    test('<C-v><C-v> will back to normal mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    });
+    const modes: Array<[string, Mode]> = [
+      ['v', Mode.Visual],
+      ['V', Mode.VisualLine],
+      ['<C-v>', Mode.VisualBlock],
+    ];
+    for (const [firstKey, firstMode] of modes) {
+      for (const [secondKey, secondMode] of modes) {
+        const endMode = firstMode === secondMode ? Mode.Normal : secondMode;
+        newTest({
+          title: `${firstKey}${secondKey} goes to ${Mode[endMode]} mode`,
+          start: ['a|bc'],
+          steps: [
+            { keysPressed: firstKey, end: ['a[|b]c'], endMode: firstMode },
+            {
+              keysPressed: secondKey,
+              end: endMode === Mode.Normal ? ['a|bc'] : ['a[|b]c'],
+              endMode,
+            },
+          ],
+        });
+      }
+    }
   });
 
   suite('replace text in characterwise visual-mode with characterwise register content', () => {
