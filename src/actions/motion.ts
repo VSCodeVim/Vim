@@ -30,15 +30,19 @@ import { shouldWrapKey } from './wrapping';
 
 function adjustForDesiredColumn(args: {
   position: Position;
-  desiredColumn: number;
+  vimState: VimState;
   multicursorIndex: number | undefined;
 }): Position {
-  const { position, desiredColumn, multicursorIndex } = args;
+  const { position, vimState, multicursorIndex } = args;
   // HACK: until we put `desiredColumn` on `Cursor`, only the first cursor will respect it (except after `$`)
-  if (multicursorIndex && multicursorIndex > 0 && desiredColumn !== Number.POSITIVE_INFINITY) {
+  if (
+    multicursorIndex &&
+    multicursorIndex > 0 &&
+    vimState.desiredColumn !== Number.POSITIVE_INFINITY
+  ) {
     return position;
   }
-  return position.with({ character: desiredColumn });
+  return vimState.positionAtDesiredColumn(position.line);
 }
 
 /**
@@ -241,7 +245,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
     if (vimState.currentMode === Mode.Normal) {
       let returnedPos = vimState.editor.selection.active;
       if (prevLine !== returnedPos.line) {
-        returnedPos = returnedPos.withColumn(prevDesiredColumn);
+        returnedPos = vimState.positionAtDesiredColumn(returnedPos.line, prevDesiredColumn);
       }
       return returnedPos;
     } else {
@@ -262,7 +266,7 @@ abstract class MoveByScreenLineMaintainDesiredColumn extends MoveByScreenLine {
       }
 
       if (position.line !== stop.line) {
-        stop = stop.withColumn(prevDesiredColumn);
+        stop = vimState.positionAtDesiredColumn(stop.line, prevDesiredColumn);
       }
 
       return { start, stop };
@@ -297,7 +301,7 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     }
     return adjustForDesiredColumn({
       position: t,
-      desiredColumn: vimState.desiredColumn,
+      vimState,
       multicursorIndex: this.multicursorIndex,
     });
   }
@@ -329,10 +333,10 @@ export class MoveDown extends BaseMovement {
 
     if (position.line < vimState.document.lineCount - 1) {
       return adjustForDesiredColumn({
-        position,
-        desiredColumn: vimState.desiredColumn,
+        position: position.getDown(),
+        vimState,
         multicursorIndex: this.multicursorIndex,
-      }).getDown();
+      });
     }
     return position;
   }
@@ -372,10 +376,10 @@ export class MoveUp extends BaseMovement {
 
     if (position.line > 0) {
       return adjustForDesiredColumn({
-        position,
-        desiredColumn: vimState.desiredColumn,
+        position: position.getUp(),
+        vimState,
         multicursorIndex: this.multicursorIndex,
-      }).getUp();
+      });
     }
     return position;
   }
@@ -415,7 +419,7 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
     }
     return adjustForDesiredColumn({
       position: t,
-      desiredColumn: vimState.desiredColumn,
+      vimState,
       multicursorIndex: this.multicursorIndex,
     });
   }
@@ -1156,10 +1160,10 @@ class MoveUpByScreenLineVisualBlock extends BaseMovement {
   ): Promise<Position | IMovement> {
     if (position.line > 0) {
       return adjustForDesiredColumn({
-        position,
-        desiredColumn: vimState.desiredColumn,
+        position: position.getUp(),
+        vimState,
         multicursorIndex: this.multicursorIndex,
-      }).getUp();
+      });
     }
     return position;
   }
@@ -1188,10 +1192,10 @@ class MoveDownByScreenLineVisualBlock extends BaseMovement {
   ): Promise<Position | IMovement> {
     if (position.line < vimState.document.lineCount - 1) {
       return adjustForDesiredColumn({
-        position,
-        desiredColumn: vimState.desiredColumn,
+        position: position.getDown(),
+        vimState,
         multicursorIndex: this.multicursorIndex,
-      }).getDown();
+      });
     }
     return position;
   }
