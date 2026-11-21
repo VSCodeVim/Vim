@@ -1069,10 +1069,10 @@ suite('Mode Visual', () => {
     });
 
     newTest({
-      title: 'normal selection',
+      title: 'selection ending with a line break',
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$C',
-      end: ['this is', '', '|the world'],
+      end: ['this is', '|', 'the world'],
       endMode: Mode.Insert,
     });
   });
@@ -1087,10 +1087,10 @@ suite('Mode Visual', () => {
     });
 
     newTest({
-      title: 'normal selection',
+      title: 'selection ending with a line break',
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$R',
-      end: ['this is', '', '|the world'],
+      end: ['this is', '|', 'the world'],
       endMode: Mode.Insert,
     });
   });
