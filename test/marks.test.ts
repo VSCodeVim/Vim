@@ -1,7 +1,6 @@
 import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../extensionBase';
-import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { newTest, newTestSkip } from './testSimplifier';
@@ -32,7 +31,6 @@ suite('Marks', () => {
     start: ['|hello world and mars'],
     keysPressed: 'wma2w`a',
     end: ['hello |world and mars'],
-    endMode: Mode.Normal,
   });
 
   suite("'< and '>", () => {
@@ -80,14 +78,12 @@ suite('Marks', () => {
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm>' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
-      endMode: Mode.Normal,
     });
     newTest({
       title: "gv fails if '> is not set",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm<' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -128,7 +124,6 @@ suite('Marks', () => {
       start: ['one', 't|wo', 'three'],
       keysPressed: 'v<Esc>' + 'j' + 'm<' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
-      endMode: Mode.Normal,
     });
   });
 

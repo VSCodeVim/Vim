@@ -1,4 +1,3 @@
-import { Mode } from '../src/mode/mode';
 import { newTest } from './testSimplifier';
 import { setupWorkspace } from './testUtils';
 
@@ -234,7 +233,6 @@ suite('Record and execute a macro', () => {
         start: [`|${macro}`, ...start],
         keysPressed: `"${register}dd` + `@${register}`,
         end,
-        endMode: Mode.Normal,
       });
     }
 
@@ -243,7 +241,6 @@ suite('Record and execute a macro', () => {
       start: [`|j`, ...start],
       keysPressed: `"${register}dd` + `@${register}` + `@@`,
       end: ['one', 'two', '|three'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -251,7 +248,6 @@ suite('Record and execute a macro', () => {
       start: [`|dd`, ...start],
       keysPressed: `"${register}dd` + `@${register}` + `@@`,
       end: ['|three'],
-      endMode: Mode.Normal,
     });
 
     newTest({

@@ -133,7 +133,6 @@ suite('VisualBlock mode', () => {
     start: ['1234', '2|345', '3456', '4567'],
     keysPressed: '<C-v>' + 'lj' + 'rX',
     end: ['1234', '2|XX5', '3XX6', '4567'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -141,7 +140,6 @@ suite('VisualBlock mode', () => {
     start: ['te|st', 'test'],
     keysPressed: '<C-v>jD',
     end: ['t|e', 'te'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -332,7 +330,6 @@ suite('VisualBlock mode', () => {
       start: ['one', '|two', 'three', 'four'],
       keysPressed: '<C-v>lJ',
       end: ['one', 'two| three', 'four'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -340,7 +337,6 @@ suite('VisualBlock mode', () => {
       start: ['o|ne', 'two', 'three', 'four'],
       keysPressed: '<C-v>jjlJ',
       end: ['one two| three', 'four'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -348,7 +344,6 @@ suite('VisualBlock mode', () => {
       start: ['one', 'two', 't|hree', 'four'],
       keysPressed: '<C-v>kkJ',
       end: ['one two| three', 'four'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -359,7 +354,6 @@ suite('VisualBlock mode', () => {
       start: ['one', '|two', 'three', 'four'],
       keysPressed: '<C-v>lgJ',
       end: ['one', 'two|three', 'four'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -367,7 +361,6 @@ suite('VisualBlock mode', () => {
       start: ['o|ne', 'two', 'three', 'four'],
       keysPressed: '<C-v>jjlgJ',
       end: ['onetwo|t|hre|e', 'four'], // TODO(#9830): Should have only one cursor
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -375,7 +368,6 @@ suite('VisualBlock mode', () => {
       start: ['o|ne  ', 'two', '  three', 'four'],
       keysPressed: '<C-v>jjlgJ',
       end: ['one  two| | thre|e', 'four'], // TODO(#9830): Should have only one cursor
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -383,7 +375,6 @@ suite('VisualBlock mode', () => {
       start: ['one', 'two', 't|hree', 'four'],
       keysPressed: '<C-v>kkgJ',
       end: ['onetwo|thre|e', 'four'], // TODO(#9830): Should have only one cursor
-      endMode: Mode.Normal,
     });
   });
 

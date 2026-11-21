@@ -313,7 +313,6 @@ suite('Mode Insert', () => {
     start: ['give me an a|:'],
     keysPressed: 'aa<Esc>4.',
     end: ['give me an a:aaaa|a'],
-    endMode: Mode.Normal,
   });
 
   newTest({

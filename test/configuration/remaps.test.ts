@@ -357,16 +357,14 @@ suite('Remaps', () => {
           'Lfill typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
         keysPressed: 'Lfill',
         end: ['|Hello World again!', 'Hello World!'],
-        endMode: Mode.Normal,
-        afterTimeout: { end: ['Hello World again!', 'He|llo World!'], endMode: Mode.Normal },
+        afterTimeout: { end: ['Hello World again!', 'He|llo World!'] },
       },
       {
         // Step 1:
         title: 'Lfill typed via remap should handle all keys if there is no failed action',
         keysPressed: 'ai<Esc>k0 lf',
         end: ['|Hello World again!', 'Helilo World!'],
-        endMode: Mode.Normal,
-        afterTimeout: { end: ['Hello World again!', 'Helil|o World!'], endMode: Mode.Normal },
+        afterTimeout: { end: ['Hello World again!', 'Helil|o World!'] },
       },
       {
         // Step 2:
@@ -374,8 +372,7 @@ suite('Remaps', () => {
           'Lfill typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
         keysPressed: 'hhxk0 lf',
         end: ['|Hello World again!', 'Hello World!'],
-        endMode: Mode.Normal,
-        afterTimeout: { end: ['Hello World again!', '|Hello World!'], endMode: Mode.Normal },
+        afterTimeout: { end: ['Hello World again!', '|Hello World!'] },
       },
       {
         // Step 3:
@@ -383,7 +380,6 @@ suite('Remaps', () => {
           'Lfill typed via remap with a user pressed key after should run the corresponding remap',
         keysPressed: 'k0 lfc',
         end: ['   | Hello World again!', 'Hello World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 4:
@@ -391,7 +387,6 @@ suite('Remaps', () => {
           'Lfill typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: 'j0 lfx',
         end: ['    Hello World again!', '|ello World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 5:
@@ -399,7 +394,6 @@ suite('Remaps', () => {
           'Lfill typed via remap with multiple wrong user pressed keys after should not handle the keys after failed action but should handle the user pressed keys',
         keysPressed: ' lfrcl',
         end: ['    Hello World again!', 'c|llo World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 6:
@@ -407,7 +401,6 @@ suite('Remaps', () => {
           'Lfillr typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: ' lFdl',
         end: ['    Hello World again!', '|llo World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 7:
@@ -415,14 +408,12 @@ suite('Remaps', () => {
           'Lfill typed via remap with multiple right user pressed keys after should run the corresponding remap and the rest of the keys',
         keysPressed: ' lfrsl',
         end: ['    Hello World again!', '  |llo World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 8:
         title: 'Lfillrdl typed by the user should handle all the keys',
         keysPressed: 'Lfillrdl',
         end: ['    Hello World again!', '  d|lo World!'],
-        endMode: Mode.Normal,
       },
     ],
   });
@@ -446,16 +437,14 @@ suite('Remaps', () => {
           'Lfill typed by the user should handle all keys even if there is a failed action in the middle (in this case the "fi")',
         keysPressed: 'Lfill',
         end: ['|Hello World again!', 'Hello World!'],
-        endMode: Mode.Normal,
-        afterTimeout: { end: ['Hello World again!', 'He|llo World!'], endMode: Mode.Normal },
+        afterTimeout: { end: ['Hello World again!', 'He|llo World!'] },
       },
       {
         // Step 1:
         title: 'Lfill typed via remap should handle all keys if there is no failed action',
         keysPressed: 'ai<Esc>k0 lf',
         end: ['|Hello World again!', 'Helilo World!'],
-        endMode: Mode.Normal,
-        afterTimeout: { end: ['Hello World again!', 'Helil|o World!'], endMode: Mode.Normal },
+        afterTimeout: { end: ['Hello World again!', 'Helil|o World!'] },
       },
       {
         // Step 2:
@@ -463,8 +452,7 @@ suite('Remaps', () => {
           'Lfill typed via remap should not handle the remaining keys after a failed action in the middle (in this case the "fi")',
         keysPressed: 'hhxk0 lf',
         end: ['|Hello World again!', 'Hello World!'],
-        endMode: Mode.Normal,
-        afterTimeout: { end: ['Hello World again!', '|Hello World!'], endMode: Mode.Normal },
+        afterTimeout: { end: ['Hello World again!', '|Hello World!'] },
       },
       {
         // Step 3:
@@ -472,7 +460,6 @@ suite('Remaps', () => {
           'Lfill typed via remap with a user pressed key after should run the corresponding remap',
         keysPressed: 'k0 lfc',
         end: ['   | Hello World again!', 'Hello World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 4:
@@ -480,7 +467,6 @@ suite('Remaps', () => {
           'Lfill typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: 'j0 lfx',
         end: ['    Hello World again!', '|ello World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 5:
@@ -488,7 +474,6 @@ suite('Remaps', () => {
           'Lfill typed via remap with multiple wrong user pressed keys after should not handle the keys after failed action but should handle the user pressed keys',
         keysPressed: ' lfrcl',
         end: ['    Hello World again!', 'c|llo World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 6:
@@ -496,7 +481,6 @@ suite('Remaps', () => {
           'Lfillr typed via remap with a wrong user pressed key after should not handle the keys after failed action but should handle the user pressed key',
         keysPressed: ' lFdl',
         end: ['    Hello World again!', '|llo World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 7:
@@ -504,14 +488,12 @@ suite('Remaps', () => {
           'Lfill typed via remap with multiple right user pressed keys after should run the corresponding remap',
         keysPressed: ' lfrsl',
         end: ['    Hello World again!', '  |llo World!'],
-        endMode: Mode.Normal,
       },
       {
         // Step 8:
         title: 'Lfillrdl typed by the user should handle all the keys',
         keysPressed: 'Lfillrdl',
         end: ['    Hello World again!', '  d|lo World!'],
-        endMode: Mode.Normal,
       },
     ],
   });
@@ -1021,6 +1003,5 @@ suite('Remaps', () => {
     start: ['|test'],
     keysPressed: 'aii<Esc>l',
     end: ['t|est'],
-    endMode: Mode.Normal,
   });
 });

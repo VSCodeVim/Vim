@@ -1,4 +1,3 @@
-import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
@@ -33,7 +32,6 @@ suite('comment operator', () => {
     start: ['blah |blah blah'],
     keysPressed: 'vlllgC',
     end: ['blah |/* blah */ blah'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -41,7 +39,6 @@ suite('comment operator', () => {
     start: ['one', '|two', 'three', 'four'],
     keysPressed: 'Vjgc',
     end: ['one', '|// two', '// three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -49,6 +46,5 @@ suite('comment operator', () => {
     start: ['one', '|two', 'three', 'four'],
     keysPressed: '<C-v>lljgc',
     end: ['one', '|// two', '// three', 'four'],
-    endMode: Mode.Normal,
   });
 });

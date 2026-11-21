@@ -189,7 +189,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: 'gg',
       end: [' |123456', ' 123456', ' 123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -198,7 +197,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '3gg',
       end: [' 123456', ' 123456', ' |123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -207,7 +205,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '9gg',
       end: [' 123456', ' 123456', ' |123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -216,7 +213,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: 'gg',
       end: [' 123|456', ' 123456', ' 123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -225,7 +221,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '3gg',
       end: [' 123456', ' 123456', ' 123|456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -234,7 +229,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '9gg',
       end: [' 123456', ' 123456', ' 123|456'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -245,7 +239,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: 'G',
       end: [' 123456', ' 123456', ' |123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -254,7 +247,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '1G',
       end: [' |123456', ' 123456', ' 123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -263,7 +255,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '9G',
       end: [' 123456', ' 123456', ' |123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -272,7 +263,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: 'G',
       end: [' 123456', ' 123456', ' 123|456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -281,7 +271,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '1G',
       end: [' 123|456', ' 123456', ' 123456'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -290,7 +279,6 @@ suite('Motions in Normal Mode', () => {
       start: [' 123456', ' 123|456', ' 123456'],
       keysPressed: '9G',
       end: [' 123456', ' 123456', ' 123|456'],
-      endMode: Mode.Normal,
     });
   });
 

@@ -83,7 +83,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nggdgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -91,7 +90,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\ndgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -99,7 +97,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nldgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -107,7 +104,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\n3ldgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -115,7 +111,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\nedgn',
       end: ['foo', '| world', 'hello', 'hello'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -123,7 +118,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['|foo', 'hello world', 'hello', 'hello'],
       keysPressed: '/hello\neldgn',
       end: ['foo', 'hello world', '|', 'hello'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -131,7 +125,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['O|ne Two Three Four Five Six'],
       keysPressed: '/T\n' + 'e' + 'dgn',
       end: ['One Two |hree Four Five Six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -189,7 +182,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['|', 'one', 'two', 'one', 'three'],
       keysPressed: '/one\n' + 'cgn' + 'XYZ' + '<Esc>' + '..',
       end: ['', 'XYZ', 'two', 'XY|Z', 'three'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -262,7 +254,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\nGdgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -270,7 +261,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3gg$dgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -278,7 +268,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3gg$hdgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -286,7 +275,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwldgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -294,7 +282,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwdgN',
       end: ['hello world', 'hello', 'hi| ', 'foo'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -302,7 +289,6 @@ suite('Search text objects (gn and gN)', () => {
       start: ['hello world', 'hello', 'hi hello', '|foo'],
       keysPressed: '/hello\n3ggwhdgN',
       end: ['hello world', '|', 'hi hello', 'foo'],
-      endMode: Mode.Normal,
     });
   });
 

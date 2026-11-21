@@ -353,7 +353,6 @@ suite('Mode Normal', () => {
     start: ['tes|t'],
     keysPressed: 'yiwp',
     end: ['ttes|test'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -618,7 +617,6 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'ca(',
     end: ['|blaaah'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -626,7 +624,6 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'ca{',
     end: ['|blaaah'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -634,7 +631,6 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'caB',
     end: ['|blaaah'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -763,7 +759,6 @@ suite('Mode Normal', () => {
     start: ['one "two" three "four" five|" six'],
     keysPressed: 'ci"',
     end: ['one "two" three "four" five|" six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -899,7 +894,6 @@ suite('Mode Normal', () => {
     start: ['"one" |two'],
     keysPressed: 'ca"',
     end: ['"one" |two'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -971,7 +965,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'daw',
     end: ['one   two|,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -979,7 +972,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daw',
     end: ['one   |three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -987,7 +979,6 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'daw',
     end: ['one   two|,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -995,7 +986,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3aw',
     end: ['|,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1003,7 +993,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd2aw',
     end: ['one   two   three,   |six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1011,7 +1000,6 @@ suite('Mode Normal', () => {
     start: ['one two fo|ur', 'five  six'],
     keysPressed: 'd2aw',
     end: ['one two |six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1020,7 +1008,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd2aw',
     end: ['one   two   three,   |.  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1028,7 +1015,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd2aw',
     end: ['one   two   three', '|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1036,7 +1022,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three   fou|r'],
     keysPressed: 'daw',
     end: ['one   two   thre|e'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1086,7 +1071,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'daw',
     end: ['one   two   three', '| five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1094,7 +1078,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'daW',
     end: ['one   two|   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1109,7 +1092,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daW',
     end: ['one   |three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1117,7 +1099,6 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'daW',
     end: ['one   two   |four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1125,7 +1106,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3aW',
     end: ['|four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1133,7 +1113,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd2aW',
     end: ['one   two   three,   |six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1141,7 +1120,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd2aW',
     end: ['one   two   three', '|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1149,7 +1127,6 @@ suite('Mode Normal', () => {
     start: ['one |two three'],
     keysPressed: 'daW',
     end: ['one |three'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1157,7 +1134,6 @@ suite('Mode Normal', () => {
     start: ['one |two'],
     keysPressed: 'daW',
     end: ['on|e'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1165,7 +1141,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'daW',
     end: ['one   two   three', '| five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1215,7 +1190,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'diw',
     end: ['one   two|three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1223,7 +1197,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'diw',
     end: ['one   |   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1231,7 +1204,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iw',
     end: ['|   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1239,7 +1211,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three  | ', 'five  six'],
     keysPressed: 'diw',
     end: ['one   two   thre|e', 'five  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1247,7 +1218,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'diw',
     end: ['one   two   three', '|', 'four five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1255,7 +1225,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1264,7 +1233,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |.  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1272,7 +1240,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd3iw',
     end: ['one   two   three', '|five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1280,7 +1247,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'diW',
     end: ['one   two|three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1288,7 +1254,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o,   three,   four  '],
     keysPressed: 'diW',
     end: ['one   |   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1296,7 +1261,6 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'diW',
     end: ['one   two   |   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1304,7 +1268,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'diW',
     end: ['one   two   three', '|', 'four five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1312,7 +1275,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iW',
     end: ['|   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1320,7 +1282,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iW',
     end: ['one   two   three,   |  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1328,7 +1289,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd3iw',
     end: ['one   two   three', '|five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1336,7 +1296,6 @@ suite('Mode Normal', () => {
     start: ['one |two three'],
     keysPressed: 'diW',
     end: ['one | three'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1344,7 +1303,6 @@ suite('Mode Normal', () => {
     start: ['Two roads diverged in a |wood, and I', 'I took the one less traveled by'],
     keysPressed: 'dae',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1352,7 +1310,6 @@ suite('Mode Normal', () => {
     start: ['|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
     keysPressed: 'dae',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1360,7 +1317,6 @@ suite('Mode Normal', () => {
     start: ['Two roads diverged in a wood, and I', 'I took the one less traveled by|'],
     keysPressed: 'dae',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1368,7 +1324,6 @@ suite('Mode Normal', () => {
     start: ['|'],
     keysPressed: 'die',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1381,7 +1336,6 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'die',
     end: ['     ', '    ', '|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1394,7 +1348,6 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'die',
     end: ['|', '    ', '   '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1409,7 +1362,6 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'die',
     end: ['  ', ' ', '|', '    ', '   '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1417,7 +1369,6 @@ suite('Mode Normal', () => {
     start: ['|'],
     keysPressed: 'die',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1425,7 +1376,6 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'd}',
     end: ['|', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1433,7 +1383,6 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'y}p',
     end: ['foo', '|foo', 'bar', 'bar', '', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1441,7 +1390,6 @@ suite('Mode Normal', () => {
     start: ['f|oo', 'bar', '', 'fun'],
     keysPressed: 'd}',
     end: ['|f', '', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1449,7 +1397,6 @@ suite('Mode Normal', () => {
     start: ['|foo', '', 'bar', '', 'fun'],
     keysPressed: 'd2}',
     end: ['|', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1457,7 +1404,6 @@ suite('Mode Normal', () => {
     start: ['f|oo', '', 'bar', '', 'fun'],
     keysPressed: 'd2}',
     end: ['|f', '', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1465,7 +1411,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
     keysPressed: 'dip',
     end: ['foo', '', '|', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1473,7 +1418,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', '|', '', 'fun'],
     keysPressed: 'dip',
     end: ['foo', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1481,7 +1425,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
     keysPressed: 'dap',
     end: ['foo', '', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1489,7 +1432,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar baz', 'bar |baz', '', '', 'fun'],
     keysPressed: 'dap',
     end: ['foo', '', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1497,7 +1439,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar |baz', '', '', 'fun'],
     keysPressed: 'dap',
     end: ['foo', '', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1505,7 +1446,6 @@ suite('Mode Normal', () => {
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'das',
     end: ["|I'm always angry."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1513,7 +1453,6 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain. I'm a|lways angry."],
     keysPressed: 'das',
     end: ["That's my secret, Captain|."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1521,7 +1460,6 @@ suite('Mode Normal', () => {
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'dis',
     end: ["| I'm always angry."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1529,7 +1467,6 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain. I'm a|lways angry."],
     keysPressed: 'dis',
     end: ["That's my secret, Captain.| "],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1537,7 +1474,6 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain.  |  I'm always angry."],
     keysPressed: 'visd',
     end: ["That's my secret, Captain.|I'm always angry."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1652,7 +1588,6 @@ suite('Mode Normal', () => {
       start: ['    o|ne'],
       keysPressed: '3gIab<Esc>',
       end: ['ababa|b    one'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1670,7 +1605,6 @@ suite('Mode Normal', () => {
       start: ['|'],
       keysPressed: 'ione<Esc>otwo<Esc>03giab<Esc>',
       end: ['one', 'twoababa|b'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -2187,7 +2121,6 @@ suite('Mode Normal', () => {
     start: ['<blink>he|llo</unblink>'],
     keysPressed: 'cit',
     end: ['<blink>he|llo</unblink>'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2251,7 +2184,6 @@ suite('Mode Normal', () => {
     start: ['<bli|nk></blink>'],
     keysPressed: 'dit',
     end: ['<blink>|</blink>'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2450,7 +2382,6 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
     keysPressed: 'dai',
     end: ['|do_something_else()'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2458,7 +2389,6 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")', '    foo = 3', '|', 'do_something_else()'],
     keysPressed: 'dii',
     end: ['if foo > 3:', '|do_something_else()'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2466,7 +2396,6 @@ suite('Mode Normal', () => {
     start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
     keysPressed: 'daI',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2474,7 +2403,6 @@ suite('Mode Normal', () => {
     start: ['f|oo'],
     keysPressed: 'cia',
     end: ['f|oo'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2482,7 +2410,6 @@ suite('Mode Normal', () => {
     start: [')f|oo('],
     keysPressed: 'cia',
     end: [')f|oo('],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2490,7 +2417,6 @@ suite('Mode Normal', () => {
     start: ['alpha,', 'b|eta,', 'gamma'],
     keysPressed: 'cia',
     end: ['alpha,', 'b|eta,', 'gamma'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2690,7 +2616,6 @@ suite('Mode Normal', () => {
     start: ['(f|oo)'],
     keysPressed: 'daa',
     end: ['(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2698,7 +2623,6 @@ suite('Mode Normal', () => {
     start: ['(|)'],
     keysPressed: 'daa',
     end: ['(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2706,7 +2630,6 @@ suite('Mode Normal', () => {
     start: ['(f|oo, bar, baz)'],
     keysPressed: 'daa',
     end: ['(|bar, baz)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2714,7 +2637,6 @@ suite('Mode Normal', () => {
     start: ['(foo, b|ar, baz)'],
     keysPressed: 'daa',
     end: ['(foo|, baz)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2722,7 +2644,6 @@ suite('Mode Normal', () => {
     start: ['(foo, bar, |baz)'],
     keysPressed: 'daa',
     end: ['(foo, bar|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2730,7 +2651,6 @@ suite('Mode Normal', () => {
     start: ['(', '   |foo,', '   bar,', '   baz', ')'],
     keysPressed: 'daa',
     end: ['|(', '   bar,', '   baz', ')'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2738,7 +2658,6 @@ suite('Mode Normal', () => {
     start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
     keysPressed: 'daa',
     end: ['(', '   foo|,', '   baz', ')'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2746,7 +2665,6 @@ suite('Mode Normal', () => {
     start: ['(', '   foo,', '   bar,', '   ba|z', ')'],
     keysPressed: 'daa',
     end: ['(', '   foo,', '   ba|r', ')'],
-    endMode: Mode.Normal,
   });
 
   suite('<C-u> / <C-d>', () => {

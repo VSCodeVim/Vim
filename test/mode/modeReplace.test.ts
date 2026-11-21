@@ -63,7 +63,6 @@ suite('Mode Replace', () => {
     start: ['123|456', '789'],
     keysPressed: '3Rabc<Esc>',
     end: ['123abcabcab|c', '789'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -71,7 +70,6 @@ suite('Mode Replace', () => {
     start: ['123|456', '789'],
     keysPressed: '3Rabc\ndef<Esc>',
     end: ['123abc', 'defabc', 'defabc', 'de|f', '789'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -143,7 +141,6 @@ suite('Mode Replace', () => {
     start: ['123|456', '123456'],
     keysPressed: 'Rabc<Esc>j0.',
     end: ['123abc', 'ab|c456'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -151,7 +148,6 @@ suite('Mode Replace', () => {
     start: ['123|456', '123456'],
     keysPressed: 'Rabc\ndef<Esc>j0.',
     end: ['123abc', 'def', 'abc', 'de|f'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -159,6 +155,5 @@ suite('Mode Replace', () => {
     start: ['|123456'],
     keysPressed: 'Rabc<Del><Esc>',
     end: ['ab|c56'],
-    endMode: Mode.Normal,
   });
 });

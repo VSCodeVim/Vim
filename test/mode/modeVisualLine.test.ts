@@ -248,7 +248,6 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vr1',
       end: ['|11111111111111111111111', 'one two three four five'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -256,7 +255,6 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vjr1',
       end: ['|11111111111111111111111', '11111111111111111111111'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -264,7 +262,6 @@ suite('Mode Visual Line', () => {
       start: ['test', 'test', 'test', '|test', 'test'],
       keysPressed: 'Vkkr1',
       end: ['test', '|1111', '1111', '1111', 'test'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -520,7 +517,6 @@ suite('Mode Visual Line', () => {
       start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
       keysPressed: 'jV~jjVg~',
       end: ['OnE', 'TwO', 'ThReE', '|FoUr'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -528,7 +524,6 @@ suite('Mode Visual Line', () => {
       start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
       keysPressed: 'Vj~jjVjg~',
       end: ['oNe', 'TwO', '|tHrEe', 'FoUr'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -537,7 +532,6 @@ suite('Mode Visual Line', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'VjjJ',
     end: ['one two| three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -545,7 +539,6 @@ suite('Mode Visual Line', () => {
     start: ['one', '|two', 'three', 'four'],
     keysPressed: 'VlgJ',
     end: ['one', 'two|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -553,7 +546,6 @@ suite('Mode Visual Line', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'VjjgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -561,7 +553,6 @@ suite('Mode Visual Line', () => {
     start: ['o|ne  ', 'two', '  three', 'four'],
     keysPressed: 'VjjgJ',
     end: ['one  two|  three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -569,7 +560,6 @@ suite('Mode Visual Line', () => {
     start: ['one', 'two', 't|hree', 'four'],
     keysPressed: 'VkkgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   suite('C, R, and S', () => {

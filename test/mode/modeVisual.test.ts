@@ -272,7 +272,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -280,7 +279,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vawd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -288,7 +286,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -296,7 +293,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3awd',
       end: ['|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -304,7 +300,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -313,7 +308,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |.  six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -323,7 +317,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -331,7 +324,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -339,7 +331,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -347,7 +338,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -355,7 +345,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -365,7 +354,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -373,7 +361,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -381,7 +368,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -389,7 +375,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -397,7 +382,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -407,7 +391,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -415,7 +398,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vawd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -423,7 +405,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -431,7 +412,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3awd',
       end: ['|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -439,7 +419,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -448,7 +427,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |.  six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -458,7 +436,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -466,7 +443,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -474,7 +450,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -482,7 +457,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -490,7 +464,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -498,7 +471,6 @@ suite('Mode Visual', () => {
       start: ['one', '|two'],
       keysPressed: 'vwYP',
       end: ['one', '|two', 'two'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -508,7 +480,6 @@ suite('Mode Visual', () => {
       start: ["That's my sec|ret, Captain. I'm always angry."],
       keysPressed: 'vlasd',
       end: ["That's my sec|I'm always angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -516,7 +487,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I'm a|lways angry."],
       keysPressed: 'vhasd',
       end: ["That's my secret, Captain.|ways angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -524,7 +494,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I|'m always angry."],
       keysPressed: 'vhhasd',
       end: ['|m always angry.'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -534,7 +503,6 @@ suite('Mode Visual', () => {
       start: ["That's my sec|ret, Captain. I'm always angry."],
       keysPressed: 'vlisd',
       end: ["That's my sec| I'm always angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -542,7 +510,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I'm a|lways angry."],
       keysPressed: 'vhisd',
       end: ["That's my secret, Captain. |ways angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -550,7 +517,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain.  |  I'm always angry."],
       keysPressed: 'vhisd',
       end: ["That's my secret, Captain.| I'm always angry."],
-      endMode: Mode.Normal,
     });
   });
 
@@ -585,7 +551,6 @@ suite('Mode Visual', () => {
         start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
         keysPressed: `di${buttonToPress}`,
         end: [`${start} one ${start} two ${start}|${end} four ${end} five ${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -593,7 +558,6 @@ suite('Mode Visual', () => {
         start: [`| ${start} one ${start} two ${start} three ${end} four ${end} five ${end}`],
         keysPressed: `di${buttonToPress}`,
         end: [` ${start}|${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -601,7 +565,6 @@ suite('Mode Visual', () => {
         start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
         keysPressed: `vi${buttonToPress}i${buttonToPress}i${buttonToPress}d`,
         end: [`${start}|${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -609,7 +572,6 @@ suite('Mode Visual', () => {
         start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
         keysPressed: `d3i${buttonToPress}`,
         end: [`${start}|${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -617,7 +579,6 @@ suite('Mode Visual', () => {
         start: [start, 'one', start, 'two', start, 'th|ree', end, 'four', end, 'five', end],
         keysPressed: `d3i${buttonToPress}`,
         end: [start, `|${end}`],
-        endMode: Mode.Normal,
       });
     });
   });
@@ -628,7 +589,6 @@ suite('Mode Visual', () => {
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vitd',
       end: ['one <blink>|</blink> two'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -636,7 +596,6 @@ suite('Mode Visual', () => {
       start: ['|one <blink>hello</blink> two'],
       keysPressed: 'vitd',
       end: ['|ne <blink>hello</blink> two'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -645,7 +604,6 @@ suite('Mode Visual', () => {
       start: ['<div> one <p> t|wo </p> three </div>'],
       keysPressed: 'v3itd',
       end: ['<div>|</div>'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -653,7 +611,6 @@ suite('Mode Visual', () => {
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vatd',
       end: ['one | two'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -661,7 +618,6 @@ suite('Mode Visual', () => {
       start: ['|one <blink>hello</blink> two'],
       keysPressed: 'vatd',
       end: ['|ne <blink>hello</blink> two'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -670,7 +626,6 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'vatatd',
     end: ['one | four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -678,7 +633,6 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'vatatatatd',
     end: ['one | four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -686,7 +640,6 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'v4atd',
     end: ['one | four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -694,7 +647,6 @@ suite('Mode Visual', () => {
     start: ['<p>', '\t<p>', '\t|test', '\t</p>', '</p>', '', 'do not delete'],
     keysPressed: 'v8atd',
     end: ['|', '', 'do not delete'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -702,7 +654,6 @@ suite('Mode Visual', () => {
     start: ['one | two'],
     keysPressed: 'v4atd',
     end: ['one |two'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -710,7 +661,6 @@ suite('Mode Visual', () => {
     start: ['test(te|st)'],
     keysPressed: 'vi)d',
     end: ['test(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -718,7 +668,6 @@ suite('Mode Visual', () => {
     start: ['|test(test)'],
     keysPressed: 'vi)d',
     end: ['test(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -726,7 +675,6 @@ suite('Mode Visual', () => {
     start: ['|test(test)', 'test(test)'],
     keysPressed: 'vi)d',
     end: ['test(|)', 'test(test)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -734,7 +682,6 @@ suite('Mode Visual', () => {
     start: ['test(te(te|st)st)'],
     keysPressed: 'vi)i)d',
     end: ['test(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -742,7 +689,6 @@ suite('Mode Visual', () => {
     start: ['test(te|st);'],
     keysPressed: 'va)d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -750,7 +696,6 @@ suite('Mode Visual', () => {
     start: ['|test(test);'],
     keysPressed: 'va)d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -758,7 +703,6 @@ suite('Mode Visual', () => {
     start: ['test(te(te|st)st);'],
     keysPressed: 'va)a)d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -766,7 +710,6 @@ suite('Mode Visual', () => {
     start: ['one | two'],
     keysPressed: 'v4a)d',
     end: ['one |two'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -774,7 +717,6 @@ suite('Mode Visual', () => {
     start: ['(', '\t(', '\t|', '\t)', ')', '', 'do not delete'],
     keysPressed: 'v8a)d',
     end: ['|', '', 'do not delete'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -782,7 +724,6 @@ suite('Mode Visual', () => {
     start: ['1|{', 'test', '}1'],
     keysPressed: 'va}d',
     end: ['1|1'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -790,7 +731,6 @@ suite('Mode Visual', () => {
     start: ['test{te{te|st}st};'],
     keysPressed: 'va}a}d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -798,7 +738,6 @@ suite('Mode Visual', () => {
     start: ['test(()=>{', '|', '});'],
     keysPressed: 'vi(d',
     end: ['test(|);'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -806,7 +745,6 @@ suite('Mode Visual', () => {
     start: ['{', '  te|st', '  {', '    test', '  }', '}'],
     keysPressed: 'vi{d',
     end: ['{', '|}'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -814,7 +752,6 @@ suite('Mode Visual', () => {
     start: ['{', '  t|est', ' }'],
     keysPressed: 'vi{d',
     end: ['{', '| }'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -822,7 +759,6 @@ suite('Mode Visual', () => {
     start: ['test[te[te|st]st];'],
     keysPressed: 'va]a]d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -830,7 +766,6 @@ suite('Mode Visual', () => {
     start: ['test <div><p>[[{{((|))}}]]</p></div> test;'],
     keysPressed: 'v8afd',
     end: ['test | test;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -838,7 +773,6 @@ suite('Mode Visual', () => {
     start: ['<p>', '\t(', '\t|', '\t)', '</p>', '', 'do not delete'],
     keysPressed: 'v8afd',
     end: ['|', '', 'do not delete'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -846,7 +780,6 @@ suite('Mode Visual', () => {
     start: ['test (f|oo) "hi" test;'],
     keysPressed: 'vafd',
     end: ['test | "hi" test;'],
-    endMode: Mode.Normal,
   });
   suite('handles replace in visual mode', () => {
     newTest({
@@ -854,7 +787,6 @@ suite('Mode Visual', () => {
       start: ['one |two three four five'],
       keysPressed: 'vwwer1',
       end: ['one |11111111111111 five'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -862,7 +794,6 @@ suite('Mode Visual', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'vjer1',
       end: ['one |1111111111111111111', '1111111 three four five'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -871,7 +802,6 @@ suite('Mode Visual', () => {
     start: ['|foobar'],
     keysPressed: 'v>.',
     end: ['    |foobar'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -879,7 +809,6 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'v_x',
     end: ['', '|t test', ''],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -887,7 +816,6 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'vg_x',
     end: ['', 'test t|e', ''],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -895,7 +823,6 @@ suite('Mode Visual', () => {
     start: ['te|st', 'test', 'test', 'test'],
     keysPressed: 'v3g_x',
     end: ['t|e', 'test'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -903,7 +830,6 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'v$x',
     end: ['', 'test t|e'],
-    endMode: Mode.Normal,
   });
 
   suite('`gv` restores previous visual selection', () => {
@@ -913,7 +839,6 @@ suite('Mode Visual', () => {
         start: ['one t|wo three'],
         keysPressed: 'v' + '<Esc>' + '0' + 'gv' + 'd',
         end: ['one t|o three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -921,7 +846,6 @@ suite('Mode Visual', () => {
         start: ['one |two three'],
         keysPressed: 've' + '<Esc>' + '0' + 'gv' + 'd',
         end: ['one | three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -929,7 +853,6 @@ suite('Mode Visual', () => {
         start: ['one tw|o three'],
         keysPressed: 'vb' + '<Esc>' + '0' + 'gv' + 'd',
         end: ['one | three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -937,7 +860,6 @@ suite('Mode Visual', () => {
         start: ['one', 't|wo', 'three'],
         keysPressed: 'v$' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', 't|three'],
-        endMode: Mode.Normal,
       });
     });
 
@@ -947,7 +869,6 @@ suite('Mode Visual', () => {
         start: ['one', '|two', 'three'],
         keysPressed: 'V' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', '|three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -955,7 +876,6 @@ suite('Mode Visual', () => {
         start: ['one', '|two', 'three', 'four', 'five'],
         keysPressed: 'Vjj' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', '|five'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -963,7 +883,6 @@ suite('Mode Visual', () => {
         start: ['one', 'two', 'three', '|four', 'five'],
         keysPressed: 'Vkk' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', '|five'],
-        endMode: Mode.Normal,
       });
     });
 
@@ -973,7 +892,6 @@ suite('Mode Visual', () => {
         start: ['one', 't|wo', 'three'],
         keysPressed: '<C-v>' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', 't|o', 'three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -981,7 +899,6 @@ suite('Mode Visual', () => {
         start: ['abcde', 'b|cdea', 'cdeab', 'deabc', 'eabcd'],
         keysPressed: '<C-v>jjll' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['abcde', 'b|a', 'cb', 'dc', 'eabcd'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -989,7 +906,6 @@ suite('Mode Visual', () => {
         start: ['abcde', 'bcdea', 'cdeab', 'dea|bc', 'eabcd'],
         keysPressed: '<C-v>kkhh' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['abcde', 'b|a', 'cb', 'dc', 'eabcd'],
-        endMode: Mode.Normal,
       });
     });
   });
@@ -1000,7 +916,6 @@ suite('Mode Visual', () => {
       start: ['first line', 'test| line1', 'test line2', 'second line'],
       keysPressed: 'vjD',
       end: ['first line', '|second line'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1008,7 +923,6 @@ suite('Mode Visual', () => {
       start: ['first line', 'test| line1', 'second line'],
       keysPressed: 'vlllD',
       end: ['first line', '|second line'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1018,7 +932,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'vaid',
       end: ['|do_something_else()'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1026,7 +939,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    bar|', '    if baz:', '        foo = 3', 'do_something_else()'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|do_something_else()'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1034,7 +946,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    bar|', 'if foo > 3:', '    bar'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|if foo > 3:', '    bar'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1042,7 +953,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")', '|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|do_something_else()'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1050,7 +960,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'vaId',
       end: ['|'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1076,7 +985,6 @@ suite('Mode Visual', () => {
         'public modes = [ModeName.VisualBlock',
         '|public modes = [ModeName.VisualLine',
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1084,7 +992,6 @@ suite('Mode Visual', () => {
       start: ['one |two//three four', 'one two//three four'],
       keysPressed: 'vE*',
       end: ['one two//three four', 'one |two//three four'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1104,7 +1011,6 @@ suite('Mode Visual', () => {
         'public modes = [ModeName.VisualBlock',
         'public modes = [ModeName.VisualLine',
       ],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1591,7 +1497,6 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'vUwwvgU',
       end: ['One two |Three'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1599,7 +1504,6 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'vllllUwwvlgU',
       end: ['ONE Two |THree'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1607,7 +1511,6 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'wvhhUwwvhhgU',
       end: ['onE Tw|O Three'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1615,7 +1518,6 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'vuwwvgu',
       end: ['oNE TWO |tHREE'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1623,7 +1525,6 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'vlllluwwvlgu',
       end: ['one tWO |thREE'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1631,7 +1532,6 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'wvhhuwwvhhgu',
       end: ['ONe tW|o tHREE'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1641,7 +1541,6 @@ suite('Mode Visual', () => {
       start: ['|one TWO three FOUR'],
       keysPressed: 'v~wvg~wv~wvg~',
       end: ['One tWO Three |fOUR'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1649,7 +1548,6 @@ suite('Mode Visual', () => {
       start: ['|OnE TwO tHrEe'],
       keysPressed: 'vllll~wwvlg~',
       end: ['oNe twO |ThrEe'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1658,7 +1556,6 @@ suite('Mode Visual', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'vjjJ',
     end: ['one two| three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1666,7 +1563,6 @@ suite('Mode Visual', () => {
     start: ['one', '|two', 'three', 'four'],
     keysPressed: 'vlgJ',
     end: ['one', 'two|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1674,7 +1570,6 @@ suite('Mode Visual', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'vjjgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1682,7 +1577,6 @@ suite('Mode Visual', () => {
     start: ['o|ne  ', 'two', '  three', 'four'],
     keysPressed: 'vjjgJ',
     end: ['one  two|  three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1690,7 +1584,6 @@ suite('Mode Visual', () => {
     start: ['one', 'two', 't|hree', 'four'],
     keysPressed: 'vkkgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1698,7 +1591,6 @@ suite('Mode Visual', () => {
     start: ['|one', '', 'two', 'three'],
     keysPressed: 'vjj<Esc>',
     end: ['one', '', '|two', 'three'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1706,7 +1598,6 @@ suite('Mode Visual', () => {
     start: ['|one', 'two', 'three'],
     keysPressed: 'vlj<Esc>',
     end: ['one', 't|wo', 'three'],
-    endMode: Mode.Normal,
   });
 
   suite('Can handle o', () => {
@@ -1715,7 +1606,6 @@ suite('Mode Visual', () => {
       start: ['ab', 'ab|c', 'abcd'],
       keysPressed: 'vkd',
       end: ['a|b', 'abcd'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1724,7 +1614,6 @@ suite('Mode Visual', () => {
       start: ['ab', 'ab|c', 'abcd'],
       keysPressed: 'vkood',
       end: ['a|b', 'abcd'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1814,7 +1703,6 @@ suite('Mode Visual', () => {
         `  },`,
         `]`,
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1851,7 +1739,6 @@ suite('Mode Visual', () => {
         `  },`,
         `]`,
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1889,7 +1776,6 @@ suite('Mode Visual', () => {
         `  },`,
         `]`,
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1929,7 +1815,6 @@ suite('Mode Visual', () => {
         `  ],`,
         `}`,
       ],
-      endMode: Mode.Normal,
     });
   });
 });
