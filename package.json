@@ -1195,7 +1195,7 @@
     "vscode:prepublish": "pnpm build",
     "build": "tsc -p tsconfig.json --noEmit && node esbuild.mjs --production && npm run commit-hash",
     "build-dev": "node esbuild.mjs && npm run commit-hash",
-    "build-test": "tsc -p tsconfig.json --noEmitOnError --incremental && tsc-alias -p tsconfig.json && node build/writeTestManifest.js",
+    "build-test": "node build/cleanOut.js && tsc -p tsconfig.json --noEmitOnError && tsc-alias -p tsconfig.json && node build/writeTestManifest.js",
     "commit-hash": "git rev-parse HEAD > dist/version.txt",
     "test": "node ./out/test/runTest.js",
     "test-web": "node esbuild.mjs --test-web && vscode-test-web --quality=stable --browserType=chromium --headless --extensionDevelopmentPath=. --extensionTestsPath=out/test-web/index.js",
