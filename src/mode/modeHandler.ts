@@ -1038,16 +1038,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
-    if (cursorsToRemove.length > 0) {
-      // Remove the cursors that no longer exist. Remove from the end to the start
-      // so that the index values don't change.
-      for (let i = cursorsToRemove.length - 1; i >= 0; i--) {
-        const idx = cursorsToRemove[i];
-        if (idx !== 0) {
-          // We should never remove the main selection! This shouldn't happen, but just
-          // in case it does, lets protect against it. Remember kids, always use protection!
-          this.vimState.cursors.splice(idx, 1);
-        }
+    // Remove the cursors that no longer exist. Remove from the end to the start
+    // so that the index values don't change.
+    for (let i = cursorsToRemove.length - 1; i >= 0; i--) {
+      const idx = cursorsToRemove[i];
+      if (idx !== 0) {
+        // We should never remove the main selection! This shouldn't happen, but just
+        // in case it does, lets protect against it. Remember kids, always use protection!
+        this.vimState.cursors.splice(idx, 1);
       }
     }
 
@@ -1185,11 +1183,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
       }
     }
-    let combinedActions: IBaseAction[] = [];
-    for (let i = 0; i < transformation.count; i++) {
-      combinedActions = combinedActions.concat(actions);
-    }
-    recordedState.actionsRun = combinedActions;
+    recordedState.actionsRun = Array.from({ length: transformation.count }, () => actions).flat();
     this.vimState.dotCommandStatus = DotCommandStatus.Finished;
   }
 
@@ -1284,9 +1278,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // Draw selection (or cursor)
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
-      if (this.vimState.modeData.mode === Mode.SearchInProgressMode) {
-        selectionMode = this.vimState.modeData.commandLine.previousMode;
-      } else if (this.vimState.modeData.mode === Mode.CommandlineInProgress) {
+      if (
+        this.vimState.modeData.mode === Mode.SearchInProgressMode ||
+        this.vimState.modeData.mode === Mode.CommandlineInProgress
+      ) {
         selectionMode = this.vimState.modeData.commandLine.previousMode;
       } else if (this.vimState.modeData.mode === Mode.SurroundInputMode) {
         selectionMode = this.vimState.surround!.previousMode;
@@ -1445,7 +1440,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
         if (currentMatch) {
           this.vimState.editor.revealRange(currentMatch.range, revealType);
-        } else if (this.vimState.modeData.mode === Mode.SearchInProgressMode) {
+        } else {
           const offset =
             this.vimState.editor.visibleRanges[0].start.line -
             this.vimState.modeData.firstVisibleLineBeforeSearch;
@@ -1560,29 +1555,26 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // OperatorPendingMode half block cursor
     const opCursorDecorations: vscode.DecorationOptions[] = [];
-    const opCursorCharDecorations: vscode.DecorationOptions[] = [];
     if (this.vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode) {
       for (const { stop: cursorStop } of this.vimState.cursors) {
         let text = TextEditor.getCharAt(this.vimState.document, cursorStop);
         // the ' ' (<space>) needs to be changed to '&nbsp;'
         text = text === ' ' ? '\u00a0' : text;
-        const decorationOptions = {
+        opCursorDecorations.push({
           range: new vscode.Range(cursorStop, cursorStop.getRight()),
           renderOptions: {
             before: {
               contentText: text,
             },
           },
-        };
-        opCursorDecorations.push(decorationOptions);
-        opCursorCharDecorations.push(decorationOptions);
+        });
       }
     }
 
     this.vimState.editor.setDecorations(decoration.operatorPendingModeCursor, opCursorDecorations);
     this.vimState.editor.setDecorations(
       decoration.operatorPendingModeCursorChar,
-      opCursorCharDecorations,
+      opCursorDecorations,
     );
 
     for (const markDecoration of decoration.allMarkDecorations()) {
@@ -1670,29 +1662,23 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
   switch (mode) {
     case Mode.Normal:
+    case Mode.EasyMotionMode:
+    case Mode.EasyMotionInputMode:
       return VSCodeVimCursorType.Block;
     case Mode.Insert:
       return VSCodeVimCursorType.Native;
     case Mode.Visual:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualBlock:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.CommandlineInProgress:
+    case Mode.OperatorPendingMode:
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
-    case Mode.EasyMotionMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.EasyMotionInputMode:
-      return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);
-    case Mode.OperatorPendingMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;
