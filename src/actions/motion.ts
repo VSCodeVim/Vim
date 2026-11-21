@@ -303,6 +303,22 @@ class MoveDownFoldFix extends MoveByScreenLineMaintainDesiredColumn {
   }
 }
 
+class MoveDownByFoldedLine extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
+  movementType: CursorMovePosition = 'down';
+  override by: CursorMoveByUnit = 'foldedLine';
+  override value = 1;
+
+  constructor(multicursorIndex: number) {
+    super();
+    this.multicursorIndex = multicursorIndex;
+  }
+
+  public override execAction(position: Position, vimState: VimState): Promise<Position> {
+    return super.execAction(position, vimState) as unknown as Promise<Position>;
+  }
+}
+
 @RegisterAction
 export class MoveDown extends BaseMovement {
   keys = [['j'], ['<down>'], ['<C-j>'], ['<C-n>']];
@@ -327,14 +343,21 @@ export class MoveDown extends BaseMovement {
       return moveDownFoldFix.execAction(position, vimState);
     }
 
-    if (position.line < vimState.document.lineCount - 1) {
-      return adjustForDesiredColumn({
-        position,
-        desiredColumn: vimState.desiredColumn,
-        multicursorIndex: this.multicursorIndex,
-      }).getDown();
+    if (vimState.currentMode === Mode.VisualBlock) {
+      if (position.line < vimState.document.lineCount - 1) {
+        return adjustForDesiredColumn({
+          position,
+          desiredColumn: vimState.desiredColumn,
+          multicursorIndex: this.multicursorIndex,
+        }).getDown();
+      }
+      return position;
     }
-    return position;
+
+    // Use 'foldedLine' so VS Code moves by logical lines while skipping folded regions.
+    // On VS Code versions without this unit, this degrades to standard line movement.
+    const moveDown = new MoveDownByFoldedLine(this.multicursorIndex ?? 0);
+    return moveDown.execAction(position, vimState);
   }
 
   public override async execActionForOperator(
@@ -370,14 +393,21 @@ export class MoveUp extends BaseMovement {
       return moveUpFoldFix.execAction(position, vimState);
     }
 
-    if (position.line > 0) {
-      return adjustForDesiredColumn({
-        position,
-        desiredColumn: vimState.desiredColumn,
-        multicursorIndex: this.multicursorIndex,
-      }).getUp();
+    if (vimState.currentMode === Mode.VisualBlock) {
+      if (position.line > 0) {
+        return adjustForDesiredColumn({
+          position,
+          desiredColumn: vimState.desiredColumn,
+          multicursorIndex: this.multicursorIndex,
+        }).getUp();
+      }
+      return position;
     }
-    return position;
+
+    // Use 'foldedLine' so VS Code moves by logical lines while skipping folded regions.
+    // On VS Code versions without this unit, this degrades to standard line movement.
+    const moveUp = new MoveUpByFoldedLine(this.multicursorIndex ?? 0);
+    return moveUp.execAction(position, vimState);
   }
 
   public override async execActionForOperator(
@@ -418,6 +448,22 @@ class MoveUpFoldFix extends MoveByScreenLineMaintainDesiredColumn {
       desiredColumn: vimState.desiredColumn,
       multicursorIndex: this.multicursorIndex,
     });
+  }
+}
+
+class MoveUpByFoldedLine extends MoveByScreenLineMaintainDesiredColumn {
+  keys = [];
+  movementType: CursorMovePosition = 'up';
+  override by: CursorMoveByUnit = 'foldedLine';
+  override value = 1;
+
+  constructor(multicursorIndex: number) {
+    super();
+    this.multicursorIndex = multicursorIndex;
+  }
+
+  public override execAction(position: Position, vimState: VimState): Promise<Position> {
+    return super.execAction(position, vimState) as unknown as Promise<Position>;
   }
 }
 
