@@ -60,7 +60,7 @@ To enable key-repeating, execute the following in your Terminal, log out and bac
 
 ```sh
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false              # For VS Code
-defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insider
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false      # For VS Code Insiders
 defaults write com.vscodium ApplePressAndHoldEnabled -bool false                      # For VS Codium
 defaults write com.microsoft.VSCodeExploration ApplePressAndHoldEnabled -bool false   # For VS Codium Exploration users
 defaults write com.exafunction.windsurf ApplePressAndHoldEnabled -bool false          # For Windsurf
@@ -129,7 +129,7 @@ These settings are specific to VSCodeVim.
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------- |
 | vim.changeWordIncludesWhitespace | Include trailing whitespace when changing word. This configures the <kbd>cw</kbd> action to act consistently as its siblings (<kbd>yw</kbd> and <kbd>dw</kbd>) instead of acting as <kbd>ce</kbd>.                                                                                                                                                                                                                                 | Boolean | false                                                         |
 | vim.cursorStylePerMode._{Mode}_  | Configure a specific cursor style for _{Mode}_. Omitted modes will use [default cursor type](https://github.com/VSCodeVim/Vim/blob/4a6fde6dbd4d1fac1f204c0dc27c32883651ef1a/src/mode/mode.ts#L34) Supported cursors: line, block, underline, line-thin, block-outline, and underline-thin.                                                                                                                                         | String  | None                                                          |
-| vim.digraphs._{shorthand}_       | Set custom digraph shorthands that can override the default ones. Entries should map a two-character shorthand to a descriptive string and one or more UTF16 code points. Example: `"R!": ["🚀", [55357, 56960]]`                                                                                                                                                                                                                  | Object  | `{"R!": ["🚀", [0xD83D, 0xDE80]]`                             |
+| vim.digraphs._{shorthand}_       | Set custom digraph shorthands that can override the default ones. Entries should map a two-character shorthand to a descriptive string and one or more UTF16 code points. Example: `"R!": ["🚀", [55357, 56960]]`                                                                                                                                                                                                                  | Object  | `{"R!": ["🚀", [0xD83D, 0xDE80]]}`                             |
 | vim.disableExtension             | Disable VSCodeVim extension. This setting can also be toggled using `toggleVim` command in the Command Palette                                                                                                                                                                                                                                                                                                                     | Boolean | false                                                         |
 | vim.handleKeys                   | Delegate configured keys to be handled by VS Code instead of by the VSCodeVim extension. Any key in `keybindings` section of the [package.json](https://github.com/VSCodeVim/Vim/blob/master/package.json) that has a `vim.use<C-...>` in the `when` argument can be delegated back to VS Code by setting `"<C-...>": false`. Example: to use `ctrl+f` for find (native VS Code behavior): `"vim.handleKeys": { "<C-f>": false }`. | String  | `"<C-d>": true`<br /> `"<C-s>": false`<br /> `"<C-z>": false` |
 | vim.overrideCopy                 | Override VS Code's copy command with our own, which works correctly with VSCodeVim. If cmd-c/ctrl-c is giving you issues, set this to false and complain [here](https://github.com/Microsoft/vscode/issues/217).                                                                                                                                                                                                                   | Boolean | false                                                         |
@@ -163,7 +163,7 @@ To leverage neovim for Ex-commands,
 | vim.neovimUseConfigFile | If `true`, Neovim will load a config file specified by `vim.neovimConfigPath`. This is necessary if you want Neovim to be able to use its own plugins. | Boolean | false         |
 | vim.neovimConfigPath    | Path that Neovim will load as config file. If left blank, Neovim will search in its default location.                                                  | String  |               |
 
-Here's some ideas on what you can do with neovim integration:
+Here are some ideas on what you can do with neovim integration:
 
 - [The power of g](http://vim.wikia.com/wiki/Power_of_g)
 - [The :normal command](https://vi.stackexchange.com/questions/4418/execute-normal-command-over-range)
@@ -188,7 +188,7 @@ Custom remappings are defined on a per-mode basis.
     ]
 ```
 
-- Bind `£` to goto previous whole word under cursor:
+- Bind `£` to go to previous whole word under cursor:
 
 ```json
     "vim.normalModeKeyBindings": [
@@ -243,7 +243,7 @@ Custom remappings are defined on a per-mode basis.
             ]
         },
         {
-            "before": ["leader", "w"],
+            "before": ["<leader>", "w"],
             "commands": [
                 "workbench.action.files.save",
             ]
@@ -395,11 +395,11 @@ Custom remappings are defined on a per-mode basis.
     debug: ModeHandler: handling key=<C-a>.
     ```
 
-    As you press the key that you are trying to remap, do you see it outputted here? If not, it means we don't subscribe to those key events. It is still possible to remap those keys by using VSCode's [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference) (see next section: [Remapping more complex key combinations](#remapping-more-complex-key-combinations)).
+    As you press the key that you are trying to remap, do you see it output here? If not, it means we don't subscribe to those key events. It is still possible to remap those keys by using VSCode's [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference) (see next section: [Remapping more complex key combinations](#remapping-more-complex-key-combinations)).
 
 #### Remapping more complex key combinations
 
-It is highly recommended to remap keys using vim commands like `"vim.normalModeKeyBindings"` ([see here](#key-remapping)). But sometimes the usual remapping commands are not enough as they do not support every key combinations possible (for example `Alt+key` or `Ctrl+Shift+key`). In this case it is possible to create new keybindings inside [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference). To do so: open up keybindings.json in VSCode using `CTRL+SHIFT+P` and select `Open keyboard shortcuts (JSON)`.
+It is highly recommended to remap keys using vim commands like `"vim.normalModeKeyBindings"` ([see here](#key-remapping)). But sometimes the usual remapping commands are not enough as they do not support every key combination possible (for example `Alt+key` or `Ctrl+Shift+key`). In this case it is possible to create new keybindings inside [keybindings.json](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-reference). To do so: open up keybindings.json in VSCode using `CTRL+SHIFT+P` and select `Open keyboard shortcuts (JSON)`.
 
 You can then add a new entry to the keybindings like so:
 
@@ -572,7 +572,7 @@ Once easymotion is active, initiate motions using the following commands. After 
 
 `<leader><leader> (2s|2f|2F|2t|2T) <char><char>` and `<leader><leader><leader> bd2t <char>char>` are also available.
 The difference is character count required for search.
-For example, `<leader><leader> 2s <char><char>` requires two characters, and search by two characters.
+For example, `<leader><leader> 2s <char><char>` requires two characters, and searches by two characters.
 This mapping is not a standard mapping, so it is recommended to use your custom mapping.
 
 ### vim-surround
@@ -692,7 +692,7 @@ Any third-party program can be used to switch input methods. The following will 
 1.  Configure `vim.autoSwitchInputMethod`.
     - MacOS:
 
-      Given the input method key of `com.apple.keylayout.US` and `im-select` located at `/usr/local/bin`. The configuration is:
+      Given the input method key of `com.apple.keylayout.US` and `im-select` located at `/usr/local/bin`, the configuration is:
 
       ```json
       "vim.autoSwitchInputMethod.enable": true,
@@ -703,7 +703,7 @@ Any third-party program can be used to switch input methods. The following will 
 
     - Windows:
 
-      Given the input method key of `1033` (en_US) and `im-select.exe` located at `D:/bin`. The configuration is:
+      Given the input method key of `1033` (en_US) and `im-select.exe` located at `D:/bin`, the configuration is:
 
       ```json
       "vim.autoSwitchInputMethod.enable": true,
