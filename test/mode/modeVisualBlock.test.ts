@@ -45,6 +45,7 @@ suite('VisualBlock mode', () => {
       start: ['t|est', 'test'],
       keysPressed: '<C-v>' + 'lj' + 'A123',
       end: ['tes123|t', 'tes123|t'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -52,6 +53,7 @@ suite('VisualBlock mode', () => {
       start: ['te|st', 'test'],
       keysPressed: '<C-v>' + 'hj' + 'A123',
       end: ['tes123|t', 'tes123|t'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -59,6 +61,7 @@ suite('VisualBlock mode', () => {
       start: ['te|st', 'te', 't'],
       keysPressed: '<C-v>' + 'jj' + 'A123',
       end: ['tes123|t', 'te 123|', 't  123|'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -68,6 +71,7 @@ suite('VisualBlock mode', () => {
       start: ['t|est', 'test'],
       keysPressed: '<C-v>' + 'lj' + 'I123',
       end: ['t123|est', 't123|est'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -75,6 +79,7 @@ suite('VisualBlock mode', () => {
       start: ['te|st', 'test'],
       keysPressed: '<C-v>' + 'hj' + 'I123',
       end: ['t123|est', 't123|est'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -82,6 +87,7 @@ suite('VisualBlock mode', () => {
       start: ['|test', '', 'test'],
       keysPressed: '<C-v>' + 'lljj' + 'I123',
       end: ['123|test', '123|', '123|test'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -90,6 +96,7 @@ suite('VisualBlock mode', () => {
       start: ['t|est', '', 'test'],
       keysPressed: '<C-v>' + 'lljj' + 'I123',
       end: ['t123|est', '', 't123|est'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -98,22 +105,25 @@ suite('VisualBlock mode', () => {
       newTest({
         title: 'With forward selection',
         start: ['t|est', 'test'],
-        keysPressed: '<C-v>' + 'lj' + 'c123',
+        keysPressed: '<C-v>' + 'lj' + key + '123',
         end: ['t123|t', 't123|t'],
+        endMode: Mode.Insert,
       });
 
       newTest({
         title: 'With backward selection',
         start: ['te|st', 'test'],
-        keysPressed: '<C-v>' + 'hj' + 'c123',
+        keysPressed: '<C-v>' + 'hj' + key + '123',
         end: ['t123|t', 't123|t'],
+        endMode: Mode.Insert,
       });
 
       newTest({
         title: 'Skips short lines',
         start: ['te|st', '', 'x', 'test'],
-        keysPressed: '<C-v>' + 'h3j' + 'c123',
+        keysPressed: '<C-v>' + 'h3j' + key + '123',
         end: ['t123|t', '', 'x', 't123|t'],
+        endMode: Mode.Insert,
       });
     });
   }
@@ -147,6 +157,7 @@ suite('VisualBlock mode', () => {
     start: ['t|est', 'test'],
     keysPressed: '<C-v>gjI123',
     end: ['t123|est', 't123|est'],
+    endMode: Mode.Insert,
   });
 
   suite('`>` (indent at left edge of block)', () => {
@@ -257,6 +268,7 @@ suite('VisualBlock mode', () => {
     start: ['|Dog', 'Angry', 'Dog', 'Angry', 'Dog'],
     keysPressed: '<C-v>4j$Aaa',
     end: ['Dogaa|', 'Angryaa|', 'Dogaa|', 'Angryaa|', 'Dogaa|'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -264,6 +276,7 @@ suite('VisualBlock mode', () => {
     start: ['|Dog', 'Angry', 'Dog', 'Angry', 'Dog'],
     keysPressed: '<C-v>' + '$' + '4j' + 'Aaa',
     end: ['Dogaa|', 'Angryaa|', 'Dogaa|', 'Angryaa|', 'Dogaa|'],
+    endMode: Mode.Insert,
   });
 
   newTest({

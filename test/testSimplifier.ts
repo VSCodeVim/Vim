@@ -28,6 +28,7 @@ type Expectation = {
    * nothing changed.
    */
   end?: string[];
+  /** The mode after the keys; defaults to Normal */
   endMode?: Mode;
   endFsPath?: string | (() => string);
   registers?: { [name: string]: string | undefined };
@@ -252,13 +253,11 @@ async function assertExpectation(
   const end = DocState.parse(expectedEnd);
   assertDocState(modeHandler, end, label);
 
-  if (expectation.endMode !== undefined) {
-    assert.equal(
-      Mode[modeHandler.vimState.currentMode],
-      Mode[expectation.endMode],
-      `${label}Didn't enter correct mode.`,
-    );
-  }
+  assert.equal(
+    Mode[modeHandler.vimState.currentMode],
+    Mode[expectation.endMode ?? Mode.Normal],
+    `${label}Didn't enter correct mode.`,
+  );
 
   if (expectation.endFsPath !== undefined) {
     assert.equal(

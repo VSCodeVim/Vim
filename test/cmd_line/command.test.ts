@@ -14,6 +14,7 @@ suite('cmd_line/search command', () => {
   });
 
   for (const prompt of [':', '/']) {
+    const endMode = prompt === ':' ? Mode.CommandlineInProgress : Mode.SearchInProgressMode;
     newTest({
       title: `<C-w> can remove word in ${prompt === ':' ? 'cmd line' : 'search mode'}`,
       start: ['|'],
@@ -22,10 +23,11 @@ suite('cmd_line/search command', () => {
           title: 'removes "123"',
           keysPressed: `${prompt}abc-123<C-w>`,
           statusBar: `${prompt}abc-|`,
+          endMode,
         },
-        { title: 'removes "-"', keysPressed: '<C-w>', statusBar: `${prompt}abc|` },
-        { title: 'removes "abc"', keysPressed: '<C-w>', statusBar: `${prompt}|` },
-        { title: 'removes nothing', keysPressed: '<C-w>', statusBar: `${prompt}|` },
+        { title: 'removes "-"', keysPressed: '<C-w>', statusBar: `${prompt}abc|`, endMode },
+        { title: 'removes "abc"', keysPressed: '<C-w>', statusBar: `${prompt}|`, endMode },
+        { title: 'removes nothing', keysPressed: '<C-w>', statusBar: `${prompt}|`, endMode },
       ],
     });
   }
@@ -105,14 +107,26 @@ suite('cmd_line/search command', () => {
         title: 'goes back to :s/x/y',
         keysPressed: ':s/a/b\n:s/x/y\n:w<C-p>',
         statusBar: ':s/x/y|',
+        endMode: Mode.CommandlineInProgress,
       },
-      { title: 'goes back to :s/a/b', keysPressed: '<C-p>', statusBar: ':s/a/b|' },
-      { title: 'goes forward to :s/x/y', keysPressed: '<C-n>', statusBar: ':s/x/y|' },
+      {
+        title: 'goes back to :s/a/b',
+        keysPressed: '<C-p>',
+        statusBar: ':s/a/b|',
+        endMode: Mode.CommandlineInProgress,
+      },
+      {
+        title: 'goes forward to :s/x/y',
+        keysPressed: '<C-n>',
+        statusBar: ':s/x/y|',
+        endMode: Mode.CommandlineInProgress,
+      },
       {
         title: 'goes forward to the command being typed',
         keysPressed: '<C-n>',
         // TODO: Really, this should be `:w|`. See #4093.
         statusBar: ':|',
+        endMode: Mode.CommandlineInProgress,
       },
     ],
   });

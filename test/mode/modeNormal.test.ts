@@ -2163,6 +2163,7 @@ suite('Mode Normal', () => {
     start: ['    one', '    tw|o', '    three'],
     keysPressed: '2S',
     end: ['    one', '    |'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -2417,6 +2418,7 @@ suite('Mode Normal', () => {
     start: ['|     '],
     keysPressed: 'cc',
     end: ['     |'],
+    endMode: Mode.Insert,
   });
 
   newTest({

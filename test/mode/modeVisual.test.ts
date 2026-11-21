@@ -133,6 +133,7 @@ suite('Mode Visual', () => {
     start: ['1', '2', '|3', '4', '5'],
     keysPressed: 'vH',
     end: ['|1', '2', '3', '4', '5'],
+    endMode: Mode.Visual,
   });
 
   newTest({
@@ -1164,6 +1165,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjC',
       end: ['this is', '|', 'the world'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1171,6 +1173,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$C',
       end: ['this is', '', '|the world'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1180,6 +1183,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjR',
       end: ['this is', '|', 'the world'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1187,6 +1191,7 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$R',
       end: ['this is', '', '|the world'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1534,6 +1539,7 @@ suite('Mode Visual', () => {
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkI_',
       end: ['111', '2_|22', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1541,6 +1547,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjI_',
       end: ['111', '2_|22', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1548,6 +1555,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjI_',
       end: ['111', '2_|22', ' ', '_|444', '555'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1557,6 +1565,7 @@ suite('Mode Visual', () => {
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkA_',
       end: ['111', '222_|', '333_|', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1564,6 +1573,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjA_',
       end: ['111', '222_|', '333_|', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1571,6 +1581,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjA_',
       end: ['111', '222_|', ' ', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
   });
 
