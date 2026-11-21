@@ -13,6 +13,7 @@ pnpm watch           # Rebuild on file changes
 
 npx gulp test                  # Run tests in Docker (preferred)
 npx gulp test --grep <REGEX>   # Run filtered tests in Docker (matches suite and test names)
+npx gulp test --crlf           # Run tests in Docker with CRLF line endings, as on Windows
 pnpm build-test && pnpm test   # Run tests locally (close all VS Code instances first)
 pnpm build-dev && pnpm test-web  # Run web extension smoke tests (test/web/) in headless Chromium
 

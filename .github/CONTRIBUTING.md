@@ -66,6 +66,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
    # If Docker is installed and running:
    npx gulp test                 # Run tests inside Docker container
    npx gulp test --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
+   npx gulp test --crlf          # Run tests inside Docker container with CRLF line endings, as on Windows
 
    # Otherwise, build and run the tests locally:
    pnpm build                    # Build

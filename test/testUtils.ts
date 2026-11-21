@@ -20,6 +20,24 @@ import { EvaluationContext } from '../src/vimscript/expression/evaluate';
 import { Configuration } from './testConfiguration';
 
 /**
+ * The line ending of test documents: the `TEST_EOL` environment variable (`lf` or `crlf`) if set,
+ * or else the OS's. `index.ts` sets VS Code's `files.eol` to it, so new documents use it.
+ */
+export const testEol = ((eol) => {
+  switch (eol) {
+    case undefined:
+    case '':
+      return os.EOL;
+    case 'lf':
+      return '\n';
+    case 'crlf':
+      return '\r\n';
+    default:
+      throw new Error(`TEST_EOL must be 'lf' or 'crlf', not '${eol}'`);
+  }
+})(process.env.TEST_EOL);
+
+/**
  * Resets state shared across editors, so that tests don't depend on what ran before them.
  * Runs before every test, ahead of its `setup` hooks (see `rootHooks` in `index.ts`), so state a
  * suite's `setup` creates on purpose is kept.
@@ -187,7 +205,7 @@ export async function waitForEditorsToClose(
 export function assertEqualLines(expectedLines: string[]) {
   assert.equal(
     vscode.window.activeTextEditor?.document.getText(),
-    expectedLines.join(os.EOL),
+    expectedLines.join(testEol),
     'Document content does not match.',
   );
 }
@@ -208,7 +226,7 @@ export async function openNewFile(
 ): Promise<vscode.TextEditor> {
   const filePath = await createFile({
     fileExtension: args.fileExtension,
-    contents: (args.content ?? []).join(os.EOL),
+    contents: (args.content ?? []).join(testEol),
   });
   const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
   const editor = await vscode.window.showTextDocument(doc);
@@ -256,7 +274,7 @@ export async function setupWorkspace(
     await cleanUpWorkspace();
     await openNewFile({ fileExtension: args.fileExtension, content: args.fileContent });
   } else {
-    const content = (args.fileContent ?? []).join(os.EOL);
+    const content = (args.fileContent ?? []).join(testEol);
     assert.ok(
       await editor.edit((builder) => {
         builder.replace(TextEditor.getDocumentRange(editor.document), content);

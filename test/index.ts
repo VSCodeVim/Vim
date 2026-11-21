@@ -12,6 +12,7 @@
 import { glob } from 'glob';
 import Mocha from 'mocha';
 import * as path from 'path';
+import * as vscode from 'vscode';
 
 import { Globals } from '../src/globals';
 import { Configuration } from './testConfiguration';
@@ -21,6 +22,13 @@ Globals.mockConfiguration = new Configuration();
 
 export async function run(): Promise<void> {
   const mochaGrep = new RegExp(process.env.MOCHA_GREP || '');
+
+  // New documents get their line ending from `files.eol`. It's a user setting, which persists in
+  // the test's VS Code profile, so set it on every run rather than only when `TEST_EOL` is set.
+  const { testEol } = await import('./testUtils');
+  await vscode.workspace
+    .getConfiguration('files')
+    .update('eol', testEol, vscode.ConfigurationTarget.Global);
 
   // Create the mocha test
   const mocha = new Mocha({

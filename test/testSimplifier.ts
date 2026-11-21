@@ -3,7 +3,6 @@ import { strict as assert } from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
-import * as os from 'os';
 import { isDeepStrictEqual } from 'util';
 import { Position } from 'vscode';
 import { Cursor } from '../src/common/motion/cursor';
@@ -19,7 +18,7 @@ import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
 import { timers } from '../src/util/timers';
-import { openNewFile, reloadConfiguration, saveConfig } from './testUtils';
+import { openNewFile, reloadConfiguration, saveConfig, testEol } from './testUtils';
 
 /**
  * What to check after a step's keys are handled.
@@ -393,7 +392,7 @@ function assertEqual<T>(actual: T, expected: T, message: string, details = () =>
 function assertDocText(lines: string[], label: string, details?: () => string): void {
   assertEqual(
     vscode.window.activeTextEditor?.document.getText(),
-    lines.join(os.EOL),
+    lines.join(testEol),
     `${label}Document content does not match.`,
     details,
   );
