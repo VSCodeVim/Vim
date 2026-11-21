@@ -209,6 +209,9 @@ importers:
         specifier: 0.12.5
         version: 0.12.5
     devDependencies:
+      '@sinonjs/fake-timers':
+        specifier: 15.4.0
+        version: 15.4.0
       '@types/diff-match-patch':
         specifier: 1.0.36
         version: 1.0.36

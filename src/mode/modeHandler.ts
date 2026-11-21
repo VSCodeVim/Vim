@@ -27,6 +27,7 @@ import { Dot, isTextTransformation } from '../transformations/transformations';
 import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
+import { timers } from '../util/timers';
 import { scrollView } from '../util/util';
 import { VSCodeContext } from '../util/vscodeContext';
 import { BaseAction, BaseCommand, KeypressState, getRelevantAction } from './../actions/base';
@@ -451,7 +452,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.recordedState.bufferedKeysTimeoutObj
     ) {
       // Handle the bufferedKeys or append the new key to the previously bufferedKeys
-      clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
+      timers.clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
       this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
       this.vimState.recordedState.commandList = [...this.vimState.recordedState.bufferedKeys];
       this.vimState.recordedState.bufferedKeys = [];
@@ -1658,7 +1659,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
   dispose() {
     // Don't let a pending remap timeout handle keys after this ModeHandler is gone
-    clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
+    timers.clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
     this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
     for (const d of this.disposables) {
       d.dispose();

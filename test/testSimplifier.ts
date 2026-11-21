@@ -1,3 +1,4 @@
+import FakeTimers from '@sinonjs/fake-timers';
 import { strict as assert } from 'assert';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
@@ -17,6 +18,7 @@ import { Register } from '../src/register/register';
 import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
+import { timers } from '../src/util/timers';
 import { openNewFile, reloadConfiguration, saveConfig } from './testUtils';
 
 /**
@@ -640,21 +642,34 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
     void promise.finally(() => keyEventsInFlight.delete(promise)).catch(() => undefined);
     return promise;
   };
-  const settle = async () => {
-    while (
-      keyEventsInFlight.size > 0 ||
-      modeHandler.vimState.recordedState.bufferedKeysTimeoutObj !== undefined ||
-      modeHandler.remapState.isCurrentlyPerformingRemapping
-    ) {
-      await wait(10);
+  const finishKeyEvents = async () => {
+    while (keyEventsInFlight.size > 0) {
+      await Promise.allSettled([...keyEventsInFlight]);
     }
+  };
+
+  const sandbox = sinon.createSandbox();
+
+  // The remap timeout fires only when a step's `afterTimeout` says so, however long the steps take,
+  // and a timeout still pending at the end of the test never fires
+  const clock = FakeTimers.createClock();
+  // The fake clock's timer IDs have a different type, but the code only passes them back to
+  // `clearTimeout`
+  sandbox.replace(timers, 'setTimeout', (callback, ms) => clock.setTimeout(callback, ms) as never);
+  sandbox.replace(timers, 'clearTimeout', (handle) => clock.clearTimeout(handle as never));
+  /** Fires the pending remap timeout, and any it leads to, and waits for what they start */
+  const fireTimeouts = async () => {
+    do {
+      await clock.runAllAsync();
+      await finishKeyEvents();
+    } while (modeHandler.vimState.recordedState.bufferedKeysTimeoutObj !== undefined);
   };
 
   const steps: Step[] = testObj.steps ?? [testObj];
 
   const inputBox =
     testObj.inputBox !== undefined
-      ? sinon.stub(vscode.window, 'showInputBox').resolves(testObj.inputBox)
+      ? sandbox.stub(vscode.window, 'showInputBox').resolves(testObj.inputBox)
       : undefined;
   try {
     let previousEnd = testObj.start;
@@ -664,19 +679,14 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
 
       await modeHandler.handleMultipleKeyEvents(tokenizeKeySequence(step.keysPressed), false);
       // Let calls made without awaiting finish; keys buffered waiting for the timeout stay buffered
-      while (keyEventsInFlight.size > 0) {
-        await Promise.allSettled([...keyEventsInFlight]);
-      }
+      await finishKeyEvents();
 
       const end = step.end ?? previousEnd;
       await assertExpectation(modeHandler, step, end, label);
       previousEnd = end;
 
       if (step.afterTimeout) {
-        // The timeout started when the keys were handled, so it has fired by the end of this wait.
-        // Its handling (and any remap it starts) may still be running, or the timer may be late.
-        await wait(Globals.mockConfiguration.timeout);
-        await settle();
+        await fireTimeouts();
         const endAfterTimeout = step.afterTimeout.end ?? end;
         await assertExpectation(
           modeHandler,
@@ -692,7 +702,7 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
       assert.ok(inputBox.called, 'Expected an input box to open.');
     }
   } finally {
-    inputBox?.restore();
+    sandbox.restore();
   }
 
   return modeHandler;

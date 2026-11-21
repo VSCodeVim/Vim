@@ -6,6 +6,7 @@ import { ModeHandler } from '../mode/modeHandler';
 import { StatusBar } from '../statusBar';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
+import { timers } from '../util/timers';
 import { exCommandParser } from '../vimscript/exCommandParser';
 import { IKeyRemapping, KeyBindingsMapConfigKey, RemapMode } from './iconfiguration';
 
@@ -279,7 +280,7 @@ export class Remapper implements IRemapper {
       vimState.recordedState.bufferedKeys = [...keys];
 
       // Create Timeout
-      vimState.recordedState.bufferedKeysTimeoutObj = setTimeout(() => {
+      vimState.recordedState.bufferedKeysTimeoutObj = timers.setTimeout(() => {
         void modeHandler.handleKeyEvent(SpecialKeys.TimeoutFinished);
       }, configuration.timeout);
       return true;

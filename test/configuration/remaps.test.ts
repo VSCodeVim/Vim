@@ -1,25 +1,10 @@
-import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest, newTestSkip } from '../testSimplifier';
 import { setupWorkspace } from '../testUtils';
 
 suite('Remaps', () => {
-  let modeHandler: ModeHandler;
-
   setup(async () => {
-    // The timeout shouldn't be lower then 200ms when testing because it might result in some tests
-    // failing when they shouldn't. I ran this test successfully with this timeout as low as 50ms, but
-    // lower than that I start getting some issues. I still set this a little bit higher because it
-    // might change from machine to machine.
-    // Edit: Let's try 100ms because we're rebellious and have places to be
-    await setupWorkspace({
-      config: {
-        timeout: 100,
-        leader: ' ',
-      },
-    });
-    modeHandler = (await getAndUpdateModeHandler())!;
+    await setupWorkspace({ config: { leader: ' ' } });
   });
 
   newTest({
