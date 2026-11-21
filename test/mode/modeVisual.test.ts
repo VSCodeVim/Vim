@@ -132,7 +132,7 @@ suite('Mode Visual', () => {
     title: 'Can handle H key',
     start: ['1', '2', '|3', '4', '5'],
     keysPressed: 'vH',
-    end: ['|1', '2', '3', '4', '5'],
+    end: ['[|1', '2', '3]', '4', '5'],
     endMode: Mode.Visual,
   });
 
@@ -1649,23 +1649,10 @@ suite('Mode Visual', () => {
         ],
         leader: ' ',
       },
-      start: [
-        `"vim.normalModeKeyBindingsNonRecursive": [`,
-        `  {`,
-        `    "be|fore": ["j"],`,
-        `    "after": ["g", "j"],`,
-        `  },`,
-        `]`,
-      ],
+      // No square brackets in this document, since they mark the selection in Visual mode
+      start: [`{`, `  "be|fore": "j",`, `  "after": "gj",`, `}`],
       keysPressed: ' aflh',
-      end: [
-        `"vim.normalModeKeyBindingsNonRecursive": [`,
-        `  {`,
-        `    "before|": ["j"],`,
-        `    "after": ["g", "j"],`,
-        `  },`,
-        `]`,
-      ],
+      end: [`{`, `  "[befor|e]": "j",`, `  "after": "gj",`, `}`],
       endMode: Mode.Visual,
     });
 
