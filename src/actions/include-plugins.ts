@@ -1,5 +1,6 @@
 // plugin
 import './plugins/camelCaseMotion';
+import './plugins/commentary';
 import './plugins/easymotion/easymotion.cmd';
 import './plugins/easymotion/registerMoveActions';
 import './plugins/replaceWithRegister';

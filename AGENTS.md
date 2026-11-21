@@ -33,9 +33,9 @@ CI runs `pnpm prettier:check`, `pnpm lint`, and the tests on Ubuntu and Windows,
 
 Key directories:
 
-- `src/actions/` — Action base classes (`base.ts`), motions (`motion.ts`), operators (`operator.ts`, including commentary's `gc`/`gC`), and text objects
+- `src/actions/` — Action base classes (`base.ts`), motions (`motion.ts`), operators (`operator.ts`), and text objects
 - `src/actions/commands/` — Commands grouped by area (`insert.ts`, `search.ts`, `put.ts`, `visual.ts`, ...); large consolidated files are intentional
-- `src/actions/plugins/` — Emulated Vim plugins (easymotion, surround, sneak, camelCaseMotion, replaceWithRegister, targets, imswitcher)
+- `src/actions/plugins/` — Emulated Vim plugins (commentary, easymotion, surround, sneak, camelCaseMotion, replaceWithRegister, targets, imswitcher)
 - `src/actions/languages/` — Language-specific motions (e.g. Python)
 - `src/textobject/` — Word, sentence, and paragraph logic used by motions and text objects
 - `src/mode/modeHandler.ts` — Central state machine; one instance per open editor

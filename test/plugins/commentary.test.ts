@@ -1,7 +1,7 @@
 import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
-suite('comment operator', () => {
+suite('commentary', () => {
   suiteSetup(async () => {
     await setupWorkspace({ fileExtension: '.js' });
   });
