@@ -1,6 +1,6 @@
 import { Mode } from '../../../src/mode/mode';
 import { newTest, newTestSkip } from '../../testSimplifier';
-import { setupWorkspace } from './../../testUtils';
+import { setupWorkspace, testEol } from './../../testUtils';
 
 suite('Motions in Normal Mode', () => {
   suiteSetup(setupWorkspace);
@@ -961,16 +961,13 @@ suite('Motions in Normal Mode', () => {
       end: ['ab|c', 'def', 'ghi'],
     });
 
-    // TODO(#4844): this fails on Windows due to \r\n
-    newTestSkip(
-      {
-        title: '`[count]go` goes to offset <count>, newlines disregarded',
-        start: ['abc', 'de|f', 'ghi'],
-        keysPressed: '10go',
-        end: ['abc', 'def', 'g|hi'],
-      },
-      process.platform === 'win32',
-    );
+    newTest({
+      title: '`[count]go` counts line endings',
+      start: ['abc', 'de|f', 'ghi'],
+      keysPressed: '10go',
+      // Vim counts a CRLF line ending as 2 bytes (see `:help go`)
+      end: testEol === '\r\n' ? ['abc', 'de|f', 'ghi'] : ['abc', 'def', 'g|hi'],
+    });
   });
 
   newTest({
