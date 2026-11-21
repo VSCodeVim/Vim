@@ -438,8 +438,9 @@ async function assertDocState(
   const { vimState } = modeHandler;
   const actual = () => {
     const actualMode = vimState.currentMode;
+    const { document } = vimState;
     const lines = DocState.render(
-      vimState.document.getText().split(/\r?\n/),
+      Array.from({ length: document.lineCount }, (_, i) => document.lineAt(i).text),
       vimState.cursors,
       actualMode,
     );

@@ -28,11 +28,7 @@ suite('Provide line completions', () => {
   };
 
   suite('Line Completion Provider unit tests', () => {
-    // TODO(#4844): this fails on Windows
     test('Can complete lines in file, prioritizing above cursor, near cursor', async () => {
-      if (process.platform === 'win32') {
-        return;
-      }
       const lines = ['a1', 'a2', 'a', 'a3', 'b1', 'a4'];
       await setupTestWithLines(lines);
       const expectedCompletions = ['a2', 'a1', 'a3', 'a4'];
