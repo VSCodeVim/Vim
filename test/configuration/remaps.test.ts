@@ -1,5 +1,5 @@
 import { Mode } from '../../src/mode/mode';
-import { newTest, newTestSkip } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { setupWorkspace } from '../testUtils';
 
 suite('Remaps', () => {
@@ -232,8 +232,7 @@ suite('Remaps', () => {
     endMode: Mode.Insert,
   });
 
-  // TODO: skipped (flaky)
-  newTestSkip({
+  newTest({
     title:
       'Ambiguous Mappings with a long remapping still succeed after timeout or when a key is pressed to break ambiguity',
     remaps: [
