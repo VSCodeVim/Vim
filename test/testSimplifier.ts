@@ -26,7 +26,7 @@ type Expectation = {
   /**
    * The document after the keys; `|` marks each cursor. If `endMode` is a Visual mode, `[` and `]`
    * surround each selection's characters from anchor to cursor, with `|` just before the cursor's
-   * character as usual (`a[b|c]d` or `a[|bc]d`); see `VisualDocState`. In a multi-step test,
+   * character as usual (`a[b|c]d` or `a[|bc]d`); see `DocState`. In a multi-step test,
    * it defaults to the previous step's `end` (or `start`), and in `afterTimeout` to the step's own
    * `end`, meaning nothing changed.
    */
@@ -108,36 +108,6 @@ export const newTestOnly = (testObj: TestObject) => {
 export const newTestSkip = (testObj: TestObject, skipCondition: boolean = true) =>
   newTestGeneric(testObj, skipCondition ? test.skip : test);
 
-class DocState {
-  public static parse(lines: string[]): DocState {
-    lines = [...lines];
-
-    const cursors: Position[] = [];
-    for (let i = 0; i < lines.length;) {
-      const columnIdx = lines[i].indexOf('|');
-      if (columnIdx >= 0) {
-        lines[i] = lines[i].replace('|', '');
-        cursors.push(new Position(i, columnIdx));
-      } else {
-        i++;
-      }
-    }
-    if (cursors.length === 0) {
-      throw new Error("Missing '|' in test object");
-    }
-
-    return new DocState(cursors, lines);
-  }
-
-  constructor(cursors: Position[], lines: string[]) {
-    this.cursors = cursors;
-    this.lines = lines;
-  }
-
-  public readonly cursors: Position[];
-  public readonly lines: string[];
-}
-
 /** The character just before `pos` in `lines`, which is the line break if `pos` starts a line */
 function charBefore(lines: string[], pos: Position): Position {
   return pos.character > 0 ? pos.getLeft() : new Position(pos.line - 1, lines[pos.line - 1].length);
@@ -151,25 +121,67 @@ function charAfter(lines: string[], pos: Position): Position {
   return pos.line + 1 < lines.length ? new Position(pos.line + 1, 0) : pos;
 }
 
-/**
- * The expected state at the end of a step that ends in a Visual mode, written with `[` and `]`
- * around the characters from the anchor to the cursor. As in Normal mode, `|` goes just before the
- * character the cursor is on, which must be the first or last character in the brackets:
- * `ab[cd|e]f` (anchor on `c`, cursor on `e`) or `ab[|cde]f` (anchor on `e`, cursor on `c`).
- * A one-character selection is `ab[|c]d`. A selection that includes a line break spans lines, and
- * a cursor on a line break goes at the end of its line: `['ab[cd|', ']ef']`. `[|]` marks a cursor
- * on an empty line in Visual Line or Visual Block mode, or where there's no character at all (an
- * empty document). A `|` outside brackets isn't allowed.
- *
- * The anchor and cursor determine both `vimState.cursors` and the editor's selections, which
- * depend on the mode (e.g. whole lines in Visual Line mode).
- */
-class VisualDocState {
-  public static parse(lines: string[], mode: Mode): VisualDocState {
-    function fail(message: string): never {
-      throw new Error(`${message} in Visual mode test document ${JSON.stringify(lines)}`);
-    }
+/** A selection from the `anchor` character to the `active` one, where the cursor is */
+type Ends = { anchor: Position; active: Position };
 
+/**
+ * A document and its cursors, written as test lines. `|` goes just before the character each
+ * cursor is on.
+ *
+ * In a Visual mode, `[` and `]` also surround each selection's characters from the anchor to the
+ * cursor, and `|` must be just before the first or last character in the brackets: `ab[cd|e]f`
+ * (anchor on `c`, cursor on `e`) or `ab[|cde]f` (anchor on `e`, cursor on `c`). A one-character
+ * selection is `ab[|c]d`. A selection that includes a line break spans lines, and a cursor on a
+ * line break goes at the end of its line: `['ab[cd|', ']ef']`. `[|]` marks a cursor on an empty
+ * line in Visual Line or Visual Block mode, or where there's no character at all (an empty
+ * document). A `|` outside brackets isn't allowed. Outside Visual modes, `[` and `]` are text.
+ *
+ * Each cursor is a selection's anchor and active ends, which are the same outside Visual modes.
+ * With the mode, they determine both `vimState.cursors` and the editor's selections (e.g. whole
+ * lines in Visual Line mode).
+ */
+class DocState {
+  public static parse(lines: string[], mode: Mode): DocState {
+    const fail = (message: string): never => {
+      throw new Error(`${message} in test document ${JSON.stringify(lines)}`);
+    };
+    const parsed = isVisualMode(mode)
+      ? DocState.parseSelections(lines, fail)
+      : DocState.parseCursors(lines, fail);
+    return new DocState(
+      parsed.lines,
+      parsed.ends.map(({ anchor, active }) =>
+        DocState.toCursor(parsed.lines, anchor, active, mode),
+      ),
+      mode,
+    );
+  }
+
+  private static parseCursors(
+    lines: string[],
+    fail: (message: string) => never,
+  ): { lines: string[]; ends: Ends[] } {
+    const ends: Ends[] = [];
+    const outLines = lines.map((line, lineIdx) => {
+      let out = '';
+      for (const char of line) {
+        if (char === '|') {
+          const pos = new Position(lineIdx, out.length);
+          ends.push({ anchor: pos, active: pos });
+        } else {
+          out += char;
+        }
+      }
+      return out;
+    });
+    if (ends.length === 0) fail("Missing '|'");
+    return { lines: outLines, ends };
+  }
+
+  private static parseSelections(
+    lines: string[],
+    fail: (message: string) => never,
+  ): { lines: string[]; ends: Ends[] } {
     const outLines: string[] = [];
     const ranges: Array<{ lo: Position; hi: Position; bar: Position }> = [];
     let open: { lo: Position; bar?: Position } | undefined;
@@ -197,35 +209,37 @@ class VisualDocState {
     if (open) fail("Unclosed '['");
     if (ranges.length === 0) fail("Missing '[' ']'");
 
-    const cursors: Cursor[] = [];
-    for (const { lo, hi, bar } of ranges) {
+    const ends = ranges.map(({ lo, hi, bar }) => {
       // `last` is the last character in the brackets (`lo` itself if there are none)
       const last = lo.isEqual(hi) ? lo : charBefore(outLines, hi);
       if (!bar.isEqual(lo) && !bar.isEqual(last)) {
         fail("'|' must be just before the first or last character in a selection");
       }
       // A one-character selection is forward
-      const [anchor, active] = bar.isEqual(lo) && !lo.isEqual(last) ? [last, lo] : [lo, last];
-      cursors.push(VisualDocState.toCursor(outLines, anchor, active, mode));
-    }
-
-    return new VisualDocState(outLines, cursors, mode);
+      return bar.isEqual(lo) && !lo.isEqual(last)
+        ? { anchor: last, active: lo }
+        : { anchor: lo, active: last };
+    });
+    return { lines: outLines, ends };
   }
 
   /**
-   * Writes `cursors` into `lines` in the notation `parse` reads, for failure messages. A selection
-   * the notation can't express (e.g. a one-character Visual mode selection stored as backward)
-   * gets a `?` after it.
+   * Writes `cursors` into `lines` in the notation `parse` reads, for failure messages. A cursor
+   * the notation can't express (e.g. one with a selection outside Visual modes) gets a `?` after it.
    */
   public static render(lines: string[], cursors: readonly Cursor[], mode: Mode): string[] {
     // `order` puts inserts at the same position in the right order: a selection's `]` before the
     // next one's `[`, and `[` before `|`
     const inserts: Array<{ pos: Position; text: string; order: number }> = [];
     for (const cursor of cursors) {
-      const { anchor, active } = VisualDocState.fromCursor(lines, cursor, mode);
+      const { anchor, active } = DocState.fromCursor(lines, cursor, mode);
+      const mark = DocState.toCursor(lines, anchor, active, mode).equals(cursor) ? '' : '?';
+      if (!isVisualMode(mode)) {
+        inserts.push({ pos: active, text: `|${mark}`, order: 2 });
+        continue;
+      }
       const [first, last] = active.isBefore(anchor) ? [active, anchor] : [anchor, active];
       const end = charAfter(lines, last);
-      const mark = VisualDocState.toCursor(lines, anchor, active, mode).equals(cursor) ? '' : '?';
       if (
         anchor.isEqual(active) &&
         (end.isEqual(last) || (mode !== Mode.Visual && lines[anchor.line] === ''))
@@ -253,18 +267,20 @@ class VisualDocState {
 
   /** The cursor VSCodeVim stores for a selection from the `anchor` character to `active` */
   private static toCursor(lines: string[], anchor: Position, active: Position, mode: Mode): Cursor {
+    if (!isVisualMode(mode)) {
+      return Cursor.atPosition(active);
+    }
     // In Visual mode, a forward selection's `stop` is after the cursor's character
     return mode === Mode.Visual && !active.isBefore(anchor)
       ? new Cursor(anchor, charAfter(lines, active))
       : new Cursor(anchor, active);
   }
 
-  /** The inverse of `toCursor` */
-  private static fromCursor(
-    lines: string[],
-    { start, stop }: Cursor,
-    mode: Mode,
-  ): { anchor: Position; active: Position } {
+  /** The inverse of `toCursor`, as far as it has one */
+  private static fromCursor(lines: string[], { start, stop }: Cursor, mode: Mode): Ends {
+    if (!isVisualMode(mode)) {
+      return { anchor: stop, active: stop };
+    }
     return {
       anchor: start,
       active: mode === Mode.Visual && start.isBefore(stop) ? charBefore(lines, stop) : stop,
@@ -288,7 +304,7 @@ class VisualDocState {
       ];
     } else if (mode === Mode.VisualLine) {
       return [new vscode.Selection(first.line, 0, last.line, lines[last.line].length)];
-    } else {
+    } else if (mode === Mode.VisualBlock) {
       const left = Math.min(anchor.character, active.character);
       const right = Math.max(anchor.character, active.character) + 1;
       const selections: vscode.Selection[] = [];
@@ -299,6 +315,8 @@ class VisualDocState {
         );
       }
       return selections;
+    } else {
+      return [new vscode.Selection(active, active)];
     }
   }
 
@@ -315,8 +333,8 @@ class VisualDocState {
   /** The editor selections VSCodeVim draws for `cursors` */
   public get selections(): vscode.Selection[] {
     return this.cursors.flatMap((cursor) => {
-      const { anchor, active } = VisualDocState.fromCursor(this.lines, cursor, this.mode);
-      return VisualDocState.toSelections(this.lines, anchor, active, this.mode);
+      const { anchor, active } = DocState.fromCursor(this.lines, cursor, this.mode);
+      return DocState.toSelections(this.lines, anchor, active, this.mode);
     });
   }
 }
@@ -360,7 +378,7 @@ async function applyDocState(editor: vscode.TextEditor, docState: DocState): Pro
     }),
     'Edit failed',
   );
-  editor.selections = docState.cursors.map((cursor) => new vscode.Selection(cursor, cursor));
+  editor.selections = docState.selections;
 }
 
 /** Like `assert.deepEqual`, but only builds the end of the message (`details`) if the check fails */
@@ -407,69 +425,47 @@ async function assertEditorSelections(
 }
 
 /**
- * Checks the document and cursors against `expectedEnd`, and that nothing is selected, returning
- * its lines without the `|`s
+ * Checks the document, `vimState.cursors`, and the editor's selections against `expected`, written
+ * in `DocState` notation for `mode`, returning its lines without the markers
  */
 async function assertDocState(
   modeHandler: ModeHandler,
-  expectedEnd: string[],
-  label: string,
-): Promise<string[]> {
-  const end = DocState.parse(expectedEnd);
-  assertDocText(end.lines, label);
-  const { vimState } = modeHandler;
-  assert.deepEqual(
-    vimState.cursors.map((cursor) => cursor.stop.toString()).sort(),
-    end.cursors.map(String).sort(),
-    `${label}Cursors are wrong.`,
-  );
-  await assertEditorSelections(
-    vimState.editor,
-    end.cursors.map((position) => new vscode.Selection(position, position)),
-    label,
-  );
-  assert.deepEqual(
-    showCursors(vimState.cursors),
-    showCursors(end.cursors.map((position) => Cursor.atPosition(position))),
-    `${label}vimState.cursors ([start | stop]) should have nothing selected.`,
-  );
-  return end.lines;
-}
-
-/**
- * Checks the document, `vimState.cursors`, and the editor's selections against `expectedEnd`,
- * written in `VisualDocState` notation, returning its lines without the markers
- */
-async function assertVisualDocState(
-  modeHandler: ModeHandler,
-  expectedEnd: string[],
+  expected: string[],
   mode: Mode,
   label: string,
 ): Promise<string[]> {
   const { vimState } = modeHandler;
-  const actual = () =>
-    '\nActual: ' +
-    (isVisualMode(vimState.currentMode)
-      ? JSON.stringify(
-          VisualDocState.render(
-            vimState.document.getText().split(/\r?\n/),
-            vimState.cursors,
-            vimState.currentMode,
-          ),
-        )
-      : `(not in a Visual mode: ${Mode[vimState.currentMode]})`);
+  const actual = () => {
+    const actualMode = vimState.currentMode;
+    const lines = DocState.render(
+      vimState.document.getText().split(/\r?\n/),
+      vimState.cursors,
+      actualMode,
+    );
+    const inMode = actualMode === mode ? '' : ` (in ${Mode[actualMode]} mode)`;
+    return `\nActual${inMode}: ${JSON.stringify(lines)}`;
+  };
 
-  let end: VisualDocState;
+  let end: DocState;
   try {
-    end = VisualDocState.parse(expectedEnd, mode);
+    end = DocState.parse(expected, mode);
   } catch (e) {
     throw new Error(`${label}${e instanceof Error ? e.message : String(e)}${actual()}`);
   }
   assertDocText(end.lines, label, actual);
+  const showStops = (cursors: readonly Cursor[]) => cursors.map((c) => c.stop.toString()).sort();
+  assertEqual(
+    showStops(vimState.cursors),
+    showStops(end.cursors),
+    `${label}Cursors are wrong.`,
+    actual,
+  );
   assertEqual(
     showCursors(vimState.cursors),
     showCursors(end.cursors),
-    `${label}vimState.cursors ([start | stop]) are wrong.`,
+    isVisualMode(mode)
+      ? `${label}vimState.cursors ([start | stop]) are wrong.`
+      : `${label}vimState.cursors ([start | stop]) should have nothing selected.`,
     actual,
   );
   await assertEditorSelections(vimState.editor, end.selections, label, actual);
@@ -483,9 +479,7 @@ async function assertExpectation(
   label: string,
 ): Promise<void> {
   const endMode = expectation.endMode ?? Mode.Normal;
-  const endLines = isVisualMode(endMode)
-    ? await assertVisualDocState(modeHandler, expectedEnd, endMode, label)
-    : await assertDocState(modeHandler, expectedEnd, label);
+  const endLines = await assertDocState(modeHandler, expectedEnd, endMode, label);
 
   assert.equal(
     Mode[modeHandler.vimState.currentMode],
@@ -617,7 +611,7 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
   const editor = vscode.window.activeTextEditor;
   assert(editor, 'Expected an active editor');
 
-  const start = DocState.parse(testObj.start);
+  const start = DocState.parse(testObj.start, Mode.Normal);
 
   if (testObj.editorOptions) {
     editor.options = testObj.editorOptions;
@@ -633,7 +627,7 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
   ModeHandlerMap.clear();
   const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
 
-  await assertDocState(modeHandler, testObj.start, 'Before keys are pressed: ');
+  await assertDocState(modeHandler, testObj.start, Mode.Normal, 'Before keys are pressed: ');
 
   // When the remap timeout fires, the remapper calls handleKeyEvent(<TimeoutFinished>) without
   // awaiting it. Track those calls so the checks below can wait for them to finish instead of
