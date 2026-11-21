@@ -198,7 +198,6 @@ class VisualDocState {
     if (ranges.length === 0) fail("Missing '[' ']'");
 
     const cursors: Cursor[] = [];
-    const selections: vscode.Selection[] = [];
     for (const { lo, hi, bar } of ranges) {
       // `last` is the last character in the brackets (`lo` itself if there are none)
       const last = lo.isEqual(hi) ? lo : charBefore(outLines, hi);
@@ -208,10 +207,9 @@ class VisualDocState {
       // A one-character selection is forward
       const [anchor, active] = bar.isEqual(lo) && !lo.isEqual(last) ? [last, lo] : [lo, last];
       cursors.push(VisualDocState.toCursor(outLines, anchor, active, mode));
-      selections.push(...VisualDocState.toSelections(outLines, anchor, active, mode));
     }
 
-    return new VisualDocState(outLines, cursors, selections);
+    return new VisualDocState(outLines, cursors, mode);
   }
 
   /**
@@ -304,15 +302,23 @@ class VisualDocState {
     }
   }
 
-  private constructor(lines: string[], cursors: Cursor[], selections: vscode.Selection[]) {
+  private constructor(lines: string[], cursors: Cursor[], mode: Mode) {
     this.lines = lines;
     this.cursors = cursors;
-    this.selections = selections;
+    this.mode = mode;
   }
 
   public readonly lines: string[];
   public readonly cursors: Cursor[];
-  public readonly selections: vscode.Selection[];
+  public readonly mode: Mode;
+
+  /** The editor selections VSCodeVim draws for `cursors` */
+  public get selections(): vscode.Selection[] {
+    return this.cursors.flatMap((cursor) => {
+      const { anchor, active } = VisualDocState.fromCursor(this.lines, cursor, this.mode);
+      return VisualDocState.toSelections(this.lines, anchor, active, this.mode);
+    });
+  }
 }
 
 const namedKeyRegex =
