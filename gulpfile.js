@@ -48,10 +48,13 @@ function updateVersion(done) {
 // test
 gulp.task('run-test', (done) => {
   // the flag --grep takes js regex as a string and filters by test and test suite names
+  // the flag --crlf makes test documents use CRLF line endings, as they do on Windows
   var knownOptions = {
     // eslint-disable-next-line id-denylist -- minimist option name
     string: 'grep',
-    default: { grep: '' },
+    // eslint-disable-next-line id-denylist -- minimist option name
+    boolean: 'crlf',
+    default: { grep: '', crlf: false },
   };
   var options = minimist(process.argv.slice(2), knownOptions);
 
@@ -87,6 +90,8 @@ gulp.task('run-test', (done) => {
       '--shm-size=2g',
       '--env',
       `MOCHA_GREP=${options.grep}`,
+      '--env',
+      `TEST_EOL=${options.crlf ? 'crlf' : ''}`,
       '-v',
       process.cwd() + ':/app',
       // Keep the container's Linux dependencies, build output, VS Code download, and caches in

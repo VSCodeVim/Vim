@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { Position } from 'vscode';
 import { JumpTracker } from '../src/jumps/jumpTracker';
 import { Jump } from './../src/jumps/jump';
-import { ITestObject, newTest, newTestSkip } from './testSimplifier';
+import { ITestObject, newTest } from './testSimplifier';
 
 suite('Record and navigate jumps', () => {
   const newJumpTest = (options: ITestObject | Omit<ITestObject, 'title'>) => {
@@ -12,16 +12,6 @@ suite('Record and navigate jumps', () => {
       title: `Can track jumps for keys: ${options.keysPressed.replace(/\n/g, '<CR>')}`,
       ...options,
     });
-  };
-
-  const newJumpTestSkipOnWindows = (options: ITestObject | Omit<ITestObject, 'title'>) => {
-    return newTestSkip(
-      {
-        title: `Can track jumps for keys: ${options.keysPressed.replace(/\n/g, '<CR>')}`,
-        ...options,
-      },
-      process.platform === 'win32',
-    );
   };
 
   suite('Jump Tracker unit tests', () => {
@@ -385,22 +375,19 @@ suite('Record and navigate jumps', () => {
     });
 
     suite('Can shift jump lines down after inserting a line', () => {
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkkoINSERTED<Esc>0',
         end: ['start', 'a1', 'a2', '|INSERTED', 'a3', 'a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a2', 'a3'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkoINSERTED<Esc>0',
         end: ['start', 'a1', 'a2', 'a3', '|INSERTED', 'a4', 'a5', 'end'],
         jumps: ['start', 'a1', 'a2', 'a3'],
       });
-      // TODO(#4844): this fails on Windows
-      newJumpTestSkipOnWindows({
+      newJumpTest({
         start: ['|start', 'a1', 'a2', 'a3', 'a4', 'a5', 'end'],
         keysPressed: '/^\nnnnkOINSERTED<Esc>0',
         end: ['start', 'a1', 'a2', '|INSERTED', 'a3', 'a4', 'a5', 'end'],

@@ -39,12 +39,7 @@ suite('Neovim Validator', () => {
     assert.strictEqual(configuration.enableNeovim, false);
   });
 
-  // TODO(#4844): this fails on Windows
   test('neovim enabled with nvim in path', async () => {
-    if (process.platform === 'win32') {
-      return;
-    }
-
     // setup
     const configuration = new Configuration();
     configuration.enableNeovim = true;
@@ -52,8 +47,9 @@ suite('Neovim Validator', () => {
 
     const oldPath = process.env.PATH?.slice();
     process.env.PATH = `/usr/bin${path.delimiter}/some/other/path`;
-    sandbox.stub(fs, 'existsSync').withArgs('/usr/bin/nvim').returns(true);
-    sandbox.stub(childProcess, 'execFileSync').withArgs('/usr/bin/nvim', sinon.match.array);
+    const nvimPath = path.join('/usr/bin', process.platform === 'win32' ? 'nvim.exe' : 'nvim');
+    sandbox.stub(fs, 'existsSync').withArgs(nvimPath).returns(true);
+    sandbox.stub(childProcess, 'execFileSync').withArgs(nvimPath, sinon.match.array);
 
     // test
     const validator = new NeovimValidator();
@@ -64,7 +60,7 @@ suite('Neovim Validator', () => {
     // assert
     assert.strictEqual(actual.numErrors, 0);
     assert.strictEqual(configuration.enableNeovim, true);
-    assert.strictEqual(configuration.neovimPath, '/usr/bin/nvim');
+    assert.strictEqual(configuration.neovimPath, nvimPath);
   });
 
   test('neovim disabled', async () => {

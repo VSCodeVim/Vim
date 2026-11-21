@@ -128,7 +128,9 @@ export class NeovimWrapper implements vscode.Disposable {
     }
 
     await this.nvim.setOption('gdefault', configuration.gdefault === true);
-    await buf.setLines(vimState.document.getText().split('\n'), {
+    const { document } = vimState;
+    const lines = Array.from({ length: document.lineCount }, (_, i) => document.lineAt(i).text);
+    await buf.setLines(lines, {
       start: 0,
       end: -1,
       strictIndexing: true,

@@ -1152,12 +1152,14 @@ class ActionVisualReflowParagraph extends BaseOperator {
     start = start.getLineBegin();
     end = end.getLineEnd();
 
-    let textToReflow = vimState.document.getText(new vscode.Range(start, end));
-    textToReflow = this.reflowParagraph(textToReflow);
+    const lines: string[] = [];
+    for (let line = start.line; line <= end.line; line++) {
+      lines.push(vimState.document.lineAt(line).text);
+    }
 
     vimState.recordedState.transformer.replace(
       new vscode.Range(start, end),
-      textToReflow,
+      this.reflowParagraph(lines.join('\n')),
       // Move cursor to front of line to realign the view
       PositionDiff.exactCharacter({ character: 0 }),
     );
