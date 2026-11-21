@@ -1,9 +1,9 @@
 import { strict as assert } from 'assert';
-import _ from 'lodash';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 
 import * as os from 'os';
+import { isDeepStrictEqual } from 'util';
 import { Position } from 'vscode';
 import { Cursor } from '../src/common/motion/cursor';
 import { IConfiguration } from '../src/configuration/iconfiguration';
@@ -401,7 +401,7 @@ async function applyDocState(editor: vscode.TextEditor, docState: DocState): Pro
 
 /** Like `assert.deepEqual`, but only builds the end of the message (`details`) if the check fails */
 function assertEqual<T>(actual: T, expected: T, message: string, details = () => ''): void {
-  if (!_.isEqual(actual, expected)) {
+  if (!isDeepStrictEqual(actual, expected)) {
     assert.deepEqual(actual, expected, message + details());
   }
 }
@@ -554,10 +554,10 @@ async function applyConfig(testObj: TestObject): Promise<() => Promise<void>> {
   }
 
   // Remaps are mutated in place when the config is validated, so snapshot deeply
-  const prevConfig = _.cloneDeep(Globals.mockConfiguration);
+  const prevConfig = structuredClone(Globals.mockConfiguration);
   const config = Globals.mockConfiguration;
   if (testObj.config) {
-    Object.assign(config, _.cloneDeep(testObj.config));
+    Object.assign(config, structuredClone(testObj.config));
   }
   if (testObj.remaps) {
     await addVimrcRemaps(config, testObj.remaps);
