@@ -23,7 +23,7 @@ interface IRemapper {
 }
 
 export class Remappers implements IRemapper {
-  private readonly remappers = [
+  private readonly remappers: IRemapper[] = [
     new InsertModeRemapper(),
     new NormalModeRemapper(),
     new VisualModeRemapper(),
@@ -615,7 +615,7 @@ class InsertModeRemapper extends Remapper {
 
 class NormalModeRemapper extends Remapper {
   constructor() {
-    super(keyBindingsConfigKey('normal'), [Mode.Normal]);
+    super(keyBindingsConfigKey('normal'), [Mode.Normal, Mode.InsertNormal, Mode.ReplaceNormal]);
   }
 }
 
@@ -627,7 +627,17 @@ class OperatorPendingModeRemapper extends Remapper {
 
 class VisualModeRemapper extends Remapper {
   constructor() {
-    super(keyBindingsConfigKey('visual'), [Mode.Visual, Mode.VisualLine, Mode.VisualBlock]);
+    super(keyBindingsConfigKey('visual'), [
+      Mode.Visual,
+      Mode.VisualLine,
+      Mode.VisualBlock,
+      Mode.InsertVisual,
+      Mode.InsertVisualLine,
+      Mode.InsertVisualBlock,
+      Mode.ReplaceVisual,
+      Mode.ReplaceVisualLine,
+      Mode.ReplaceVisualBlock,
+    ]);
   }
 }
 
