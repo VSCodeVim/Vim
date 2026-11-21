@@ -37,18 +37,12 @@ suite('Mode Visual', () => {
     end: ['a|12345'],
   });
 
-  test('Can handle w', async () => {
-    await modeHandler.handleMultipleKeyEvents('itest test test\ntest\n'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w']);
-
-    const sel = modeHandler.vimState.editor.selection;
-    assert.strictEqual(sel.start.character, 0);
-    assert.strictEqual(sel.start.line, 0);
-
-    // The input cursor comes BEFORE the block cursor. Try it out, this
-    // is how Vim works.
-    assert.strictEqual(sel.end.character, 6);
-    assert.strictEqual(sel.end.line, 0);
+  newTest({
+    title: 'Can handle w',
+    start: ['|test test test', 'test', ''],
+    keysPressed: 'vw',
+    end: ['[test |t]est test', 'test', ''],
+    endMode: Mode.Visual,
   });
 
   test('Can handle wd', async () => {
@@ -1272,170 +1266,78 @@ suite('Mode Visual', () => {
   });
 
   suite('replace text in characterwise visual-mode with characterwise register content', () => {
-    test('gv selects the last pasted text (which is shorter than original)', async () => {
-      await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split(''),
-      );
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        '2ggv$hy'.split(''), // yank the second line
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggv$hp'.split(''), // replace the first line
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'with me' at the first line
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'with me'.length);
-      assert.strictEqual(selection.end.line, 0);
+    newTest({
+      title: 'gv selects the last pasted text (which is shorter than original)',
+      start: ['replace this', 'with me', 'or with me longer than the targe|t'],
+      keysPressed: '2ggv$hy' + 'ggv$hp' + 'gv',
+      end: ['[with m|e]', 'with me', 'or with me longer than the target'],
+      endMode: Mode.Visual,
     });
 
-    test('gv selects the last pasted text (which is longer than original)', async () => {
-      await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split(''),
-      );
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        'v0y'.split(''), // yank the last line
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggv$hp'.split(''), // replace the first line
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      assertEqualLines([
-        'or with me longer than the target',
-        'with me',
-        'or with me longer than the target',
-      ]);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'or with me longer than the target' at the first line
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'or with me longer than the target'.length);
-      assert.strictEqual(selection.end.line, 0);
+    newTest({
+      title: 'gv selects the last pasted text (which is longer than original)',
+      start: ['replace this', 'with me', 'or with me longer than the targe|t'],
+      keysPressed: 'v0y' + 'ggv$hp' + 'gv',
+      end: ['[or with me longer than the targe|t]', 'with me', 'or with me longer than the target'],
+      endMode: Mode.Visual,
     });
 
-    test('gv selects the last pasted text (multiline)', async () => {
-      await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        '2ggvjey'.split(''), // yank 'foo\nbar'
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggvep'.split(''), // replace 'replace'
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      assertEqualLines(['foo', 'bar this', 'foo', 'bar']);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'foo\nbar'
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 3);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gv selects the last pasted text (multiline)',
+      start: ['replace this', 'foo', 'ba|r'],
+      keysPressed: '2ggvjey' + 'ggvep' + 'gv',
+      end: ['[foo', 'ba|r] this', 'foo', 'bar'],
+      endMode: Mode.Visual,
     });
   });
 
   suite('can handle gn', () => {
-    test('gn selects the next match text', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('ggv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'hello'.length);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the next match text',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + 'ggv' + 'gn',
+      end: ['[foo', 'hell|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the current word at |hello', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the current word at |hello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggv' + 'gn',
+      end: ['foo', '[hell|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the current word at h|ello', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2gglv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 1);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the current word at h|ello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2gglv' + 'gn',
+      end: ['foo', 'h[ell|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the current word at hel|lo', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggehv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 3);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the current word at hel|lo',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggehv' + 'gn',
+      end: ['foo', 'hel[l|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the next word at hell|o', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggev'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 4);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 2);
+    newTest({
+      title: 'gn selects the next word at hell|o',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggev' + 'gn',
+      end: ['foo', 'hell[o world', 'hell|o]', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the next word at hello|', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggelv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 5);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 2);
+    newTest({
+      title: 'gn selects the next word at hello|',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggelv' + 'gn',
+      end: ['foo', 'hello[ world', 'hell|o]', 'hello'],
+      endMode: Mode.Visual,
     });
   });
 
