@@ -258,11 +258,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               this.updateView({ drawSelection: false, revealRange: false });
 
               // Store selection for commands like gv
-              this.vimState.lastVisualSelection = {
-                mode: this.vimState.currentMode,
-                start: this.vimState.cursorStartPosition,
-                end: this.vimState.cursorStopPosition,
-              };
+              this.vimState.lastVisualSelection = this.createLastVisualSelection(
+                this.vimState.currentMode,
+              );
               return;
             } else if (!selection.active.isEqual(selection.anchor)) {
               Logger.trace('Creating Visual Selection from command!');
@@ -271,11 +269,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
               this.updateView({ drawSelection: false, revealRange: false });
 
               // Store selection for commands like gv
-              this.vimState.lastVisualSelection = {
-                mode: Mode.Visual,
-                start: this.vimState.cursorStartPosition,
-                end: this.vimState.cursorStopPosition,
-              };
+              this.vimState.lastVisualSelection = this.createLastVisualSelection(Mode.Visual);
               return;
             }
           }
@@ -409,11 +403,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
       if (isVisualMode(this.vimState.currentMode)) {
         // Store selection for commands like gv
-        this.vimState.lastVisualSelection = {
-          mode: this.vimState.currentMode,
-          start: this.vimState.cursorStartPosition,
-          end: this.vimState.cursorStopPosition,
-        };
+        this.vimState.lastVisualSelection = this.createLastVisualSelection(
+          this.vimState.currentMode,
+        );
       }
       this.updateView({ drawSelection: toDraw, revealRange: false });
     }
@@ -983,12 +975,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       isVisualMode(this.vimState.currentMode) &&
       this.vimState.dotCommandStatus !== DotCommandStatus.Executing
     ) {
-      // Store selection for commands like gv
-      this.vimState.lastVisualSelection = {
-        mode: this.vimState.currentMode,
-        start: this.vimState.cursorStartPosition,
-        end: this.vimState.cursorStopPosition,
-      };
+      this.vimState.lastVisualSelection = this.createLastVisualSelection(this.vimState.currentMode);
     }
 
     this.internalSelectionsTracker.stopIgnoringIntermediateSelections();
@@ -1655,6 +1642,27 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     if (!/\s+/.test(this.vimState.document.getText(range))) {
       void vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
     }
+  }
+
+  createLastVisualSelection(mode: Mode.Visual | Mode.VisualLine | Mode.VisualBlock) {
+    const cursors = this.vimState.cursors;
+    const primaryCursor = this.vimState.cursor;
+    const multiCursorIndexSecondaryCursorMap: Map<number, Cursor> = new Map<number, Cursor>();
+    if (cursors.length > 1) {
+      for (let i = 0; i < cursors.length; i++) {
+        const cursor = cursors[i];
+        if (cursor === primaryCursor) {
+          continue;
+        }
+        multiCursorIndexSecondaryCursorMap.set(i, new Cursor(cursor.start, cursor.stop));
+      }
+    }
+    return {
+      mode,
+      start: this.vimState.cursorStartPosition,
+      end: this.vimState.cursorStopPosition,
+      multiCursorIndexSecondaryCursorMap,
+    };
   }
 
   dispose() {
