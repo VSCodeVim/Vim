@@ -74,7 +74,9 @@ export function getCursorStyle(cursorType: VSCodeVimCursorType) {
     case VSCodeVimCursorType.UnderlineThin:
       return vscode.TextEditorCursorStyle.UnderlineThin;
     case VSCodeVimCursorType.TextDecoration:
-      return vscode.TextEditorCursorStyle.LineThin;
+      // Visual mode uses TextDecoration for fake block cursor rendering,
+      // but the actual VS Code cursor should be Block (solid) to indicate non-insert mode
+      return vscode.TextEditorCursorStyle.Block;
     case VSCodeVimCursorType.Native:
     default:
       return vscode.TextEditorCursorStyle.Block;
