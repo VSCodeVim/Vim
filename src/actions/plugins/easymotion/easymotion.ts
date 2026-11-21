@@ -112,6 +112,22 @@ export class EasyMotion implements IEasyMotion {
   }
 
   /**
+   * Check if a position is within the visible ranges of the editor
+   */
+  private isPositionVisible(position: Position, editor: vscode.TextEditor): boolean {
+    if (!configuration.easymotionOnlyVisibleRange) {
+      return true;
+    }
+
+    for (const range of editor.visibleRanges) {
+      if (range.contains(position)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Search and sort using the index of a match compared to the index of position (usually the cursor)
    */
   public sortedSearch(
@@ -119,6 +135,7 @@ export class EasyMotion implements IEasyMotion {
     position: Position,
     search: string | RegExp = '',
     options: SearchOptions = {},
+    editor?: vscode.TextEditor,
   ): Match[] {
     const regex =
       typeof search === 'string'
@@ -162,9 +179,13 @@ export class EasyMotion implements IEasyMotion {
             // Matches on the cursor position should be ignored
             if (pos.isEqual(position)) {
               result = regex.exec(line);
-            } else {
+            } else if (!editor || this.isPositionVisible(pos, editor)) {
+              // Only add matches that are in visible range (if option is enabled)
               prevMatch = new Match(pos, result[0], matches.length);
               matches.push(prevMatch);
+              result = regex.exec(line);
+            } else {
+              // Skip this match if it's not visible
               result = regex.exec(line);
             }
           }
