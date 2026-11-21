@@ -339,57 +339,18 @@ function assertValidBracketedKey(key: string, sequence: string): void {
 }
 
 /**
- * Tokenize a string like `"abc<Esc>d<C-c>"` into `["a", "b", "c", "<Esc>", "d", "<C-c>"]`
+ * Tokenize a string like `"abc<Esc>d<C-c>"` into `["a", "b", "c", "<Esc>", "d", "<C-c>"]`. A `<`
+ * that doesn't start a `<...>` key is a literal `<`. Each other key is one character; a character
+ * outside the BMP (e.g. an emoji) is one key, as when it's typed.
  */
 function tokenizeKeySequence(sequence: string): string[] {
-  let isBracketedKey = false;
-  let key = '';
-  const result: string[] = [];
-
-  // no close bracket, probably trying to do a left shift, take literal
-  // char sequence
-  const rawTokenize = (characters: string): void => {
-    for (const c of characters) {
-      result.push(c);
+  const keys = sequence.match(/<[^<>]+>|./gsu) ?? [];
+  for (const key of keys) {
+    if (key.length > 1 && key.startsWith('<')) {
+      assertValidBracketedKey(key, sequence);
     }
-  };
-
-  // don't use a for of here, since the iterator doesn't split surrogate pairs
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let i = 0; i < sequence.length; i++) {
-    const char = sequence[i];
-
-    key += char;
-
-    if (char === '<') {
-      if (isBracketedKey) {
-        rawTokenize(key.slice(0, key.length - 1));
-        key = '<';
-      } else {
-        isBracketedKey = true;
-      }
-    }
-
-    if (char === '>') {
-      if (isBracketedKey && key !== '<>') {
-        assertValidBracketedKey(key, sequence);
-      }
-      isBracketedKey = false;
-    }
-
-    if (isBracketedKey) {
-      continue;
-    }
-
-    result.push(key);
-    key = '';
   }
-
-  if (isBracketedKey) {
-    rawTokenize(key);
-  }
-
-  return result;
+  return keys;
 }
 
 async function applyDocState(editor: vscode.TextEditor, docState: DocState): Promise<void> {
