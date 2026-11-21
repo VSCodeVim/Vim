@@ -22,8 +22,12 @@ import { reloadConfiguration, setupWorkspace } from './testUtils';
  * What to check after a step's keys are handled.
  */
 type Expectation = {
-  /** The document after the keys; `|` marks each cursor */
-  end: string[];
+  /**
+   * The document after the keys; `|` marks each cursor. In a multi-step test, it defaults to the
+   * previous step's `end` (or `start`), and in `afterTimeout` to the step's own `end`, meaning
+   * nothing changed.
+   */
+  end?: string[];
   endMode?: Mode;
   endFsPath?: string | (() => string);
   registers?: { [name: string]: string | undefined };
@@ -61,7 +65,7 @@ type TestBase = {
 };
 
 /** A test that presses one sequence of keys */
-export type ITestObject = TestBase & StepBody & { steps?: never };
+export type ITestObject = TestBase & StepBody & { end: string[]; steps?: never };
 
 /** A test with several steps, each starting where the previous one ended */
 export type IMultiStepTestObject = TestBase & {
@@ -242,9 +246,10 @@ function assertDocState(modeHandler: ModeHandler, docState: DocState, label: str
 async function assertExpectation(
   modeHandler: ModeHandler,
   expectation: Expectation,
+  expectedEnd: string[],
   label: string,
 ): Promise<void> {
-  const end = DocState.parse(expectation.end);
+  const end = DocState.parse(expectedEnd);
   assertDocState(modeHandler, end, label);
 
   if (expectation.endMode !== undefined) {
@@ -429,6 +434,7 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
         .resolves(testObj.stub.returnValue)
     : undefined;
   try {
+    let previousEnd = testObj.start;
     for (const [index, step] of steps.entries()) {
       const label =
         steps.length === 1 ? '' : `Step ${index}${step.title ? ` "${step.title}"` : ''}: `;
@@ -439,14 +445,23 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
         await Promise.allSettled([...keyEventsInFlight]);
       }
 
-      await assertExpectation(modeHandler, step, label);
+      const end = step.end ?? previousEnd;
+      await assertExpectation(modeHandler, step, end, label);
+      previousEnd = end;
 
       if (step.afterTimeout) {
         // The timeout started when the keys were handled, so it has fired by the end of this wait.
         // Its handling (and any remap it starts) may still be running, or the timer may be late.
         await wait(Globals.mockConfiguration.timeout);
         await settle();
-        await assertExpectation(modeHandler, step.afterTimeout, `${label}After timeout: `);
+        const endAfterTimeout = step.afterTimeout.end ?? end;
+        await assertExpectation(
+          modeHandler,
+          step.afterTimeout,
+          endAfterTimeout,
+          `${label}After timeout: `,
+        );
+        previousEnd = endAfterTimeout;
       }
     }
   } finally {
