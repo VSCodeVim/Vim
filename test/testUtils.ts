@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { isDeepStrictEqual } from 'util';
 import * as vscode from 'vscode';
 
 import { ExCommandLine, SearchCommandLine } from '../src/cmd_line/commandLine';
@@ -283,6 +284,27 @@ export async function reloadConfiguration(config: IConfiguration) {
   for (const validatorResult of validatorResults.get()) {
     console.warn(validatorResult);
   }
+}
+
+/**
+ * Saves the configuration, returning a function that restores it if it changed. Reloading is slow,
+ * so most tests, which change nothing, shouldn't pay for it.
+ */
+export async function saveConfig(): Promise<() => Promise<void>> {
+  const { configuration } = await import('../src/configuration/configuration');
+  const snapshot = () => {
+    const mock = Globals.mockConfiguration as unknown as Record<string, unknown>;
+    const loaded = configuration as unknown as Record<string, unknown>;
+    // Check the loaded values too, since commands like `:set` change only those. Snapshot deeply,
+    // since remaps are mutated in place when the config is validated.
+    return structuredClone({ mock, loaded: Object.keys(mock).map((key) => loaded[key]) });
+  };
+  const saved = snapshot();
+  return async () => {
+    if (!isDeepStrictEqual(snapshot(), saved)) {
+      await reloadConfiguration(saved.mock as unknown as IConfiguration);
+    }
+  };
 }
 
 /**

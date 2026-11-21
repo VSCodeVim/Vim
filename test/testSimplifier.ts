@@ -17,7 +17,7 @@ import { Register } from '../src/register/register';
 import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
-import { openNewFile, reloadConfiguration } from './testUtils';
+import { openNewFile, reloadConfiguration, saveConfig } from './testUtils';
 
 /**
  * What to check after a step's keys are handled.
@@ -591,8 +591,7 @@ async function applyConfig(testObj: TestObject): Promise<() => Promise<void>> {
     return async () => undefined;
   }
 
-  // Remaps are mutated in place when the config is validated, so snapshot deeply
-  const prevConfig = structuredClone(Globals.mockConfiguration);
+  const restoreConfig = await saveConfig();
   const config = Globals.mockConfiguration;
   if (testObj.config) {
     Object.assign(config, structuredClone(testObj.config));
@@ -602,7 +601,7 @@ async function applyConfig(testObj: TestObject): Promise<() => Promise<void>> {
   }
   await reloadConfiguration(config);
 
-  return async () => reloadConfiguration(prevConfig);
+  return restoreConfig;
 }
 
 async function addVimrcRemaps(config: IConfiguration, lines: string[]): Promise<void> {

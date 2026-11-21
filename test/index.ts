@@ -31,10 +31,33 @@ export async function run(): Promise<void> {
     // Fail in CI if a `newTestOnly` or `.only` was committed, since it would skip every other test
     forbidOnly: !!process.env.CI,
     rootHooks: {
-      beforeEach: async () => (await import('./testUtils')).resetGlobalState(),
+      beforeEach: async () => {
+        const testUtils = await import('./testUtils');
+        testUtils.resetGlobalState();
+        // Runs after the suite's `suiteSetup` hooks, so this undoes only the test's own changes,
+        // including any its `setup` hooks make
+        restoreTestConfig = await testUtils.saveConfig();
+      },
+      afterEach: async () => restoreTestConfig?.(),
       afterAll: async () => (await import('./testUtils')).removeTestTempDir(),
     },
   });
+  let restoreTestConfig: (() => Promise<void>) | undefined;
+
+  // Undo each suite's config changes (e.g. from `setupWorkspace` in `suiteSetup`) when it ends, so
+  // they don't leak into the suites after it. The hooks are added as each suite is created, before
+  // its body runs, so they run before the suite's own `suiteSetup` and `suiteTeardown`.
+  const scopeConfigToSuites = (parent: Mocha.Suite) => {
+    parent.on(Mocha.Suite.constants.EVENT_SUITE_ADD_SUITE, (suite: Mocha.Suite) => {
+      let restoreSuiteConfig: (() => Promise<void>) | undefined;
+      suite.beforeAll(async () => {
+        restoreSuiteConfig = await (await import('./testUtils')).saveConfig();
+      });
+      suite.afterAll(async () => restoreSuiteConfig?.());
+      scopeConfigToSuites(suite);
+    });
+  };
+  scopeConfigToSuites(mocha.suite);
 
   const testsRoot = path.resolve(__dirname, '.');
 
