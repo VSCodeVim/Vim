@@ -28,6 +28,8 @@ export async function run(): Promise<void> {
     color: true,
     timeout: 5000,
     grep: mochaGrep,
+    // Fail in CI if a `newTestOnly` or `.only` was committed, since it would skip every other test
+    forbidOnly: !!process.env.CI,
     rootHooks: {
       beforeEach: async () => (await import('./testUtils')).resetGlobalState(),
       afterAll: async () => (await import('./testUtils')).removeTestTempDir(),
