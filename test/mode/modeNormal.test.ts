@@ -1,8 +1,9 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest, newTestSkip } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
@@ -1722,23 +1723,19 @@ suite('Mode Normal', () => {
     ],
   });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq work correctly with cursor in the middle of a line',
-      start: [
-        '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
-        '// We choose to write a vim extension, not because it is easy, but because it is hard.',
-      ],
-      keysPressed: 'gqj',
-      end: [
-        '|// We choose to write a vim extension, not because it is easy, but because it is',
-        '// hard.  We choose to write a vim extension, not because it is easy, but',
-        '// because it is hard.',
-      ],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq work correctly with cursor in the middle of a line',
+    start: [
+      '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
+      '// We choose to write a vim extension, not because it is easy, but because it is hard.',
+    ],
+    keysPressed: 'gqj',
+    end: [
+      '|// We choose to write a vim extension, not because it is easy, but because it is',
+      '// hard.  We choose to write a vim extension, not because it is easy, but',
+      '// because it is hard.',
+    ],
+  });
 
   newTest({
     title: 'gq preserves newlines',
@@ -1747,49 +1744,33 @@ suite('Mode Normal', () => {
     end: ['|abc', '', '', '', 'def'],
   });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles single-line comments',
-      start: ['|// abc', '// def'],
-      keysPressed: 'gqG',
-      end: ['|// abc def'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles single-line comments',
+    start: ['|// abc', '// def'],
+    keysPressed: 'gqG',
+    end: ['|// abc def'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles multiline comments',
-      start: ['|/*', ' * abc', ' * def', ' */'],
-      keysPressed: 'gqG',
-      end: ['|/*', ' * abc def', ' */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles multiline comments',
+    start: ['|/*', ' * abc', ' * def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def', ' */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles multiline comments with inner and final on same line',
-      start: ['|/*', ' * abc', ' * def */'],
-      keysPressed: 'gqG',
-      end: ['|/*', ' * abc def */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles multiline comments with inner and final on same line',
+    start: ['|/*', ' * abc', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles multiline comments with content on start line',
-      start: ['|/* abc', ' * def', '*/'],
-      keysPressed: 'gqG',
-      end: ['|/* abc def', ' */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles multiline comments with content on start line',
+    start: ['|/* abc', ' * def', '*/'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def', ' */'],
+  });
 
   newTest({
     title: 'gq handles multiline comments with start and final on same line',
@@ -1805,38 +1786,44 @@ suite('Mode Normal', () => {
     end: ['|/* abc', ' *', ' *', ' * def */'],
   });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq does not merge adjacent multiline comments',
-      start: ['|/* abc */', '/* def */'],
-      keysPressed: 'gqG',
-      end: ['|/* abc */', '/* def */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc */', '/* def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc */', '/* def */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq does not merge adjacent multiline comments',
-      start: ['|/* abc', ' */', '/* def', ' */'],
-      keysPressed: 'gqG',
-      end: ['|/* abc', ' */', '/* def', ' */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc', ' */', '/* def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' */', '/* def', ' */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq leaves alone whitespace within a line',
-      start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
-      keysPressed: 'gqG',
-      end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq leaves alone whitespace within a line',
+    start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
+    keysPressed: 'gqG',
+    end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
+  });
+
+  test('gq handles CRLF line endings', async () => {
+    const editor = modeHandler.vimState.editor;
+    const originalEol = editor.document.eol;
+    try {
+      await editor.edit((builder) => {
+        builder.setEndOfLine(vscode.EndOfLine.CRLF);
+        builder.replace(
+          new vscode.Range(0, 0, editor.document.lineCount, 0),
+          ['/*', ' * abc', ' * def', ' */'].join('\r\n'),
+        );
+      });
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'g', 'q', 'G']);
+      assert.strictEqual(editor.document.getText(), ['/*', ' * abc def', ' */'].join('\r\n'));
+    } finally {
+      await editor.edit((builder) => builder.setEndOfLine(originalEol));
+    }
+  });
 
   newTest({
     title: 'gq breaks at exactly textwidth',
