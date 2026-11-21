@@ -198,55 +198,74 @@ export function assertStatusBarEqual(
   assert.equal(StatusBar.getText(), expectedText, message);
 }
 
+/**
+ * Opens a new file in the test temp directory and makes it the active editor. Other editors stay
+ * open; call `cleanUpWorkspace` first to close them.
+ */
+export async function openNewFile(
+  args: { fileExtension?: string; content?: string[] } = {},
+): Promise<vscode.TextEditor> {
+  const filePath = await createFile({
+    fileExtension: args.fileExtension,
+    contents: (args.content ?? []).join(os.EOL),
+  });
+  const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
+  const editor = await vscode.window.showTextDocument(doc);
+  syncEditorOptions(editor);
+  return editor;
+}
+
+/**
+ * Replaces the configuration with the test defaults plus `config`. Applies to the active editor's
+ * tab settings too, so VS Code's own indentation agrees with Vim's.
+ */
+export async function setConfig(config: Partial<IConfiguration> = {}): Promise<void> {
+  await reloadConfiguration(new Configuration(config));
+  if (vscode.window.activeTextEditor) {
+    syncEditorOptions(vscode.window.activeTextEditor);
+  }
+}
+
+function syncEditorOptions(editor: vscode.TextEditor): void {
+  editor.options.tabSize = Globals.mockConfiguration.tabstop;
+  editor.options.insertSpaces = Globals.mockConfiguration.expandtab;
+}
+
+/**
+ * Gets a suite ready to run: one file editor showing `fileContent`, the configuration from
+ * `setConfig(config)`, and no `ModeHandler`s. Reuses the active editor when it's the only one and
+ * has the right file extension, since opening a file is slow.
+ */
 export async function setupWorkspace(
   args: {
     config?: Partial<IConfiguration>;
     fileExtension?: string;
     fileContent?: string[];
-    forceNewFile?: boolean;
-    disableCleanUp?: boolean;
   } = {},
 ): Promise<void> {
   await ExCommandLine.loadHistory(new TestExtensionContext());
 
-  const newFile =
-    vscode.window.activeTextEditor === undefined ||
-    vscode.window.activeTextEditor.document.isUntitled ||
+  const editor = vscode.window.activeTextEditor;
+  if (
+    editor === undefined ||
+    editor.document.isUntitled ||
     vscode.window.visibleTextEditors.length > 1 ||
-    (args.fileExtension &&
-      !vscode.window.activeTextEditor.document.fileName.endsWith(args.fileExtension)) ||
-    args.forceNewFile;
-  const fileContent = (args.fileContent ?? []).join(os.EOL);
-
-  if (newFile) {
-    if (!args.disableCleanUp) await cleanUpWorkspace();
-    const filePath = await createFile({
-      fileExtension: args.fileExtension,
-      contents: fileContent,
-    });
-    const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
-    await vscode.window.showTextDocument(doc);
-  }
-
-  const config = new Configuration(args?.config);
-  await reloadConfiguration(config);
-
-  const activeTextEditor = vscode.window.activeTextEditor;
-  assert.ok(activeTextEditor);
-
-  activeTextEditor.options.tabSize = config.tabstop;
-  activeTextEditor.options.insertSpaces = config.expandtab;
-
-  if (!newFile) {
+    (args.fileExtension && !editor.document.fileName.endsWith(args.fileExtension))
+  ) {
+    await cleanUpWorkspace();
+    await openNewFile({ fileExtension: args.fileExtension, content: args.fileContent });
+  } else {
+    const content = (args.fileContent ?? []).join(os.EOL);
     assert.ok(
-      await activeTextEditor.edit((builder) => {
-        builder.replace(TextEditor.getDocumentRange(activeTextEditor.document), fileContent);
+      await editor.edit((builder) => {
+        builder.replace(TextEditor.getDocumentRange(editor.document), content);
       }),
       'Edit failed',
     );
   }
 
-  if (!args.disableCleanUp) ModeHandlerMap.clear();
+  await setConfig(args.config);
+  ModeHandlerMap.clear();
 }
 
 export async function cleanUpWorkspace(): Promise<void> {

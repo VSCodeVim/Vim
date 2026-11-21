@@ -1,6 +1,5 @@
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
-import { reloadConfiguration, setupWorkspace } from './../testUtils';
+import { setConfig, setupWorkspace } from './../testUtils';
 
 function sub(
   pattern: string,
@@ -246,7 +245,7 @@ suite('Basic substitute', () => {
 
   suite('Effects of gdefault=true', () => {
     setup(async () => {
-      await reloadConfiguration(new Configuration({ gdefault: true }));
+      await setConfig({ gdefault: true });
     });
 
     newTest({

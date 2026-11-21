@@ -17,7 +17,7 @@ import { Register } from '../src/register/register';
 import { globalState } from '../src/state/globalState';
 import { StatusBar } from '../src/statusBar';
 import { TextEditor } from '../src/textEditor';
-import { reloadConfiguration, setupWorkspace } from './testUtils';
+import { openNewFile, reloadConfiguration } from './testUtils';
 
 /**
  * What to check after a step's keys are handled.
@@ -638,9 +638,8 @@ const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, 
  *   the test's `config` and `remaps` have been undone.
  */
 export async function testIt(testObj: TestObject): Promise<ModeHandler> {
-  // Do this first: setupWorkspace replaces the whole config
   if (vscode.window.activeTextEditor === undefined) {
-    await setupWorkspace();
+    await openNewFile();
   }
 
   const restoreConfig = await applyConfig(testObj);

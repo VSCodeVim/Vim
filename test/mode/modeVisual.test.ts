@@ -3,9 +3,8 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
-import { reloadConfiguration, setupWorkspace } from './../testUtils';
+import { setConfig, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
@@ -919,7 +918,7 @@ suite('Mode Visual', () => {
 
   suite('visualstar', () => {
     setup(async () => {
-      await reloadConfiguration(new Configuration({ visualstar: true }));
+      await setConfig({ visualstar: true });
     });
 
     newTest({

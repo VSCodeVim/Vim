@@ -4,7 +4,7 @@ import { getAndUpdateModeHandler } from '../extensionBase';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { newTest, newTestSkip } from './testSimplifier';
-import { setupWorkspace } from './testUtils';
+import { openNewFile, setupWorkspace } from './testUtils';
 
 suite('Marks', () => {
   let modeHandler: ModeHandler;
@@ -15,14 +15,7 @@ suite('Marks', () => {
   });
 
   const jumpToNewFile = async () => {
-    await setupWorkspace({
-      config: {
-        tabstop: 4,
-        expandtab: false,
-      },
-      forceNewFile: true,
-      disableCleanUp: true,
-    });
+    await openNewFile();
     return (await getAndUpdateModeHandler())!;
   };
 
