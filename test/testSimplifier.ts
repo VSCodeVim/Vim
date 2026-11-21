@@ -60,11 +60,8 @@ type TestBase = {
   remaps?: string[];
   editorOptions?: vscode.TextEditorOptions;
   start: string[];
-  stub?: {
-    stubClass: any;
-    methodName: string;
-    returnValue: any;
-  };
+  /** What to enter in the input boxes the keys open (e.g. surround's tag prompt); one must open */
+  inputBox?: string;
   saveDocBeforeTest?: boolean;
 };
 
@@ -694,12 +691,10 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
 
   const steps: Step[] = testObj.steps ?? [testObj];
 
-  const stub = testObj.stub
-    ? sinon
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        .stub(testObj.stub.stubClass.prototype, testObj.stub.methodName)
-        .resolves(testObj.stub.returnValue)
-    : undefined;
+  const inputBox =
+    testObj.inputBox !== undefined
+      ? sinon.stub(vscode.window, 'showInputBox').resolves(testObj.inputBox)
+      : undefined;
   try {
     let previousEnd = testObj.start;
     for (const [index, step] of steps.entries()) {
@@ -731,8 +726,12 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
         previousEnd = endAfterTimeout;
       }
     }
+
+    if (inputBox) {
+      assert.ok(inputBox.called, 'Expected an input box to open.');
+    }
   } finally {
-    stub?.restore();
+    inputBox?.restore();
   }
 
   return modeHandler;

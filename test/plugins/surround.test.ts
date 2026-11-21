@@ -1,7 +1,3 @@
-import {
-  CommandSurroundAddSurroundingFunction,
-  CommandSurroundAddSurroundingTag,
-} from '../../src/actions/plugins/surround';
 import { newTest } from '../testSimplifier';
 import { setupWorkspace } from './../testUtils';
 
@@ -97,11 +93,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiw<',
     end: ['first |<123>line</123> test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: '123',
-    },
+    inputBox: '123',
   });
 
   newTest({
@@ -109,11 +101,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiw<W.',
     end: ['first <123>line</123> |<123>test</123>'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: '123',
-    },
+    inputBox: '123',
   });
 
   newTest({
@@ -121,11 +109,7 @@ suite('surround plugin', () => {
     start: ['first <test>li|ne</test> test'],
     keysPressed: 'cst<',
     end: ['first <abc.def>li|ne</abc.def> test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'abc.def',
-    },
+    inputBox: 'abc.def',
   });
 
   newTest({
@@ -133,11 +117,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiwf',
     end: ['first |print(line) test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'print',
-    },
+    inputBox: 'print',
   });
 
   newTest({
@@ -145,11 +125,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiwfW.',
     end: ['first print(line) |print(test)'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'print',
-    },
+    inputBox: 'print',
   });
 
   newTest({
@@ -157,11 +133,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiwF',
     end: ['first |print( line ) test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'print',
-    },
+    inputBox: 'print',
   });
 
   newTest({
@@ -169,11 +141,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiwFWWW.',
     end: ['first print( line ) |print( test )'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'print',
-    },
+    inputBox: 'print',
   });
 
   newTest({
@@ -181,11 +149,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiw<C-f>',
     end: ['first |(print line) test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'print',
-    },
+    inputBox: 'print',
   });
 
   newTest({
@@ -193,11 +157,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'ysiw<C-f>WW.',
     end: ['first (print line) |(print test)'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'print',
-    },
+    inputBox: 'print',
   });
 
   newTest({
@@ -275,11 +235,7 @@ suite('surround plugin', () => {
     start: ['first [li|ne] test'],
     keysPressed: 'cs]t',
     end: ['first <abc>li|ne</abc> test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'abc',
-    },
+    inputBox: 'abc',
   });
 
   newTest({
@@ -287,11 +243,7 @@ suite('surround plugin', () => {
     start: ['first {li|ne} test'],
     keysPressed: 'cs}f',
     end: ['first hello(li|ne) test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'hello',
-    },
+    inputBox: 'hello',
   });
 
   newTest({
@@ -299,11 +251,7 @@ suite('surround plugin', () => {
     start: ['first (li|ne) test'],
     keysPressed: 'cs)F',
     end: ['first hello( li|ne ) test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'hello',
-    },
+    inputBox: 'hello',
   });
 
   newTest({
@@ -311,11 +259,7 @@ suite('surround plugin', () => {
     start: ['first <tag>li|ne</tag> test'],
     keysPressed: 'cst<C-f>',
     end: ['first (hello li|ne) test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'hello',
-    },
+    inputBox: 'hello',
   });
 
   newTest({
@@ -449,11 +393,7 @@ suite('surround plugin', () => {
     start: ['<h2 test class="foo">b|ar</h2>'],
     keysPressed: 'cstt',
     end: ['<h3 test class="foo">b|ar</h3>'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'h3',
-    },
+    inputBox: 'h3',
   });
 
   newTest({
@@ -461,11 +401,7 @@ suite('surround plugin', () => {
     start: ['<custom-tag>|</custom-tag>'],
     keysPressed: 'cstt',
     end: ['<h1>|</h1>'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'h1',
-    },
+    inputBox: 'h1',
   });
 
   newTest({
@@ -473,11 +409,7 @@ suite('surround plugin', () => {
     start: ['<h2 test class="foo">b|ar</h2>'],
     keysPressed: 'cstt',
     end: ['<h3>b|ar</h3>'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'h3>',
-    },
+    inputBox: 'h3>',
   });
 
   newTest({
@@ -513,11 +445,7 @@ suite('surround plugin', () => {
     // second '<' (character 15) instead of the first (character 6) as expected.
     keysPressed: 'viwS<0',
     end: ['|first <div>line</div> test'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'div',
-    },
+    inputBox: 'div',
   });
 
   newTest({
@@ -525,11 +453,7 @@ suite('surround plugin', () => {
     start: ['first li|ne test'],
     keysPressed: 'VStt',
     end: ['<div class="test">', 'first line test', '|</div>'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'div class="test"',
-    },
+    inputBox: 'div class="test"',
   });
 
   newTest({
@@ -551,11 +475,7 @@ suite('surround plugin', () => {
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VS<',
     end: ['first', '<div>', 'second', '|</div>', 'third'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingTag,
-      methodName: 'readTag',
-      returnValue: 'div',
-    },
+    inputBox: 'div',
   });
 
   newTest({
@@ -563,11 +483,7 @@ suite('surround plugin', () => {
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VSf',
     end: ['first', 'call(', 'second', '|)', 'third'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'call',
-    },
+    inputBox: 'call',
   });
 
   newTest({
@@ -575,11 +491,7 @@ suite('surround plugin', () => {
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VSF',
     end: ['first', 'call( ', 'second', '| )', 'third'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'call',
-    },
+    inputBox: 'call',
   });
 
   newTest({
@@ -587,11 +499,7 @@ suite('surround plugin', () => {
     start: ['first', 'sec|ond', 'third'],
     keysPressed: 'VS<C-f>',
     end: ['first', '(call ', 'second', '|)', 'third'],
-    stub: {
-      stubClass: CommandSurroundAddSurroundingFunction,
-      methodName: 'readFunction',
-      returnValue: 'call',
-    },
+    inputBox: 'call',
   });
 
   suite('multicursor', () => {
