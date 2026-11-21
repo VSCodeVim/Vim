@@ -415,15 +415,59 @@ function assertDocText(lines: string[], label: string, details?: () => string): 
   );
 }
 
-/** Checks the document and cursors against `expectedEnd`, returning its lines without the `|`s */
-function assertDocState(modeHandler: ModeHandler, expectedEnd: string[], label: string): string[] {
+const showCursors = (cursors: readonly Cursor[]) => cursors.map(String).sort();
+const showSelections = (selections: readonly vscode.Selection[]) =>
+  showCursors(selections.map((s) => Cursor.fromSelection(s)));
+
+/**
+ * Checks the editor's selections. The extension host learns about selection changes from VS Code
+ * asynchronously, and an older update can briefly replace the newest one, so this retries briefly.
+ */
+async function assertEditorSelections(
+  editor: vscode.TextEditor,
+  expected: readonly vscode.Selection[],
+  label: string,
+  details?: () => string,
+): Promise<void> {
+  const want = showSelections(expected);
+  const deadline = Date.now() + 500;
+  while (!isDeepStrictEqual(showSelections(editor.selections), want) && Date.now() < deadline) {
+    await wait(10);
+  }
+  assertEqual(
+    showSelections(editor.selections),
+    want,
+    `${label}Editor selections ([anchor | active]) are wrong.`,
+    details,
+  );
+}
+
+/**
+ * Checks the document and cursors against `expectedEnd`, and that nothing is selected, returning
+ * its lines without the `|`s
+ */
+async function assertDocState(
+  modeHandler: ModeHandler,
+  expectedEnd: string[],
+  label: string,
+): Promise<string[]> {
   const end = DocState.parse(expectedEnd);
   assertDocText(end.lines, label);
-  // TODO: Assert selections match vimState.cursors
+  const { vimState } = modeHandler;
   assert.deepEqual(
-    modeHandler.vimState.cursors.map((cursor) => cursor.stop.toString()).sort(),
+    vimState.cursors.map((cursor) => cursor.stop.toString()).sort(),
     end.cursors.map(String).sort(),
     `${label}Cursors are wrong.`,
+  );
+  await assertEditorSelections(
+    vimState.editor,
+    end.cursors.map((position) => new vscode.Selection(position, position)),
+    label,
+  );
+  assert.deepEqual(
+    showCursors(vimState.cursors),
+    showCursors(end.cursors.map((position) => Cursor.atPosition(position))),
+    `${label}vimState.cursors ([start | stop]) should have nothing selected.`,
   );
   return end.lines;
 }
@@ -432,12 +476,12 @@ function assertDocState(modeHandler: ModeHandler, expectedEnd: string[], label: 
  * Checks the document, `vimState.cursors`, and the editor's selections against `expectedEnd`,
  * written in `VisualDocState` notation, returning its lines without the markers
  */
-function assertVisualDocState(
+async function assertVisualDocState(
   modeHandler: ModeHandler,
   expectedEnd: string[],
   mode: Mode,
   label: string,
-): string[] {
+): Promise<string[]> {
   const { vimState } = modeHandler;
   const actual = () =>
     '\nActual: ' +
@@ -458,19 +502,13 @@ function assertVisualDocState(
     throw new Error(`${label}${e instanceof Error ? e.message : String(e)}${actual()}`);
   }
   assertDocText(end.lines, label, actual);
-  const show = (cursors: readonly Cursor[]) => cursors.map(String).sort();
   assertEqual(
-    show(vimState.cursors),
-    show(end.cursors),
+    showCursors(vimState.cursors),
+    showCursors(end.cursors),
     `${label}vimState.cursors ([start | stop]) are wrong.`,
     actual,
   );
-  assertEqual(
-    show(vimState.editor.selections.map((s) => Cursor.fromSelection(s))),
-    show(end.selections.map((s) => Cursor.fromSelection(s))),
-    `${label}Editor selections ([anchor | active]) are wrong.`,
-    actual,
-  );
+  await assertEditorSelections(vimState.editor, end.selections, label, actual);
   return end.lines;
 }
 
@@ -482,8 +520,8 @@ async function assertExpectation(
 ): Promise<void> {
   const endMode = expectation.endMode ?? Mode.Normal;
   const endLines = isVisualMode(endMode)
-    ? assertVisualDocState(modeHandler, expectedEnd, endMode, label)
-    : assertDocState(modeHandler, expectedEnd, label);
+    ? await assertVisualDocState(modeHandler, expectedEnd, endMode, label)
+    : await assertDocState(modeHandler, expectedEnd, label);
 
   assert.equal(
     Mode[modeHandler.vimState.currentMode],
@@ -633,7 +671,7 @@ async function runSteps(testObj: TestObject): Promise<ModeHandler> {
   ModeHandlerMap.clear();
   const [modeHandler] = await ModeHandlerMap.getOrCreate(editor);
 
-  assertDocState(modeHandler, testObj.start, 'Before keys are pressed: ');
+  await assertDocState(modeHandler, testObj.start, 'Before keys are pressed: ');
 
   // When the remap timeout fires, the remapper calls handleKeyEvent(<TimeoutFinished>) without
   // awaiting it. Track those calls so the checks below can wait for them to finish instead of
