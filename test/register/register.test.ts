@@ -258,6 +258,8 @@ suite('register', () => {
 
     // :reg should not update the command register
     await modeHandler.handleMultipleKeyEvents(':reg\n'.split(''));
+    // Close the list of registers that :reg shows, which would otherwise keep the focus
+    await vscode.commands.executeCommand('workbench.action.closeQuickOpen');
 
     const regStr = ((await Register.get(':'))?.text as RecordedState).commandString;
     assert.strictEqual(regStr, command);

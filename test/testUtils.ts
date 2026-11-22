@@ -252,7 +252,7 @@ function syncEditorOptions(editor: vscode.TextEditor): void {
 
 /**
  * Gets a suite ready to run: one file editor showing `fileContent`, the configuration from
- * `setConfig(config)`, and no `ModeHandler`s. Reuses the active editor when it's the only one and
+ * `setConfig(config)`, and no `ModeHandler`s. Reuses the active editor when it's the only tab and
  * has the right file extension, since opening a file is slow.
  */
 export async function setupWorkspace(
@@ -265,9 +265,15 @@ export async function setupWorkspace(
   await ExCommandLine.loadHistory(new TestExtensionContext());
 
   const editor = vscode.window.activeTextEditor;
+  const tabCount = vscode.window.tabGroups.all.reduce(
+    (count, group) => count + group.tabs.length,
+    0,
+  );
   if (
     editor === undefined ||
     editor.document.isUntitled ||
+    // Tabs left behind by earlier tests would show up once this editor closes
+    tabCount > 1 ||
     vscode.window.visibleTextEditors.length > 1 ||
     (args.fileExtension && !editor.document.fileName.endsWith(args.fileExtension))
   ) {
