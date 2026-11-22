@@ -1,5 +1,15 @@
-// eslint-disable-next-line id-denylist
-import { all, alt, optWhitespace, Parser, regexp, seq, string, succeed } from 'parsimmon';
+import {
+  all,
+  alt,
+  makeSuccess,
+  optWhitespace,
+  Parser,
+  regexp,
+  seq,
+  // eslint-disable-next-line id-denylist
+  string,
+  succeed,
+} from 'parsimmon';
 import { AsciiCommand } from '../cmd_line/commands/ascii';
 import { BangCommand } from '../cmd_line/commands/bang';
 import { Breakpoints } from '../cmd_line/commands/breakpoints';
@@ -674,11 +684,29 @@ function nameParser(
   return parser.map((p) => [fullName, p]);
 }
 
-const commandNameParser: Parser<[string, Parser<ExCommand>] | undefined> = alt(
-  ...[...builtinExCommands]
-    .reverse()
-    .map(([name, argParser]) => nameParser(name, argParser?.skip(optWhitespace))),
-);
+/**
+ * Matches a command name and returns it with the command's argument parser. Later commands in
+ * `builtinExCommands` are tried first.
+ *
+ * Only the commands that could match the next character are tried, since an `alt` over all of them
+ * is slow: Parsimmon merges what each failed alternative expected.
+ */
+const commandNameParser: Parser<[string, Parser<ExCommand>] | undefined> = (() => {
+  const commands = [...builtinExCommands].reverse().map(([name, argParser]) => ({
+    firstChar: name[0].charAt(0),
+    parser: nameParser(name, argParser?.skip(optWhitespace)),
+  }));
+  // A name can only match if the input starts with its first character, or the name can be empty
+  const candidates = (char: string) =>
+    alt(...commands.filter((c) => c.firstChar === char || c.firstChar === '').map((c) => c.parser));
+  const firstChars = new Set(commands.map((c) => c.firstChar));
+  const byFirstChar = new Map([...firstChars].map((char) => [char, candidates(char)]));
+  const unnamed = candidates('');
+
+  // The next character, or '' at the end of the input, without consuming it
+  const nextChar = Parser((input, i) => makeSuccess(i, input.charAt(i)));
+  return nextChar.chain((char) => byFirstChar.get(char) ?? unnamed);
+})();
 
 export const exCommandParser: Parser<{
   name: string;
