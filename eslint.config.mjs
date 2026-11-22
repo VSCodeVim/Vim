@@ -6,7 +6,7 @@ import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  { ignores: ['dist/', 'out/', '.vscode-test/'] },
+  { ignores: ['dist/', 'out/', '.vscode-test/', '.vscode-test-web/'] },
   // TODO: Extend from `eslint:recommended` (`@eslint/js`) too, then drop the core rules below that it
   // covers. It currently reports ~70 errors, mostly `no-case-declarations` and `no-useless-escape`.
   tseslint.configs.recommendedTypeChecked,
