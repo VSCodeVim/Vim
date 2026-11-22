@@ -297,6 +297,15 @@ export async function cleanUpWorkspace(): Promise<void> {
     0,
     `Expected all tabs closed. Tabs: ${JSON.stringify(tabs.map((tab) => tab.label))}`,
   );
+  // Closing editors doesn't close an unsaved untitled document that has no editor, and VS Code
+  // eventually opens a tab for it, which would show up in some later test
+  const untitled = vscode.workspace.textDocuments.filter((doc) => doc.isUntitled && doc.isDirty);
+  assert.equal(
+    untitled.length,
+    0,
+    'Expected no unsaved untitled documents. Show each one so closing all editors closes it. ' +
+      `Documents: ${JSON.stringify(untitled.map((doc) => doc.lineAt(0).text))}`,
+  );
 }
 
 export async function reloadConfiguration(config: IConfiguration) {
