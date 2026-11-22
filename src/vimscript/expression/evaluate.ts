@@ -405,7 +405,7 @@ export class EvaluationContext {
       }
       case 'list': {
         let idx = toInt(index);
-        idx = idx < 0 ? sequence.items.length - idx : idx;
+        idx = idx < 0 ? sequence.items.length + idx : idx;
         if (idx < 0 || idx >= sequence.items.length) {
           throw VimError.ListIndexOutOfRange(idx);
         }

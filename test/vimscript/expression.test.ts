@@ -217,6 +217,8 @@ suite('Vimscript expressions', () => {
       });
 
       exprTest("['a','b','c'][1]", { value: str('b') });
+      exprTest("['a','b','c'][-1]", { value: str('c') });
+      exprTest("['a','b','c'][-3]", { value: str('a') });
 
       exprTest("#{one: 1, two: 2, three: 3}['one']", { value: int(1) });
       exprTest("#{one: 1, two: 2, three: 3}['two']", { value: int(2) });
