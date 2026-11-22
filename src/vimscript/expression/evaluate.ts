@@ -304,7 +304,7 @@ export class EvaluationContext {
         return bool(
           this.evaluateComparison(
             expression.operator,
-            expression.matchCase ?? configuration.ignorecase,
+            expression.matchCase ?? !configuration.ignorecase,
             this.evaluate(expression.lhs),
             this.evaluate(expression.rhs),
           ),
@@ -667,9 +667,8 @@ export class EvaluationContext {
           // i.e. 4 == "4" but [4] != ["4"]
           [lhs, rhs] = [int(toInt(lhs)), int(toInt(rhs))];
         }
-      } else if (!matchCase) {
-        lhs.value = lhs.value.toLowerCase();
-        rhs.value = rhs.value.toLowerCase();
+      } else if (!matchCase && operator !== '=~') {
+        [lhs, rhs] = [str(lhs.value.toLowerCase()), str(rhs.value.toLowerCase())];
       }
       switch (operator) {
         case '==':
@@ -682,6 +681,7 @@ export class EvaluationContext {
           const pattern = Pattern.parser({
             direction: SearchDirection.Forward,
             delimiter: '/', // TODO: Are these params right?
+            ignoreCase: !matchCase,
           }).tryParse(toString(rhs));
           return pattern.regex.test(toString(lhs));
       }

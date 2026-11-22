@@ -463,9 +463,11 @@ suite('Vimscript expressions', () => {
 
   suite('Comparisons', () => {
     suite('String equality', () => {
-      exprTest("'abc' == 'Abc'", { value: bool(false) }); // TODO: this should depend on 'ignorecase'
+      // 'ignorecase' is on in the test configuration
+      exprTest("'abc' == 'Abc'", { value: bool(true) });
       exprTest("'abc' ==# 'Abc'", { value: bool(false) });
       exprTest("'abc' ==? 'Abc'", { value: bool(true) });
+      exprTest("{s -> [s ==? 'x', s][1]}('ABC')", { value: str('ABC') });
     });
 
     suite('Pattern matching', () => {
@@ -473,6 +475,8 @@ suite('Vimscript expressions', () => {
       exprTest("'apple' =~# '^a.*e$'", { value: bool(true) });
       exprTest("'apple' =~# '^A.*E$'", { value: bool(false) });
       exprTest("'apple' =~? '^A.*E$'", { value: bool(true) });
+      exprTest("'Apple' =~# 'apple'", { value: bool(false) });
+      exprTest("'   ' =~? '\\S'", { value: bool(false) });
       // TODO
     });
 

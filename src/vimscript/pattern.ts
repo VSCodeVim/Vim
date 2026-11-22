@@ -191,6 +191,8 @@ export class Pattern {
   public static parser(args: {
     direction: SearchDirection;
     ignoreSmartcase?: boolean;
+    /** Overrides 'ignorecase' and 'smartcase'; `\c` and `\C` in the pattern still take precedence */
+    ignoreCase?: boolean;
     delimiter?: string;
   }): Parser<Pattern> {
     const delimiter = args.delimiter
@@ -302,7 +304,7 @@ export class Pattern {
       },
     ).map(({ patternString, caseOverride, inSelection, closed, emptyBranch }) => {
       const ignoreCase = Pattern.getIgnoreCase(patternString, {
-        caseOverride,
+        caseOverride: caseOverride ?? args.ignoreCase,
         ignoreSmartcase: args.ignoreSmartcase ?? false,
       });
       return new Pattern(
