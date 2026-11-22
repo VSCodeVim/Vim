@@ -1,4 +1,4 @@
-import { optWhitespace, seq } from 'parsimmon';
+import { optWhitespace, Parser, seq } from 'parsimmon';
 import { doesFileExist } from 'platform/fs';
 import * as vscode from 'vscode';
 import { Position } from 'vscode';
@@ -89,37 +89,30 @@ function getLegacyArgs(args: IFileCommandArguments): LegacyArgs {
   }
 }
 
+/**
+ * Parses the `[++opt] [+cmd] [file]` arguments shared by `:edit`, `:new`, `:split`, etc.
+ */
+// TODO: These `optWhitespace` calls should be `whitespace`
+const fileArgsParser: Parser<{ opt: FileOpt; cmd?: FileCmd; file?: string }> = seq(
+  optWhitespace.then(fileOptParser).fallback([]),
+  optWhitespace.then(fileCmdParser).fallback(undefined),
+  optWhitespace.then(fileNameParser).fallback(undefined),
+).map(([opt, cmd, file]) => ({ opt, cmd, file }));
+
+function newWindowParser(name: 'new' | 'vnew' | 'split' | 'vsplit'): Parser<FileCommand> {
+  return fileArgsParser.map((args) => new FileCommand({ name, ...args }));
+}
+
 export class FileCommand extends ExCommand {
-  // TODO: There's a lot of duplication here
-  // TODO: These `optWhitespace` calls should be `whitespace`
   public static readonly argParsers = {
-    edit: seq(
-      bangParser,
-      optWhitespace.then(fileOptParser).fallback([]),
-      optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined),
-    ).map(([bang, opt, cmd, file]) => new FileCommand({ name: 'edit', bang, opt, cmd, file })),
+    edit: seq(bangParser, fileArgsParser).map(
+      ([bang, args]) => new FileCommand({ name: 'edit', bang, ...args }),
+    ),
     enew: bangParser.map((bang) => new FileCommand({ name: 'enew', bang })),
-    new: seq(
-      optWhitespace.then(fileOptParser).fallback([]),
-      optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined),
-    ).map(([opt, cmd, file]) => new FileCommand({ name: 'new', opt, cmd, file })),
-    split: seq(
-      optWhitespace.then(fileOptParser).fallback([]),
-      optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined),
-    ).map(([opt, cmd, file]) => new FileCommand({ name: 'split', opt, cmd, file })),
-    vnew: seq(
-      optWhitespace.then(fileOptParser).fallback([]),
-      optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined),
-    ).map(([opt, cmd, file]) => new FileCommand({ name: 'vnew', opt, cmd, file })),
-    vsplit: seq(
-      optWhitespace.then(fileOptParser).fallback([]),
-      optWhitespace.then(fileCmdParser).fallback(undefined),
-      optWhitespace.then(fileNameParser).fallback(undefined),
-    ).map(([opt, cmd, file]) => new FileCommand({ name: 'vsplit', opt, cmd, file })),
+    new: newWindowParser('new'),
+    split: newWindowParser('split'),
+    vnew: newWindowParser('vnew'),
+    vsplit: newWindowParser('vsplit'),
   };
 
   private readonly arguments: IFileCommandArguments;

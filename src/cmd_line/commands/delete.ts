@@ -1,43 +1,20 @@
 import * as vscode from 'vscode';
 
-// eslint-disable-next-line id-denylist
-import { Parser, alt, any, optWhitespace, seq, whitespace } from 'parsimmon';
+import { Parser } from 'parsimmon';
 import { Position } from 'vscode';
 import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
-import { numberParser } from '../../vimscript/parserUtils';
-
-export interface IDeleteCommandArguments {
-  register?: string;
-  count?: number;
-}
+import { RegisterAndCount, registerAndCountParser } from '../../vimscript/parserUtils';
 
 export class DeleteCommand extends ExCommand {
-  // TODO: this is copy-pasted from `:y[ank]`
-  public static readonly argParser: Parser<DeleteCommand> = optWhitespace.then(
-    alt(
-      numberParser.map((count) => {
-        return { register: undefined, count };
-      }),
-      // eslint-disable-next-line id-denylist
-      seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
-        ([register, count]) => {
-          return { register, count };
-        },
-      ),
-    ).map(
-      ({ register, count }) =>
-        new DeleteCommand({
-          register,
-          count,
-        }),
-    ),
+  public static readonly argParser: Parser<DeleteCommand> = registerAndCountParser.map(
+    (args) => new DeleteCommand(args),
   );
 
-  private readonly arguments: IDeleteCommandArguments;
-  constructor(args: IDeleteCommandArguments) {
+  private readonly arguments: RegisterAndCount;
+  constructor(args: RegisterAndCount) {
     super();
     this.arguments = args;
   }
