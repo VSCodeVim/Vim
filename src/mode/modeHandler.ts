@@ -90,6 +90,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
    */
   private lastClickWasPastEol: boolean = false;
 
+  /** Whether a word highlight trigger is on its way to VS Code, and whether to send another after it */
+  private readonly wordHighlight = { sending: false, again: false };
+
   private _currentMode!: Mode;
   private get currentMode(): Mode {
     return this._currentMode;
@@ -1639,13 +1642,36 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // NOTE: this is not being awaited to save the 15-20ms block - I think this is fine
     void VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
 
-    // Tell VSCode that the cursor position changed, so it updates its highlights for `editor.occurrencesHighlight`.
-    const range = new vscode.Range(
-      this.vimState.cursorStartPosition,
-      this.vimState.cursorStopPosition,
-    );
-    if (!/\s+/.test(this.vimState.document.getText(range))) {
-      void vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+    this.triggerWordHighlight();
+  }
+
+  /**
+   * Tells VS Code that the cursor moved, so it updates its highlights for
+   * `editor.occurrencesHighlight`. They only depend on where the cursor ends up, so while one trigger
+   * is on its way, later ones are combined into one, sent after it.
+   */
+  private triggerWordHighlight(): void {
+    if (this.wordHighlight.sending) {
+      this.wordHighlight.again = true;
+    } else {
+      void this.sendWordHighlights();
+    }
+  }
+
+  /** Sends word highlight triggers until one is sent after the latest cursor move */
+  private async sendWordHighlights(): Promise<void> {
+    this.wordHighlight.sending = true;
+    try {
+      do {
+        this.wordHighlight.again = false;
+        const { cursorStartPosition, cursorStopPosition, document } = this.vimState;
+        const range = new vscode.Range(cursorStartPosition, cursorStopPosition);
+        if (!/\s+/.test(document.getText(range))) {
+          await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+        }
+      } while (this.wordHighlight.again);
+    } finally {
+      this.wordHighlight.sending = false;
     }
   }
 
