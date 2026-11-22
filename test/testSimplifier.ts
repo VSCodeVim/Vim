@@ -597,7 +597,9 @@ const wait = async (ms: number) => new Promise((resolve) => setTimeout(resolve, 
  *   the test's `config` and `remaps` have been undone.
  */
 export async function testIt(testObj: TestObject): Promise<ModeHandler> {
-  if (vscode.window.activeTextEditor === undefined) {
+  // An untitled document's line ending comes from its content, not `files.eol`
+  const editor = vscode.window.activeTextEditor;
+  if (editor === undefined || editor.document.isUntitled) {
     await openNewFile();
   }
 
