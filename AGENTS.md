@@ -25,6 +25,8 @@ pnpm prettier:check  # Check formatting
 
 `pnpm test-docker` needs Docker running; if it isn't, ask the user to start it rather than falling back to local tests. The container keeps its own `node_modules`, `out/`, and VS Code download in Docker volumes, so it doesn't use the host's build output.
 
+`tsc` only type-checks; esbuild does all the building. `pnpm build-test` bundles the extension and every `*.test.ts` file together into `out/test.js`, which VS Code loads both as the extension and as the test runner, so tests share module state (e.g. `Globals`) with the extension.
+
 CI runs `pnpm prettier:check`, `pnpm lint`, and the tests on Ubuntu and Windows, plus the web smoke tests. The pre-commit hook runs `lint-staged`, which formats staged files with Prettier and runs `eslint --fix` on staged `.ts` files.
 
 ## Architecture

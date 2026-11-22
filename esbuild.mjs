@@ -1,11 +1,13 @@
 // @ts-check
 
 import * as esbuild from 'esbuild';
-import { readFile } from 'fs/promises';
+import { globSync } from 'fs';
+import { mkdir, readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
+const test = process.argv.includes('--test');
 const testWeb = process.argv.includes('--test-web');
 
 /**
@@ -155,7 +157,83 @@ const testWebConfig = {
   plugins: [mochaAsCommonJS],
 };
 
-const configs = testWeb ? [testWebConfig] : extensionConfigs;
+/**
+ * Provides the `test-files` module (see test/testFiles.d.ts), which lists every test file with a
+ * function that runs it. The files are sorted, since glob v9+ doesn't sort its results and some tests
+ * are sensitive to what ran before them; this is the order glob v7 found them in.
+ * @type {esbuild.Plugin}
+ */
+const testFiles = {
+  name: 'test-files',
+  setup(build) {
+    build.onResolve({ filter: /^test-files$/ }, (args) => ({
+      path: args.path,
+      namespace: 'test-files',
+    }));
+    build.onLoad({ filter: /.*/, namespace: 'test-files' }, () => {
+      const files = globSync('**/*.test.ts', { cwd: 'test' })
+        .map((file) => file.replaceAll('\\', '/'))
+        .sort((a, b) => a.localeCompare(b, 'en'));
+      const entries = files.map(
+        (file) => `[${JSON.stringify(file)}, () => import(${JSON.stringify(`./test/${file}`)})]`,
+      );
+      return {
+        contents: `export default [\n${entries.join(',\n')}\n];`,
+        loader: 'js',
+        resolveDir: '.',
+      };
+    });
+  },
+};
+
+/**
+ * The extension and its tests, bundled together so they share module state. VS Code loads the
+ * bundle both as the extension and as the test runner; see test/index.ts.
+ * @type {esbuild.BuildOptions[]}
+ */
+const testConfigs = [
+  {
+    ...common,
+    entryPoints: ['test/index.ts'],
+    outfile: 'out/test.js',
+    platform: 'node',
+    // Load dependencies from node_modules, as the tests always have, rather than bundling them
+    packages: 'external',
+    alias: {
+      platform: './src/platform/node',
+    },
+    minify: false,
+    sourcemap: true,
+    plugins: [testFiles],
+  },
+  {
+    ...common,
+    entryPoints: ['test/runTest.ts'],
+    outfile: 'out/runTest.js',
+    platform: 'node',
+    packages: 'external',
+    minify: false,
+    metafile: false,
+  },
+];
+
+/**
+ * Writes out/package.json, so that VS Code can load out/ as the extension under test, with the test
+ * bundle as its `main`
+ */
+async function writeTestManifest() {
+  const manifest = JSON.parse(await readFile('package.json', 'utf8'));
+  manifest.main = './test';
+  delete manifest.browser;
+  await mkdir('out', { recursive: true });
+  await writeFile('out/package.json', JSON.stringify(manifest, null, 2) + '\n');
+}
+
+const configs = testWeb ? [testWebConfig] : test ? testConfigs : extensionConfigs;
+
+if (test) {
+  await writeTestManifest();
+}
 
 if (watch) {
   for (const config of configs) {

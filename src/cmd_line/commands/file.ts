@@ -1,5 +1,6 @@
 import { optWhitespace, Parser, seq } from 'parsimmon';
 import { doesFileExist } from 'platform/fs';
+import untildify from 'untildify';
 import * as vscode from 'vscode';
 import { Position } from 'vscode';
 import { VimState } from '../../state/vimState';
@@ -14,9 +15,6 @@ import {
   FileOpt,
   fileOptParser,
 } from '../../vimscript/parserUtils';
-// TODO:
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import untildify = require('untildify');
 
 export enum FilePosition {
   NewWindowVerticalSplit,

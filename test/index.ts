@@ -9,13 +9,17 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-import { glob } from 'glob';
 import Mocha from 'mocha';
-import * as path from 'path';
+import testFiles from 'test-files';
 import * as vscode from 'vscode';
 
 import { Globals } from '../src/globals';
 import { Configuration } from './testConfiguration';
+
+// The test build bundles the extension and the tests into one file, which VS Code loads both as the
+// extension (`main` in out/package.json) and as the test runner, so the tests share module state,
+// such as `Globals`, with the extension
+export { activate, deactivate } from '../extension';
 
 Globals.isTesting = true;
 Globals.mockConfiguration = new Configuration();
@@ -67,14 +71,12 @@ export async function run(): Promise<void> {
   };
   scopeConfigToSuites(mocha.suite);
 
-  const testsRoot = path.resolve(__dirname, '.');
-
-  // Add files to the test suite. glob v9+ doesn't sort results; keep the stable order glob v7 used,
-  // since some tests are sensitive to what ran before them.
-  const files = (await glob('**/**.test.js', { cwd: testsRoot })).sort((a, b) =>
-    a.localeCompare(b, 'en'),
-  );
-  files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
+  // Load each test file from the bundle, the way `mocha.addFile` would load it from disk
+  for (const [file, load] of testFiles) {
+    mocha.suite.emit(Mocha.Suite.constants.EVENT_FILE_PRE_REQUIRE, globalThis, file, mocha);
+    mocha.suite.emit(Mocha.Suite.constants.EVENT_FILE_REQUIRE, await load(), file, mocha);
+    mocha.suite.emit(Mocha.Suite.constants.EVENT_FILE_POST_REQUIRE, globalThis, file, mocha);
+  }
 
   return new Promise((c, e) => {
     try {
