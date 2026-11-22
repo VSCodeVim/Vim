@@ -1193,18 +1193,18 @@
   },
   "scripts": {
     "vscode:prepublish": "pnpm build",
-    "build": "tsc -p tsconfig.json && node esbuild.mjs --production && npm run commit-hash",
-    "build-dev": "node esbuild.mjs && npm run commit-hash",
-    "build-test": "tsc -p tsconfig.json && node esbuild.mjs --test",
+    "build": "tsc -p tsconfig.json && node esbuild.mts --production && npm run commit-hash",
+    "build-dev": "node esbuild.mts && npm run commit-hash",
+    "build-test": "tsc -p tsconfig.json && node esbuild.mts --test",
     "commit-hash": "git rev-parse HEAD > dist/version.txt",
     "test": "node ./out/runTest.js",
     "test-docker": "node build/dockerTest.js",
-    "test-web": "node esbuild.mjs --test-web && vscode-test-web --quality=stable --browserType=chromium --headless --extensionDevelopmentPath=. --extensionTestsPath=out/test-web/index.js",
+    "test-web": "node esbuild.mts --test-web && vscode-test-web --quality=stable --browserType=chromium --headless --extensionDevelopmentPath=. --extensionTestsPath=out/test-web/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "npx prettier --write .",
     "prettier:check": "npx prettier --check .",
-    "watch": "node esbuild.mjs --watch",
+    "watch": "node esbuild.mts --watch",
     "package": "vsce package --no-dependencies --allow-star-activation",
     "release": "npm version --message \"bump version\"",
     "prepare": "husky"
@@ -1248,8 +1248,8 @@
     "typescript-eslint": "^8.73.0"
   },
   "lint-staged": {
-    "*.{ts,js,json,md,yml}": "prettier --write",
-    "*.ts": "eslint --fix"
+    "*.{ts,mts,js,mjs,json,md,yml}": "prettier --write",
+    "*.{ts,mts}": "eslint --fix"
   },
   "packageManager": "pnpm@12.21.0"
 }

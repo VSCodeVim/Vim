@@ -1,5 +1,3 @@
-// @ts-check
-
 import * as esbuild from 'esbuild';
 import { globSync } from 'fs';
 import { mkdir, readFile, writeFile } from 'fs/promises';
@@ -13,9 +11,8 @@ const testWeb = process.argv.includes('--test-web');
 /**
  * Fails the build if modules in src/ import each other in a cycle. Dynamic `import()`s are allowed
  * to form cycles, since they don't run until after every module has loaded.
- * @type {esbuild.Plugin}
  */
-const noCircularImports = {
+const noCircularImports: esbuild.Plugin = {
   name: 'no-circular-imports',
   setup(build) {
     build.onEnd((result) => {
@@ -23,8 +20,7 @@ const noCircularImports = {
         return;
       }
 
-      /** @type {Map<string, string[]>} */
-      const graph = new Map();
+      const graph = new Map<string, string[]>();
       for (const [file, { imports }] of Object.entries(result.metafile.inputs)) {
         if (file.startsWith('src/')) {
           graph.set(
@@ -36,14 +32,10 @@ const noCircularImports = {
         }
       }
 
-      /** @type {Map<string, 'visiting' | 'done'>} */
-      const state = new Map();
-      /** @type {string[]} */
-      const stack = [];
-      /** @type {esbuild.PartialMessage[]} */
-      const errors = [];
-      /** @param {string} file */
-      const visit = (file) => {
+      const state = new Map<string, 'visiting' | 'done'>();
+      const stack: string[] = [];
+      const errors: esbuild.PartialMessage[] = [];
+      const visit = (file: string) => {
         state.set(file, 'visiting');
         stack.push(file);
         for (const dep of graph.get(file) ?? []) {
@@ -71,9 +63,8 @@ const noCircularImports = {
 /**
  * Leaves out modules that only work in Node.js. The web build only reaches them through `import()`
  * calls guarded by `SUPPORT_*` flags, which are false there.
- * @type {esbuild.Plugin}
  */
-const excludeNodeOnlyModules = {
+const excludeNodeOnlyModules: esbuild.Plugin = {
   name: 'exclude-node-only-modules',
   setup(build) {
     build.onResolve({ filter: /\/(neovim|imswitcher|vimrc)$|child_process$/ }, (args) => ({
@@ -83,8 +74,7 @@ const excludeNodeOnlyModules = {
   },
 };
 
-/** @type {esbuild.BuildOptions} */
-const common = {
+const common: esbuild.BuildOptions = {
   bundle: true,
   format: 'cjs',
   target: 'es2021',
@@ -96,8 +86,7 @@ const common = {
   logLevel: 'info',
 };
 
-/** @type {esbuild.BuildOptions[]} */
-const extensionConfigs = [
+const extensionConfigs: esbuild.BuildOptions[] = [
   {
     ...common,
     entryPoints: ['extension.ts'],
@@ -127,9 +116,8 @@ const extensionConfigs = [
  * Mocha's browser build is a UMD bundle, but Mocha's package.json says `"type": "module"`, so esbuild
  * inlines it unwrapped and it replaces the test bundle's `module.exports` with itself. Loading it
  * outside the file namespace (which is where package.json applies) makes esbuild wrap it as CommonJS.
- * @type {esbuild.Plugin}
  */
-const mochaAsCommonJS = {
+const mochaAsCommonJS: esbuild.Plugin = {
   name: 'mocha-as-commonjs',
   setup(build) {
     build.onResolve({ filter: /^mocha\/mocha$/ }, () => ({
@@ -145,9 +133,8 @@ const mochaAsCommonJS = {
 
 /**
  * Smoke tests that `pnpm test-web` runs against dist/extensionWeb.js in a browser
- * @type {esbuild.BuildOptions}
  */
-const testWebConfig = {
+const testWebConfig: esbuild.BuildOptions = {
   ...common,
   entryPoints: ['test/web/index.ts'],
   outfile: 'out/test-web/index.js',
@@ -161,9 +148,8 @@ const testWebConfig = {
  * Provides the `test-files` module (see test/testFiles.d.ts), which lists every test file with a
  * function that runs it. The files are sorted, since glob v9+ doesn't sort its results and some tests
  * are sensitive to what ran before them; this is the order glob v7 found them in.
- * @type {esbuild.Plugin}
  */
-const testFiles = {
+const testFiles: esbuild.Plugin = {
   name: 'test-files',
   setup(build) {
     build.onResolve({ filter: /^test-files$/ }, (args) => ({
@@ -189,9 +175,8 @@ const testFiles = {
 /**
  * The extension and its tests, bundled together so they share module state. VS Code loads the
  * bundle both as the extension and as the test runner; see test/index.ts.
- * @type {esbuild.BuildOptions[]}
  */
-const testConfigs = [
+const testConfigs: esbuild.BuildOptions[] = [
   {
     ...common,
     entryPoints: ['test/index.ts'],
@@ -222,7 +207,7 @@ const testConfigs = [
  * bundle as its `main`
  */
 async function writeTestManifest() {
-  const manifest = JSON.parse(await readFile('package.json', 'utf8'));
+  const manifest = JSON.parse(await readFile('package.json', 'utf8')) as Record<string, unknown>;
   manifest.main = './test';
   delete manifest.browser;
   await mkdir('out', { recursive: true });
