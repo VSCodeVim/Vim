@@ -11,10 +11,10 @@ pnpm build-dev       # Fast dev build
 pnpm build           # Production build
 pnpm watch           # Rebuild on file changes
 
-npx gulp test                  # Run tests in Docker (preferred)
-npx gulp test --grep <REGEX>   # Run filtered tests in Docker (matches suite and test names)
-npx gulp test --crlf           # Run tests in Docker with CRLF line endings, as on Windows
-pnpm build-test && pnpm test   # Run tests locally (close all VS Code instances first)
+pnpm test-docker                 # Run tests in Docker (preferred)
+pnpm test-docker --grep <REGEX>  # Run filtered tests in Docker (matches suite and test names)
+pnpm test-docker --crlf          # Run tests in Docker with CRLF line endings, as on Windows
+pnpm build-test && pnpm test     # Run tests locally (close all VS Code instances first)
 pnpm build-dev && pnpm test-web  # Run web extension smoke tests (test/web/) in headless Chromium
 
 pnpm lint            # Check code style
@@ -23,7 +23,7 @@ pnpm prettier        # Format code
 pnpm prettier:check  # Check formatting
 ```
 
-`npx gulp test` needs Docker running; if it isn't, ask the user to start it rather than falling back to local tests. The container keeps its own `node_modules`, `out/`, and VS Code download in Docker volumes, so it doesn't use the host's build output.
+`pnpm test-docker` needs Docker running; if it isn't, ask the user to start it rather than falling back to local tests. The container keeps its own `node_modules`, `out/`, and VS Code download in Docker volumes, so it doesn't use the host's build output.
 
 CI runs `pnpm prettier:check`, `pnpm lint`, and the tests on Ubuntu and Windows, plus the web smoke tests. The pre-commit hook runs `lint-staged`, which formats staged files with Prettier and runs `eslint --fix` on staged `.ts` files.
 
@@ -93,5 +93,5 @@ Optional fields include `endMode` (defaults to `Mode.Normal`, so a test ending i
 
 - [CONTRIBUTING.md](.github/CONTRIBUTING.md) — Setup, architecture deep-dive, release process
 - [README.md](README.md) — All supported settings, emulated plugins, keybindings
-- `gulpfile.js` — Build/test/release automation tasks
+- `build/` — Test container (`Dockerfile`, run by `dockerTest.js`) and build helper scripts
 - `package.json` — Extension manifest and all configuration schema definitions

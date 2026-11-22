@@ -64,14 +64,14 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
    ```bash
    # If Docker is installed and running:
-   npx gulp test                 # Run tests inside Docker container
-   npx gulp test --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
-   npx gulp test --crlf          # Run tests inside Docker container with CRLF line endings, as on Windows
+   pnpm test-docker                 # Run tests inside Docker container
+   pnpm test-docker --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
+   pnpm test-docker --crlf          # Run tests inside Docker container with CRLF line endings, as on Windows
 
    # Otherwise, build and run the tests locally:
-   pnpm build                    # Build
-   pnpm build-test               # Build tests
-   pnpm test                     # Test (must close all instances of VS Code)
+   pnpm build                       # Build
+   pnpm build-test                  # Build tests
+   pnpm test                        # Test (must close all instances of VS Code)
    ```
 
    The web extension (`extensionWeb.ts`) has its own smoke tests in `test/web/`, which run the bundled extension in headless Chromium:
@@ -136,11 +136,11 @@ Before you push a release, be sure to make sure the changelog is updated!
 To push a release:
 
 ```bash
-npx gulp release --semver [SEMVER]
+pnpm release [SEMVER]
 git push --follow-tags
 ```
 
-The above Gulp command will:
+The above command (a wrapper around `npm version`) will:
 
 1. Bump the package version based off the semver supplied. Supported values: patch, minor, major.
 2. Create a Git commit with the above changes.

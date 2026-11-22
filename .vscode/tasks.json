@@ -9,11 +9,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "gulp",
-      "task": "default",
-      "problemMatcher": "$tsc-watch"
-    },
-    {
       "type": "npm",
       "script": "build-dev",
       "problemMatcher": []

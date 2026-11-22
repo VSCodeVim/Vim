@@ -18,6 +18,6 @@ RUN corepack enable
 
 WORKDIR /app
 
-# node_modules and out/ are volumes too (see gulpfile.js), so the host's Windows/macOS builds are
+# node_modules and out/ are volumes too (see dockerTest.js), so the host's Windows/macOS builds are
 # neither used nor overwritten
 ENTRYPOINT ["sh", "-c", "pnpm install --frozen-lockfile --ignore-scripts --store-dir /cache/pnpm-store && pnpm build-test && xvfb-run -a pnpm test"]
