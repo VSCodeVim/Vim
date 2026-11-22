@@ -104,10 +104,12 @@ jobs:
           path: .vscode-test/vscode-*
           key: vscode-${{ runner.os }}-${{ steps.vscode-version.outputs.version }}
 
+      # The Build step already type-checked, so both test steps bundle the tests directly rather than
+      # with `pnpm build-test`, which would run tsc again
       - name: Test on ubuntu-latest
         if: matrix.os != 'windows-latest'
         run: |
-          pnpm build-test
+          node esbuild.mts --test
           xvfb-run -a pnpm test
 
       - name: Test web extension
@@ -117,5 +119,5 @@ jobs:
       - name: Test on windows-latest
         if: matrix.os == 'windows-latest'
         run: |
-          pnpm build-test
+          node esbuild.mts --test
           pnpm test
