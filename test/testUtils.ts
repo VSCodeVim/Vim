@@ -291,6 +291,12 @@ export async function cleanUpWorkspace(): Promise<void> {
   await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   assert.equal(vscode.window.visibleTextEditors.length, 0, 'Expected all editors closed.');
   assert(!vscode.window.activeTextEditor, 'Expected no active text editor.');
+  const tabs = vscode.window.tabGroups.all.flatMap((group) => group.tabs);
+  assert.equal(
+    tabs.length,
+    0,
+    `Expected all tabs closed. Tabs: ${JSON.stringify(tabs.map((tab) => tab.label))}`,
+  );
 }
 
 export async function reloadConfiguration(config: IConfiguration) {
