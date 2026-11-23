@@ -703,6 +703,9 @@ suite('Vimscript expressions', () => {
       exprTest('count([1,2,3,1], 1, 0, -5)', { error: VimError.ListIndexOutOfRange(-5) });
       exprTest('count([1,2,3,1], 1, 0, 4)', { error: VimError.ListIndexOutOfRange(4) });
       exprTest('count([], 1, 0, 0)', { value: int(0) });
+      exprTest('count(1, 1)', {
+        error: VimError.ArgumentOfFuncMustBeAListStringOrDictionary('count'),
+      });
 
       exprTest('count(#{a:3,b:2,c:3}, 3)', { value: int(2) });
       exprTest('count(#{apple:"apple",b:"banana",c:"APPLE"}, "apple")', { value: int(1) });
@@ -1212,7 +1215,7 @@ suite('Vimscript expressions', () => {
       exprTest('flattennew([1, [2, [3, 4]], 5])', { display: '[1, 2, 3, 4, 5]' });
       exprTest('flattennew([1, [2, [3, 4]], 5], 1)', { display: '[1, 2, [3, 4], 5]' });
       exprTest('flattennew([1, [2, [3, 4]], 5], 0)', { display: '[1, [2, [3, 4]], 5]' });
-      exprTest('flattennew({})', { error: VimError.ArgumentMustBeAList('flattennew') });
+      exprTest('flattennew({})', { error: VimError.ArgumentMustBeAList('flatten') });
     });
 
     suite('mapnew', () => {
@@ -1248,6 +1251,16 @@ suite('Vimscript expressions', () => {
         keysPressed: ':echo mode(1, 2)\n',
         end: ['|'],
         statusBar: VimError.TooManyArgs('mode').toString(),
+      });
+    });
+
+    suite('Error messages', () => {
+      newTest({
+        title: 'Name the function with parentheses',
+        start: ['|'],
+        keysPressed: ':echo sort({})\n',
+        end: ['|'],
+        statusBar: 'E686: Argument of sort() must be a List',
       });
     });
 

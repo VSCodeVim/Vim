@@ -55,6 +55,7 @@ export enum ErrorCode {
   InvalidTypeForLen = 701,
   UsingAFuncrefAsANumber = 703,
   FuncrefVariableNameMustStartWithACapital = 704,
+  ArgumentOfFuncMustBeAListStringOrDictionary = 706,
   SliceRequiresAListOrBlobValue = 709,
   ListValueHasMoreItemsThanTarget = 710,
   ListValueHasNotEnoughItems = 711,
@@ -266,7 +267,7 @@ export class VimError extends Error {
     return new VimError(ErrorCode.ListIndexOutOfRange, `list index out of range: ${idx}`);
   }
   static ArgumentMustBeAList(func: string): VimError {
-    return new VimError(ErrorCode.ArgumentMustBeAList, `Argument of ${func} must be a List`);
+    return new VimError(ErrorCode.ArgumentMustBeAList, `Argument of ${func}() must be a List`);
   }
   static LessTargetsThanListItems(): VimError {
     return new VimError(ErrorCode.LessTargetsThanListItems, 'Less targets than List items');
@@ -325,7 +326,13 @@ export class VimError extends Error {
   static ArgumentOfFuncMustBeAListOrDictionary(func: string): VimError {
     return new VimError(
       ErrorCode.ArgumentOfFuncMustBeAListOrDictionary,
-      `Argument of ${func} must be a List or Dictionary`,
+      `Argument of ${func}() must be a List or Dictionary`,
+    );
+  }
+  static ArgumentOfFuncMustBeAListStringOrDictionary(func: string): VimError {
+    return new VimError(
+      ErrorCode.ArgumentOfFuncMustBeAListStringOrDictionary,
+      `Argument of ${func}() must be a List, String or Dictionary`,
     );
   }
   static ListRequired(): VimError {

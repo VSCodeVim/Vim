@@ -1002,7 +1002,7 @@ export class EvaluationContext {
             }
             break;
           default:
-            throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
+            throw VimError.ArgumentOfFuncMustBeAListStringOrDictionary(call.func);
         }
         return int(count);
       }
@@ -1050,7 +1050,9 @@ export class EvaluationContext {
       // TODO: filter()
       case 'flatten':
       case 'flattennew': {
-        const [l, depth = 99999999] = getArgs(1, 2, [toListArg, toInt]);
+        // Like Vim, name flatten() in the error even for flattennew()
+        const toFlattenArg = expectType('list', () => VimError.ArgumentMustBeAList('flatten'));
+        const [l, depth = 99999999] = getArgs(1, 2, [toFlattenArg, toInt]);
         if (depth < 0) {
           throw VimError.MaxDepthMustBeANonNegativeNumber();
         }
