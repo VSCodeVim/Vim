@@ -31,12 +31,10 @@ import { expressionParser, floatParser, numberParser } from './parser';
 import {
   BinaryOp,
   ComparisonOp,
-  DictionaryValue,
   Expression,
   FloatValue,
   FuncRefValue,
   FunctionCallExpression,
-  ListValue,
   NumberValue,
   UnaryOp,
   Value,
@@ -69,19 +67,30 @@ export function toInt(value: Value): number {
   }
 }
 
+/**
+ * Makes a converter that returns a value of the given type unchanged, and throws the given error
+ * for any other value
+ */
+function expectType<T extends Value['type']>(
+  type: T,
+  error: () => VimError,
+): (value: Value) => Extract<Value, { type: T }> {
+  return (value) => {
+    if (value.type !== type) {
+      throw error();
+    }
+    return value as Extract<Value, { type: T }>;
+  };
+}
+
+const toList = expectType('list', () => VimError.ListRequired());
+const toDict = expectType('dictionary', () => VimError.DictionaryRequired());
+
 function toFloat(value: Value): number {
-  switch (value.type) {
-    case 'number':
-      return value.value;
-    case 'float':
-      return value.value;
-    case 'string':
-    case 'list':
-    case 'dictionary':
-    case 'funcref':
-    case 'blob':
-      throw VimError.NumberOrFloatRequired();
+  if (value.type !== 'number' && value.type !== 'float') {
+    throw VimError.NumberOrFloatRequired();
   }
+  return value.value;
 }
 
 export function toString(value: Value): string {
@@ -100,34 +109,6 @@ export function toString(value: Value): string {
       throw VimError.UsingFuncrefAsAString();
     case 'blob':
       return displayValue(value);
-  }
-}
-
-function toList(value: Value): ListValue {
-  switch (value.type) {
-    case 'number':
-    case 'float':
-    case 'string':
-    case 'funcref':
-    case 'dictionary':
-    case 'blob':
-      throw VimError.ListRequired();
-    case 'list':
-      return value;
-  }
-}
-
-function toDict(value: Value): DictionaryValue {
-  switch (value.type) {
-    case 'number':
-    case 'float':
-    case 'string':
-    case 'list':
-    case 'funcref':
-    case 'blob':
-      throw VimError.DictionaryRequired();
-    case 'dictionary':
-      return value;
   }
 }
 
@@ -805,6 +786,9 @@ export class EvaluationContext {
       return args as ConvertedArgs<FunctionArgs<Min, Max>, C>;
     };
 
+    /** Like `toList`, but with an error that names the function */
+    const toListArg = expectType('list', () => VimError.ArgumentMustBeAList(call.func));
+
     type NumericBuiltinOptions<T extends Value> = {
       convert: (value: Value) => number;
       wrap: (value: number) => T;
@@ -949,10 +933,8 @@ export class EvaluationContext {
       }
       // TODO: byteidx[comp]
       case 'call': {
-        const [_func, arglist, dict] = getArgs(2, 3);
-        if (arglist.type !== 'list') {
-          throw VimError.ListRequiredForArgument(2);
-        }
+        const toArglist = expectType('list', () => VimError.ListRequiredForArgument(2));
+        const [_func, arglist, dict] = getArgs(2, 3, [undefined, toArglist]);
         const func: FuncRefValue = (() => {
           if (_func.type === 'funcref') {
             return _func;
@@ -1068,11 +1050,7 @@ export class EvaluationContext {
       // TODO: filter()
       case 'flatten':
       case 'flattennew': {
-        const [l, _depth] = getArgs(1, 2);
-        if (l.type !== 'list') {
-          throw VimError.ArgumentMustBeAList(call.func);
-        }
-        const depth = _depth ? toInt(_depth) : 99999999;
+        const [l, depth = 99999999] = getArgs(1, 2, [toListArg, toInt]);
         if (depth < 0) {
           throw VimError.MaxDepthMustBeANonNegativeNumber();
         }
@@ -1573,10 +1551,7 @@ export class EvaluationContext {
       }
       case 'sort': {
         // TODO: use dict
-        const [l, func, dict] = getArgs(1, 3);
-        if (l.type !== 'list') {
-          throw VimError.ArgumentMustBeAList(call.func);
-        }
+        const [l, func, dict] = getArgs(1, 3, [toListArg]);
         let compare: (x: Value, y: Value) => number;
         if (func !== undefined) {
           if (func.type === 'string' || func.type === 'number') {
@@ -1745,12 +1720,9 @@ export class EvaluationContext {
         }
       }
       case 'uniq': {
-        const [l, func, dict] = getArgs(1, 3);
+        const [l, func, dict] = getArgs(1, 3, [toListArg]);
         // TODO: Use func (see sort() and try to re-use implementation)
         // TODO: Use dict
-        if (l.type !== 'list') {
-          throw VimError.ArgumentMustBeAList(call.func);
-        }
         if (l.items.length > 1) {
           let prev: Value = l.items[0];
           for (let i = 1; i < l.items.length;) {

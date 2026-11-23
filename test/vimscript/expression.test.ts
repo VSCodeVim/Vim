@@ -682,6 +682,7 @@ suite('Vimscript expressions', () => {
     suite('call', () => {
       exprTest('call("abs", [-1])', { value: float(1) });
       exprTest('call(function("abs"), [-1])', { value: float(1) });
+      exprTest('call("abs", 1)', { error: VimError.ListRequiredForArgument(2) });
     });
 
     suite('count', () => {
@@ -761,6 +762,7 @@ suite('Vimscript expressions', () => {
       exprTest('flatten([1, [2, [3, 4]], 5], 0)', { display: '[1, [2, [3, 4]], 5]' });
 
       exprTest('flatten({})', { error: VimError.ArgumentMustBeAList('flatten') });
+      exprTest('flatten({}, -1)', { error: VimError.ArgumentMustBeAList('flatten') });
       exprTest('flatten([], -2)', { error: VimError.MaxDepthMustBeANonNegativeNumber() });
     });
 
@@ -1075,6 +1077,7 @@ suite('Vimscript expressions', () => {
 
     suite('uniq', () => {
       exprTest('uniq([1, 2, 3])', { display: '[1, 2, 3]' });
+      exprTest('uniq({})', { error: VimError.ArgumentMustBeAList('uniq') });
       exprTest('uniq([1, 1, 2, 2, 3, 3])', { display: '[1, 2, 3]' });
       exprTest('uniq([1, 2, 1, 3, 2, 3])', { display: '[1, 2, 1, 3, 2, 3]' });
       exprTest("uniq([1, '1'])", { display: "[1, '1']" });
@@ -1115,6 +1118,7 @@ suite('Vimscript expressions', () => {
 
     suite('sort', () => {
       exprTest('sort([])', { value: list([]) });
+      exprTest('sort({})', { error: VimError.ArgumentMustBeAList('sort') });
 
       exprTest("sort(['A', 'c', 'B', 'a', 'C', 'b'])", {
         display: "['A', 'B', 'C', 'a', 'b', 'c']",
