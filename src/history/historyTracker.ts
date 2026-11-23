@@ -97,21 +97,23 @@ class DocumentChange {
   }
 }
 
-interface IMarkBase {
+export interface ILocalMark {
   name: string;
   position: Position;
 }
 
-export interface ILocalMark extends IMarkBase {
-  isUppercaseMark: false;
-}
-
-export interface IGlobalMark extends IMarkBase {
-  isUppercaseMark: true;
+export interface IGlobalMark extends ILocalMark {
   document: vscode.TextDocument;
 }
 
 export type IMark = ILocalMark | IGlobalMark;
+
+/**
+ * @returns true if the mark is a global (file) mark, i.e. one that remembers its document
+ */
+export function isGlobalMark(mark: IMark): mark is IGlobalMark {
+  return 'document' in mark;
+}
 
 /**
  * An undo's worth of changes; generally corresponds to a single action.
@@ -564,28 +566,19 @@ export class HistoryTracker {
         this.vimState.lastVisualSelection.end = this.vimState.lastVisualSelection.start;
       }
     } else {
-      const isUppercaseMark = markName.toUpperCase() === markName;
-      const newMark: IMark = isUppercaseMark
-        ? {
-            position,
-            name: markName,
-            isUppercaseMark,
-            document,
-          }
-        : {
-            position,
-            name: markName,
-            isUppercaseMark,
-          };
+      const newMark: IMark =
+        markName.toUpperCase() === markName
+          ? { position, name: markName, document }
+          : { position, name: markName };
       this.putMarkInList(newMark);
     }
   }
 
   /**
-   * Puts the mark into either the global or local marks array depending on mark.isUppercaseMark.
+   * Puts the mark into either the global or local marks array depending on whether it is a global mark.
    */
   private putMarkInList(mark: IMark): void {
-    const marks = this.getMarkList(mark.isUppercaseMark);
+    const marks = this.getMarkList(isGlobalMark(mark));
     const previousIndex = marks.findIndex((existingMark) => existingMark.name === mark.name);
     if (previousIndex !== -1) {
       marks[previousIndex] = mark;
@@ -595,7 +588,7 @@ export class HistoryTracker {
   }
 
   /**
-   * Retrieves a mark from either the global or local array depending on mark.isUppercaseMark.
+   * Retrieves a mark from either the global or local array depending on its name.
    */
   public getMark(name: string): IMark | undefined {
     // First, handle "special" marks
@@ -625,7 +618,6 @@ export class HistoryTracker {
       return {
         name,
         position,
-        isUppercaseMark: false,
       };
     }
 
@@ -660,7 +652,7 @@ export class HistoryTracker {
    * editor.
    */
   public getLocalMarks(): readonly ILocalMark[] {
-    return this.undoStack.getCurrentMarkList().filter((mark) => !mark.isUppercaseMark);
+    return this.undoStack.getCurrentMarkList().filter((mark) => !isGlobalMark(mark));
   }
 
   /**

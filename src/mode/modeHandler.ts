@@ -18,6 +18,7 @@ import { decoration } from '../configuration/decoration';
 import { isLiteralMode, remapKey } from '../configuration/langmap';
 import { Notation } from '../configuration/notation';
 import { Remappers } from '../configuration/remapper';
+import { isGlobalMark } from '../history/historyTracker';
 import { Jump } from '../jumps/jump';
 import { globalState } from '../state/globalState';
 import { RemapState } from '../state/remapState';
@@ -1591,7 +1592,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     if (configuration.showMarksInGutter) {
       for (const mark of this.vimState.historyTracker.getMarks()) {
-        if (mark.isUppercaseMark && mark.document !== this.vimState.document) {
+        if (isGlobalMark(mark) && mark.document !== this.vimState.document) {
           continue;
         }
 

@@ -5,7 +5,7 @@ import { Parser, alt, noneOf, optWhitespace, regexp, seq, string, whitespace } f
 import { Position } from 'vscode';
 import { Cursor } from '../../common/motion/cursor';
 import { VimError } from '../../error';
-import { IMark } from '../../history/historyTracker';
+import { IMark, isGlobalMark } from '../../history/historyTracker';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
@@ -22,7 +22,7 @@ class MarkQuickPickItem implements QuickPickItem {
   constructor(vimState: VimState, mark: IMark) {
     this.mark = mark;
     this.label = mark.name;
-    if (mark.isUppercaseMark && mark.document !== vimState.document) {
+    if (isGlobalMark(mark) && mark.document !== vimState.document) {
       this.description = mark.document.fileName;
     } else {
       this.description = vimState.document.lineAt(mark.position).text.trim();
