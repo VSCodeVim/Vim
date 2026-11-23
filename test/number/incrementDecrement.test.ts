@@ -1,4 +1,3 @@
-import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 
 suite('Increment/decrement (<C-a> and <C-x>)', () => {
@@ -224,7 +223,6 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: 'vjj3<C-a>',
     end: ['9 9 9', '9| 12 9', '12 9 9', '12 9 9', '9 9 9'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -232,7 +230,6 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: 'Vjj3<C-a>',
     end: ['9 9 9', '|12 9 9', '12 9 9', '12 9 9', '9 9 9'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -240,7 +237,6 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: '<C-v>jj3<C-a>',
     end: ['9 9 9', '9 |12 9', '9 1|2 9', '9 1|2 9', '9 9 9'], // TODO: Bad cursor position?
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -248,7 +244,6 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: '<C-v>jj3<C-a>',
     end: ['9 9 9', '9| 9 9', '9| 9 9', '9| 9 9', '9 9 9'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -256,7 +251,6 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: 'vjj3g<C-a>',
     end: ['9 9 9', '9| 12 9', '15 9 9', '18 9 9', '9 9 9'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -264,7 +258,6 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     start: ['9 9 9', '9| 9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: 'Vjj3g<C-a>',
     end: ['9 9 9', '|12 9 9', '15 9 9', '18 9 9', '9 9 9'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -272,6 +265,5 @@ suite('Increment/decrement (<C-a> and <C-x>)', () => {
     start: ['9 9 9', '9 |9 9', '9 9 9', '9 9 9', '9 9 9'],
     keysPressed: '<C-v>jj3g<C-a>',
     end: ['9 9 9', '9 |12 9', '9 1|5 9', '9 1|8 9', '9 9 9'], // TODO: Bad cursor position?
-    endMode: Mode.Normal,
   });
 });

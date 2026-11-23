@@ -29,7 +29,7 @@ suite('rot13 operator', () => {
     title: 'g? in visual mode works',
     start: ['a|bc', 'def', 'ghi'],
     keysPressed: 'vj$g?',
-    end: ['aop', 'qrs', '|ghi'],
+    end: ['a[op', 'qrs|', ']ghi'],
     endMode: Mode.Visual,
   });
 
@@ -37,7 +37,7 @@ suite('rot13 operator', () => {
     title: 'g? in visual line mode works',
     start: ['a|bc', 'def', 'ghi'],
     keysPressed: 'Vj$g?',
-    end: ['nop', 'qr|s', 'ghi'],
+    end: ['[nop', 'qr|s]', 'ghi'],
     endMode: Mode.VisualLine,
   });
 
@@ -45,7 +45,7 @@ suite('rot13 operator', () => {
     title: 'g? in visual block mode works',
     start: ['a|bc', 'def', 'ghi'],
     keysPressed: '<C-v>j$g?',
-    end: ['aop', 'drs|', 'ghi'],
+    end: ['a[op', 'drs|', ']ghi'],
     endMode: Mode.VisualBlock,
   });
 });

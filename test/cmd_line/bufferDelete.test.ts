@@ -12,7 +12,8 @@ suite('Buffer delete', () => {
   let modeHandler: ModeHandler;
 
   setup(async () => {
-    await t.setupWorkspace({ forceNewFile: true });
+    await t.cleanUpWorkspace();
+    await t.openNewFile();
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 

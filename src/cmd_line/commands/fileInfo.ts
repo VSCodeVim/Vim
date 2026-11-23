@@ -14,7 +14,7 @@ export class FileInfoCommand extends ExCommand {
     bang: boolean;
     fileName?: string;
   };
-  private constructor(args: { bang: boolean; fileName?: string }) {
+  constructor(args: { bang: boolean; fileName?: string }) {
     super();
     this.args = args;
   }

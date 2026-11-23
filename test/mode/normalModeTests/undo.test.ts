@@ -6,38 +6,14 @@ suite('Undo', () => {
 
   suite('u', () => {
     newTest({
-      title: 'Undo 1',
-      start: ['|'],
-      keysPressed: 'iabc<Esc>adef<Esc>uu',
-      end: ['|'],
-    });
-
-    newTest({
-      title: 'Undo 2',
-      start: ['|'],
-      keysPressed: 'iabc<Esc>adef<Esc>u',
-      end: ['ab|c'],
-    });
-
-    newTest({
       title: 'Undo cursor',
       start: ['|'],
-      keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uuu',
-      end: ['|'],
-    });
-
-    newTest({
-      title: 'Undo cursor 2',
-      start: ['|'],
-      keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>uu',
-      end: ['|abc'],
-    });
-
-    newTest({
-      title: 'Undo cursor 3',
-      start: ['|'],
-      keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>u',
-      end: ['|defabc'],
+      steps: [
+        { keysPressed: 'Iabc<Esc>Idef<Esc>Ighi<Esc>', end: ['gh|idefabc'] },
+        { keysPressed: 'u', end: ['|defabc'] },
+        { keysPressed: 'u', end: ['|abc'] },
+        { keysPressed: 'u', end: ['|'] },
+      ],
     });
 
     newTest({
@@ -213,17 +189,15 @@ suite('Undo', () => {
     });
 
     newTest({
-      title: 'Redo',
+      title: 'Undo and redo insertions',
       start: ['|'],
-      keysPressed: 'iabc<Esc>adef<Esc>uu<C-r>',
-      end: ['|abc'],
-    });
-
-    newTest({
-      title: 'Redo',
-      start: ['|'],
-      keysPressed: 'iabc<Esc>adef<Esc>uu<C-r><C-r>',
-      end: ['abc|def'],
+      steps: [
+        { keysPressed: 'iabc<Esc>adef<Esc>', end: ['abcde|f'] },
+        { title: 'undo', keysPressed: 'u', end: ['ab|c'] },
+        { title: 'undo', keysPressed: 'u', end: ['|'] },
+        { title: 'redo', keysPressed: '<C-r>', end: ['|abc'] },
+        { title: 'redo', keysPressed: '<C-r>', end: ['abc|def'] },
+      ],
     });
 
     newTest({

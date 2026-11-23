@@ -1,4 +1,3 @@
-import { Mode } from '../../../src/mode/mode';
 import { newTest } from '../../testSimplifier';
 import { setupWorkspace } from './../../testUtils';
 
@@ -84,7 +83,6 @@ suite('Repeat content change', () => {
     start: ['abcd|e', 'ABCDE'],
     keysPressed: 'i<BS><Esc>' + 'j$.',
     end: ['abce', 'AB|CE'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -92,7 +90,6 @@ suite('Repeat content change', () => {
     start: ['abcd|e', 'ABCDE'],
     keysPressed: 'i<BS><BS><Esc>' + 'j$.',
     end: ['abe', 'A|BE'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -100,7 +97,6 @@ suite('Repeat content change', () => {
     start: ['abcd|e', 'ABCDE'],
     keysPressed: 'ixy<BS>z<Esc>' + 'j$.',
     end: ['abcdxze', 'ABCDx|zE'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -108,7 +104,6 @@ suite('Repeat content change', () => {
     start: ['|abcde', 'ABCDE'],
     keysPressed: 'a<Del><Esc>' + 'j0.',
     end: ['acde', '|ACDE'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -116,7 +111,6 @@ suite('Repeat content change', () => {
     start: ['|abcde', 'ABCDE'],
     keysPressed: 'a<Del><Del><Esc>' + 'j0.',
     end: ['ade', '|ADE'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -124,7 +118,6 @@ suite('Repeat content change', () => {
     start: ['|abcde', 'ABCDE'],
     keysPressed: 'axy<Del>z<Esc>' + 'j0.',
     end: ['axyzcde', 'Axy|zCDE'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -132,7 +125,6 @@ suite('Repeat content change', () => {
     start: ['abc|def', 'ABCDEF'],
     keysPressed: 'i<BS><Del>0<Esc>' + 'j0fD.',
     end: ['ab0ef', 'AB|0EF'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -140,7 +132,6 @@ suite('Repeat content change', () => {
     start: ['ab|cde', 'ABCDE'],
     keysPressed: 'i1\n2<Esc>' + 'j0ll.',
     end: ['ab1', '2cde', 'AB1', '|2CDE'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -148,7 +139,6 @@ suite('Repeat content change', () => {
     start: ['|', ''],
     keysPressed: 'ifoo(bar<Esc>' + 'j.',
     end: ['foo(bar)', 'foo(ba|r)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -170,7 +160,6 @@ suite('Repeat content change', () => {
     start: ['abcde', '|12', 'ABCDE', '12'],
     keysPressed: 'A<C-y><C-y><Esc>' + 'jj0.',
     end: ['abcde', '12cd', 'ABCDE', '12c|d'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -178,7 +167,6 @@ suite('Repeat content change', () => {
     start: ['abcde', '|12', 'ABCDE', '12'],
     keysPressed: 'A<C-e><C-e><Esc>' + 'jj0.',
     end: ['abcde', '12CD', 'ABCDE', '12C|D'],
-    endMode: Mode.Normal,
   });
 
   newTest({

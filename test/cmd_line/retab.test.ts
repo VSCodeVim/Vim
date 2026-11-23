@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import { RetabCommand } from '../../src/cmd_line/commands/retab';
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
 import * as testUtils from './../testUtils';
 
@@ -113,12 +112,10 @@ suite(':retab', () => {
 
   suite(':retab (tabstop=4, noexpandtab)', () => {
     setup(async () => {
-      await testUtils.reloadConfiguration(
-        new Configuration({
-          tabstop: 4,
-          expandtab: false,
-        }),
-      );
+      await testUtils.setConfig({
+        tabstop: 4,
+        expandtab: false,
+      });
     });
 
     newTest({ title: 'retab', start, keysPressed: ':retab\n', end: ['|a       b\t\tc   d'] });
@@ -131,12 +128,10 @@ suite(':retab', () => {
 
   suite(':retab (tabstop=7, noexpandtab)', () => {
     setup(async () => {
-      await testUtils.reloadConfiguration(
-        new Configuration({
-          tabstop: 7,
-          expandtab: false,
-        }),
-      );
+      await testUtils.setConfig({
+        tabstop: 7,
+        expandtab: false,
+      });
     });
 
     newTest({ title: 'retab', start, keysPressed: ':retab\n', end: ['|a       b\tc   d'] });
@@ -149,12 +144,10 @@ suite(':retab', () => {
 
   suite(':retab (tabstop=4, expandtab)', () => {
     setup(async () => {
-      await testUtils.reloadConfiguration(
-        new Configuration({
-          tabstop: 4,
-          expandtab: true,
-        }),
-      );
+      await testUtils.setConfig({
+        tabstop: 4,
+        expandtab: true,
+      });
     });
 
     const end = ['|a       b       c   d'];
@@ -169,12 +162,10 @@ suite(':retab', () => {
 
   suite(':retab (tabstop=7, expandtab)', () => {
     setup(async () => {
-      await testUtils.reloadConfiguration(
-        new Configuration({
-          tabstop: 7,
-          expandtab: true,
-        }),
-      );
+      await testUtils.setConfig({
+        tabstop: 7,
+        expandtab: true,
+      });
     });
 
     const end = ['|a       b     c   d'];

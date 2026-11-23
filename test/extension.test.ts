@@ -33,18 +33,8 @@ suite('package.json', () => {
     const isUnhandled = (configuration: IConfiguration, key: string): boolean => {
       const keyFirstSegment = key.split('.')[1]; // Extract the first segment without the `vim.` prefix from `key`, e.g. get `foo` from 'vim.foo.bar.baz'.
 
-      const handlers = Object.keys(configuration);
-      const propertyExists = handlers.includes(keyFirstSegment);
-      if (propertyExists) {
-        return false;
-      }
-
-      // If the property doesn't exist, check the possibility that the field is implemented as a get proxy by calling it.
-      if (configuration[keyFirstSegment]) {
-        return false;
-      }
-
-      return true;
+      // `in` also finds fields implemented as getters on the prototype
+      return !(keyFirstSegment in configuration);
     };
 
     // configuration

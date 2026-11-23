@@ -55,6 +55,7 @@ export enum ErrorCode {
   InvalidTypeForLen = 701,
   UsingAFuncrefAsANumber = 703,
   FuncrefVariableNameMustStartWithACapital = 704,
+  ArgumentOfFuncMustBeAListStringOrDictionary = 706,
   SliceRequiresAListOrBlobValue = 709,
   ListValueHasMoreItemsThanTarget = 710,
   ListValueHasNotEnoughItems = 711,
@@ -80,6 +81,7 @@ export enum ErrorCode {
   UsingAFloatAsANumber = 805,
   UsingFloatAsAString = 806,
   NumberOrFloatRequired = 808,
+  UsingAStringAsAFloat = 892,
   ArgumentOfMapMustBeAListDictionaryOrBlob = 896,
   ListOrBlobRequired = 897,
   MaxDepthMustBeANonNegativeNumber = 900,
@@ -90,6 +92,7 @@ export enum ErrorCode {
   UsingABlobAsANumber = 974,
   CanOnlyCompareBlobWithBlob = 977,
   InvalidOperationForBlob = 978,
+  BlobIndexOutOfRange = 979,
   CannotModifyExistingVariable = 995,
   CannotLock = 996,
   ListRequiredForArgument = 1211,
@@ -265,7 +268,7 @@ export class VimError extends Error {
     return new VimError(ErrorCode.ListIndexOutOfRange, `list index out of range: ${idx}`);
   }
   static ArgumentMustBeAList(func: string): VimError {
-    return new VimError(ErrorCode.ArgumentMustBeAList, `Argument of ${func} must be a List`);
+    return new VimError(ErrorCode.ArgumentMustBeAList, `Argument of ${func}() must be a List`);
   }
   static LessTargetsThanListItems(): VimError {
     return new VimError(ErrorCode.LessTargetsThanListItems, 'Less targets than List items');
@@ -324,7 +327,13 @@ export class VimError extends Error {
   static ArgumentOfFuncMustBeAListOrDictionary(func: string): VimError {
     return new VimError(
       ErrorCode.ArgumentOfFuncMustBeAListOrDictionary,
-      `Argument of ${func} must be a List or Dictionary`,
+      `Argument of ${func}() must be a List or Dictionary`,
+    );
+  }
+  static ArgumentOfFuncMustBeAListStringOrDictionary(func: string): VimError {
+    return new VimError(
+      ErrorCode.ArgumentOfFuncMustBeAListStringOrDictionary,
+      `Argument of ${func}() must be a List, String or Dictionary`,
     );
   }
   static ListRequired(): VimError {
@@ -408,6 +417,9 @@ export class VimError extends Error {
       'Argument of map() must be a List, Dictionary or Blob',
     );
   }
+  static UsingAStringAsAFloat(): VimError {
+    return new VimError(ErrorCode.UsingAStringAsAFloat, 'Using a String as a Float');
+  }
   static ListOrBlobRequired(): VimError {
     return new VimError(ErrorCode.ListOrBlobRequired, 'List or Blob required');
   }
@@ -443,6 +455,9 @@ export class VimError extends Error {
   }
   static InvalidOperationForBlob(): VimError {
     return new VimError(ErrorCode.InvalidOperationForBlob, 'Invalid operation for Blob');
+  }
+  static BlobIndexOutOfRange(idx: number): VimError {
+    return new VimError(ErrorCode.BlobIndexOutOfRange, `Blob index out of range: ${idx}`);
   }
   static CannotModifyExistingVariable(): VimError {
     return new VimError(ErrorCode.CannotModifyExistingVariable, 'Cannot modify existing variable');

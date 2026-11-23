@@ -1,8 +1,9 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { newTest, newTestSkip } from '../testSimplifier';
+import { newTest } from '../testSimplifier';
 import { cleanUpWorkspace, setupWorkspace } from './../testUtils';
 
 suite('Mode Normal', () => {
@@ -353,7 +354,6 @@ suite('Mode Normal', () => {
     start: ['tes|t'],
     keysPressed: 'yiwp',
     end: ['ttes|test'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -618,7 +618,6 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'ca(',
     end: ['|blaaah'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -626,7 +625,6 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'ca{',
     end: ['|blaaah'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -634,7 +632,6 @@ suite('Mode Normal', () => {
     start: ['|blaaah'],
     keysPressed: 'caB',
     end: ['|blaaah'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -763,7 +760,6 @@ suite('Mode Normal', () => {
     start: ['one "two" three "four" five|" six'],
     keysPressed: 'ci"',
     end: ['one "two" three "four" five|" six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -899,7 +895,6 @@ suite('Mode Normal', () => {
     start: ['"one" |two'],
     keysPressed: 'ca"',
     end: ['"one" |two'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -971,7 +966,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'daw',
     end: ['one   two|,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -979,7 +973,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daw',
     end: ['one   |three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -987,7 +980,6 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'daw',
     end: ['one   two|,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -995,7 +987,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3aw',
     end: ['|,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1003,7 +994,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd2aw',
     end: ['one   two   three,   |six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1011,7 +1001,6 @@ suite('Mode Normal', () => {
     start: ['one two fo|ur', 'five  six'],
     keysPressed: 'd2aw',
     end: ['one two |six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1020,7 +1009,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd2aw',
     end: ['one   two   three,   |.  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1028,7 +1016,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd2aw',
     end: ['one   two   three', '|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1036,7 +1023,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three   fou|r'],
     keysPressed: 'daw',
     end: ['one   two   thre|e'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1086,7 +1072,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'daw',
     end: ['one   two   three', '| five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1094,7 +1079,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'daW',
     end: ['one   two|   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1109,7 +1093,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'daW',
     end: ['one   |three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1117,7 +1100,6 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'daW',
     end: ['one   two   |four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1125,7 +1107,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3aW',
     end: ['|four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1133,7 +1114,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd2aW',
     end: ['one   two   three,   |six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1141,7 +1121,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd2aW',
     end: ['one   two   three', '|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1149,7 +1128,6 @@ suite('Mode Normal', () => {
     start: ['one |two three'],
     keysPressed: 'daW',
     end: ['one |three'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1157,7 +1135,6 @@ suite('Mode Normal', () => {
     start: ['one |two'],
     keysPressed: 'daW',
     end: ['on|e'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1165,7 +1142,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'daW',
     end: ['one   two   three', '| five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1215,7 +1191,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'diw',
     end: ['one   two|three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1223,7 +1198,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o   three,   four  '],
     keysPressed: 'diw',
     end: ['one   |   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1231,7 +1205,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iw',
     end: ['|   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1239,7 +1212,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three  | ', 'five  six'],
     keysPressed: 'diw',
     end: ['one   two   thre|e', 'five  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1247,7 +1219,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'diw',
     end: ['one   two   three', '|', 'four five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1255,7 +1226,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1264,7 +1234,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iw',
     end: ['one   two   three,   |.  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1272,7 +1241,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd3iw',
     end: ['one   two   three', '|five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1280,7 +1248,6 @@ suite('Mode Normal', () => {
     start: ['one   two |  three,   four  '],
     keysPressed: 'diW',
     end: ['one   two|three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1288,7 +1255,6 @@ suite('Mode Normal', () => {
     start: ['one   tw|o,   three,   four  '],
     keysPressed: 'diW',
     end: ['one   |   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1296,7 +1262,6 @@ suite('Mode Normal', () => {
     start: ['one   two   th|ree,   four  '],
     keysPressed: 'diW',
     end: ['one   two   |   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1304,7 +1269,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'diW',
     end: ['one   two   three', '|', 'four five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1312,7 +1276,6 @@ suite('Mode Normal', () => {
     start: ['on|e   two   three,   four  '],
     keysPressed: 'd3iW',
     end: ['|   three,   four  '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1320,7 +1283,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three,   fo|ur  ', 'five.  six'],
     keysPressed: 'd3iW',
     end: ['one   two   three,   |  six'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1328,7 +1290,6 @@ suite('Mode Normal', () => {
     start: ['one   two   three', '|', 'four five'],
     keysPressed: 'd3iw',
     end: ['one   two   three', '|five'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1336,7 +1297,6 @@ suite('Mode Normal', () => {
     start: ['one |two three'],
     keysPressed: 'diW',
     end: ['one | three'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1344,7 +1304,6 @@ suite('Mode Normal', () => {
     start: ['Two roads diverged in a |wood, and I', 'I took the one less traveled by'],
     keysPressed: 'dae',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1352,7 +1311,6 @@ suite('Mode Normal', () => {
     start: ['|Two roads diverged in a wood, and I', 'I took the one less traveled by'],
     keysPressed: 'dae',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1360,7 +1318,6 @@ suite('Mode Normal', () => {
     start: ['Two roads diverged in a wood, and I', 'I took the one less traveled by|'],
     keysPressed: 'dae',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1368,7 +1325,6 @@ suite('Mode Normal', () => {
     start: ['|'],
     keysPressed: 'die',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1381,7 +1337,6 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'die',
     end: ['     ', '    ', '|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1394,7 +1349,6 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'die',
     end: ['|', '    ', '   '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1409,7 +1363,6 @@ suite('Mode Normal', () => {
     ],
     keysPressed: 'die',
     end: ['  ', ' ', '|', '    ', '   '],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1417,7 +1370,6 @@ suite('Mode Normal', () => {
     start: ['|'],
     keysPressed: 'die',
     end: ['|'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1425,7 +1377,6 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'd}',
     end: ['|', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1433,7 +1384,6 @@ suite('Mode Normal', () => {
     start: ['|foo', 'bar', '', 'fun'],
     keysPressed: 'y}p',
     end: ['foo', '|foo', 'bar', 'bar', '', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1441,7 +1391,6 @@ suite('Mode Normal', () => {
     start: ['f|oo', 'bar', '', 'fun'],
     keysPressed: 'd}',
     end: ['|f', '', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1449,7 +1398,6 @@ suite('Mode Normal', () => {
     start: ['|foo', '', 'bar', '', 'fun'],
     keysPressed: 'd2}',
     end: ['|', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1457,7 +1405,6 @@ suite('Mode Normal', () => {
     start: ['f|oo', '', 'bar', '', 'fun'],
     keysPressed: 'd2}',
     end: ['|f', '', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1465,7 +1412,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
     keysPressed: 'dip',
     end: ['foo', '', '|', 'fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1473,7 +1419,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', '|', '', 'fun'],
     keysPressed: 'dip',
     end: ['foo', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1481,7 +1426,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar baz', 'bar |baz', '', 'fun'],
     keysPressed: 'dap',
     end: ['foo', '', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1489,7 +1433,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar baz', 'bar |baz', '', '', 'fun'],
     keysPressed: 'dap',
     end: ['foo', '', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1497,7 +1440,6 @@ suite('Mode Normal', () => {
     start: ['foo', '', 'bar |baz', '', '', 'fun'],
     keysPressed: 'dap',
     end: ['foo', '', '|fun'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1505,7 +1447,6 @@ suite('Mode Normal', () => {
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'das',
     end: ["|I'm always angry."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1513,7 +1454,6 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain. I'm a|lways angry."],
     keysPressed: 'das',
     end: ["That's my secret, Captain|."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1521,7 +1461,6 @@ suite('Mode Normal', () => {
     start: ["That's my sec|ret, Captain. I'm always angry."],
     keysPressed: 'dis',
     end: ["| I'm always angry."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1529,7 +1468,6 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain. I'm a|lways angry."],
     keysPressed: 'dis',
     end: ["That's my secret, Captain.| "],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1537,7 +1475,6 @@ suite('Mode Normal', () => {
     start: ["That's my secret, Captain.  |  I'm always angry."],
     keysPressed: 'visd',
     end: ["That's my secret, Captain.|I'm always angry."],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1652,7 +1589,6 @@ suite('Mode Normal', () => {
       start: ['    o|ne'],
       keysPressed: '3gIab<Esc>',
       end: ['ababa|b    one'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1670,7 +1606,6 @@ suite('Mode Normal', () => {
       start: ['|'],
       keysPressed: 'ione<Esc>otwo<Esc>03giab<Esc>',
       end: ['one', 'twoababa|b'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1788,23 +1723,19 @@ suite('Mode Normal', () => {
     ],
   });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq work correctly with cursor in the middle of a line',
-      start: [
-        '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
-        '// We choose to write a vim extension, not because it is easy, but because it is hard.',
-      ],
-      keysPressed: 'gqj',
-      end: [
-        '|// We choose to write a vim extension, not because it is easy, but because it is',
-        '// hard.  We choose to write a vim extension, not because it is easy, but',
-        '// because it is hard.',
-      ],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq work correctly with cursor in the middle of a line',
+    start: [
+      '// We choose to write a vim extension, not |because it is easy, but because it is hard.',
+      '// We choose to write a vim extension, not because it is easy, but because it is hard.',
+    ],
+    keysPressed: 'gqj',
+    end: [
+      '|// We choose to write a vim extension, not because it is easy, but because it is',
+      '// hard.  We choose to write a vim extension, not because it is easy, but',
+      '// because it is hard.',
+    ],
+  });
 
   newTest({
     title: 'gq preserves newlines',
@@ -1813,49 +1744,33 @@ suite('Mode Normal', () => {
     end: ['|abc', '', '', '', 'def'],
   });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles single-line comments',
-      start: ['|// abc', '// def'],
-      keysPressed: 'gqG',
-      end: ['|// abc def'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles single-line comments',
+    start: ['|// abc', '// def'],
+    keysPressed: 'gqG',
+    end: ['|// abc def'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles multiline comments',
-      start: ['|/*', ' * abc', ' * def', ' */'],
-      keysPressed: 'gqG',
-      end: ['|/*', ' * abc def', ' */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles multiline comments',
+    start: ['|/*', ' * abc', ' * def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def', ' */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles multiline comments with inner and final on same line',
-      start: ['|/*', ' * abc', ' * def */'],
-      keysPressed: 'gqG',
-      end: ['|/*', ' * abc def */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles multiline comments with inner and final on same line',
+    start: ['|/*', ' * abc', ' * def */'],
+    keysPressed: 'gqG',
+    end: ['|/*', ' * abc def */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq handles multiline comments with content on start line',
-      start: ['|/* abc', ' * def', '*/'],
-      keysPressed: 'gqG',
-      end: ['|/* abc def', ' */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq handles multiline comments with content on start line',
+    start: ['|/* abc', ' * def', '*/'],
+    keysPressed: 'gqG',
+    end: ['|/* abc def', ' */'],
+  });
 
   newTest({
     title: 'gq handles multiline comments with start and final on same line',
@@ -1871,38 +1786,44 @@ suite('Mode Normal', () => {
     end: ['|/* abc', ' *', ' *', ' * def */'],
   });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq does not merge adjacent multiline comments',
-      start: ['|/* abc */', '/* def */'],
-      keysPressed: 'gqG',
-      end: ['|/* abc */', '/* def */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc */', '/* def */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc */', '/* def */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq does not merge adjacent multiline comments',
-      start: ['|/* abc', ' */', '/* def', ' */'],
-      keysPressed: 'gqG',
-      end: ['|/* abc', ' */', '/* def', ' */'],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq does not merge adjacent multiline comments',
+    start: ['|/* abc', ' */', '/* def', ' */'],
+    keysPressed: 'gqG',
+    end: ['|/* abc', ' */', '/* def', ' */'],
+  });
 
-  // TODO(#4844): this fails on Windows
-  newTestSkip(
-    {
-      title: 'gq leaves alone whitespace within a line',
-      start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
-      keysPressed: 'gqG',
-      end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
-    },
-    process.platform === 'win32',
-  );
+  newTest({
+    title: 'gq leaves alone whitespace within a line',
+    start: ["|Good morning, how are you?  I'm Dr. Worm.", "I'm interested", 'in      things.'],
+    keysPressed: 'gqG',
+    end: ["|Good morning, how are you?  I'm Dr. Worm.  I'm interested in      things."],
+  });
+
+  test('gq handles CRLF line endings', async () => {
+    const editor = modeHandler.vimState.editor;
+    const originalEol = editor.document.eol;
+    try {
+      await editor.edit((builder) => {
+        builder.setEndOfLine(vscode.EndOfLine.CRLF);
+        builder.replace(
+          new vscode.Range(0, 0, editor.document.lineCount, 0),
+          ['/*', ' * abc', ' * def', ' */'].join('\r\n'),
+        );
+      });
+      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'g', 'q', 'G']);
+      assert.strictEqual(editor.document.getText(), ['/*', ' * abc def', ' */'].join('\r\n'));
+    } finally {
+      await editor.edit((builder) => builder.setEndOfLine(originalEol));
+    }
+  });
 
   newTest({
     title: 'gq breaks at exactly textwidth',
@@ -2163,6 +2084,7 @@ suite('Mode Normal', () => {
     start: ['    one', '    tw|o', '    three'],
     keysPressed: '2S',
     end: ['    one', '    |'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -2186,7 +2108,6 @@ suite('Mode Normal', () => {
     start: ['<blink>he|llo</unblink>'],
     keysPressed: 'cit',
     end: ['<blink>he|llo</unblink>'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2250,7 +2171,6 @@ suite('Mode Normal', () => {
     start: ['<bli|nk></blink>'],
     keysPressed: 'dit',
     end: ['<blink>|</blink>'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -2417,334 +2337,7 @@ suite('Mode Normal', () => {
     start: ['|     '],
     keysPressed: 'cc',
     end: ['     |'],
-  });
-
-  newTest({
-    title: 'Can do cai',
-    start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
-    keysPressed: 'cai',
-    end: ['|', 'do_something_else()'],
     endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: 'Can do cii',
-    start: ['if foo > 3:', '\tlog("foo is big")', '\tfoo = 3', '|', 'do_something_else()'],
-    keysPressed: 'cii',
-    end: ['if foo > 3:', '\t|', 'do_something_else()'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: 'Can do caI',
-    start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
-    keysPressed: 'caI',
-    end: ['|'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: 'Can do dai',
-    start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
-    keysPressed: 'dai',
-    end: ['|do_something_else()'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: 'Can do dii',
-    start: ['if foo > 3:', '    log("foo is big")', '    foo = 3', '|', 'do_something_else()'],
-    keysPressed: 'dii',
-    end: ['if foo > 3:', '|do_something_else()'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: 'Can do daI',
-    start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
-    keysPressed: 'daI',
-    end: ['|'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Will fail 'cia' with no delimiters",
-    start: ['f|oo'],
-    keysPressed: 'cia',
-    end: ['f|oo'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Will fail 'cia' with flipped delimiters",
-    start: [')f|oo('],
-    keysPressed: 'cia',
-    end: [')f|oo('],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Will fail 'cia' with separators but no delimiters",
-    start: ['alpha,', 'b|eta,', 'gamma'],
-    keysPressed: 'cia',
-    end: ['alpha,', 'b|eta,', 'gamma'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a single argument",
-    start: ['(f|oo)'],
-    keysPressed: 'cia',
-    end: ['(|)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in () with cursor at opening delimiter",
-    start: ['|()'],
-    keysPressed: 'cia',
-    end: ['(|)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in () with cursor at closing delimiter",
-    start: ['(|)'],
-    keysPressed: 'cia',
-    end: ['(|)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in (,) with cursor at opening delimiter",
-    start: ['|(,)'],
-    keysPressed: 'cia',
-    end: ['(|,)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in (,) with cursor at regular delimiter",
-    start: ['(|,)'],
-    keysPressed: 'cia',
-    end: ['(,|)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in (,) with cursor at closing delimiter",
-    start: ['(,|)'],
-    keysPressed: 'cia',
-    end: ['(,|)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in (,,,) with cursor at regular delimiter",
-    start: ['(|,,,)'],
-    keysPressed: 'cia',
-    end: ['(,|,,)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in (,,,) with cursor at second-to-last delimiter",
-    start: ['(,,|,)'],
-    keysPressed: 'cia',
-    end: ['(,,,|)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in (,,,) with cursor at closing delimiter",
-    start: ['(,,,|)'],
-    keysPressed: 'cia',
-    end: ['(,,,|)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' with nested parentheses in argument",
-    start: ['(foo, (void*) ba|r(Foo<T>), baz)'],
-    keysPressed: 'cia',
-    end: ['(foo, |, baz)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a single-line comma seperated list with cursor in first argument",
-    start: ['(f|oo, bar, baz)'],
-    keysPressed: 'cia',
-    end: ['(|, bar, baz)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a single-line comma seperated list with cursor on opening delimiter",
-    start: ['|(foo, bar, baz)'],
-    keysPressed: 'cia',
-    end: ['(|, bar, baz)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a single-line comma seperated list with cursor in middle argument",
-    start: ['(foo, ba|r, baz)'],
-    keysPressed: 'cia',
-    end: ['(foo, |, baz)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a single-line comma seperated list with cursor on regular delimiter",
-    start: ['(foo|, bar, baz)'],
-    keysPressed: 'cia',
-    end: ['(foo, |, baz)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a single-line comma seperated list with cursor in last argument",
-    start: ['(foo, bar, b|az)'],
-    keysPressed: 'cia',
-    end: ['(foo, bar, |)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a single-line comma seperated list with cursor on closing delimiter",
-    start: ['(foo, bar, baz|)'],
-    keysPressed: 'cia',
-    end: ['(foo, bar, |)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a whitespace-only argument",
-    start: ['(foo, | , baz)'],
-    keysPressed: 'cia',
-    end: ['(foo,|, baz)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a whitespace-only argument across multiple lines",
-    start: ['(foo,', '  ', ' | ', '  ', ' , baz)'],
-    keysPressed: 'cia',
-    end: ['(foo,|, baz)'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' with trailing whitespace after separator",
-    start: ['(', '   foo, ', '   b|ar,', '   baz', ')'],
-    keysPressed: 'cia',
-    end: ['(', '   foo, ', '   |,', '   baz', ')'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' with trailing whitespace after separator and empty line",
-    start: ['(', '   foo, ', '    ', '   b|ar,', '   baz', ')'],
-    keysPressed: 'cia',
-    end: ['(', '   foo, ', '    ', '   |,', '   baz', ')'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in first argument",
-    start: ['(', '   f|oo,', '   bar,', '   baz', ')'],
-    keysPressed: 'cia',
-    end: ['(', '   |,', '   bar,', '   baz', ')'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in center argument",
-    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
-    keysPressed: 'cia',
-    end: ['(', '   foo,', '   |,', '   baz', ')'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a multiline-line comma seperated list with cursor in last argument",
-    start: ['(', '   foo,', '   bar,', '   |baz', ')'],
-    keysPressed: 'cia',
-    end: ['(', '   foo,', '   bar,', '   |', ')'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'cia' in a multi-line indented statement with one argument.",
-    start: ['   functionCall(', '      fo|o', '   )'],
-    keysPressed: 'cia',
-    end: ['   functionCall(', '      |', '   )'],
-    endMode: Mode.Insert,
-  });
-
-  newTest({
-    title: "Can do 'daa' in a single argument",
-    start: ['(f|oo)'],
-    keysPressed: 'daa',
-    end: ['(|)'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Will fail 'daa' in ()",
-    start: ['(|)'],
-    keysPressed: 'daa',
-    end: ['(|)'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Can do 'daa' in a single-line comma seperated list with cursor in first argument",
-    start: ['(f|oo, bar, baz)'],
-    keysPressed: 'daa',
-    end: ['(|bar, baz)'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Can do 'daa' in a single-line comma seperated list with cursor in middle argument",
-    start: ['(foo, b|ar, baz)'],
-    keysPressed: 'daa',
-    end: ['(foo|, baz)'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Can do 'daa' in a single-line comma seperated list with cursor in last argument",
-    start: ['(foo, bar, |baz)'],
-    keysPressed: 'daa',
-    end: ['(foo, bar|)'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in first argument",
-    start: ['(', '   |foo,', '   bar,', '   baz', ')'],
-    keysPressed: 'daa',
-    end: ['|(', '   bar,', '   baz', ')'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in center argument",
-    start: ['(', '   foo,', '   b|ar,', '   baz', ')'],
-    keysPressed: 'daa',
-    end: ['(', '   foo|,', '   baz', ')'],
-    endMode: Mode.Normal,
-  });
-
-  newTest({
-    title: "Can do 'daa' in a multiline-line comma seperated list with cursor in last argument",
-    start: ['(', '   foo,', '   bar,', '   ba|z', ')'],
-    keysPressed: 'daa',
-    end: ['(', '   foo,', '   ba|r', ')'],
-    endMode: Mode.Normal,
   });
 
   suite('<C-u> / <C-d>', () => {

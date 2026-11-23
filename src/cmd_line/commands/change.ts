@@ -1,42 +1,20 @@
+import { Parser } from 'parsimmon';
 import * as vscode from 'vscode';
-// eslint-disable-next-line id-denylist
-import { Parser, alt, any, optWhitespace, seq, whitespace } from 'parsimmon';
 import { Position } from 'vscode';
 import { Mode } from '../../mode/mode';
 import { Register, RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { ExCommand } from '../../vimscript/exCommand';
 import { LineRange } from '../../vimscript/lineRange';
-import { numberParser } from '../../vimscript/parserUtils';
-
-export interface IChangeCommandArguments {
-  register?: string;
-  count?: number;
-}
+import { RegisterAndCount, registerAndCountParser } from '../../vimscript/parserUtils';
 
 export class ChangeCommand extends ExCommand {
-  public static readonly argParser: Parser<ChangeCommand> = optWhitespace.then(
-    alt(
-      numberParser.map((count) => {
-        return { register: undefined, count };
-      }),
-      // eslint-disable-next-line id-denylist
-      seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
-        ([register, count]) => {
-          return { register, count };
-        },
-      ),
-    ).map(
-      ({ register, count }) =>
-        new ChangeCommand({
-          register,
-          count,
-        }),
-    ),
+  public static readonly argParser: Parser<ChangeCommand> = registerAndCountParser.map(
+    (args) => new ChangeCommand(args),
   );
 
-  private readonly arguments: IChangeCommandArguments;
-  constructor(args: IChangeCommandArguments) {
+  private readonly arguments: RegisterAndCount;
+  constructor(args: RegisterAndCount) {
     super();
     this.arguments = args;
   }

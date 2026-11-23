@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { PluginDefaultMappings } from '../../actions/plugins/pluginDefaultMappings';
 import { configurationValidator } from '../configurationValidator';
-import { IConfiguration, IKeyRemapping } from '../iconfiguration';
+import { IConfiguration, IKeyRemapping, RemapMode } from '../iconfiguration';
 import { IConfigurationValidator, ValidatorResults } from '../iconfigurationValidator';
 import { Notation } from '../notation';
 
@@ -10,88 +10,85 @@ export class RemappingValidator implements IConfigurationValidator {
 
   async validate(config: IConfiguration): Promise<ValidatorResults> {
     const result = new ValidatorResults();
-    const modeKeyBindingsKeys = [
-      'insertModeKeyBindings',
-      'insertModeKeyBindingsNonRecursive',
-      'normalModeKeyBindings',
-      'normalModeKeyBindingsNonRecursive',
-      'operatorPendingModeKeyBindings',
-      'operatorPendingModeKeyBindingsNonRecursive',
-      'visualModeKeyBindings',
-      'visualModeKeyBindingsNonRecursive',
-      'commandLineModeKeyBindings',
-      'commandLineModeKeyBindingsNonRecursive',
+    const remapModes: readonly RemapMode[] = [
+      'insert',
+      'normal',
+      'operatorPending',
+      'visual',
+      'commandLine',
     ];
-    for (const modeKeyBindingsKey of modeKeyBindingsKeys) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const keybindings = config[modeKeyBindingsKey];
-      // add default mappings for activated plugins
-      // because we process keybindings backwards in next loop, user mapping will override
-      for (const pluginMapping of PluginDefaultMappings.getPluginDefaultMappings(
-        modeKeyBindingsKey,
-        config,
-      )) {
-        // note concat(all mappings) does not work somehow
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        keybindings.push(pluginMapping);
+    for (const mode of remapModes) {
+      // Recursive and non-recursive remappings for a mode go into the same map
+      for (const isRecursive of [true, false]) {
+        await this.validateKeyBindings(config, mode, isRecursive, result);
       }
-
-      const isRecursive = modeKeyBindingsKey.indexOf('NonRecursive') === -1;
-
-      const modeMapName = modeKeyBindingsKey.replace('NonRecursive', '');
-      let modeKeyBindingsMap = config[modeMapName + 'Map'] as Map<string, IKeyRemapping>;
-      if (!modeKeyBindingsMap) {
-        modeKeyBindingsMap = new Map<string, IKeyRemapping>();
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      for (let i = keybindings.length - 1; i >= 0; i--) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const remapping = keybindings[i] as IKeyRemapping;
-
-        // set 'recursive' of the remapping according to where it was stored
-        remapping.recursive = isRecursive;
-
-        // validate
-        const remappingError = await this.isRemappingValid(remapping);
-        result.concat(remappingError);
-        if (remappingError.hasError) {
-          // errors with remapping, skip
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-          keybindings.splice(i, 1);
-          continue;
-        }
-
-        // normalize
-        if (remapping.before) {
-          remapping.before.forEach(
-            (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, config.leader)),
-          );
-        }
-
-        if (remapping.after) {
-          remapping.after.forEach(
-            (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, config.leader)),
-          );
-        }
-
-        // check for duplicates
-        const beforeKeys = remapping.before.join('');
-        if (modeKeyBindingsMap.has(beforeKeys)) {
-          result.append({
-            level: 'warning',
-            message: `${remapping.before}. Duplicate remapped key for ${beforeKeys}.`,
-          });
-          continue;
-        }
-
-        // add to map
-        modeKeyBindingsMap.set(beforeKeys, remapping);
-      }
-
-      config[modeMapName + 'Map'] = modeKeyBindingsMap;
     }
 
     return result;
+  }
+
+  private async validateKeyBindings(
+    config: IConfiguration,
+    mode: RemapMode,
+    isRecursive: boolean,
+    result: ValidatorResults,
+  ): Promise<void> {
+    const modeKeyBindingsKey =
+      `${mode}ModeKeyBindings${isRecursive ? '' : 'NonRecursive'}` as const;
+    const keybindings = config[modeKeyBindingsKey];
+    const modeKeyBindingsMap = config[`${mode}ModeKeyBindingsMap`];
+
+    // add default mappings for activated plugins
+    // because we process keybindings backwards in next loop, user mapping will override
+    for (const pluginMapping of PluginDefaultMappings.getPluginDefaultMappings(
+      modeKeyBindingsKey,
+      config,
+    )) {
+      // note concat(all mappings) does not work somehow
+      keybindings.push(pluginMapping);
+    }
+
+    for (let i = keybindings.length - 1; i >= 0; i--) {
+      const remapping = keybindings[i];
+
+      // set 'recursive' of the remapping according to where it was stored
+      remapping.recursive = isRecursive;
+
+      // validate
+      const remappingError = await this.isRemappingValid(remapping);
+      result.concat(remappingError);
+      if (remappingError.hasError) {
+        // errors with remapping, skip
+        keybindings.splice(i, 1);
+        continue;
+      }
+
+      // normalize
+      if (remapping.before) {
+        remapping.before.forEach(
+          (key, idx) => (remapping.before[idx] = Notation.NormalizeKey(key, config.leader)),
+        );
+      }
+
+      if (remapping.after) {
+        remapping.after.forEach(
+          (key, idx) => (remapping.after![idx] = Notation.NormalizeKey(key, config.leader)),
+        );
+      }
+
+      // check for duplicates
+      const beforeKeys = remapping.before.join('');
+      if (modeKeyBindingsMap.has(beforeKeys)) {
+        result.append({
+          level: 'warning',
+          message: `${remapping.before}. Duplicate remapped key for ${beforeKeys}.`,
+        });
+        continue;
+      }
+
+      // add to map
+      modeKeyBindingsMap.set(beforeKeys, remapping);
+    }
   }
 
   disable(config: IConfiguration) {

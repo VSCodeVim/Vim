@@ -384,8 +384,6 @@ class ChangeList {
 }
 
 export class HistoryTracker {
-  public currentContentChanges: vscode.TextDocumentContentChangeEvent[] = [];
-
   private nextStepCursorsAtStart: readonly Cursor[] | undefined;
 
   private readonly undoStack = new UndoStack();
@@ -670,6 +668,13 @@ export class HistoryTracker {
    */
   public getGlobalMarks(): readonly IMark[] {
     return HistoryStep.globalMarks;
+  }
+
+  /**
+   * Removes all global marks. Used to isolate tests from each other.
+   */
+  public static clearGlobalMarks(): void {
+    HistoryStep.globalMarks = [];
   }
 
   public getMarks(): readonly IMark[] {
