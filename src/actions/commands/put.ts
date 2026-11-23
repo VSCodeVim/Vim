@@ -224,7 +224,7 @@ abstract class BasePutCommand extends BaseCommand {
             range = new vscode.Range(pos, pos);
           } else {
             range = new vscode.Range(replaceRange.start, replaceRange.end);
-            deletedNewlines = document.getText(range).split('\n').length - 1;
+            deletedNewlines = range.end.line - range.start.line;
           }
         }
 

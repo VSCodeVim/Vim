@@ -228,7 +228,8 @@ export class ExitInsertMode extends BaseCommand {
 
     const lastActionBeforeEsc =
       vimState.recordedState.actionsRun[vimState.recordedState.actionsRun.length - 2];
-    const hasPendingContentChanges = vimState.historyTracker.currentContentChanges.length > 0;
+    const contentChanges =
+      vimState.modeData.mode === Mode.Insert ? vimState.modeData.contentChanges : [];
     const hasRecordedContentChange = vimState.recordedState.actionsRun.some(
       (action) => action instanceof DocumentContentChangeAction,
     );
@@ -242,18 +243,13 @@ export class ExitInsertMode extends BaseCommand {
       lastActionBeforeEsc instanceof InsertAbove ||
       lastActionBeforeEsc instanceof InsertBelow;
     if (
-      hasPendingContentChanges &&
+      contentChanges.length > 0 &&
       !hasRecordedContentChange &&
       insertSessionHasNoRecordedEditAction
     ) {
-      const firstChange = vimState.historyTracker.currentContentChanges[0];
-      const contentChange = new DocumentContentChangeAction(firstChange.range.start);
-      contentChange.addChanges(
-        vimState.historyTracker.currentContentChanges,
-        vimState.cursorStopPosition,
-      );
+      const contentChange = new DocumentContentChangeAction(contentChanges[0].range.start);
+      contentChange.addChanges(contentChanges, vimState.cursorStopPosition);
       vimState.recordedState.actionsRun.splice(-1, 0, contentChange);
-      vimState.historyTracker.currentContentChanges = [];
     }
 
     // only remove leading spaces inserted by vscode.
@@ -312,8 +308,6 @@ export class ExitInsertMode extends BaseCommand {
         }
       }
     }
-
-    vimState.historyTracker.currentContentChanges = [];
 
     if (vimState.isFakeMultiCursor) {
       vimState.cursors = [vimState.cursor];
@@ -445,15 +439,13 @@ export class TypeInInsertMode extends BaseCommand {
 
     let text = char;
 
-    if (char.length === 1) {
-      const prevHighSurrogate =
-        vimState.modeData.mode === Mode.Insert ? vimState.modeData.highSurrogate : undefined;
+    if (char.length === 1 && vimState.modeData.mode === Mode.Insert) {
+      // Update the mode data in place, so its content changes are kept
+      const modeData = vimState.modeData;
+      const prevHighSurrogate = modeData.highSurrogate;
 
       if (isHighSurrogate(char.charCodeAt(0))) {
-        await vimState.setModeData({
-          mode: Mode.Insert,
-          highSurrogate: char,
-        });
+        modeData.highSurrogate = char;
 
         if (prevHighSurrogate === undefined) return;
         text = prevHighSurrogate;
@@ -462,10 +454,7 @@ export class TypeInInsertMode extends BaseCommand {
           text = prevHighSurrogate + char;
         }
 
-        await vimState.setModeData({
-          mode: Mode.Insert,
-          highSurrogate: undefined,
-        });
+        modeData.highSurrogate = undefined;
       }
     }
 

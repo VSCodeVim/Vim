@@ -13,8 +13,6 @@ export class Configuration implements IConfiguration {
     Object.assign(this, overrides);
   }
 
-  [key: string]: any;
-
   tildeop = false;
   useSystemClipboard = false;
   useCtrlKeys = false;

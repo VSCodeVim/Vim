@@ -231,11 +231,6 @@ export class VimState implements vscode.Disposable {
   }
 
   public async setModeData(modeData: ModeData): Promise<void> {
-    if (modeData === undefined) {
-      // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
-      throw new Error('Tried setting modeData to undefined');
-    }
-
     await this.inputMethodSwitcher?.switchInputMethod(this.currentMode, modeData.mode);
     if (this.returnToInsertAfterCommand && modeData.mode === Mode.Insert) {
       this.returnToInsertAfterCommand = false;
@@ -259,11 +254,6 @@ export class VimState implements vscode.Disposable {
   }
 
   public async setCurrentMode(mode: Mode): Promise<void> {
-    if (mode === undefined) {
-      // TODO: remove this once we're sure this is no longer an issue (#6500, #6464)
-      throw new Error('Tried setting currentMode to undefined');
-    }
-
     await this.setModeData(
       mode === Mode.Replace
         ? {
@@ -288,6 +278,7 @@ export class VimState implements vscode.Disposable {
               ? {
                   mode,
                   highSurrogate: undefined,
+                  contentChanges: [],
                 }
               : { mode },
     );

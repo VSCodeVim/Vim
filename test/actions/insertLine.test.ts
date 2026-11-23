@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
 import { ModeHandler } from '../../src/mode/modeHandler';
 import { setupWorkspace } from '../testUtils';
@@ -18,6 +17,8 @@ suite('insertLineBefore', () => {
     modeHandler = (await getAndUpdateModeHandler())!;
   });
 
+  const line = (n: number) => modeHandler.vimState.document.lineAt(n).text;
+
   test('tabs are added to match previous line even if line above does not match', async () => {
     // Setup the test
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'd', 'G']);
@@ -31,9 +32,7 @@ suite('insertLineBefore', () => {
     //    b
     //    c
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '2', 'G', 'O', 'a']);
-    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
-    assert.ok(text);
-    assert.strictEqual(text[1].replace(/[\n\r]/g, ''), text[2].replace(/[\n\r]/g, ''));
+    assert.strictEqual(line(1), line(2));
   });
 
   test('no extra whitespace added when insertLineBefore inserts correct amount', async () => {
@@ -48,9 +47,7 @@ suite('insertLineBefore', () => {
     //    b
     //    c
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '3', 'G', 'O', 'b']);
-    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
-    assert.ok(text);
-    assert.strictEqual(text[2].replace(/[\n\r]/g, ''), text[3].replace(/[\n\r]/g, ''));
+    assert.strictEqual(line(2), line(3));
   });
 
   test('no extra whitespace left when insertLineBefore inserts more than correct amount', async () => {
@@ -67,16 +64,14 @@ suite('insertLineBefore', () => {
     //        b
     //    c
     await modeHandler.handleMultipleKeyEvents(['<Esc>', '4', 'G', '2', 'O', 'c']);
-    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
     //
     //    a
     //        b
     //    c
     //    c
     //    c
-    assert.ok(text);
-    assert.strictEqual(text[3].replace(/[\n\r]/g, ''), text[4].replace(/[\n\r]/g, ''));
-    assert.strictEqual(text[4].replace(/[\n\r]/g, ''), text[5].replace(/[\n\r]/g, ''));
+    assert.strictEqual(line(3), line(4));
+    assert.strictEqual(line(4), line(5));
   });
 
   test('works at the top of the document', async () => {
@@ -88,9 +83,7 @@ suite('insertLineBefore', () => {
     // This is the current state of the document
     //    a
     await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'O', 'a']);
-    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
-    assert.ok(text);
-    assert.strictEqual(text[0].replace(/[\n\r]/g, ''), text[1].replace(/[\n\r]/g, ''));
+    assert.strictEqual(line(0), line(1));
   });
 
   test('works with multiple cursors', async () => {
@@ -107,9 +100,7 @@ suite('insertLineBefore', () => {
     //    a
     //    a
     //    a
-    const text = vscode.window.activeTextEditor?.document.getText().split('\n');
-    assert.ok(text);
-    assert.strictEqual(text[1].replace(/[\n\r]/g, ''), text[2].replace(/[\n\r]/g, ''));
-    assert.strictEqual(text[2].replace(/[\n\r]/g, ''), text[3].replace(/[\n\r]/g, ''));
+    assert.strictEqual(line(1), line(2));
+    assert.strictEqual(line(2), line(3));
   });
 });

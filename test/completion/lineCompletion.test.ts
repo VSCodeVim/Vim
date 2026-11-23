@@ -1,75 +1,35 @@
 import * as assert from 'assert';
 
-import { Position } from 'vscode';
-import { getAndUpdateModeHandler } from '../../extension';
+import * as vscode from 'vscode';
 import { getCompletionsForCurrentLine } from '../../src/completion/lineCompletionProvider';
-import { ModeHandler } from '../../src/mode/modeHandler';
-import { VimState } from '../../src/state/vimState';
 import { setupWorkspace } from '../testUtils';
 
 suite('Provide line completions', () => {
-  let modeHandler: ModeHandler;
-  let vimState: VimState;
-
-  suiteSetup(async () => {
-    await setupWorkspace();
-    modeHandler = (await getAndUpdateModeHandler())!;
-    vimState = modeHandler.vimState;
-  });
-
-  const setupTestWithLines = async (lines: string[]) => {
-    vimState.cursorStopPosition = new Position(0, 0);
-
-    await modeHandler.handleKeyEvent('<Esc>');
-    await vimState.editor.edit((builder) => {
-      builder.insert(new Position(0, 0), lines.join('\n'));
-    });
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'j', 'j', 'A']);
+  /**
+   * Opens a document with `lines` and returns the completions for the end of line `line`. Other
+   * open documents can add completions after the ones from this document.
+   */
+  const getCompletions = async (lines: string[], line: number) => {
+    await setupWorkspace({ fileContent: lines });
+    const document = vscode.window.activeTextEditor!.document;
+    return getCompletionsForCurrentLine(document.lineAt(line).range.end, document)!;
   };
 
-  suite('Line Completion Provider unit tests', () => {
-    // TODO(#4844): this fails on Windows
-    test('Can complete lines in file, prioritizing above cursor, near cursor', async () => {
-      if (process.platform === 'win32') {
-        return;
-      }
-      const lines = ['a1', 'a2', 'a', 'a3', 'b1', 'a4'];
-      await setupTestWithLines(lines);
-      const expectedCompletions = ['a2', 'a1', 'a3', 'a4'];
-      const topCompletions = getCompletionsForCurrentLine(
-        vimState.cursorStopPosition,
-        vimState.document,
-      )!.slice(0, expectedCompletions.length);
+  test('Can complete lines in file, prioritizing above cursor, near cursor', async () => {
+    const completions = await getCompletions(['a1', 'a2', 'a', 'a3', 'b1', 'a4'], 2);
+    assert.deepStrictEqual(completions.slice(0, 4), ['a2', 'a1', 'a3', 'a4']);
+  });
 
-      assert.deepStrictEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
-    });
+  test('Can complete lines in file with different indentation', async () => {
+    const completions = await getCompletions(['a1', '   a 2', 'a', 'a3  ', 'b1', 'a4'], 2);
+    assert.deepStrictEqual(completions.slice(0, 4), ['a 2', 'a1', 'a3  ', 'a4']);
+  });
 
-    // TODO(#4844): this fails on Windows (and now linux too, for some reason?)
-    test.skip('Can complete lines in file with different indentation', async () => {
-      if (process.platform === 'win32') {
-        return;
-      }
-      const lines = ['a1', '   a 2', 'a', 'a3  ', 'b1', 'a4'];
-      await setupTestWithLines(lines);
-      const expectedCompletions = ['a 2', 'a1', 'a3  ', 'a4'];
-      const topCompletions = getCompletionsForCurrentLine(
-        vimState.cursorStopPosition,
-        vimState.document,
-      )!.slice(0, expectedCompletions.length);
-
-      assert.deepStrictEqual(topCompletions, expectedCompletions, 'Unexpected completions found');
-    });
-
-    test('Returns no completions for unmatched line', async () => {
-      const lines = ['a1', '   a2', 'azzzzzzzzzzzzzzzzzzzzzzzz', 'a3  ', 'b1', 'a4'];
-      await setupTestWithLines(lines);
-      const expectedCompletions = [];
-      const completions = getCompletionsForCurrentLine(
-        vimState.cursorStopPosition,
-        vimState.document,
-      )!.slice(0, expectedCompletions.length);
-
-      assert.strictEqual(completions.length, 0, 'Completions found, but none were expected');
-    });
+  test('Returns no completions for unmatched line', async () => {
+    const completions = await getCompletions(
+      ['a1', '   a2', 'azzzzzzzzzzzzzzzzzzzzzzzz', 'a3  ', 'b1', 'a4'],
+      2,
+    );
+    assert.deepStrictEqual(completions, []);
   });
 });

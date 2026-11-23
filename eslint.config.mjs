@@ -1,24 +1,27 @@
-import tsPlugin from '@typescript-eslint/eslint-plugin';
+// @ts-check
+
 import prettier from 'eslint-config-prettier';
 import jsdoc from 'eslint-plugin-jsdoc';
-import preferArrow from 'eslint-plugin-prefer-arrow';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
 
-export default [
-  { ignores: ['**/*.js', '**/*.mjs', '**/*.cjs', '.vscode-test/'] },
-  ...tsPlugin.configs['flat/recommended-type-checked'],
-  // TODO: Consider extending from `strict-type-checked` and/or `stylistic-type-checked`
+export default defineConfig(
+  { ignores: ['dist/', 'out/', '.vscode-test/', '.vscode-test-web/'] },
+  // TODO: Extend from `eslint:recommended` (`@eslint/js`) too, then drop the core rules below that it
+  // covers. It currently reports ~70 errors, mostly `no-case-declarations` and `no-useless-escape`.
+  tseslint.configs.recommendedTypeChecked,
+  // TODO: Consider extending from `strictTypeChecked` and/or `stylisticTypeChecked`
   {
-    files: ['**/*.ts'],
     plugins: {
       jsdoc,
-      'prefer-arrow': preferArrow,
     },
     languageOptions: {
       parserOptions: {
-        project: 'tsconfig.json',
+        projectService: true,
       },
     },
     rules: {
+      // Additions to recommended-type-checked
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/array-type': [
         'error',
@@ -26,8 +29,6 @@ export default [
           default: 'array-simple',
         },
       ],
-      '@typescript-eslint/await-thenable': 'error',
-      '@typescript-eslint/ban-ts-comment': 'error',
       '@typescript-eslint/consistent-type-assertions': 'error',
       '@typescript-eslint/dot-notation': 'error',
       '@typescript-eslint/naming-convention': [
@@ -39,54 +40,17 @@ export default [
           trailingUnderscore: 'forbid',
         },
       ],
-      '@typescript-eslint/no-array-constructor': 'error',
-      '@typescript-eslint/no-base-to-string': 'off',
-      '@typescript-eslint/no-duplicate-enum-values': 'error',
-      '@typescript-eslint/no-duplicate-type-constituents': 'error',
       '@typescript-eslint/no-empty-function': 'error',
-      '@typescript-eslint/no-empty-interface': 'error',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-extra-non-null-assertion': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/no-for-in-array': 'error',
-      '@typescript-eslint/no-implied-eval': 'error',
-      '@typescript-eslint/no-loss-of-precision': 'error',
-      '@typescript-eslint/no-misused-new': 'error',
-      '@typescript-eslint/no-misused-promises': [
-        'error',
-        {
-          checksVoidReturn: false, // TODO
-        },
-      ],
-      '@typescript-eslint/no-namespace': 'error',
-      '@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
-      '@typescript-eslint/parameter-properties': 'error',
-      '@typescript-eslint/no-redundant-type-constituents': 'error',
       '@typescript-eslint/no-shadow': [
         'error',
         {
           hoist: 'all',
         },
       ],
-      '@typescript-eslint/no-this-alias': 'error',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
-      '@typescript-eslint/no-unnecessary-type-constraint': 'error',
-      '@typescript-eslint/no-unsafe-argument': 'error',
-      '@typescript-eslint/no-unsafe-assignment': 'error',
-      '@typescript-eslint/no-unsafe-call': 'error',
-      '@typescript-eslint/no-unsafe-declaration-merging': 'error',
-      '@typescript-eslint/no-unsafe-member-access': 'error',
-      '@typescript-eslint/no-unsafe-return': 'error',
-      '@typescript-eslint/no-unused-expressions': 'error',
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-var-requires': 'error',
-      '@typescript-eslint/prefer-as-const': 'error',
+      '@typescript-eslint/parameter-properties': 'error',
       '@typescript-eslint/prefer-for-of': 'error',
       '@typescript-eslint/prefer-function-type': 'error',
-      '@typescript-eslint/prefer-namespace-keyword': 'error',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'error',
-      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
       '@typescript-eslint/triple-slash-reference': [
         'error',
         {
@@ -95,14 +59,11 @@ export default [
           lib: 'always',
         },
       ],
-      '@typescript-eslint/typedef': 'off',
-      '@typescript-eslint/unbound-method': 'error',
       '@typescript-eslint/unified-signatures': 'error',
-      complexity: 'off',
-      'constructor-super': 'error',
-      'dot-notation': 'off',
       eqeqeq: ['error', 'smart'],
+      'func-style': ['error', 'declaration', { allowArrowFunctions: true }],
       'guard-for-in': 'error',
+      // Type names make confusing variable names
       'id-denylist': [
         'error',
         'any',
@@ -115,70 +76,31 @@ export default [
         'Undefined',
         'undefined',
       ],
-      'id-match': 'error',
       'jsdoc/check-alignment': 'error',
-      'jsdoc/check-indentation': 'off',
-      'max-classes-per-file': 'off',
-      'new-parens': 'error',
-      'no-array-constructor': 'off',
       'no-bitwise': 'error',
       'no-caller': 'error',
       'no-cond-assign': 'error',
-      'no-console': [
-        'error',
-        {
-          allow: [
-            'log',
-            'warn',
-            'dir',
-            'timeLog',
-            'assert',
-            'clear',
-            'count',
-            'countReset',
-            'group',
-            'groupEnd',
-            'table',
-            'dirxml',
-            'error',
-            'groupCollapsed',
-            'Console',
-            'profile',
-            'profileEnd',
-            'timeStamp',
-            'context',
-          ],
-        },
-      ],
       'no-debugger': 'error',
       'no-empty': 'error',
-      'no-empty-function': 'off',
       'no-eval': 'error',
       'no-fallthrough': 'error',
-      'no-implied-eval': 'off',
-      'no-invalid-this': 'off',
-      'no-loss-of-precision': 'off',
+      'no-loss-of-precision': 'error',
       'no-new-wrappers': 'error',
-      'no-return-await': 'error',
-      'no-shadow': 'off',
+      // Debugging leftovers; use the extension's logger instead
+      'no-restricted-properties': [
+        'error',
+        ...['debug', 'info', 'time', 'timeEnd', 'trace'].map((property) => ({
+          object: 'console',
+          property,
+        })),
+      ],
       'no-throw-literal': 'error',
-      'no-trailing-spaces': 'error',
       'no-undef-init': 'error',
-      'no-underscore-dangle': 'off',
       'no-unsafe-finally': 'error',
-      'no-unused-expressions': 'off',
       'no-unused-labels': 'error',
-      'no-unused-vars': 'off',
-      'no-use-before-define': 'off',
-      'no-var': 'error',
       'object-shorthand': 'error',
       'one-var': ['error', 'never'],
-      'prefer-arrow/prefer-arrow-functions': [
-        'error',
-        {
-          allowStandaloneDeclarations: true,
-        },
-      ],
+      'prefer-arrow-callback': 'error',
       'prefer-const': [
         'error',
         {
@@ -186,7 +108,6 @@ export default [
         },
       ],
       radix: 'error',
-      'require-await': 'off',
       'spaced-comment': [
         'error',
         'always',
@@ -195,8 +116,28 @@ export default [
         },
       ],
       'use-isnan': 'error',
-      'valid-typeof': 'off',
+
+      // Overrides of recommended-type-checked
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksVoidReturn: false, // TODO
+        },
+      ],
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+    },
+  },
+  {
+    // Build scripts aren't part of the TypeScript project
+    files: ['**/*.{js,mjs,cjs}'],
+    extends: [tseslint.configs.disableTypeChecked],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
   prettier,
-];
+);

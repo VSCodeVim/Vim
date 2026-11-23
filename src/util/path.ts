@@ -1,8 +1,6 @@
 import * as path from 'path';
+import untildify from 'untildify';
 import * as vscode from 'vscode';
-// TODO:
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import untildify = require('untildify');
 
 /**
  * A interface to the path in the node.js.

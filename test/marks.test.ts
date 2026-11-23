@@ -1,11 +1,10 @@
 import { strict as assert } from 'assert';
 import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../extensionBase';
-import { Mode } from '../src/mode/mode';
 import { ModeHandler } from '../src/mode/modeHandler';
 import { ModeHandlerMap } from '../src/mode/modeHandlerMap';
 import { newTest, newTestSkip } from './testSimplifier';
-import { setupWorkspace } from './testUtils';
+import { openNewFile, setupWorkspace } from './testUtils';
 
 suite('Marks', () => {
   let modeHandler: ModeHandler;
@@ -16,14 +15,7 @@ suite('Marks', () => {
   });
 
   const jumpToNewFile = async () => {
-    await setupWorkspace({
-      config: {
-        tabstop: 4,
-        expandtab: false,
-      },
-      forceNewFile: true,
-      disableCleanUp: true,
-    });
+    await openNewFile();
     return (await getAndUpdateModeHandler())!;
   };
 
@@ -32,7 +24,6 @@ suite('Marks', () => {
     start: ['|hello world and mars'],
     keysPressed: 'wma2w`a',
     end: ['hello |world and mars'],
-    endMode: Mode.Normal,
   });
 
   suite("'< and '>", () => {
@@ -80,14 +71,12 @@ suite('Marks', () => {
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm>' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
-      endMode: Mode.Normal,
     });
     newTest({
       title: "gv fails if '> is not set",
       start: ['one', 't|wo', 'three'],
       keysPressed: 'm<' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -102,18 +91,19 @@ suite('Marks', () => {
       keysPressed: 'v<Esc>' + 'j' + 'm>' + 'gg' + 'gvd',
       end: ['one', 't|ree'],
     });
-    newTestSkip({
-      // TODO: Seems to work... why does this fail?
+    // NOTE: The `<Esc>` after `m<` keeps the test tokenizer from treating e.g. `<jm>` as a single key
+    newTest({
       title: 'gv is affected by m< and m>',
       start: ['one', 't|wo', 'three'],
-      keysPressed: 'm<' + 'j' + 'm>' + 'gg' + 'gvd',
+      keysPressed: 'm<' + '<Esc>' + 'j' + 'm>' + 'gg' + 'gvd',
       end: ['one', 't|ree'],
     });
 
-    newTest({
+    newTestSkip({
+      // TODO: Vim gives `'> == (2,1)`, but we collapse lastVisualSelection to an empty range and get (2,0)
       title: "m< AFTER '> sets '> too",
       start: ['one', 't|wo', 'three'],
-      keysPressed: 'v<Esc>' + 'j' + 'm<' + 'gg' + '`>',
+      keysPressed: 'v<Esc>' + 'j' + 'm<' + '<Esc>' + 'gg' + '`>',
       end: ['one', 'two', 't|hree'],
     });
     newTest({
@@ -127,7 +117,6 @@ suite('Marks', () => {
       start: ['one', 't|wo', 'three'],
       keysPressed: 'v<Esc>' + 'j' + 'm<' + 'gg' + 'gv',
       end: ['|one', 'two', 'three'],
-      endMode: Mode.Normal,
     });
   });
 

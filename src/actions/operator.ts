@@ -772,20 +772,6 @@ class YankVisualBlockMode extends BaseOperator {
 }
 
 @RegisterAction
-class CommentOperator extends BaseOperator {
-  public keys = ['g', 'c'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
-
-  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    vimState.editor.selection = new vscode.Selection(start.getLineBegin(), end.getLineEnd());
-    await vscode.commands.executeCommand('editor.action.commentLine');
-
-    vimState.cursorStopPosition = new Position(start.line, 0);
-    await vimState.setCurrentMode(Mode.Normal);
-  }
-}
-
-@RegisterAction
 export class ROT13Operator extends BaseOperator {
   public keys = ['g', '?'];
   public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine, Mode.VisualBlock];
@@ -828,25 +814,6 @@ export class ROT13Operator extends BaseOperator {
         return String.fromCharCode(charCode);
       })
       .join('');
-  }
-}
-
-@RegisterAction
-class CommentBlockOperator extends BaseOperator {
-  public keys = ['g', 'C'];
-  public modes = [Mode.Normal, Mode.Visual, Mode.VisualLine];
-
-  public async run(vimState: VimState, start: Position, end: Position): Promise<void> {
-    if (vimState.currentMode === Mode.Normal) {
-      // If we're in normal mode, we need to construct a selection for the
-      // command to operate on. If we're not, we've already got it.
-      const endPosition = end.getRight();
-      vimState.editor.selection = new vscode.Selection(start, endPosition);
-    }
-    await vscode.commands.executeCommand('editor.action.blockComment');
-
-    vimState.cursorStopPosition = start;
-    await vimState.setCurrentMode(Mode.Normal);
   }
 }
 
@@ -1152,12 +1119,14 @@ class ActionVisualReflowParagraph extends BaseOperator {
     start = start.getLineBegin();
     end = end.getLineEnd();
 
-    let textToReflow = vimState.document.getText(new vscode.Range(start, end));
-    textToReflow = this.reflowParagraph(textToReflow);
+    const lines: string[] = [];
+    for (let line = start.line; line <= end.line; line++) {
+      lines.push(vimState.document.lineAt(line).text);
+    }
 
     vimState.recordedState.transformer.replace(
       new vscode.Range(start, end),
-      textToReflow,
+      this.reflowParagraph(lines.join('\n')),
       // Move cursor to front of line to realign the view
       PositionDiff.exactCharacter({ character: 0 }),
     );

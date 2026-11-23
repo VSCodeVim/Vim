@@ -16,7 +16,7 @@ export class UndoCommand extends ExCommand {
     .map((count) => new UndoCommand(count));
 
   private count?: number;
-  private constructor(count?: number) {
+  constructor(count?: number) {
     super();
     this.count = count;
   }

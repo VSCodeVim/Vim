@@ -216,7 +216,7 @@ export class Address {
           }
           return match.pos.line;
         default:
-          const guard: never = this.specifier;
+          this.specifier satisfies never;
           throw new Error('Got unexpected LineSpecifier.type');
       }
     })();
@@ -252,7 +252,7 @@ export class Address {
       case 'last_substitute_pattern_next':
         return '\\&';
       default:
-        const guard: never = this.specifier;
+        this.specifier satisfies never;
         throw new Error('Got unexpected LineSpecifier.type');
     }
   }

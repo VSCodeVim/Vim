@@ -1,4 +1,3 @@
-import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 
 suite('Search (/ and ?)', () => {
@@ -137,7 +136,6 @@ suite('Search (/ and ?)', () => {
     start: ['|foo', 'bar', 'abcd'],
     keysPressed: '/ab<C-l>d\n',
     end: ['foo', 'bar', '|abcd'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -145,7 +143,6 @@ suite('Search (/ and ?)', () => {
     start: ['foo |junk junk bar'],
     keysPressed: 'd/bar\n',
     end: ['foo |bar'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -153,6 +150,5 @@ suite('Search (/ and ?)', () => {
     start: ['foo junk garbage trash |bar'],
     keysPressed: 'd?junk\n',
     end: ['foo |bar'],
-    endMode: Mode.Normal,
   });
 });

@@ -1,16 +1,8 @@
-import * as assert from 'assert';
-import { getAndUpdateModeHandler } from '../extension';
-import { ModeHandler } from '../src/mode/modeHandler';
 import { newTest, newTestSkip } from './testSimplifier';
-import { assertEqualLines, setupWorkspace } from './testUtils';
+import { setupWorkspace } from './testUtils';
 
 suite('Multicursor', () => {
-  let modeHandler: ModeHandler;
-
-  setup(async () => {
-    await setupWorkspace();
-    modeHandler = (await getAndUpdateModeHandler())!;
-  });
+  setup(setupWorkspace);
 
   suite('Motions', () => {
     for (const foldfix of [true, false]) {
@@ -112,82 +104,64 @@ suite('Multicursor', () => {
     });
   });
 
-  test('can add multiple cursors below', async () => {
-    await setupWorkspace({ fileContent: ['11', '22'] });
-    await modeHandler.handleMultipleKeyEvents(['g', 'g']);
-
-    if (process.platform === 'darwin') {
-      await modeHandler.handleMultipleKeyEvents(['<D-alt+down>']);
-    } else {
-      await modeHandler.handleMultipleKeyEvents(['<C-alt+down>']);
-    }
-
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
-    await modeHandler.handleMultipleKeyEvents(['c', 'w', '3', '3', '<Esc>']);
-    assertEqualLines(['33', '33']);
+  newTest({
+    title: 'can add multiple cursors below',
+    start: ['|11', '22'],
+    steps: [
+      {
+        keysPressed: process.platform === 'darwin' ? '<D-alt+down>' : '<C-alt+down>',
+        end: ['|11', '|22'],
+      },
+      { keysPressed: 'cw33<Esc>', end: ['3|3', '3|3'] },
+    ],
   });
 
-  test('can add multiple cursors above', async () => {
-    await setupWorkspace({ fileContent: ['11', '22', '33'] });
-    await modeHandler.handleMultipleKeyEvents(['G']);
-
-    if (process.platform === 'darwin') {
-      await modeHandler.handleMultipleKeyEvents(['<D-alt+up>', '<D-alt+up>']);
-    } else {
-      await modeHandler.handleMultipleKeyEvents(['<C-alt+up>', '<C-alt+up>']);
-    }
-
-    assert.strictEqual(modeHandler.vimState.cursors.length, 3, 'Cursor successfully created.');
-    await modeHandler.handleMultipleKeyEvents(['c', 'w', '4', '4', '<Esc>']);
-    assertEqualLines(['44', '44', '44']);
+  newTest({
+    title: 'can add multiple cursors above',
+    start: ['11', '22', '|33'],
+    steps: [
+      {
+        keysPressed: (process.platform === 'darwin' ? '<D-alt+up>' : '<C-alt+up>').repeat(2),
+        end: ['|11', '|22', '|33'],
+      },
+      { keysPressed: 'cw44<Esc>', end: ['4|4', '4|4', '4|4'] },
+    ],
   });
 
-  test('viwd with multicursors deletes the words and keeps the cursors', async () => {
-    await setupWorkspace({ fileContent: ['foo dont delete', 'bar', 'dont foo'] });
-    await modeHandler.handleMultipleKeyEvents(['g', 'g']);
-
-    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
-
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
-    await modeHandler.handleMultipleKeyEvents(['v', 'i', 'w', 'd']);
-    assertEqualLines([' dont delete', 'bar', 'dont ']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  newTest({
+    title: 'viwd with multicursors deletes the words and keeps the cursors',
+    start: ['|foo dont delete', 'bar', 'dont foo'],
+    steps: [
+      { keysPressed: 'gbgb<Esc>b', end: ['|foo dont delete', 'bar', 'dont |foo'] },
+      { keysPressed: 'viwd', end: ['| dont delete', 'bar', 'dont| '] },
+    ],
   });
 
-  test('vibd with multicursors deletes the content between brackets and keeps the cursors', async () => {
-    await setupWorkspace({ fileContent: ['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]'] });
-    await modeHandler.handleMultipleKeyEvents(['g', 'g', 'l', 'l']);
-
-    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
-
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
-    await modeHandler.handleMultipleKeyEvents(['v', 'i', 'b', 'd']);
-    assertEqualLines(['[() asd ]', '[(bar) asd ]', '[() asd ]']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  newTest({
+    title: 'vibd with multicursors deletes the content between brackets and keeps the cursors',
+    start: ['[(|foo) asd ]', '[(bar) asd ]', '[(foo) asd ]'],
+    steps: [
+      { keysPressed: 'gbgb<Esc>b', end: ['[(|foo) asd ]', '[(bar) asd ]', '[(|foo) asd ]'] },
+      { keysPressed: 'vibd', end: ['[(|) asd ]', '[(bar) asd ]', '[(|) asd ]'] },
+    ],
   });
 
-  test('vi[d with multicursors deletes the content between brackets and keeps the cursors', async () => {
-    await setupWorkspace({ fileContent: ['[(foo) asd ]', '[(bar) asd ]', '[(foo) asd ]'] });
-    await modeHandler.handleMultipleKeyEvents(['g', 'g', 'l', 'l']);
-
-    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
-
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
-    await modeHandler.handleMultipleKeyEvents(['v', 'i', '[', 'd']);
-    assertEqualLines(['[]', '[(bar) asd ]', '[]']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  newTest({
+    title: 'vi[d with multicursors deletes the content between brackets and keeps the cursors',
+    start: ['[(|foo) asd ]', '[(bar) asd ]', '[(foo) asd ]'],
+    steps: [
+      { keysPressed: 'gbgb<Esc>b', end: ['[(|foo) asd ]', '[(bar) asd ]', '[(|foo) asd ]'] },
+      { keysPressed: 'vi[d', end: ['[|]', '[(bar) asd ]', '[|]'] },
+    ],
   });
 
-  test('vitd with multicursors deletes the content between tags and keeps the cursors', async () => {
-    await setupWorkspace({ fileContent: ['<div> foo bar</div> asd', '<div>foo asd</div>'] });
-    await modeHandler.handleMultipleKeyEvents(['g', 'g', 'W']);
-
-    await modeHandler.handleMultipleKeyEvents(['g', 'b', 'g', 'b', '<Esc>', 'b']);
-
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2, 'Cursor successfully created.');
-    await modeHandler.handleMultipleKeyEvents(['v', 'i', 't', 'd']);
-    assertEqualLines(['<div></div> asd', '<div></div>']);
-    assert.strictEqual(modeHandler.vimState.cursors.length, 2);
+  newTest({
+    title: 'vitd with multicursors deletes the content between tags and keeps the cursors',
+    start: ['<div> |foo bar</div> asd', '<div>foo asd</div>'],
+    steps: [
+      { keysPressed: 'gbgb<Esc>b', end: ['<div> |foo bar</div> asd', '<div>|foo asd</div>'] },
+      { keysPressed: 'vitd', end: ['<div>|</div> asd', '<div>|</div>'] },
+    ],
   });
 
   newTest({

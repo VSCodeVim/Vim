@@ -16,7 +16,7 @@ export class RedoCommand extends ExCommand {
     .map((count) => new RedoCommand(count));
 
   private count?: number;
-  private constructor(count?: number) {
+  constructor(count?: number) {
     super();
     this.count = count;
   }

@@ -42,14 +42,10 @@ const linesWithoutIndentation = (
     return sortPriority;
   };
 
-  return document
-    .getText()
-    .split('\n')
-    .map((text, line) => ({
-      sortPriority: distanceFromStartLine(line),
-      text: text.replace(/^[ \t]*/, ''),
-    }))
-    .sort((a, b) => (a.sortPriority > b.sortPriority ? 1 : -1));
+  return Array.from({ length: document.lineCount }, (_, line) => ({
+    sortPriority: distanceFromStartLine(line),
+    text: document.lineAt(line).text.replace(/^[ \t]*/, ''),
+  })).sort((a, b) => (a.sortPriority > b.sortPriority ? 1 : -1));
 };
 
 /**

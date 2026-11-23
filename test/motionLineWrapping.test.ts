@@ -1,3 +1,4 @@
+import { Mode } from '../src/mode/mode';
 import { newTest } from './testSimplifier';
 import { setupWorkspace } from './testUtils';
 
@@ -51,6 +52,7 @@ suite('motion line wrapping', () => {
         // but not at beginning of line
         keysPressed: 'i<left>',
         end: ['line 1|', 'line 2'],
+        endMode: Mode.Insert,
       });
 
       newTest({
@@ -60,6 +62,7 @@ suite('motion line wrapping', () => {
         // so <right> once should go to eol
         keysPressed: 'i<right>',
         end: ['line 1|', 'line 2'],
+        endMode: Mode.Insert,
       });
 
       newTest({
@@ -69,6 +72,7 @@ suite('motion line wrapping', () => {
         // so need to go right twice to wrap
         keysPressed: 'i<right><right>',
         end: ['line 1', '|line 2'],
+        endMode: Mode.Insert,
       });
     });
   });
@@ -119,6 +123,7 @@ suite('motion line wrapping', () => {
         start: ['line 1', '|line 2'],
         keysPressed: 'i<left>',
         end: ['line 1', '|line 2'],
+        endMode: Mode.Insert,
       });
 
       newTest({
@@ -126,6 +131,7 @@ suite('motion line wrapping', () => {
         start: ['line |1', 'line 2'],
         keysPressed: 'i<right><right>',
         end: ['line 1|', 'line 2'],
+        endMode: Mode.Insert,
       });
     });
   });

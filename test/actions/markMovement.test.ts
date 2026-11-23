@@ -51,6 +51,11 @@ suite('mark movement', () => {
     documentA = await workspace.openTextDocument({
       content: `line 1\n    line 2 with 4 spaces of indentation\nline 3\n`,
     });
+
+    // Give both documents tabs, so the next `cleanUpWorkspace` closes them. VS Code eventually
+    // opens a tab for an unsaved untitled document that has none, which would land in a later test.
+    await window.showTextDocument(documentB);
+    await window.showTextDocument(documentA);
   });
 
   const newMarkTests = (
