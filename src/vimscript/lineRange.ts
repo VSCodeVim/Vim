@@ -2,6 +2,7 @@
 import { alt, any, optWhitespace, Parser, seq, string, succeed } from 'parsimmon';
 import { Position, Range } from 'vscode';
 import { VimError } from '../error';
+import { isGlobalMark } from '../history/historyTracker';
 import { globalState } from '../state/globalState';
 import { SearchState } from '../state/searchState';
 import { VimState } from '../state/vimState';
@@ -149,7 +150,7 @@ export class Address {
           return res;
         case 'mark':
           const mark = vimState.historyTracker.getMark(this.specifier.mark);
-          if (!mark || (mark.isUppercaseMark && mark.document !== vimState.document)) {
+          if (!mark || (isGlobalMark(mark) && mark.document !== vimState.document)) {
             throw VimError.MarkNotSet();
           }
           return mark.position.line;
@@ -216,7 +217,7 @@ export class Address {
           }
           return match.pos.line;
         default:
-          const guard: never = this.specifier;
+          this.specifier satisfies never;
           throw new Error('Got unexpected LineSpecifier.type');
       }
     })();
@@ -252,7 +253,7 @@ export class Address {
       case 'last_substitute_pattern_next':
         return '\\&';
       default:
-        const guard: never = this.specifier;
+        this.specifier satisfies never;
         throw new Error('Got unexpected LineSpecifier.type');
     }
   }

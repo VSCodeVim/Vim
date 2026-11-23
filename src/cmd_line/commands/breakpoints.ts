@@ -33,7 +33,7 @@ type AddBreakpointExpr = { type: 'expr'; expr: string };
 type AddBreakpoint =
   AddBreakpointHere | AddBreakpointFile | AddBreakpointFunction | AddBreakpointExpr;
 
-class AddBreakpointCommand extends ExCommand {
+export class AddBreakpointCommand extends ExCommand {
   private readonly addBreakpoint: AddBreakpoint;
 
   constructor(addBreakpoint: AddBreakpoint) {
@@ -87,7 +87,7 @@ type DelBreakpoint =
   | DelBreakpointFile
   | DelBreakpointHere;
 
-class DeleteBreakpointCommand extends ExCommand {
+export class DeleteBreakpointCommand extends ExCommand {
   private readonly delBreakpoint: DelBreakpoint;
 
   constructor(delBreakpoint: DelBreakpoint) {
@@ -147,7 +147,7 @@ class DeleteBreakpointCommand extends ExCommand {
 /**
  * List Breakpoints Command
  */
-class ListBreakpointsCommand extends ExCommand {
+export class ListBreakpointsCommand extends ExCommand {
   async execute(vimState: VimState): Promise<void> {
     const breakpoints = vscode.debug.breakpoints;
     type BreakpointQuickPick = { breakpointId: string } & vscode.QuickPickItem;

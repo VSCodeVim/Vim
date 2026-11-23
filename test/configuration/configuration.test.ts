@@ -71,7 +71,7 @@ suite('Configuration', () => {
     start: ['|'],
     // <leader>fes
     keysPressed: ' fes',
-    end: ['|'],
+    end: ['[|]'],
     endMode: Mode.Visual,
   });
 });

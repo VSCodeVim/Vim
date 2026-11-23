@@ -191,6 +191,8 @@ export class Pattern {
   public static parser(args: {
     direction: SearchDirection;
     ignoreSmartcase?: boolean;
+    /** Overrides 'ignorecase' and 'smartcase'; `\c` and `\C` in the pattern still take precedence */
+    ignoreCase?: boolean;
     delimiter?: string;
   }): Parser<Pattern> {
     const delimiter = args.delimiter
@@ -226,7 +228,7 @@ export class Pattern {
               return '[^0-9A-Fa-f]'; // Non-hex digit
             } else if (escaped === 'o') {
               return '[0-7]'; // Octal digit
-            } else if (escaped === 'o') {
+            } else if (escaped === 'O') {
               return '[^0-7]'; // Non-octal digit
             } else if (escaped === 'h') {
               return '[A-Za-z_]'; // Head of word character
@@ -302,7 +304,7 @@ export class Pattern {
       },
     ).map(({ patternString, caseOverride, inSelection, closed, emptyBranch }) => {
       const ignoreCase = Pattern.getIgnoreCase(patternString, {
-        caseOverride,
+        caseOverride: caseOverride ?? args.ignoreCase,
         ignoreSmartcase: args.ignoreSmartcase ?? false,
       });
       return new Pattern(
@@ -427,8 +429,9 @@ export class SearchOffset {
       case 'chars_from_end':
         return match.end.getOffsetThroughLineBreaks(this.data.delta - 1);
       case 'pattern': // TODO(#3919): Support `;` offset (`:help //;`)
+        throw new Error("';' search offset is not yet supported");
       default:
-        const guard: unknown = this.data;
+        this.data satisfies never;
         throw new Error('Unexpected SearchOffset type');
     }
   }

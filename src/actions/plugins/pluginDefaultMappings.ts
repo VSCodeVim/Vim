@@ -1,10 +1,21 @@
-import { IConfiguration, IKeyRemapping } from '../../configuration/iconfiguration';
+import {
+  IConfiguration,
+  IKeyRemapping,
+  KeyBindingsConfigKey,
+} from '../../configuration/iconfiguration';
+
+/**
+ * Settings that turn a plugin on or off
+ */
+type BooleanConfigKey = {
+  [K in keyof IConfiguration]: IConfiguration[K] extends boolean ? K : never;
+}[keyof IConfiguration];
 
 export class PluginDefaultMappings {
   // plugin authers may add entries here
   private static defaultMappings: Array<{
-    mode: string;
-    configSwitch: string;
+    mode: KeyBindingsConfigKey;
+    configSwitch: BooleanConfigKey;
     mapping: IKeyRemapping;
   }> = [
     // default maps for surround
@@ -30,7 +41,10 @@ export class PluginDefaultMappings {
     },
   ];
 
-  public static getPluginDefaultMappings(mode: string, config: IConfiguration): IKeyRemapping[] {
+  public static getPluginDefaultMappings(
+    mode: KeyBindingsConfigKey,
+    config: IConfiguration,
+  ): IKeyRemapping[] {
     return this.defaultMappings
       .filter((m) => m.mode === mode && config[m.configSwitch])
       .map((m) => m.mapping);

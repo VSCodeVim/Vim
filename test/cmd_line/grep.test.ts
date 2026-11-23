@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { getAndUpdateModeHandler } from '../../extension';
@@ -20,9 +21,6 @@ suite('Basic grep command', () => {
     await setupWorkspace();
   });
   test('GrepCommand executes correctly', async () => {
-    if (process.platform === 'win32') {
-      return; // TODO: Why does this fail on Windows?
-    }
     // first file, will have matches
     let file1 = await createFile({
       fileExtension: '.txt',
@@ -40,8 +38,8 @@ suite('Basic grep command', () => {
     await vscode.window.showTextDocument(document2, { preview: false });
     const pattern = Pattern.parser({ direction: SearchDirection.Backward });
     // The vscode's search doesn't work with the paths of the extension test host, so we strip to the file names only
-    file1 = file1.substring(file1.lastIndexOf('/') + 1);
-    file2 = file2.substring(file2.lastIndexOf('/') + 1);
+    file1 = path.basename(file1);
+    file2 = path.basename(file2);
     const command = grep(pattern.tryParse('t*st'), [file1, file2]);
     await command.execute();
     // Despite the fact that we already execute this command in the grep itself, without this focus, there is no active editor

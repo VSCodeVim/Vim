@@ -1,9 +1,8 @@
 import { ChildProcess, spawn } from 'child_process';
-import { exists } from 'fs';
 import { Neovim } from 'neovim/lib/api/Neovim';
-import { attach } from 'neovim/lib/attach';
+import { attach } from 'neovim/lib/attach/attach';
 import { dirname } from 'path';
-import * as util from 'util';
+import { existsAsync } from 'platform/fs';
 import * as vscode from 'vscode';
 import { Position, TextDocument } from 'vscode';
 import { configuration } from '../configuration/configuration';
@@ -89,7 +88,7 @@ export class NeovimWrapper implements vscode.Disposable {
   private async startNeovim(document: TextDocument) {
     Logger.debug('Spawning Neovim process...');
     let dir = dirname(document.uri.fsPath);
-    if (!(await util.promisify(exists)(dir))) {
+    if (!(await existsAsync(dir))) {
       dir = __dirname;
     }
     const neovimArgs: string[] = [];
@@ -129,7 +128,9 @@ export class NeovimWrapper implements vscode.Disposable {
     }
 
     await this.nvim.setOption('gdefault', configuration.gdefault === true);
-    await buf.setLines(vimState.document.getText().split('\n'), {
+    const { document } = vimState;
+    const lines = Array.from({ length: document.lineCount }, (_, i) => document.lineAt(i).text);
+    await buf.setLines(lines, {
       start: 0,
       end: -1,
       strictIndexing: true,

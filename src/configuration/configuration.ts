@@ -100,8 +100,6 @@ interface IKeyBinding {
  *
  */
 class Configuration implements IConfiguration {
-  [key: string]: any;
-
   private readonly leaderDefault = '\\';
   private readonly cursorTypeMap: { [key: string]: vscode.TextEditorCursorStyle } = {
     line: vscode.TextEditorCursorStyle.Line,

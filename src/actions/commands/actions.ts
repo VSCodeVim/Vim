@@ -926,6 +926,12 @@ class VisualChangeLine extends BaseCommand {
       start.getLineBegin(),
       end.getLineEnd().getLeftIfEOL(),
     );
+    // Otherwise the cursor would be wherever the end of the selection maps to after the change,
+    // which is the next line if the selection ended with a line break (e.g. after `$`)
+    vimState.recordedState.transformer.moveCursor(
+      PositionDiff.exactPosition(start.getLineBegin()),
+      this.multicursorIndex,
+    );
   }
 }
 

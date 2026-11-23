@@ -54,7 +54,7 @@ const getCursorPosition = (vimState: VimState, range: Range, replaceWith: string
     recordedState: { actionKeys },
   } = vimState;
   const lines = replaceWith.split('\n');
-  const wasRunAsLineAction = actionKeys.indexOf('r') === 0 && actionKeys.length === 1; // ie. grr
+  const wasRunAsLineAction = actionKeys.length === 1 && actionKeys[0] === 'r'; // ie. grr
   const registerAndRangeAreSingleLines = lines.length === 1 && range.isSingleLine;
   const singleLineAction = registerAndRangeAreSingleLines && !wasRunAsLineAction;
 
