@@ -1,6 +1,16 @@
+import * as fs from 'fs';
 import * as path from 'path';
 
 import { runTests } from '@vscode/test-electron';
+
+/**
+ * User settings for the VS Code that runs the tests. Each turns off background work that slows the
+ * tests down; together they make them about a quarter faster. `index.ts` sets `files.eol` too.
+ */
+const testSettings = {
+  'chat.disableAIFeatures': true,
+  'telemetry.telemetryLevel': 'off',
+};
 
 async function main() {
   try {
@@ -14,12 +24,24 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, 'test');
 
+    // Write the settings before VS Code starts, since some of them only take effect at startup.
+    // This replaces the settings of earlier runs, so none of them carry over.
+    const userDataDir = path.resolve(__dirname, '..', '.vscode-test', 'user-data');
+    fs.mkdirSync(path.join(userDataDir, 'User'), { recursive: true });
+    fs.writeFileSync(
+      path.join(userDataDir, 'User', 'settings.json'),
+      JSON.stringify(testSettings, null, 2),
+    );
+
     // Download VS Code, unzip it and run the integration test
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
-      // Disable other extensions while running tests for avoiding unexpected side-effect
-      launchArgs: ['--disable-extensions'],
+      launchArgs: [
+        // Disable other extensions while running tests for avoiding unexpected side-effect
+        '--disable-extensions',
+        `--user-data-dir=${userDataDir}`,
+      ],
     });
   } catch (err) {
     console.error(err);
