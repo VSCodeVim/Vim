@@ -1,5 +1,17 @@
-// eslint-disable-next-line id-denylist
-import { alt, any, noneOf, Parser, regexp, seq, string, succeed, whitespace } from 'parsimmon';
+/* eslint-disable id-denylist */
+import {
+  alt,
+  any,
+  noneOf,
+  optWhitespace,
+  Parser,
+  regexp,
+  seq,
+  string,
+  succeed,
+  whitespace,
+} from 'parsimmon';
+/* eslint-enable id-denylist */
 import { configuration } from '../configuration/configuration';
 
 export const numberParser: Parser<number> = regexp(/\d+/)
@@ -10,6 +22,24 @@ export const integerParser: Parser<number> = regexp(/-?\d+/).map((num) => Number
 export const bangParser: Parser<boolean> = string('!')
   .fallback(undefined)
   .map((bang) => bang !== undefined);
+
+export type RegisterAndCount = {
+  register?: string;
+  count?: number;
+};
+
+/**
+ * Parses the `[x] [count]` arguments of commands like `:d[elete]`, `:y[ank]`, and `:c[hange]`
+ */
+export const registerAndCountParser: Parser<RegisterAndCount> = optWhitespace.then(
+  alt<RegisterAndCount>(
+    numberParser.map((count) => ({ register: undefined, count })),
+    // eslint-disable-next-line id-denylist
+    seq(any.fallback(undefined), whitespace.then(numberParser).fallback(undefined)).map(
+      ([register, count]) => ({ register, count }),
+    ),
+  ),
+);
 
 export function nameAbbrevParser(abbrev: string, rest: string): Parser<string> {
   const suffixes = [...Array(rest.length + 1).keys()]

@@ -86,9 +86,22 @@ export interface ITargetsConfiguration {
   smartQuotes: ISmartQuotesConfiguration;
 }
 
-export interface IConfiguration {
-  [key: string]: any;
+/**
+ * Modes that have their own key remappings
+ */
+export type RemapMode = 'insert' | 'normal' | 'operatorPending' | 'visual' | 'commandLine';
 
+/**
+ * Settings holding a mode's remappings, e.g. `normalModeKeyBindingsNonRecursive`
+ */
+export type KeyBindingsConfigKey = `${RemapMode}ModeKeyBindings${'' | 'NonRecursive'}`;
+
+/**
+ * Remappings built from those settings by the RemappingValidator, e.g. `normalModeKeyBindingsMap`
+ */
+export type KeyBindingsMapConfigKey = `${RemapMode}ModeKeyBindingsMap`;
+
+export interface IConfiguration {
   /**
    * Use the system's clipboard when copying.
    */
@@ -174,6 +187,16 @@ export interface IConfiguration {
    * Use surround plugin?
    */
   surround: boolean;
+
+  /**
+   * Targets plugin settings
+   */
+  targets: ITargetsConfiguration;
+
+  /**
+   * Makes `~` behave like an operator
+   */
+  tildeop: boolean;
 
   /**
    * Customize argument textobject delimiter and separator characters

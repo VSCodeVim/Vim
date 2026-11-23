@@ -6,8 +6,9 @@ import { ModeHandler } from '../mode/modeHandler';
 import { StatusBar } from '../statusBar';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
+import { timers } from '../util/timers';
 import { exCommandParser } from '../vimscript/exCommandParser';
-import { IKeyRemapping } from './iconfiguration';
+import { IKeyRemapping, KeyBindingsMapConfigKey, RemapMode } from './iconfiguration';
 
 interface IRemapper {
   /**
@@ -45,7 +46,7 @@ export class Remappers implements IRemapper {
 }
 
 export class Remapper implements IRemapper {
-  private readonly configKey: string;
+  private readonly configKey: KeyBindingsMapConfigKey;
   private readonly remappedModes: Mode[];
 
   /**
@@ -87,7 +88,7 @@ export class Remapper implements IRemapper {
     return this._isPotentialRemap;
   }
 
-  constructor(configKey: string, remappedModes: Mode[]) {
+  constructor(configKey: KeyBindingsMapConfigKey, remappedModes: Mode[]) {
     this.configKey = configKey;
     this.remappedModes = remappedModes;
   }
@@ -109,7 +110,7 @@ export class Remapper implements IRemapper {
       return false;
     }
 
-    const userDefinedRemappings = configuration[this.configKey] as Map<string, IKeyRemapping>;
+    const userDefinedRemappings = configuration[this.configKey];
 
     if (keys.at(-1) === SpecialKeys.TimeoutFinished) {
       // Timeout finished. Don't let an ambiguous or potential remap start another timeout again
@@ -279,7 +280,7 @@ export class Remapper implements IRemapper {
       vimState.recordedState.bufferedKeys = [...keys];
 
       // Create Timeout
-      vimState.recordedState.bufferedKeysTimeoutObj = setTimeout(() => {
+      vimState.recordedState.bufferedKeysTimeoutObj = timers.setTimeout(() => {
         void modeHandler.handleKeyEvent(SpecialKeys.TimeoutFinished);
       }, configuration.timeout);
       return true;
@@ -602,7 +603,7 @@ export class Remapper implements IRemapper {
   }
 }
 
-function keyBindingsConfigKey(mode: string): string {
+function keyBindingsConfigKey(mode: RemapMode): KeyBindingsMapConfigKey {
   return `${mode}ModeKeyBindingsMap`;
 }
 

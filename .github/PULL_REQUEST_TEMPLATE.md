@@ -5,7 +5,7 @@ Please ensure your PR adheres to:
 
 - [ ] Commit messages has a short & issue references when necessary
 - [ ] Each commit does a logical chunk of work.
-- [ ] It builds and tests pass (e.g `gulp`)
+- [ ] It builds and tests pass (e.g. `pnpm build-dev` and `pnpm test-docker`)
 -->
 
 **What this PR does / why we need it**:

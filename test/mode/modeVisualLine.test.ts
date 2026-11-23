@@ -1,175 +1,16 @@
-import * as assert from 'assert';
-
-import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
-import { ModeHandler } from '../../src/mode/modeHandler';
 import { newTest } from '../testSimplifier';
-import { assertEqualLines, setupWorkspace } from './../testUtils';
+import { setupWorkspace } from './../testUtils';
 
 suite('Mode Visual Line', () => {
-  let modeHandler: ModeHandler;
+  setup(setupWorkspace);
 
-  setup(async () => {
-    await setupWorkspace();
-    modeHandler = (await getAndUpdateModeHandler())!;
-  });
-
-  test('can be activated', async () => {
-    await modeHandler.handleKeyEvent('V');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-
-    await modeHandler.handleKeyEvent('V');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
-
-  test('<count>V selects <count> lines', async () => {
-    await modeHandler.handleMultipleKeyEvents('iLine 1\nLine 2\nLine 3\nLine 4\nLine 5'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g']);
-
-    await modeHandler.handleMultipleKeyEvents(['j', '3', 'V']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-    assert.strictEqual(modeHandler.vimState.cursorStartPosition.line, 1);
-    assert.strictEqual(modeHandler.vimState.cursorStopPosition.line, 3);
-  });
-
-  test('Can handle w', async () => {
-    await modeHandler.handleMultipleKeyEvents('itest test test\ntest\n'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w']);
-
-    const sel = modeHandler.vimState.editor.selection;
-    assert.strictEqual(sel.start.character, 0);
-    assert.strictEqual(sel.start.line, 0);
-
-    // The input cursor comes BEFORE the block cursor. Try it out, this
-    // is how Vim works.
-    assert.strictEqual(sel.end.character, 6);
-    assert.strictEqual(sel.end.line, 0);
-  });
-
-  test('Can handle wd', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'd']);
-
-    assertEqualLines(['wo three']);
-  });
-
-  test('Can handle x', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'x']);
-
-    assertEqualLines(['ne two three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
-
-  test('Can handle x across a selection', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'x']);
-
-    assertEqualLines(['wo three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-  });
-
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three foar'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree foar']);
-  });
-
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree']);
-  });
-
-  test('Can do vwd multiple times', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three four'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-    ]);
-
-    assertEqualLines(['our']);
-  });
-
-  test('handles case where we go from selecting on right side to selecting on left side', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l',
-      'v',
-      'w',
-      'b',
-      'b',
-      'd',
-    ]);
-
-    assertEqualLines(['wo three']);
-  });
-
-  test('handles case where we delete over a newline', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two\n\nthree four'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'k', 'k', 'v', '}', 'd']);
-
-    assertEqualLines(['three four']);
-  });
-
-  test('handles change operator', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
-
-    assertEqualLines(['wo three']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
-  });
-
-  suite("Vim's EOL handling is weird", () => {
-    test('delete through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'g', 'g', 'v', 'l', 'l', 'l', 'd']);
-
-      assertEqualLines(['two']);
-    });
-
-    test('join 2 lines by deleting through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'l', 'v', 'l', 'l', 'd']);
-
-      assertEqualLines(['otwo']);
-    });
-
-    test("d$ doesn't delete whole line", async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'd', '$']);
-
-      assertEqualLines(['', 'two']);
-    });
-
-    test('vd$ does delete whole line', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', '$', 'd']);
-
-      assertEqualLines(['two']);
-    });
+  newTest({
+    title: '<count>V selects <count> lines',
+    start: ['|Line 1', 'Line 2', 'Line 3', 'Line 4', 'Line 5'],
+    keysPressed: 'j3V',
+    end: ['Line 1', '[Line 2', 'Line 3', '|L]ine 4', 'Line 5'],
+    endMode: Mode.VisualLine,
   });
 
   suite('Arrow keys work perfectly in Visual Line Mode', () => {
@@ -248,7 +89,6 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vr1',
       end: ['|11111111111111111111111', 'one two three four five'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -256,7 +96,6 @@ suite('Mode Visual Line', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'Vjr1',
       end: ['|11111111111111111111111', '11111111111111111111111'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -264,7 +103,6 @@ suite('Mode Visual Line', () => {
       start: ['test', 'test', 'test', '|test', 'test'],
       keysPressed: 'Vkkr1',
       end: ['test', '|1111', '1111', '1111', 'test'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -289,23 +127,19 @@ suite('Mode Visual Line', () => {
       return;
     }
 
-    test('<C-c> copies and sets mode to normal', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'Y', 'p']);
-
-      assertEqualLines(['one two three', 'one two three']);
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'H', 'V', '<C-c>']);
-
-      // ensuring we're back in normal
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-
-      // test copy by pasting back from clipboard
-      await modeHandler.handleMultipleKeyEvents(['H', '"', '+', 'P']);
-
-      // TODO: should be assertEqualLines(['one two three', 'one two three', 'one two three']);
-      // unfortunately it is
-      assertEqualLines(['one two threeone two three', 'one two three']);
+    newTest({
+      title: '<C-c> copies and sets mode to normal',
+      start: ['|one two three'],
+      steps: [
+        { keysPressed: 'Yp', end: ['one two three', '|one two three'] },
+        { keysPressed: 'HV<C-c>', end: ['|one two three', 'one two three'] },
+        {
+          // TODO: Should paste a line: ['one two three', 'one two three', 'one two three']
+          title: 'Paste from the clipboard',
+          keysPressed: 'H"+P',
+          end: ['one two thre|eone two three', 'one two three'],
+        },
+      ],
     });
   });
 
@@ -366,78 +200,29 @@ suite('Mode Visual Line', () => {
       end: ['foo', 'bar', 'fun', '|baz'],
     });
 
-    test('gv selects the last pasted text (which is shorter than original)', async () => {
-      await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split(''),
-      );
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        '2ggyy'.split(''), // yank the second line
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split(''), // replace the first line
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'with me' at the first line
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'with me'.length);
-      assert.strictEqual(selection.end.line, 0);
+    // TODO: In these `gv` tests, Vim would put the cursor on the last character, not the line break
+    newTest({
+      title: 'gv selects the last pasted text (which is shorter than original)',
+      start: ['replace this', 'with me', 'or with me longer than the targe|t'],
+      keysPressed: '2ggyy' + 'ggVp' + 'gv',
+      end: ['[with me|', ']with me', 'or with me longer than the target'],
+      endMode: Mode.VisualLine,
     });
 
-    test('gv selects the last pasted text (which is longer than original)', async () => {
-      await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split(''),
-      );
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        'yy'.split(''), // yank the last line
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split(''), // replace the first line
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      assertEqualLines([
-        'or with me longer than the target',
-        'with me',
-        'or with me longer than the target',
-      ]);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'or with me longer than the target' at the first line
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'or with me longer than the target'.length);
-      assert.strictEqual(selection.end.line, 0);
+    newTest({
+      title: 'gv selects the last pasted text (which is longer than original)',
+      start: ['replace this', 'with me', 'or with me longer than the targe|t'],
+      keysPressed: 'yy' + 'ggVp' + 'gv',
+      end: ['[or with me longer than the target|', ']with me', 'or with me longer than the target'],
+      endMode: Mode.VisualLine,
     });
 
-    test('gv selects the last pasted text (multiline)', async () => {
-      await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        'Vky'.split(''), // yank 'foo\nbar\n'
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggVp'.split(''), // replace the first line
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      assertEqualLines(['foo', 'bar', 'foo', 'bar']);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'foo\nbar\n'
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 3);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gv selects the last pasted text (multiline)',
+      start: ['replace this', 'foo', 'ba|r'],
+      keysPressed: 'Vky' + 'ggVp' + 'gv',
+      end: ['[foo', 'bar|', ']foo', 'bar'],
+      endMode: Mode.VisualLine,
     });
   });
 
@@ -447,6 +232,7 @@ suite('Mode Visual Line', () => {
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'VkkI_',
       end: ['111', '_|222', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -454,6 +240,7 @@ suite('Mode Visual Line', () => {
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'VjjI_',
       end: ['111', '_|222', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -461,6 +248,7 @@ suite('Mode Visual Line', () => {
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'VjjI_',
       end: ['111', '_|222', ' ', '_|444', '555'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -470,6 +258,7 @@ suite('Mode Visual Line', () => {
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'VkkA_',
       end: ['111', '222_|', '333_|', '444_|', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -477,6 +266,7 @@ suite('Mode Visual Line', () => {
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'VjjA_',
       end: ['111', '222_|', '333_|', '444_|', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -484,6 +274,7 @@ suite('Mode Visual Line', () => {
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'VjjA_',
       end: ['111', '222_|', ' ', '444_|', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -514,7 +305,6 @@ suite('Mode Visual Line', () => {
       start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
       keysPressed: 'jV~jjVg~',
       end: ['OnE', 'TwO', 'ThReE', '|FoUr'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -522,7 +312,6 @@ suite('Mode Visual Line', () => {
       start: ['|OnE', 'tWo', 'ThReE', 'fOuR'],
       keysPressed: 'Vj~jjVjg~',
       end: ['oNe', 'TwO', '|tHrEe', 'FoUr'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -531,7 +320,6 @@ suite('Mode Visual Line', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'VjjJ',
     end: ['one two| three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -539,7 +327,6 @@ suite('Mode Visual Line', () => {
     start: ['one', '|two', 'three', 'four'],
     keysPressed: 'VlgJ',
     end: ['one', 'two|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -547,7 +334,6 @@ suite('Mode Visual Line', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'VjjgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -555,7 +341,6 @@ suite('Mode Visual Line', () => {
     start: ['o|ne  ', 'two', '  three', 'four'],
     keysPressed: 'VjjgJ',
     end: ['one  two|  three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -563,7 +348,6 @@ suite('Mode Visual Line', () => {
     start: ['one', 'two', 't|hree', 'four'],
     keysPressed: 'VkkgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   suite('C, R, and S', () => {
@@ -587,24 +371,13 @@ suite('Mode Visual Line', () => {
   });
 
   suite('Vi{ should not select the ending brace, if it is on a new line.', () => {
-    test('Vi{ selection content test', async () => {
-      // Insert the full block using insert mode simulation
-      await modeHandler.handleMultipleKeyEvents('i{\nsome text on new line\n}'.split(''));
-
-      // Back to normal mode
-      await modeHandler.handleKeyEvent('<Esc>');
-
-      // Move cursor to start of "some text..."
-      await modeHandler.handleMultipleKeyEvents(['g', 'g', 'j', 'l', 'l', 'l', 'l']);
-
-      // Simulate Vi{
-      await modeHandler.handleMultipleKeyEvents(['V', 'i', '{']);
-
-      const doc = modeHandler.vimState.editor.document;
-      const sel = modeHandler.vimState.editor.selection;
-      const selectedText = doc.getText(sel);
-
-      assert.strictEqual(selectedText, '  some text on new line');
+    // TODO: Vim would put the cursor on the last character, not the line break
+    newTest({
+      title: 'Vi{ selection content test',
+      start: ['{', '  so|me text on new line', '}'],
+      keysPressed: 'Vi{',
+      end: ['{', '[  some text on new line|', ']}'],
+      endMode: Mode.VisualLine,
     });
   });
 });

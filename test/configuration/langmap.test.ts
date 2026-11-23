@@ -89,7 +89,6 @@ suite('Langmap', () => {
     start: ['one', 't|wo', 'three'],
     keysPressed: '<C-v>' + 'h' + 'e',
     end: ['one', 't|o', 'tree'],
-    endMode: Mode.Normal,
   });
 
   newTest({

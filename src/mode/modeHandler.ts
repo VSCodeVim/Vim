@@ -27,6 +27,7 @@ import { Dot, isTextTransformation } from '../transformations/transformations';
 import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
+import { timers } from '../util/timers';
 import { scrollView } from '../util/util';
 import { VSCodeContext } from '../util/vscodeContext';
 import { BaseAction, BaseCommand, KeypressState, getRelevantAction } from './../actions/base';
@@ -88,6 +89,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
    * Was the previous mouse click past EOL
    */
   private lastClickWasPastEol: boolean = false;
+
+  /** Whether a word highlight trigger is on its way to VS Code, and whether to send another after it */
+  private readonly wordHighlight = { sending: false, again: false };
 
   private _currentMode!: Mode;
   private get currentMode(): Mode {
@@ -451,7 +455,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       this.vimState.recordedState.bufferedKeysTimeoutObj
     ) {
       // Handle the bufferedKeys or append the new key to the previously bufferedKeys
-      clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
+      timers.clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
       this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
       this.vimState.recordedState.commandList = [...this.vimState.recordedState.bufferedKeys];
       this.vimState.recordedState.bufferedKeys = [];
@@ -686,17 +690,22 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           actionToRecord = undefined;
         } else {
           // Push document content change to the stack
+          const modeData = this.vimState.modeData;
           lastAction.addChanges(
-            this.vimState.historyTracker.currentContentChanges,
+            modeData.mode === Mode.Insert ? modeData.contentChanges : [],
             this.vimState.cursorStopPosition,
           );
-          this.vimState.historyTracker.currentContentChanges = [];
+          if (modeData.mode === Mode.Insert) {
+            modeData.contentChanges = [];
+          }
           recordedState.actionsRun.push(action);
         }
       } else {
         if (actionCanBeMergedWithDocumentChange) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
-          this.vimState.historyTracker.currentContentChanges = [];
+          if (this.vimState.modeData.mode === Mode.Insert) {
+            this.vimState.modeData.contentChanges = [];
+          }
           const newContentChange = new DocumentContentChangeAction(
             this.vimState.cursorStopPosition,
           );
@@ -1037,16 +1046,14 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       }
     }
 
-    if (cursorsToRemove.length > 0) {
-      // Remove the cursors that no longer exist. Remove from the end to the start
-      // so that the index values don't change.
-      for (let i = cursorsToRemove.length - 1; i >= 0; i--) {
-        const idx = cursorsToRemove[i];
-        if (idx !== 0) {
-          // We should never remove the main selection! This shouldn't happen, but just
-          // in case it does, lets protect against it. Remember kids, always use protection!
-          this.vimState.cursors.splice(idx, 1);
-        }
+    // Remove the cursors that no longer exist. Remove from the end to the start
+    // so that the index values don't change.
+    for (let i = cursorsToRemove.length - 1; i >= 0; i--) {
+      const idx = cursorsToRemove[i];
+      if (idx !== 0) {
+        // We should never remove the main selection! This shouldn't happen, but just
+        // in case it does, lets protect against it. Remember kids, always use protection!
+        this.vimState.cursors.splice(idx, 1);
       }
     }
 
@@ -1184,11 +1191,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         }
       }
     }
-    let combinedActions: IBaseAction[] = [];
-    for (let i = 0; i < transformation.count; i++) {
-      combinedActions = combinedActions.concat(actions);
-    }
-    recordedState.actionsRun = combinedActions;
+    recordedState.actionsRun = Array.from({ length: transformation.count }, () => actions).flat();
     this.vimState.dotCommandStatus = DotCommandStatus.Finished;
   }
 
@@ -1283,9 +1286,10 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // Draw selection (or cursor)
     if (args.drawSelection) {
       let selectionMode: Mode = this.vimState.currentMode;
-      if (this.vimState.modeData.mode === Mode.SearchInProgressMode) {
-        selectionMode = this.vimState.modeData.commandLine.previousMode;
-      } else if (this.vimState.modeData.mode === Mode.CommandlineInProgress) {
+      if (
+        this.vimState.modeData.mode === Mode.SearchInProgressMode ||
+        this.vimState.modeData.mode === Mode.CommandlineInProgress
+      ) {
         selectionMode = this.vimState.modeData.commandLine.previousMode;
       } else if (this.vimState.modeData.mode === Mode.SurroundInputMode) {
         selectionMode = this.vimState.surround!.previousMode;
@@ -1444,7 +1448,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
         if (currentMatch) {
           this.vimState.editor.revealRange(currentMatch.range, revealType);
-        } else if (this.vimState.modeData.mode === Mode.SearchInProgressMode) {
+        } else {
           const offset =
             this.vimState.editor.visibleRanges[0].start.line -
             this.vimState.modeData.firstVisibleLineBeforeSearch;
@@ -1559,29 +1563,26 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 
     // OperatorPendingMode half block cursor
     const opCursorDecorations: vscode.DecorationOptions[] = [];
-    const opCursorCharDecorations: vscode.DecorationOptions[] = [];
     if (this.vimState.currentModeIncludingPseudoModes === Mode.OperatorPendingMode) {
       for (const { stop: cursorStop } of this.vimState.cursors) {
         let text = TextEditor.getCharAt(this.vimState.document, cursorStop);
         // the ' ' (<space>) needs to be changed to '&nbsp;'
         text = text === ' ' ? '\u00a0' : text;
-        const decorationOptions = {
+        opCursorDecorations.push({
           range: new vscode.Range(cursorStop, cursorStop.getRight()),
           renderOptions: {
             before: {
               contentText: text,
             },
           },
-        };
-        opCursorDecorations.push(decorationOptions);
-        opCursorCharDecorations.push(decorationOptions);
+        });
       }
     }
 
     this.vimState.editor.setDecorations(decoration.operatorPendingModeCursor, opCursorDecorations);
     this.vimState.editor.setDecorations(
       decoration.operatorPendingModeCursorChar,
-      opCursorCharDecorations,
+      opCursorDecorations,
     );
 
     for (const markDecoration of decoration.allMarkDecorations()) {
@@ -1646,17 +1647,43 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     // NOTE: this is not being awaited to save the 15-20ms block - I think this is fine
     void VSCodeContext.set('vim.mode', Mode[this.vimState.currentMode]);
 
-    // Tell VSCode that the cursor position changed, so it updates its highlights for `editor.occurrencesHighlight`.
-    const range = new vscode.Range(
-      this.vimState.cursorStartPosition,
-      this.vimState.cursorStopPosition,
-    );
-    if (!/\s+/.test(this.vimState.document.getText(range))) {
-      void vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+    this.triggerWordHighlight();
+  }
+
+  /**
+   * Tells VS Code that the cursor moved, so it updates its highlights for
+   * `editor.occurrencesHighlight`. They only depend on where the cursor ends up, so while one trigger
+   * is on its way, later ones are combined into one, sent after it.
+   */
+  private triggerWordHighlight(): void {
+    if (this.wordHighlight.sending) {
+      this.wordHighlight.again = true;
+    } else {
+      void this.sendWordHighlights();
+    }
+  }
+
+  /** Sends word highlight triggers until one is sent after the latest cursor move */
+  private async sendWordHighlights(): Promise<void> {
+    this.wordHighlight.sending = true;
+    try {
+      do {
+        this.wordHighlight.again = false;
+        const { cursorStartPosition, cursorStopPosition, document } = this.vimState;
+        const range = new vscode.Range(cursorStartPosition, cursorStopPosition);
+        if (!/\s+/.test(document.getText(range))) {
+          await vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+        }
+      } while (this.wordHighlight.again);
+    } finally {
+      this.wordHighlight.sending = false;
     }
   }
 
   dispose() {
+    // Don't let a pending remap timeout handle keys after this ModeHandler is gone
+    timers.clearTimeout(this.vimState.recordedState.bufferedKeysTimeoutObj);
+    this.vimState.recordedState.bufferedKeysTimeoutObj = undefined;
     for (const d of this.disposables) {
       d.dispose();
     }
@@ -1666,29 +1693,23 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
 function getCursorType(vimState: VimState, mode: Mode): VSCodeVimCursorType {
   switch (mode) {
     case Mode.Normal:
+    case Mode.EasyMotionMode:
+    case Mode.EasyMotionInputMode:
       return VSCodeVimCursorType.Block;
     case Mode.Insert:
       return VSCodeVimCursorType.Native;
     case Mode.Visual:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualBlock:
-      return VSCodeVimCursorType.TextDecoration;
     case Mode.VisualLine:
       return VSCodeVimCursorType.TextDecoration;
     case Mode.SearchInProgressMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.CommandlineInProgress:
+    case Mode.OperatorPendingMode:
       return VSCodeVimCursorType.UnderlineThin;
     case Mode.Replace:
       return VSCodeVimCursorType.Underline;
-    case Mode.EasyMotionMode:
-      return VSCodeVimCursorType.Block;
-    case Mode.EasyMotionInputMode:
-      return VSCodeVimCursorType.Block;
     case Mode.SurroundInputMode:
       return getCursorType(vimState, vimState.surround!.previousMode);
-    case Mode.OperatorPendingMode:
-      return VSCodeVimCursorType.UnderlineThin;
     case Mode.Disabled:
     default:
       return VSCodeVimCursorType.Line;

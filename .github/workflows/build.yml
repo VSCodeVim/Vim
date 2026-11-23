@@ -4,45 +4,120 @@ on:
   push:
     branches:
       - 'master'
+  pull_request:
+
+# Cancel superseded runs on the same PR, but let every push to master finish
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout VSCodeVim
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Needed for prettier-plugin-organize-imports
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      - name: Prettier
+        run: pnpm prettier:check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout VSCodeVim
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      - name: Lint
+        run: pnpm lint
+
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # PRs only test on Linux; Windows runs after merging to master. Branch protection requires
+        # the `build (ubuntu-latest)` check, so keep the job and matrix names stable.
+        os: ${{ github.event_name == 'push' && fromJSON('["ubuntu-latest", "windows-latest"]') || fromJSON('["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout VSCodeVim
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: yarn
+          node-version: 24
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Prettier
-        if: matrix.os != 'windows-latest'
-        run: yarn prettier:check
-
-      - name: Lint
-        if: matrix.os != 'windows-latest'
-        run: yarn lint
+        run: pnpm install --frozen-lockfile
+        env:
+          # Chromium is only for the web extension tests, which run on Linux
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: ${{ matrix.os == 'windows-latest' && '1' || '' }}
 
       - name: Build
-        run: yarn build
+        run: pnpm build
 
+      # @vscode/test-electron downloads the latest stable VS Code unless it's already in .vscode-test
+      - name: Get latest VS Code version
+        id: vscode-version
+        continue-on-error: true
+        shell: bash
+        run: |
+          version=$(curl -sf 'https://update.code.visualstudio.com/api/releases/stable?released=true' | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8"))[0]')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Cache VS Code
+        if: steps.vscode-version.outputs.version
+        uses: actions/cache@v6
+        with:
+          path: .vscode-test/vscode-*
+          key: vscode-${{ runner.os }}-${{ steps.vscode-version.outputs.version }}
+
+      # The Build step already type-checked, so both test steps bundle the tests directly rather than
+      # with `pnpm build-test`, which would run tsc again
       - name: Test on ubuntu-latest
         if: matrix.os != 'windows-latest'
         run: |
-          yarn build-test
-          xvfb-run -a yarn test
+          node esbuild.mts --test
+          xvfb-run -a pnpm test
+
+      - name: Test web extension
+        if: matrix.os != 'windows-latest'
+        run: pnpm test-web
 
       - name: Test on windows-latest
         if: matrix.os == 'windows-latest'
         run: |
-          yarn build-test
-          yarn test
+          node esbuild.mts --test
+          pnpm test

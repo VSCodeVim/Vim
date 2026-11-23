@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as os from 'os';
 import { basename, join, sep } from 'path';
 import * as vscode from 'vscode';
 import { getAndUpdateModeHandler } from '../../extension';
@@ -233,10 +232,11 @@ suite('cmd_line tabComplete', () => {
   });
 
   test('command line file tab completion with space in file path', async () => {
-    // Create a random file in temp folder with a space in the file name
+    // Create a random file with a space in the file name, next to the active document so that
+    // completing a bare relative name finds it
     const prefix = t.rndName();
     const spacedFilePath = await t.createFile({
-      fsPath: join(os.tmpdir(), prefix + 'vscode-vim completion-test'),
+      fsPath: join(t.getTestTempDir(), prefix + 'vscode-vim completion-test'),
     });
     try {
       // Get the base name of the path which is '<prefix>vscode-vim completion-test'

@@ -3,9 +3,8 @@ import * as assert from 'assert';
 import { getAndUpdateModeHandler } from '../../extension';
 import { Mode } from '../../src/mode/mode';
 import { ModeHandler } from '../../src/mode/modeHandler';
-import { Configuration } from '../testConfiguration';
 import { newTest, newTestSkip } from '../testSimplifier';
-import { assertEqualLines, reloadConfiguration, setupWorkspace } from './../testUtils';
+import { setConfig, setupWorkspace } from './../testUtils';
 
 suite('Mode Visual', () => {
   let modeHandler: ModeHandler;
@@ -13,14 +12,6 @@ suite('Mode Visual', () => {
   setup(async () => {
     await setupWorkspace();
     modeHandler = (await getAndUpdateModeHandler())!;
-  });
-
-  test('can be activated', async () => {
-    await modeHandler.handleKeyEvent('v');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-    await modeHandler.handleKeyEvent('v');
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
   });
 
   newTest({
@@ -37,102 +28,69 @@ suite('Mode Visual', () => {
     end: ['a|12345'],
   });
 
-  test('Can handle w', async () => {
-    await modeHandler.handleMultipleKeyEvents('itest test test\ntest\n'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', 'w']);
-
-    const sel = modeHandler.vimState.editor.selection;
-    assert.strictEqual(sel.start.character, 0);
-    assert.strictEqual(sel.start.line, 0);
-
-    // The input cursor comes BEFORE the block cursor. Try it out, this
-    // is how Vim works.
-    assert.strictEqual(sel.end.character, 6);
-    assert.strictEqual(sel.end.line, 0);
+  newTest({
+    title: 'Can handle w',
+    start: ['|test test test', 'test', ''],
+    keysPressed: 'vw',
+    end: ['[test |t]est test', 'test', ''],
+    endMode: Mode.Visual,
   });
 
-  test('Can handle wd', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'd']);
-
-    assertEqualLines(['wo three']);
+  newTest({
+    title: 'Can handle wd',
+    start: ['|one two three'],
+    keysPressed: 'vwd',
+    end: ['|wo three'],
   });
 
-  test('Can handle x', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'x']);
-
-    assertEqualLines(['ne two three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+  newTest({
+    title: 'Can handle x',
+    start: ['|one two three'],
+    keysPressed: 'vx',
+    end: ['|ne two three'],
   });
 
-  test('Can handle x across a selection', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'x']);
-
-    assertEqualLines(['wo three']);
-
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
+  newTest({
+    title: 'Can handle x across a selection',
+    start: ['|one two three'],
+    keysPressed: 'vwx',
+    end: ['|wo three'],
   });
 
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three foar'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree foar']);
+  newTest({
+    title: 'Can do vwd in middle of sentence',
+    start: ['one |two three foar'],
+    keysPressed: 'vwd',
+    end: ['one |hree foar'],
   });
 
-  test('Can do vwd in middle of sentence', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'l', 'l', 'l', 'l', 'v', 'w', 'd']);
-
-    assertEqualLines(['one hree']);
+  newTest({
+    title: 'Can do vwd in middle of sentence (last word)',
+    start: ['one |two three'],
+    keysPressed: 'vwd',
+    end: ['one |hree'],
   });
 
-  test('Can do vwd multiple times', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three four'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-      'v',
-      'w',
-      'd',
-    ]);
-
-    assertEqualLines(['our']);
+  newTest({
+    title: 'Can do vwd multiple times',
+    start: ['|one two three four'],
+    keysPressed: 'vwd' + 'vwd' + 'vwd',
+    end: ['|our'],
   });
 
-  test('handles case where we go from selecting on right side to selecting on left side', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents([
-      '<Esc>',
-      '^',
-      'l',
-      'l',
-      'l',
-      'l',
-      'v',
-      'w',
-      'b',
-      'b',
-      'd',
-    ]);
-
-    assertEqualLines(['wo three']);
+  newTest({
+    title: 'handles case where we go from selecting on right side to selecting on left side',
+    start: ['one |two three'],
+    keysPressed: 'vwbbd',
+    end: ['|wo three'],
   });
 
   newTest({
     title: 'Can handle H key',
     start: ['1', '2', '|3', '4', '5'],
     keysPressed: 'vH',
-    end: ['|1', '2', '3', '4', '5'],
+    end: ['[|1', '2', '3]', '4', '5'],
+    endMode: Mode.Visual,
   });
 
   newTest({
@@ -142,52 +100,48 @@ suite('Mode Visual', () => {
     end: ['blah', 'duh', '|r', 'hur'],
   });
 
-  test('handles case where we delete over a newline', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two\n\nthree four'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '0', 'k', 'k', 'v', '}', 'd']);
-
-    assertEqualLines(['three four']);
+  newTest({
+    title: 'handles case where we delete over a newline',
+    start: ['|one two', '', 'three four'],
+    keysPressed: 'v}d',
+    end: ['|three four'],
   });
 
-  test('handles change operator', async () => {
-    await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-    await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'w', 'c']);
-
-    assertEqualLines(['wo three']);
-    assert.strictEqual(modeHandler.vimState.currentMode, Mode.Insert);
+  newTest({
+    title: 'handles change operator',
+    start: ['|one two three'],
+    keysPressed: 'vwc',
+    end: ['|wo three'],
+    endMode: Mode.Insert,
   });
 
   suite("Vim's EOL handling is weird", () => {
-    test('delete through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'g', 'g', 'v', 'l', 'l', 'l', 'd']);
-
-      assertEqualLines(['two']);
+    newTest({
+      title: 'delete through eol',
+      start: ['|one', 'two'],
+      keysPressed: 'vllld',
+      end: ['|two'],
     });
 
-    test('join 2 lines by deleting through eol', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'l', 'v', 'l', 'l', 'd']);
-
-      assertEqualLines(['otwo']);
+    newTest({
+      title: 'join 2 lines by deleting through eol',
+      start: ['o|ne', 'two'],
+      keysPressed: 'vlld',
+      end: ['o|two'],
     });
 
-    test("d$ doesn't delete whole line", async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'd', '$']);
-
-      assertEqualLines(['', 'two']);
+    newTest({
+      title: "d$ doesn't delete whole line",
+      start: ['|one', 'two'],
+      keysPressed: 'd$',
+      end: ['|', 'two'],
     });
 
-    test('vd$ does delete whole line', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione\ntwo'.split(''));
-
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', 'g', 'g', 'v', '$', 'd']);
-
-      assertEqualLines(['two']);
+    newTest({
+      title: 'vd$ does delete whole line',
+      start: ['|one', 'two'],
+      keysPressed: 'v$d',
+      end: ['|two'],
     });
 
     newTest({
@@ -271,7 +225,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -279,7 +232,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vawd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -287,7 +239,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -295,7 +246,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3awd',
       end: ['|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -303,7 +253,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -312,7 +261,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |.  six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -322,7 +270,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -330,7 +277,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -338,7 +284,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -346,7 +291,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -354,7 +298,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -364,7 +307,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -372,7 +314,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -380,7 +321,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -388,7 +328,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -396,7 +335,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -406,7 +344,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -414,7 +351,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vawd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -422,7 +358,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vawd',
       end: ['one   two|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -430,7 +365,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3awd',
       end: ['|,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -438,7 +372,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -447,7 +380,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2awd',
       end: ['one   two   three,   |.  six'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -457,7 +389,6 @@ suite('Mode Visual', () => {
       start: ['one   two |  three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two|   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -465,7 +396,6 @@ suite('Mode Visual', () => {
       start: ['one   tw|o   three,   four  '],
       keysPressed: 'vaWd',
       end: ['one   |three,   four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -473,7 +403,6 @@ suite('Mode Visual', () => {
       start: ['one   two   th|ree,   four  '],
       keysPressed: 'vaWd',
       end: ['one   two   |four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -481,7 +410,6 @@ suite('Mode Visual', () => {
       start: ['on|e   two   three,   four  '],
       keysPressed: 'v3aWd',
       end: ['|four  '],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -489,7 +417,6 @@ suite('Mode Visual', () => {
       start: ['one   two   three,   fo|ur  ', 'five.  six'],
       keysPressed: 'v2aWd',
       end: ['one   two   three,   |six'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -497,7 +424,6 @@ suite('Mode Visual', () => {
       start: ['one', '|two'],
       keysPressed: 'vwYP',
       end: ['one', '|two', 'two'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -507,7 +433,6 @@ suite('Mode Visual', () => {
       start: ["That's my sec|ret, Captain. I'm always angry."],
       keysPressed: 'vlasd',
       end: ["That's my sec|I'm always angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -515,7 +440,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I'm a|lways angry."],
       keysPressed: 'vhasd',
       end: ["That's my secret, Captain.|ways angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -523,7 +447,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I|'m always angry."],
       keysPressed: 'vhhasd',
       end: ['|m always angry.'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -533,7 +456,6 @@ suite('Mode Visual', () => {
       start: ["That's my sec|ret, Captain. I'm always angry."],
       keysPressed: 'vlisd',
       end: ["That's my sec| I'm always angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -541,7 +463,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain. I'm a|lways angry."],
       keysPressed: 'vhisd',
       end: ["That's my secret, Captain. |ways angry."],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -549,7 +470,6 @@ suite('Mode Visual', () => {
       start: ["That's my secret, Captain.  |  I'm always angry."],
       keysPressed: 'vhisd',
       end: ["That's my secret, Captain.| I'm always angry."],
-      endMode: Mode.Normal,
     });
   });
 
@@ -584,7 +504,6 @@ suite('Mode Visual', () => {
         start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
         keysPressed: `di${buttonToPress}`,
         end: [`${start} one ${start} two ${start}|${end} four ${end} five ${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -592,7 +511,6 @@ suite('Mode Visual', () => {
         start: [`| ${start} one ${start} two ${start} three ${end} four ${end} five ${end}`],
         keysPressed: `di${buttonToPress}`,
         end: [` ${start}|${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -600,7 +518,6 @@ suite('Mode Visual', () => {
         start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
         keysPressed: `vi${buttonToPress}i${buttonToPress}i${buttonToPress}d`,
         end: [`${start}|${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -608,7 +525,6 @@ suite('Mode Visual', () => {
         start: [`${start} one ${start} two ${start} th|ree ${end} four ${end} five ${end}`],
         keysPressed: `d3i${buttonToPress}`,
         end: [`${start}|${end}`],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -616,7 +532,6 @@ suite('Mode Visual', () => {
         start: [start, 'one', start, 'two', start, 'th|ree', end, 'four', end, 'five', end],
         keysPressed: `d3i${buttonToPress}`,
         end: [start, `|${end}`],
-        endMode: Mode.Normal,
       });
     });
   });
@@ -627,7 +542,6 @@ suite('Mode Visual', () => {
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vitd',
       end: ['one <blink>|</blink> two'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -635,7 +549,6 @@ suite('Mode Visual', () => {
       start: ['|one <blink>hello</blink> two'],
       keysPressed: 'vitd',
       end: ['|ne <blink>hello</blink> two'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -644,7 +557,6 @@ suite('Mode Visual', () => {
       start: ['<div> one <p> t|wo </p> three </div>'],
       keysPressed: 'v3itd',
       end: ['<div>|</div>'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -652,7 +564,6 @@ suite('Mode Visual', () => {
       start: ['one <blink>he|llo</blink> two'],
       keysPressed: 'vatd',
       end: ['one | two'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -660,7 +571,6 @@ suite('Mode Visual', () => {
       start: ['|one <blink>hello</blink> two'],
       keysPressed: 'vatd',
       end: ['|ne <blink>hello</blink> two'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -669,7 +579,6 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'vatatd',
     end: ['one | four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -677,7 +586,6 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'vatatatatd',
     end: ['one | four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -685,7 +593,6 @@ suite('Mode Visual', () => {
     start: ['one <blank>two <blink>he|llo</blink> three</blank> four'],
     keysPressed: 'v4atd',
     end: ['one | four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -693,7 +600,6 @@ suite('Mode Visual', () => {
     start: ['<p>', '\t<p>', '\t|test', '\t</p>', '</p>', '', 'do not delete'],
     keysPressed: 'v8atd',
     end: ['|', '', 'do not delete'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -701,7 +607,6 @@ suite('Mode Visual', () => {
     start: ['one | two'],
     keysPressed: 'v4atd',
     end: ['one |two'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -709,7 +614,6 @@ suite('Mode Visual', () => {
     start: ['test(te|st)'],
     keysPressed: 'vi)d',
     end: ['test(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -717,7 +621,6 @@ suite('Mode Visual', () => {
     start: ['|test(test)'],
     keysPressed: 'vi)d',
     end: ['test(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -725,7 +628,6 @@ suite('Mode Visual', () => {
     start: ['|test(test)', 'test(test)'],
     keysPressed: 'vi)d',
     end: ['test(|)', 'test(test)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -733,7 +635,6 @@ suite('Mode Visual', () => {
     start: ['test(te(te|st)st)'],
     keysPressed: 'vi)i)d',
     end: ['test(|)'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -741,7 +642,6 @@ suite('Mode Visual', () => {
     start: ['test(te|st);'],
     keysPressed: 'va)d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -749,7 +649,6 @@ suite('Mode Visual', () => {
     start: ['|test(test);'],
     keysPressed: 'va)d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -757,7 +656,6 @@ suite('Mode Visual', () => {
     start: ['test(te(te|st)st);'],
     keysPressed: 'va)a)d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -765,7 +663,6 @@ suite('Mode Visual', () => {
     start: ['one | two'],
     keysPressed: 'v4a)d',
     end: ['one |two'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -773,7 +670,6 @@ suite('Mode Visual', () => {
     start: ['(', '\t(', '\t|', '\t)', ')', '', 'do not delete'],
     keysPressed: 'v8a)d',
     end: ['|', '', 'do not delete'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -781,7 +677,6 @@ suite('Mode Visual', () => {
     start: ['1|{', 'test', '}1'],
     keysPressed: 'va}d',
     end: ['1|1'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -789,7 +684,6 @@ suite('Mode Visual', () => {
     start: ['test{te{te|st}st};'],
     keysPressed: 'va}a}d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -797,7 +691,6 @@ suite('Mode Visual', () => {
     start: ['test(()=>{', '|', '});'],
     keysPressed: 'vi(d',
     end: ['test(|);'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -805,7 +698,6 @@ suite('Mode Visual', () => {
     start: ['{', '  te|st', '  {', '    test', '  }', '}'],
     keysPressed: 'vi{d',
     end: ['{', '|}'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -813,7 +705,6 @@ suite('Mode Visual', () => {
     start: ['{', '  t|est', ' }'],
     keysPressed: 'vi{d',
     end: ['{', '| }'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -821,7 +712,6 @@ suite('Mode Visual', () => {
     start: ['test[te[te|st]st];'],
     keysPressed: 'va]a]d',
     end: ['test|;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -829,7 +719,6 @@ suite('Mode Visual', () => {
     start: ['test <div><p>[[{{((|))}}]]</p></div> test;'],
     keysPressed: 'v8afd',
     end: ['test | test;'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -837,7 +726,6 @@ suite('Mode Visual', () => {
     start: ['<p>', '\t(', '\t|', '\t)', '</p>', '', 'do not delete'],
     keysPressed: 'v8afd',
     end: ['|', '', 'do not delete'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -845,7 +733,6 @@ suite('Mode Visual', () => {
     start: ['test (f|oo) "hi" test;'],
     keysPressed: 'vafd',
     end: ['test | "hi" test;'],
-    endMode: Mode.Normal,
   });
   suite('handles replace in visual mode', () => {
     newTest({
@@ -853,7 +740,6 @@ suite('Mode Visual', () => {
       start: ['one |two three four five'],
       keysPressed: 'vwwer1',
       end: ['one |11111111111111 five'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -861,7 +747,6 @@ suite('Mode Visual', () => {
       start: ['one |two three four five', 'one two three four five'],
       keysPressed: 'vjer1',
       end: ['one |1111111111111111111', '1111111 three four five'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -870,7 +755,6 @@ suite('Mode Visual', () => {
     start: ['|foobar'],
     keysPressed: 'v>.',
     end: ['    |foobar'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -878,7 +762,6 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'v_x',
     end: ['', '|t test', ''],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -886,7 +769,6 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'vg_x',
     end: ['', 'test t|e', ''],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -894,7 +776,6 @@ suite('Mode Visual', () => {
     start: ['te|st', 'test', 'test', 'test'],
     keysPressed: 'v3g_x',
     end: ['t|e', 'test'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -902,7 +783,6 @@ suite('Mode Visual', () => {
     start: ['', 'test te|st test', ''],
     keysPressed: 'v$x',
     end: ['', 'test t|e'],
-    endMode: Mode.Normal,
   });
 
   suite('`gv` restores previous visual selection', () => {
@@ -912,7 +792,6 @@ suite('Mode Visual', () => {
         start: ['one t|wo three'],
         keysPressed: 'v' + '<Esc>' + '0' + 'gv' + 'd',
         end: ['one t|o three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -920,7 +799,6 @@ suite('Mode Visual', () => {
         start: ['one |two three'],
         keysPressed: 've' + '<Esc>' + '0' + 'gv' + 'd',
         end: ['one | three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -928,7 +806,6 @@ suite('Mode Visual', () => {
         start: ['one tw|o three'],
         keysPressed: 'vb' + '<Esc>' + '0' + 'gv' + 'd',
         end: ['one | three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -936,7 +813,6 @@ suite('Mode Visual', () => {
         start: ['one', 't|wo', 'three'],
         keysPressed: 'v$' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', 't|three'],
-        endMode: Mode.Normal,
       });
     });
 
@@ -946,7 +822,6 @@ suite('Mode Visual', () => {
         start: ['one', '|two', 'three'],
         keysPressed: 'V' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', '|three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -954,7 +829,6 @@ suite('Mode Visual', () => {
         start: ['one', '|two', 'three', 'four', 'five'],
         keysPressed: 'Vjj' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', '|five'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -962,7 +836,6 @@ suite('Mode Visual', () => {
         start: ['one', 'two', 'three', '|four', 'five'],
         keysPressed: 'Vkk' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', '|five'],
-        endMode: Mode.Normal,
       });
     });
 
@@ -972,7 +845,6 @@ suite('Mode Visual', () => {
         start: ['one', 't|wo', 'three'],
         keysPressed: '<C-v>' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['one', 't|o', 'three'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -980,7 +852,6 @@ suite('Mode Visual', () => {
         start: ['abcde', 'b|cdea', 'cdeab', 'deabc', 'eabcd'],
         keysPressed: '<C-v>jjll' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['abcde', 'b|a', 'cb', 'dc', 'eabcd'],
-        endMode: Mode.Normal,
       });
 
       newTest({
@@ -988,7 +859,6 @@ suite('Mode Visual', () => {
         start: ['abcde', 'bcdea', 'cdeab', 'dea|bc', 'eabcd'],
         keysPressed: '<C-v>kkhh' + '<Esc>' + 'gg' + 'gv' + 'd',
         end: ['abcde', 'b|a', 'cb', 'dc', 'eabcd'],
-        endMode: Mode.Normal,
       });
     });
   });
@@ -999,7 +869,6 @@ suite('Mode Visual', () => {
       start: ['first line', 'test| line1', 'test line2', 'second line'],
       keysPressed: 'vjD',
       end: ['first line', '|second line'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1007,7 +876,6 @@ suite('Mode Visual', () => {
       start: ['first line', 'test| line1', 'second line'],
       keysPressed: 'vlllD',
       end: ['first line', '|second line'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1017,7 +885,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'vaid',
       end: ['|do_something_else()'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1025,7 +892,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    bar|', '    if baz:', '        foo = 3', 'do_something_else()'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|do_something_else()'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1033,7 +899,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    bar|', 'if foo > 3:', '    bar'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|if foo > 3:', '    bar'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1041,7 +906,6 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")', '|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'viid',
       end: ['if foo > 3:', '|do_something_else()'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1049,13 +913,12 @@ suite('Mode Visual', () => {
       start: ['if foo > 3:', '    log("foo is big")|', '    foo = 3', 'do_something_else()'],
       keysPressed: 'vaId',
       end: ['|'],
-      endMode: Mode.Normal,
     });
   });
 
   suite('visualstar', () => {
     setup(async () => {
-      await reloadConfiguration(new Configuration({ visualstar: true }));
+      await setConfig({ visualstar: true });
     });
 
     newTest({
@@ -1075,7 +938,6 @@ suite('Mode Visual', () => {
         'public modes = [ModeName.VisualBlock',
         '|public modes = [ModeName.VisualLine',
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1083,7 +945,6 @@ suite('Mode Visual', () => {
       start: ['one |two//three four', 'one two//three four'],
       keysPressed: 'vE*',
       end: ['one two//three four', 'one |two//three four'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1103,7 +964,6 @@ suite('Mode Visual', () => {
         'public modes = [ModeName.VisualBlock',
         'public modes = [ModeName.VisualLine',
       ],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1164,13 +1024,15 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjC',
       end: ['this is', '|', 'the world'],
+      endMode: Mode.Insert,
     });
 
     newTest({
-      title: 'normal selection',
+      title: 'selection ending with a line break',
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$C',
-      end: ['this is', '', '|the world'],
+      end: ['this is', '|', 'the world'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1180,13 +1042,15 @@ suite('Mode Visual', () => {
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vjR',
       end: ['this is', '|', 'the world'],
+      endMode: Mode.Insert,
     });
 
     newTest({
-      title: 'normal selection',
+      title: 'selection ending with a line break',
       start: ['this is', 'the| best', 'test i have seen in', 'the world'],
       keysPressed: 'vj$R',
-      end: ['this is', '', '|the world'],
+      end: ['this is', '|', 'the world'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1271,18 +1135,13 @@ suite('Mode Visual', () => {
       return;
     }
 
-    test('<C-c> copies and sets mode to normal', async () => {
-      await modeHandler.handleMultipleKeyEvents('ione two three'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', '^', 'v', 'e', '<C-c>']);
-
-      // ensuring we're back in normal
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-      assertEqualLines(['one two three']);
-
-      // test copy by pasting back
-      await modeHandler.handleMultipleKeyEvents(['^', '"', '+', 'P']);
-
-      assertEqualLines(['oneone two three']);
+    newTest({
+      title: '<C-c> copies and sets mode to normal',
+      start: ['|one two three'],
+      steps: [
+        { keysPressed: 've<C-c>', end: ['on|e two three'] },
+        { title: 'Paste from the clipboard', keysPressed: '^"+P', end: ['on|eone two three'] },
+      ],
     });
   });
 
@@ -1296,235 +1155,103 @@ suite('Mode Visual', () => {
   });
 
   suite('Transition between visual mode', () => {
-    test('vv will back to normal mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    });
-
-    test('vV will transit to visual line mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-    });
-
-    test('v<C-v> will transit to visual block mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-    });
-
-    test('Vv will transit to visual (char) mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-    });
-
-    test('VV will back to normal mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    });
-
-    test('V<C-v> will transit to visual block mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-    });
-
-    test('<C-v>v will transit to visual (char) mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-      await modeHandler.handleMultipleKeyEvents(['v']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-    });
-
-    test('<C-v>V will back to visual line mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-      await modeHandler.handleMultipleKeyEvents(['V']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualLine);
-    });
-
-    test('<C-v><C-v> will back to normal mode', async () => {
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.VisualBlock);
-      await modeHandler.handleMultipleKeyEvents(['<C-v>']);
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Normal);
-    });
+    const modes: Array<[string, Mode]> = [
+      ['v', Mode.Visual],
+      ['V', Mode.VisualLine],
+      ['<C-v>', Mode.VisualBlock],
+    ];
+    for (const [firstKey, firstMode] of modes) {
+      for (const [secondKey, secondMode] of modes) {
+        const endMode = firstMode === secondMode ? Mode.Normal : secondMode;
+        newTest({
+          title: `${firstKey}${secondKey} goes to ${Mode[endMode]} mode`,
+          start: ['a|bc'],
+          steps: [
+            { keysPressed: firstKey, end: ['a[|b]c'], endMode: firstMode },
+            {
+              keysPressed: secondKey,
+              end: endMode === Mode.Normal ? ['a|bc'] : ['a[|b]c'],
+              endMode,
+            },
+          ],
+        });
+      }
+    }
   });
 
   suite('replace text in characterwise visual-mode with characterwise register content', () => {
-    test('gv selects the last pasted text (which is shorter than original)', async () => {
-      await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split(''),
-      );
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        '2ggv$hy'.split(''), // yank the second line
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggv$hp'.split(''), // replace the first line
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      assertEqualLines(['with me', 'with me', 'or with me longer than the target']);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'with me' at the first line
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'with me'.length);
-      assert.strictEqual(selection.end.line, 0);
+    newTest({
+      title: 'gv selects the last pasted text (which is shorter than original)',
+      start: ['replace this', 'with me', 'or with me longer than the targe|t'],
+      keysPressed: '2ggv$hy' + 'ggv$hp' + 'gv',
+      end: ['[with m|e]', 'with me', 'or with me longer than the target'],
+      endMode: Mode.Visual,
     });
 
-    test('gv selects the last pasted text (which is longer than original)', async () => {
-      await modeHandler.handleMultipleKeyEvents(
-        'ireplace this\nwith me\nor with me longer than the target'.split(''),
-      );
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        'v0y'.split(''), // yank the last line
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggv$hp'.split(''), // replace the first line
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      assertEqualLines([
-        'or with me longer than the target',
-        'with me',
-        'or with me longer than the target',
-      ]);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'or with me longer than the target' at the first line
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'or with me longer than the target'.length);
-      assert.strictEqual(selection.end.line, 0);
+    newTest({
+      title: 'gv selects the last pasted text (which is longer than original)',
+      start: ['replace this', 'with me', 'or with me longer than the targe|t'],
+      keysPressed: 'v0y' + 'ggv$hp' + 'gv',
+      end: ['[or with me longer than the targe|t]', 'with me', 'or with me longer than the target'],
+      endMode: Mode.Visual,
     });
 
-    test('gv selects the last pasted text (multiline)', async () => {
-      await modeHandler.handleMultipleKeyEvents('ireplace this\nfoo\nbar'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>']);
-      await modeHandler.handleMultipleKeyEvents(
-        '2ggvjey'.split(''), // yank 'foo\nbar'
-      );
-      await modeHandler.handleMultipleKeyEvents(
-        'ggvep'.split(''), // replace 'replace'
-      );
-      await modeHandler.handleMultipleKeyEvents(['g', 'v']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-      assertEqualLines(['foo', 'bar this', 'foo', 'bar']);
-
-      const selection = modeHandler.vimState.editor.selection;
-      // ensuring selecting 'foo\nbar'
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 3);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gv selects the last pasted text (multiline)',
+      start: ['replace this', 'foo', 'ba|r'],
+      keysPressed: '2ggvjey' + 'ggvep' + 'gv',
+      end: ['[foo', 'ba|r] this', 'foo', 'bar'],
+      endMode: Mode.Visual,
     });
   });
 
   suite('can handle gn', () => {
-    test('gn selects the next match text', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('ggv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 0);
-      assert.strictEqual(selection.end.character, 'hello'.length);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the next match text',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + 'ggv' + 'gn',
+      end: ['[foo', 'hell|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the current word at |hello', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 0);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the current word at |hello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggv' + 'gn',
+      end: ['foo', '[hell|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the current word at h|ello', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2gglv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 1);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the current word at h|ello',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2gglv' + 'gn',
+      end: ['foo', 'h[ell|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the current word at hel|lo', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggehv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 3);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 1);
+    newTest({
+      title: 'gn selects the current word at hel|lo',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggehv' + 'gn',
+      end: ['foo', 'hel[l|o] world', 'hello', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the next word at hell|o', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggev'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 4);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 2);
+    newTest({
+      title: 'gn selects the next word at hell|o',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggev' + 'gn',
+      end: ['foo', 'hell[o world', 'hell|o]', 'hello'],
+      endMode: Mode.Visual,
     });
 
-    test('gn selects the next word at hello|', async () => {
-      await modeHandler.handleMultipleKeyEvents('ifoo\nhello world\nhello\nhello'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['<Esc>', ...'/hello\n'.split('')]);
-      await modeHandler.handleMultipleKeyEvents('2ggelv'.split(''));
-      await modeHandler.handleMultipleKeyEvents(['g', 'n']);
-
-      assert.strictEqual(modeHandler.vimState.currentMode, Mode.Visual);
-
-      const selection = modeHandler.vimState.editor.selection;
-      assert.strictEqual(selection.start.character, 5);
-      assert.strictEqual(selection.start.line, 1);
-      assert.strictEqual(selection.end.character, 5);
-      assert.strictEqual(selection.end.line, 2);
+    newTest({
+      title: 'gn selects the next word at hello|',
+      start: ['|foo', 'hello world', 'hello', 'hello'],
+      keysPressed: '/hello\n' + '2ggelv' + 'gn',
+      end: ['foo', 'hello[ world', 'hell|o]', 'hello'],
+      endMode: Mode.Visual,
     });
   });
 
@@ -1534,6 +1261,7 @@ suite('Mode Visual', () => {
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkI_',
       end: ['111', '2_|22', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1541,6 +1269,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjI_',
       end: ['111', '2_|22', '_|333', '_|444', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1548,6 +1277,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjI_',
       end: ['111', '2_|22', ' ', '_|444', '555'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1557,6 +1287,7 @@ suite('Mode Visual', () => {
       start: ['111', '222', '333', '4|44', '555'],
       keysPressed: 'vkkA_',
       end: ['111', '222_|', '333_|', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1564,6 +1295,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', '333', '444', '555'],
       keysPressed: 'vjjA_',
       end: ['111', '222_|', '333_|', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
 
     newTest({
@@ -1571,6 +1303,7 @@ suite('Mode Visual', () => {
       start: ['111', '2|22', ' ', '444', '555'],
       keysPressed: 'vjjA_',
       end: ['111', '222_|', ' ', '44_|4', '555'],
+      endMode: Mode.Insert,
     });
   });
 
@@ -1580,7 +1313,6 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'vUwwvgU',
       end: ['One two |Three'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1588,7 +1320,6 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'vllllUwwvlgU',
       end: ['ONE Two |THree'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1596,7 +1327,6 @@ suite('Mode Visual', () => {
       start: ['|one two three'],
       keysPressed: 'wvhhUwwvhhgU',
       end: ['onE Tw|O Three'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1604,7 +1334,6 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'vuwwvgu',
       end: ['oNE TWO |tHREE'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1612,7 +1341,6 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'vlllluwwvlgu',
       end: ['one tWO |thREE'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1620,7 +1348,6 @@ suite('Mode Visual', () => {
       start: ['|ONE TWO THREE'],
       keysPressed: 'wvhhuwwvhhgu',
       end: ['ONe tW|o tHREE'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1630,7 +1357,6 @@ suite('Mode Visual', () => {
       start: ['|one TWO three FOUR'],
       keysPressed: 'v~wvg~wv~wvg~',
       end: ['One tWO Three |fOUR'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1638,7 +1364,6 @@ suite('Mode Visual', () => {
       start: ['|OnE TwO tHrEe'],
       keysPressed: 'vllll~wwvlg~',
       end: ['oNe twO |ThrEe'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1647,7 +1372,6 @@ suite('Mode Visual', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'vjjJ',
     end: ['one two| three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1655,7 +1379,6 @@ suite('Mode Visual', () => {
     start: ['one', '|two', 'three', 'four'],
     keysPressed: 'vlgJ',
     end: ['one', 'two|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1663,7 +1386,6 @@ suite('Mode Visual', () => {
     start: ['o|ne', 'two', 'three', 'four'],
     keysPressed: 'vjjgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1671,7 +1393,6 @@ suite('Mode Visual', () => {
     start: ['o|ne  ', 'two', '  three', 'four'],
     keysPressed: 'vjjgJ',
     end: ['one  two|  three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1679,7 +1400,6 @@ suite('Mode Visual', () => {
     start: ['one', 'two', 't|hree', 'four'],
     keysPressed: 'vkkgJ',
     end: ['onetwo|three', 'four'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1687,7 +1407,6 @@ suite('Mode Visual', () => {
     start: ['|one', '', 'two', 'three'],
     keysPressed: 'vjj<Esc>',
     end: ['one', '', '|two', 'three'],
-    endMode: Mode.Normal,
   });
 
   newTest({
@@ -1695,7 +1414,6 @@ suite('Mode Visual', () => {
     start: ['|one', 'two', 'three'],
     keysPressed: 'vlj<Esc>',
     end: ['one', 't|wo', 'three'],
-    endMode: Mode.Normal,
   });
 
   suite('Can handle o', () => {
@@ -1704,7 +1422,6 @@ suite('Mode Visual', () => {
       start: ['ab', 'ab|c', 'abcd'],
       keysPressed: 'vkd',
       end: ['a|b', 'abcd'],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1713,7 +1430,6 @@ suite('Mode Visual', () => {
       start: ['ab', 'ab|c', 'abcd'],
       keysPressed: 'vkood',
       end: ['a|b', 'abcd'],
-      endMode: Mode.Normal,
     });
   });
 
@@ -1749,23 +1465,10 @@ suite('Mode Visual', () => {
         ],
         leader: ' ',
       },
-      start: [
-        `"vim.normalModeKeyBindingsNonRecursive": [`,
-        `  {`,
-        `    "be|fore": ["j"],`,
-        `    "after": ["g", "j"],`,
-        `  },`,
-        `]`,
-      ],
+      // No square brackets in this document, since they mark the selection in Visual mode
+      start: [`{`, `  "be|fore": "j",`, `  "after": "gj",`, `}`],
       keysPressed: ' aflh',
-      end: [
-        `"vim.normalModeKeyBindingsNonRecursive": [`,
-        `  {`,
-        `    "before|": ["j"],`,
-        `    "after": ["g", "j"],`,
-        `  },`,
-        `]`,
-      ],
+      end: [`{`, `  "[befor|e]": "j",`, `  "after": "gj",`, `}`],
       endMode: Mode.Visual,
     });
 
@@ -1803,7 +1506,6 @@ suite('Mode Visual', () => {
         `  },`,
         `]`,
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1840,7 +1542,6 @@ suite('Mode Visual', () => {
         `  },`,
         `]`,
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1878,7 +1579,6 @@ suite('Mode Visual', () => {
         `  },`,
         `]`,
       ],
-      endMode: Mode.Normal,
     });
 
     newTest({
@@ -1918,7 +1618,6 @@ suite('Mode Visual', () => {
         `  ],`,
         `}`,
       ],
-      endMode: Mode.Normal,
     });
   });
 });

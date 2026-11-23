@@ -32,8 +32,8 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
 1. Install prerequisites:
    - [Visual Studio Code](https://code.visualstudio.com/), latest stable or insiders
-   - [Node.js](https://nodejs.org/) v22.x or higher
-   - [Yarn](https://classic.yarnpkg.com/) v1.x
+   - [Node.js](https://nodejs.org/) v24.x or higher
+   - [pnpm](https://pnpm.io/installation) v12.x. With Corepack 0.36 or newer (`npm install -g corepack@latest`), `corepack enable` installs the version pinned in `package.json`. pnpm 10 and older Corepack versions can't run pnpm 12.
    - _Optional_: [Docker Community Edition](https://store.docker.com/search?type=edition&offering=community) 🐋
 
 2. Fork and clone repository:
@@ -47,15 +47,15 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
    ```bash
    # Install the dependencies
-   yarn install
+   pnpm install
 
    # Open in VS Code
    code .
 
    # Build with one of these...
-   yarn build-dev # Fast build for development
-   yarn build     # Slow build for release
-   yarn watch     # Fast build whenever a file changes
+   pnpm build-dev # Fast build for development
+   pnpm build     # Slow build for release
+   pnpm watch     # Fast build whenever a file changes
    ```
 
 4. Run extension using VS Code's "Run and Debug" menu
@@ -64,21 +64,32 @@ When submitting a PR, please fill out the template that is presented by GitHub w
 
    ```bash
    # If Docker is installed and running:
-   npx gulp test                 # Run tests inside Docker container
-   npx gulp test --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
+   pnpm test-docker                 # Run tests inside Docker container
+   pnpm test-docker --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
+   pnpm test-docker --crlf          # Run tests inside Docker container with CRLF line endings, as on Windows
+   pnpm test-docker --coverage      # Run tests inside Docker container and write a coverage report to coverage/
 
    # Otherwise, build and run the tests locally:
-   yarn build                    # Build
-   yarn build-test               # Build tests
-   yarn test                     # Test (must close all instances of VS Code)
+   pnpm build                       # Build
+   pnpm build-test                  # Build tests
+   pnpm test                        # Test (must close all instances of VS Code)
    ```
+
+   The web extension (`extensionWeb.ts`) has its own smoke tests in `test/web/`, which run the bundled extension in headless Chromium:
+
+   ```bash
+   pnpm build-dev                # Build
+   pnpm test-web                 # Run web extension smoke tests
+   ```
+
+   The Docker container installs dependencies and builds the tests itself, keeping them (and its VS Code download) in `vscodevim-*` Docker volumes rather than your checkout. To start from scratch, remove them with `docker volume rm $(docker volume ls -q --filter name=vscodevim-)`.
 
 6. Package and install extension:
 
    ```bash
    # Package extension into `vim-<MAJOR>.<MINOR>.<PATCH>.vsix`
    # (This can be opened and inspected like a .zip file)
-   yarn package
+   pnpm package
 
    # Install packaged extension to your local VS Code installation
    code --install-extension vim-<MAJOR>.<MINOR>.<PATCH>.vsix --force
@@ -126,11 +137,11 @@ Before you push a release, be sure to make sure the changelog is updated!
 To push a release:
 
 ```bash
-npx gulp release --semver [SEMVER]
+pnpm release [SEMVER]
 git push --follow-tags
 ```
 
-The above Gulp command will:
+The above command (a wrapper around `npm version`) will:
 
 1. Bump the package version based off the semver supplied. Supported values: patch, minor, major.
 2. Create a Git commit with the above changes.
@@ -142,7 +153,7 @@ In addition to building and testing the extension, when a tag is applied to the 
 
 ### VS Code Slowdown
 
-If you notice a slowdown and have ever run `yarn test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
+If you notice a slowdown and have ever run `pnpm test` in the past instead of running tests through VSCode, you might find a `.vscode-test/` folder, which VSCode is continually consuming CPU cycles to index. Long story short, you can speed up VSCode by:
 
 ```bash
 rm -rf .vscode-test/

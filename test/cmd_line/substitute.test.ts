@@ -1,6 +1,5 @@
-import { Configuration } from '../testConfiguration';
 import { newTest } from '../testSimplifier';
-import { reloadConfiguration, setupWorkspace } from './../testUtils';
+import { setConfig, setupWorkspace } from './../testUtils';
 
 function sub(
   pattern: string,
@@ -246,7 +245,7 @@ suite('Basic substitute', () => {
 
   suite('Effects of gdefault=true', () => {
     setup(async () => {
-      await reloadConfiguration(new Configuration({ gdefault: true }));
+      await setConfig({ gdefault: true });
     });
 
     newTest({
@@ -424,6 +423,20 @@ suite('Basic substitute', () => {
       start: ['|foo bar baz'],
       keysPressed: sub('ba', 't') + '&',
       end: ['|foo tr tz'],
+    });
+
+    newTest({
+      title: '\\o matches octal digits',
+      start: ['|0123456789'],
+      keysPressed: sub('\\o', 'x', { flags: 'g' }),
+      end: ['|xxxxxxxx89'],
+    });
+
+    newTest({
+      title: '\\O matches non-octal digits',
+      start: ['|0123456789'],
+      keysPressed: sub('\\O', 'x', { flags: 'g' }),
+      end: ['|01234567xx'],
     });
 
     suite('Change case', () => {

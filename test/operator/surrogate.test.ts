@@ -1,3 +1,4 @@
+import { Mode } from '../../src/mode/mode';
 import { newTest } from '../testSimplifier';
 
 suite('surrogate-pair', () => {
@@ -34,6 +35,7 @@ suite('surrogate-pair', () => {
     start: ['|'],
     keysPressed: 'i🐕weee<ESC>',
     end: ['🐕weee|'],
+    endMode: Mode.Insert,
   });
 
   newTest({
@@ -41,6 +43,7 @@ suite('surrogate-pair', () => {
     start: ['|'],
     keysPressed: 'i🐕🐕<ESC>',
     end: ['🐕🐕|'],
+    endMode: Mode.Insert,
   });
 
   newTest({
