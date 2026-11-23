@@ -221,6 +221,8 @@ suite('Vimscript expressions', () => {
       exprTest("['a','b','c'][1]", { value: str('b') });
       exprTest("['a','b','c'][-1]", { value: str('c') });
       exprTest("['a','b','c'][-3]", { value: str('a') });
+      exprTest("['a','b','c'][3]", { error: VimError.ListIndexOutOfRange(3) });
+      exprTest("['a','b','c'][-4]", { error: VimError.ListIndexOutOfRange(-4) });
 
       exprTest("#{one: 1, two: 2, three: 3}['one']", { value: int(1) });
       exprTest("#{one: 1, two: 2, three: 3}['two']", { value: int(2) });
@@ -231,7 +233,10 @@ suite('Vimscript expressions', () => {
 
       exprTest('0zABCD[0]', { value: int(171) });
       exprTest('0zABCD[1]', { value: int(205) });
-      // TODO: Blob, negative index
+      exprTest('0zABCD[-1]', { value: int(205) });
+      exprTest('0zABCD[2]', { error: VimError.BlobIndexOutOfRange(2) });
+      // Like Vim, report the index after counting from the end
+      exprTest('0zABCD[-3]', { error: VimError.BlobIndexOutOfRange(-1) });
     });
 
     suite('Entry', () => {
@@ -304,6 +309,11 @@ suite('Vimscript expressions', () => {
           },
           value: str('abcde'),
         });
+
+        exprTest("'abcde'[1:10]", { value: str('bcde') });
+        exprTest("'abcde'[-10:]", { value: str('abcde') });
+        exprTest("'abcde'[0:-10]", { value: str('') });
+        exprTest("'abcde'[-7:-6]", { value: str('') });
       });
 
       suite('List', () => {
@@ -366,12 +376,26 @@ suite('Vimscript expressions', () => {
           },
           value: list([int(1), int(2), int(3), int(4), int(5)]),
         });
+
+        exprTest('[1,2,3][1:10]', { value: list([int(2), int(3)]) });
+        exprTest('[1,2,3][5:]', { value: list([]) });
+        // Unlike a String or Blob, a List is empty when the start is before the first item
+        exprTest('[1,2,3][-10:]', { value: list([]) });
+        exprTest('[1,2,3][0:-10]', { value: list([]) });
       });
 
       suite('Blob', () => {
         exprTest('0zDEADBEEF[1:2]', {
           display: '0zADBE',
         });
+        exprTest('0zABCD[1:]', { display: '0zCD' });
+        exprTest('0zABCD[:]', { display: '0zABCD' });
+        exprTest('0zABCD[-1:]', { display: '0zCD' });
+        exprTest('0zABCDEF[0:-2]', { display: '0zABCD' });
+        exprTest('0zABCD[0:10]', { display: '0zABCD' });
+        exprTest('0zABCD[-10:]', { display: '0zABCD' });
+        exprTest('0zABCD[5:]', { display: '0z' });
+        exprTest('0zABCD[1:0]', { display: '0z' });
       });
     });
 
@@ -674,6 +698,10 @@ suite('Vimscript expressions', () => {
       exprTest('count(["apple", "banana", "Apple", "carrot", "APPLE"], "Apple", v:true, -1)', {
         value: int(1),
       });
+      exprTest('count([1,2,3,1], 1, 0, -4)', { value: int(2) });
+      exprTest('count([1,2,3,1], 1, 0, -5)', { error: VimError.ListIndexOutOfRange(-5) });
+      exprTest('count([1,2,3,1], 1, 0, 4)', { error: VimError.ListIndexOutOfRange(4) });
+      exprTest('count([], 1, 0, 0)', { value: int(0) });
 
       exprTest('count(#{a:3,b:2,c:3}, 3)', { value: int(2) });
       exprTest('count(#{apple:"apple",b:"banana",c:"APPLE"}, "apple")', { value: int(1) });
@@ -767,11 +795,14 @@ suite('Vimscript expressions', () => {
       exprTest('get([2,4,6], -1)', { value: int(6) });
       exprTest('get([2,4,6], 3)', { value: int(0) });
       exprTest('get([2,4,6], 3, 999)', { value: int(999) });
+      exprTest('get([2,4,6], -4)', { value: int(0) });
+      exprTest('get([2,4,6], -4, 999)', { value: int(999) });
 
       exprTest('get(0zABCDEF, 1)', { value: int(205) });
       exprTest('get(0zABCDEF, -1)', { value: int(239) });
       exprTest('get(0zABCDEF, 3)', { value: int(-1) });
       exprTest('get(0zABCDEF, 3, 999)', { value: int(999) });
+      exprTest('get(0zABCDEF, -4)', { value: int(-1) });
 
       exprTest('get(#{a: 1, b: 2, c: 3}, "b")', { value: int(2) });
       exprTest('get(#{a: 1, b: 2, c: 3}, "x")', { value: int(0) });
@@ -796,15 +827,24 @@ suite('Vimscript expressions', () => {
       exprTest('index(["A","C","D","C"], "C", 2)', { value: int(3) });
       exprTest('index(["A","C","D","C"], "C", -2)', { value: int(3) });
       exprTest('index(["A","C","D","C"], "C", 5)', { value: int(-1) });
+      exprTest('index(["A","C","D","C"], "C", -10)', { value: int(-1) });
     });
 
     suite('insert', () => {
       exprTest('insert([1,2,3], 4)', { display: '[4, 1, 2, 3]' });
       exprTest('insert([1,2,3], 4, 2)', { display: '[1, 2, 4, 3]' });
+      exprTest('insert([1,2,3], 4, 3)', { display: '[1, 2, 3, 4]' });
+      exprTest('insert([1,2,3], 4, -1)', { display: '[1, 2, 4, 3]' });
+      exprTest('insert([1,2,3], 4, -3)', { display: '[4, 1, 2, 3]' });
+      exprTest('insert([1,2,3], 4, 4)', { error: VimError.ListIndexOutOfRange(4) });
+      exprTest('insert([1,2,3], 4, -4)', { error: VimError.ListIndexOutOfRange(-4) });
       exprTest('insert(insert(insert([], 1), 2), 3)', { display: '[3, 2, 1]' });
 
       exprTest('insert(0zABCD, 0xEF)', { display: '0zEFABCD' });
       exprTest('insert(0zABCD, 0xEF, 1)', { display: '0zABEFCD' });
+      exprTest('insert(0zABCD, 0xEF, 2)', { display: '0zABCDEF' });
+      // Unlike a List, a Blob doesn't take a negative index
+      exprTest('insert(0zABCD, 0xEF, -1)', { error: VimError.InvalidArgument475('-1') });
     });
 
     suite('invert', () => {
@@ -922,6 +962,8 @@ suite('Vimscript expressions', () => {
       exprTest('remove([1, 2, 3], 0)', { value: int(1) });
       exprTest('remove([1, 2, 3], 1)', { value: int(2) });
       exprTest('remove([1, 2, 3], -1)', { value: int(3) });
+      exprTest('remove([1, 2, 3], 3)', { error: VimError.ListIndexOutOfRange(3) });
+      exprTest('remove([1, 2, 3], -4)', { error: VimError.ListIndexOutOfRange(-4) });
       exprTest('remove(#{a:1, b:2}, "a")', { value: int(1) });
     });
 

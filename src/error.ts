@@ -90,6 +90,7 @@ export enum ErrorCode {
   UsingABlobAsANumber = 974,
   CanOnlyCompareBlobWithBlob = 977,
   InvalidOperationForBlob = 978,
+  BlobIndexOutOfRange = 979,
   CannotModifyExistingVariable = 995,
   CannotLock = 996,
   ListRequiredForArgument = 1211,
@@ -443,6 +444,9 @@ export class VimError extends Error {
   }
   static InvalidOperationForBlob(): VimError {
     return new VimError(ErrorCode.InvalidOperationForBlob, 'Invalid operation for Blob');
+  }
+  static BlobIndexOutOfRange(idx: number): VimError {
+    return new VimError(ErrorCode.BlobIndexOutOfRange, `Blob index out of range: ${idx}`);
   }
   static CannotModifyExistingVariable(): VimError {
     return new VimError(ErrorCode.CannotModifyExistingVariable, 'Cannot modify existing variable');

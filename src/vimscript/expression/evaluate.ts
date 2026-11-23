@@ -140,6 +140,14 @@ function mapNumber(value: Value, f: (x: number) => number): NumberValue | FloatV
   }
 }
 
+/**
+ * Resolves an index into a sequence of the given length, where a negative index counts back from
+ * the end. An index that is out of range stays out of range.
+ */
+function resolveIndex(idx: number, length: number): number {
+  return idx < 0 ? length + idx : idx;
+}
+
 /** A tuple of `N` required arguments */
 type RequiredArgs<N extends number, R extends Value[] = []> = R['length'] extends N
   ? R
@@ -428,10 +436,9 @@ export class EvaluationContext {
         return str(idx >= 0 ? (toString(sequence)[idx] ?? '') : '');
       }
       case 'list': {
-        let idx = toInt(index);
-        idx = idx < 0 ? sequence.items.length + idx : idx;
+        const idx = resolveIndex(toInt(index), sequence.items.length);
         if (idx < 0 || idx >= sequence.items.length) {
-          throw VimError.ListIndexOutOfRange(idx);
+          throw VimError.ListIndexOutOfRange(toInt(index));
         }
         return sequence.items[idx];
       }
@@ -448,41 +455,36 @@ export class EvaluationContext {
       }
       case 'blob': {
         const bytes = new Uint8Array(sequence.data);
-        return int(bytes[toInt(index)]);
+        const idx = resolveIndex(toInt(index), bytes.length);
+        if (idx < 0 || idx >= bytes.length) {
+          throw VimError.BlobIndexOutOfRange(idx);
+        }
+        return int(bytes[idx]);
       }
     }
   }
 
   private evaluateSlice(sequence: Value, start: Value, end: Value): Value {
-    let _start = toInt(start);
-    let _end = toInt(end);
+    const _start = toInt(start);
+    const _end = toInt(end);
+    /** The arguments to `slice()` for a sequence of the given length, clamped to its bounds */
+    const sliceArgs = (length: number): [number, number] => [
+      Math.max(resolveIndex(_start, length), 0),
+      Math.max(resolveIndex(_end, length) + 1, 0), // `end` is inclusive
+    ];
     switch (sequence.type) {
       case 'string':
       case 'number':
       case 'float': {
         const _sequence = toString(sequence);
-        while (_start < 0) {
-          _start += _sequence.length;
-        }
-        while (_end < 0) {
-          _end += _sequence.length;
-        }
-        if (_end < _start) {
-          return str('');
-        }
-        return str(_sequence.substring(_start, _end + 1));
+        return str(_sequence.slice(...sliceArgs(_sequence.length)));
       }
       case 'list': {
-        while (_start < 0) {
-          _start += sequence.items.length;
-        }
-        while (_end < 0) {
-          _end += sequence.items.length;
-        }
-        if (_end < _start) {
+        // Unlike a String or Blob, a List is empty when the start is before the first item
+        if (resolveIndex(_start, sequence.items.length) < 0) {
           return list([]);
         }
-        return list(sequence.items.slice(_start, _end + 1));
+        return list(sequence.items.slice(...sliceArgs(sequence.items.length)));
       }
       case 'dictionary': {
         throw VimError.CannotUseSliceWithADictionary();
@@ -491,7 +493,8 @@ export class EvaluationContext {
         throw VimError.CannotIndexAFuncref();
       }
       case 'blob': {
-        return blob(new Uint8Array(sequence.data).slice(_start, _end + 1));
+        const bytes = new Uint8Array(sequence.data);
+        return blob(bytes.slice(...sliceArgs(bytes.length)));
       }
     }
   }
@@ -980,17 +983,17 @@ export class EvaluationContext {
         return float1(Math.cosh);
       }
       case 'count': {
-        let [comp, expr, ic, start] = getArgs(2, 4, [undefined, undefined, toInt]);
+        const [comp, expr, ic, start] = getArgs(2, 4, [undefined, undefined, toInt]);
         const matchCase = (ic ?? 0) === 0;
+        let startIdx = 0;
         if (start !== undefined) {
           if (comp.type !== 'list') {
             throw VimError.InvalidArgument474();
           }
-          if (toInt(start) >= comp.items.length) {
+          startIdx = resolveIndex(toInt(start), comp.items.length);
+          // Like Vim, ignore the start of an empty List
+          if (comp.items.length > 0 && (startIdx < 0 || startIdx >= comp.items.length)) {
             throw VimError.ListIndexOutOfRange(toInt(start));
-          }
-          while (toInt(start) < 0) {
-            start = int(toInt(start) + comp.items.length);
           }
         }
         let count = 0;
@@ -1003,7 +1006,6 @@ export class EvaluationContext {
             }
             break;
           case 'list':
-            const startIdx = start ? toInt(start) : 0;
             for (let i = startIdx; i < comp.items.length; i++) {
               if (this.evaluateComparison('==', matchCase, comp.items[i], expr)) {
                 count++;
@@ -1154,14 +1156,14 @@ export class EvaluationContext {
       case 'get': {
         const [haystack, _idx, _default] = getArgs(2, 3);
         if (haystack.type === 'list') {
-          let idx = toInt(_idx);
-          idx = idx < 0 ? haystack.items.length + idx : idx;
-          return idx < haystack.items.length ? haystack.items[idx] : (_default ?? int(0));
+          const idx = resolveIndex(toInt(_idx), haystack.items.length);
+          return idx >= 0 && idx < haystack.items.length
+            ? haystack.items[idx]
+            : (_default ?? int(0));
         } else if (haystack.type === 'blob') {
           const bytes = new Uint8Array(haystack.data);
-          let idx = toInt(_idx);
-          idx = idx < 0 ? bytes.length + idx : idx;
-          return idx < bytes.length ? int(bytes[idx]) : (_default ?? int(-1));
+          const idx = resolveIndex(toInt(_idx), bytes.length);
+          return idx >= 0 && idx < bytes.length ? int(bytes[idx]) : (_default ?? int(-1));
         } else if (haystack.type === 'dictionary') {
           const val = haystack.items.get(toString(_idx));
           return val ? val : (_default ?? int(0));
@@ -1243,18 +1245,12 @@ export class EvaluationContext {
         const [haystack, _needle, _start, ic] = getArgs(2, 4);
 
         if (haystack.type === 'list') {
-          let start: number | undefined;
-          if (_start) {
-            start = toInt(_start);
-            start = start < 0 ? haystack.items.length + start : start;
-          }
-
-          for (const [idx, item] of haystack.items.entries()) {
-            if (start && idx < start) {
-              continue;
-            }
-            if (this.evaluateComparison('==', true, item, _needle)) {
-              return int(idx);
+          const start = _start ? resolveIndex(toInt(_start), haystack.items.length) : 0;
+          if (start >= 0) {
+            for (let idx = start; idx < haystack.items.length; idx++) {
+              if (this.evaluateComparison('==', true, haystack.items[idx], _needle)) {
+                return int(idx);
+              }
             }
           }
           return int(-1);
@@ -1267,7 +1263,7 @@ export class EvaluationContext {
       case 'insert': {
         const [l, item, idx = 0] = getArgs(2, 3, [undefined, undefined, toInt]);
         if (l.type === 'blob') {
-          if (idx > l.data.byteLength) {
+          if (idx < 0 || idx > l.data.byteLength) {
             throw VimError.InvalidArgument475(idx.toString());
           }
           const bytes = new Uint8Array(l.data);
@@ -1279,10 +1275,11 @@ export class EvaluationContext {
           return l;
         }
         const lst = toList(l);
-        if (idx > lst.items.length) {
+        const listIdx = resolveIndex(idx, lst.items.length);
+        if (listIdx < 0 || listIdx > lst.items.length) {
           throw VimError.ListIndexOutOfRange(idx);
         }
-        lst.items.splice(idx, 0, item);
+        lst.items.splice(listIdx, 0, item);
         return lst;
       }
       case 'invert': {
@@ -1530,8 +1527,10 @@ export class EvaluationContext {
       case 'remove': {
         const [haystack, _idx, _end] = getArgs(2, 3);
         if (haystack.type === 'list') {
-          let idx = toInt(_idx);
-          idx = idx < 0 ? haystack.items.length + idx : idx;
+          const idx = resolveIndex(toInt(_idx), haystack.items.length);
+          if (idx < 0 || idx >= haystack.items.length) {
+            throw VimError.ListIndexOutOfRange(toInt(_idx));
+          }
           if (_end === undefined) {
             return haystack.items.splice(idx, 1)[0]; // TODO: This doesn't remove the item?
           } else {
