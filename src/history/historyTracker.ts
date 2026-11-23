@@ -384,8 +384,6 @@ class ChangeList {
 }
 
 export class HistoryTracker {
-  public currentContentChanges: vscode.TextDocumentContentChangeEvent[] = [];
-
   private nextStepCursorsAtStart: readonly Cursor[] | undefined;
 
   private readonly undoStack = new UndoStack();
