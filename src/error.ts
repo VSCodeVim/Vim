@@ -81,6 +81,7 @@ export enum ErrorCode {
   UsingAFloatAsANumber = 805,
   UsingFloatAsAString = 806,
   NumberOrFloatRequired = 808,
+  UsingAStringAsAFloat = 892,
   ArgumentOfMapMustBeAListDictionaryOrBlob = 896,
   ListOrBlobRequired = 897,
   MaxDepthMustBeANonNegativeNumber = 900,
@@ -415,6 +416,9 @@ export class VimError extends Error {
       ErrorCode.ArgumentOfMapMustBeAListDictionaryOrBlob,
       'Argument of map() must be a List, Dictionary or Blob',
     );
+  }
+  static UsingAStringAsAFloat(): VimError {
+    return new VimError(ErrorCode.UsingAStringAsAFloat, 'Using a String as a Float');
   }
   static ListOrBlobRequired(): VimError {
     return new VimError(ErrorCode.ListOrBlobRequired, 'List or Blob required');

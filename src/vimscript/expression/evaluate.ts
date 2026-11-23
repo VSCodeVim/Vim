@@ -150,6 +150,158 @@ type ConvertedArgs<A, C extends readonly ArgConverter[]> = {
     : A[K];
 };
 
+type BasicComparisonOp = '==' | '>' | '=~' | 'is';
+
+/** Whether items of a List or Dictionary are equal; unlike at the top level, types must match */
+function itemsEqual(lhs: Value, rhs: Value, matchCase: boolean): boolean {
+  return basicComparison('==', matchCase, lhs, rhs, false);
+}
+
+function listItemsEqual(lhs: Value[], rhs: Value[], matchCase: boolean): boolean {
+  return lhs.length === rhs.length && lhs.every((item, i) => itemsEqual(item, rhs[i], matchCase));
+}
+
+function dictItemsEqual(
+  lhs: Map<string, Value>,
+  rhs: Map<string, Value>,
+  matchCase: boolean,
+): boolean {
+  return (
+    lhs.size === rhs.size &&
+    [...lhs].every(([key, value]) => {
+      const rhsValue = rhs.get(key);
+      return rhsValue !== undefined && itemsEqual(value, rhsValue, matchCase);
+    })
+  );
+}
+
+/** Whether a Funcref is a partial, i.e. has arguments or a Dictionary bound to it */
+function isPartial(func: FuncRefValue): boolean {
+  return (func.arglist?.items.length ?? 0) > 0 || func.dict !== undefined;
+}
+
+/** Converts a Number, Float, or String operand of `=~` to the String to match */
+function toMatchString(value: Value): string {
+  return value.type === 'float' ? displayValue(value) : toString(value);
+}
+
+/** Converts an operand to a Float for comparison with a Float */
+function toComparisonFloat(value: Value): number {
+  if (value.type === 'string') {
+    throw VimError.UsingAStringAsAFloat();
+  }
+  return toFloat(value);
+}
+
+/**
+ * Compares two values with one of the operators that the others are defined in terms of.
+ * `topLevel` is false when comparing items of a List or Dictionary.
+ */
+function basicComparison(
+  operator: BasicComparisonOp,
+  matchCase: boolean,
+  lhs: Value,
+  rhs: Value,
+  topLevel: boolean = true,
+): boolean {
+  if (operator === 'is' && lhs.type !== rhs.type) {
+    return false;
+  }
+
+  // Like Vim, check for these types in this order, so that e.g. comparing a List with a Blob is
+  // an error about Blobs
+  if (lhs.type === 'blob' || rhs.type === 'blob') {
+    if (lhs.type !== 'blob' || rhs.type !== 'blob') {
+      throw VimError.CanOnlyCompareBlobWithBlob();
+    }
+    switch (operator) {
+      case '==':
+        const [lhsBytes, rhsBytes] = [new Uint8Array(lhs.data), new Uint8Array(rhs.data)];
+        return lhsBytes.length === rhsBytes.length && lhsBytes.every((b, i) => b === rhsBytes[i]);
+      case 'is':
+        // Two Blobs share `data` if and only if they are the same Blob
+        return lhs.data === rhs.data;
+      default:
+        throw VimError.InvalidOperationForBlob();
+    }
+  }
+  if (lhs.type === 'list' || rhs.type === 'list') {
+    if (lhs.type !== 'list' || rhs.type !== 'list') {
+      throw VimError.CanOnlyCompareListWithList();
+    }
+    switch (operator) {
+      case '==':
+        return listItemsEqual(lhs.items, rhs.items, matchCase);
+      case 'is':
+        // Two Lists share `items` if and only if they are the same List
+        return lhs.items === rhs.items;
+      default:
+        throw VimError.InvalidOperationForList();
+    }
+  }
+  if (lhs.type === 'dictionary' || rhs.type === 'dictionary') {
+    if (lhs.type !== 'dictionary' || rhs.type !== 'dictionary') {
+      throw VimError.CanOnlyCompareDictionaryWithDictionary();
+    }
+    switch (operator) {
+      case '==':
+        return dictItemsEqual(lhs.items, rhs.items, matchCase);
+      case 'is':
+        // Two Dictionaries share `items` if and only if they are the same Dictionary
+        return lhs.items === rhs.items;
+      default:
+        throw VimError.InvalidOperationForDictionary();
+    }
+  }
+  if (lhs.type === 'funcref' || rhs.type === 'funcref') {
+    if (lhs.type !== 'funcref' || rhs.type !== 'funcref') {
+      return false;
+    }
+    switch (operator) {
+      case '==':
+        return (
+          lhs.name === rhs.name &&
+          listItemsEqual(lhs.arglist?.items ?? [], rhs.arglist?.items ?? [], matchCase) &&
+          (lhs.dict === undefined || rhs.dict === undefined
+            ? lhs.dict === rhs.dict
+            : dictItemsEqual(lhs.dict.items, rhs.dict.items, matchCase))
+        );
+      case 'is':
+        // A partial is only identical to itself
+        return isPartial(lhs) || isPartial(rhs) ? lhs === rhs : lhs.name === rhs.name;
+      default:
+        throw VimError.InvalidOperationForFuncrefs();
+    }
+  }
+
+  // Both are Numbers, Floats, or Strings
+  if (operator === '=~') {
+    const pattern = Pattern.parser({
+      direction: SearchDirection.Forward,
+      delimiter: '/', // TODO: Are these params right?
+      ignoreCase: !matchCase,
+    }).tryParse(toMatchString(rhs));
+    return pattern.regex.test(toMatchString(lhs));
+  }
+  if (!topLevel && lhs.type !== rhs.type) {
+    return false;
+  }
+  let lhsValue: number | string;
+  let rhsValue: number | string;
+  if (lhs.type === 'float' || rhs.type === 'float') {
+    [lhsValue, rhsValue] = [toComparisonFloat(lhs), toComparisonFloat(rhs)];
+  } else if (lhs.type === 'number' || rhs.type === 'number') {
+    // A String is converted to a Number, e.g. 4 == '4'
+    [lhsValue, rhsValue] = [toInt(lhs), toInt(rhs)];
+  } else {
+    [lhsValue, rhsValue] = [toString(lhs), toString(rhs)];
+    if (!matchCase) {
+      [lhsValue, rhsValue] = [lhsValue.toLowerCase(), rhsValue.toLowerCase()];
+    }
+  }
+  return operator === '>' ? lhsValue > rhsValue : lhsValue === rhsValue;
+}
+
 export class Variable {
   public value: Value;
   public locked: boolean = false;
@@ -551,148 +703,27 @@ export class EvaluationContext {
   ): boolean {
     switch (operator) {
       case '==':
-        return this.evaluateBasicComparison('==', matchCase, lhs, rhs);
+        return basicComparison('==', matchCase, lhs, rhs);
       case '!=':
-        return !this.evaluateBasicComparison('==', matchCase, lhs, rhs);
+        return !basicComparison('==', matchCase, lhs, rhs);
       case '>':
-        return this.evaluateBasicComparison('>', matchCase, lhs, rhs);
+        return basicComparison('>', matchCase, lhs, rhs);
       case '>=':
         return (
-          this.evaluateBasicComparison('>', matchCase, lhs, rhs) ||
-          this.evaluateBasicComparison('==', matchCase, lhs, rhs)
+          basicComparison('>', matchCase, lhs, rhs) || basicComparison('==', matchCase, lhs, rhs)
         );
       case '<':
-        return this.evaluateBasicComparison('>', matchCase, rhs, lhs);
+        return basicComparison('>', matchCase, rhs, lhs);
       case '<=':
-        return !this.evaluateBasicComparison('>', matchCase, lhs, rhs);
+        return !basicComparison('>', matchCase, lhs, rhs);
       case '=~':
-        return this.evaluateBasicComparison('=~', matchCase, lhs, rhs);
+        return basicComparison('=~', matchCase, lhs, rhs);
       case '!~':
-        return !this.evaluateBasicComparison('=~', matchCase, lhs, rhs);
+        return !basicComparison('=~', matchCase, lhs, rhs);
       case 'is':
-        return this.evaluateBasicComparison('is', matchCase, lhs, rhs);
+        return basicComparison('is', matchCase, lhs, rhs);
       case 'isnot':
-        return !this.evaluateBasicComparison('is', matchCase, lhs, rhs);
-    }
-  }
-
-  private evaluateBasicComparison(
-    operator: '==' | '>' | '=~' | 'is',
-    matchCase: boolean,
-    lhs: Value,
-    rhs: Value,
-    topLevel: boolean = true,
-  ): boolean {
-    if (operator === 'is' && lhs.type !== rhs.type) {
-      return false;
-    }
-
-    if (lhs.type === 'list') {
-      if (rhs.type === 'list') {
-        switch (operator) {
-          case '==':
-            const rhsItems = rhs.items;
-            return (
-              lhs.items.length === rhsItems.length &&
-              lhs.items.every((left, idx) =>
-                this.evaluateBasicComparison('==', matchCase, left, rhsItems[idx], false),
-              )
-            );
-          case 'is':
-            // NOTE: `id` field should match if and only if they are the same list
-            return lhs.items === rhs.items;
-          default:
-            throw VimError.InvalidOperationForList();
-        }
-      } else {
-        throw VimError.CanOnlyCompareListWithList();
-      }
-    } else if (rhs.type === 'list') {
-      throw VimError.CanOnlyCompareListWithList();
-    } else if (lhs.type === 'dictionary') {
-      if (rhs.type === 'dictionary') {
-        switch (operator) {
-          case '==':
-            const rhsItems = rhs.items;
-            return (
-              lhs.items.size === rhsItems.size &&
-              [...lhs.items.entries()].every(
-                ([key, value]) =>
-                  rhsItems.has(key) &&
-                  this.evaluateBasicComparison('==', matchCase, value, rhsItems.get(key)!, false),
-              )
-            );
-          case 'is':
-            // NOTE: `id` field should match if and only if they are the same dictionary
-            return lhs.items === rhs.items;
-          default:
-            throw VimError.InvalidOperationForDictionary();
-        }
-      } else {
-        throw VimError.CanOnlyCompareDictionaryWithDictionary();
-      }
-    } else if (rhs.type === 'dictionary') {
-      throw VimError.CanOnlyCompareDictionaryWithDictionary();
-    } else if (lhs.type === 'funcref') {
-      if (rhs.type === 'funcref') {
-        switch (operator) {
-          case '==':
-            return lhs.name === rhs.name && lhs.dict === rhs.dict;
-          case 'is':
-            // NOTE: `id` field should match if and only if they are the same funcref
-            return lhs === rhs;
-          default:
-            throw VimError.InvalidOperationForFuncrefs();
-        }
-      } else {
-        return false;
-      }
-    } else if (rhs.type === 'funcref') {
-      return false;
-    } else if (lhs.type === 'blob') {
-      if (rhs.type === 'blob') {
-        switch (operator) {
-          case '==':
-            const [_lhs, _rhs] = [new Uint8Array(lhs.data), new Uint8Array(rhs.data)];
-            return _lhs.length === _rhs.length && _lhs.every((byte, idx) => byte === _rhs[idx]);
-          case 'is':
-            // NOTE: `id` field should match if and only if they are the same blob
-            return lhs.data === rhs.data;
-          default:
-            throw VimError.InvalidOperationForBlob();
-        }
-      } else {
-        throw VimError.CanOnlyCompareBlobWithBlob();
-      }
-    } else if (rhs.type === 'blob') {
-      throw VimError.CanOnlyCompareBlobWithBlob();
-    } else {
-      if (lhs.type === 'float' || rhs.type === 'float') {
-        [lhs, rhs] = [float(toFloat(lhs)), float(toFloat(rhs))];
-      } else if (lhs.type === 'number' || rhs.type === 'number') {
-        if (topLevel) {
-          // Strings are automatically coerced to numbers, except within a list/dict
-          // i.e. 4 == "4" but [4] != ["4"]
-          [lhs, rhs] = [int(toInt(lhs)), int(toInt(rhs))];
-        }
-      } else if (!matchCase && operator !== '=~') {
-        [lhs, rhs] = [str(lhs.value.toLowerCase()), str(rhs.value.toLowerCase())];
-      }
-      switch (operator) {
-        case '==':
-          return lhs.value === rhs.value;
-        case 'is':
-          return lhs.type === rhs.type && lhs.value === rhs.value;
-        case '>':
-          return lhs.value > rhs.value;
-        case '=~':
-          const pattern = Pattern.parser({
-            direction: SearchDirection.Forward,
-            delimiter: '/', // TODO: Are these params right?
-            ignoreCase: !matchCase,
-          }).tryParse(toString(rhs));
-          return pattern.regex.test(toString(lhs));
-      }
+        return !basicComparison('is', matchCase, lhs, rhs);
     }
   }
 

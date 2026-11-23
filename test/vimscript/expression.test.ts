@@ -551,6 +551,100 @@ suite('Vimscript expressions', () => {
       exprTest('{} == 10', { error: VimError.CanOnlyCompareDictionaryWithDictionary() });
       exprTest('0 == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
       exprTest('2 == function("abs")', { value: bool(false) });
+      exprTest('function("abs") == 1', { value: bool(false) });
+      exprTest('1 is 1.0', { value: bool(false) });
+      exprTest('1 == 1.0', { value: bool(true) });
+      exprTest("1.0 > 'x'", { error: VimError.UsingAStringAsAFloat() });
+      exprTest("'1.0' == 1.0", { error: VimError.UsingAStringAsAFloat() });
+
+      // Like Vim, check for a Blob, then a List, Dictionary, or Funcref
+      exprTest('[] == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('0z00 == []', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('{} == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('0z00 == {}', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('function("abs") == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('0z00 == function("abs")', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('function("abs") == []', { error: VimError.CanOnlyCompareListWithList() });
+      exprTest('[] == function("abs")', { error: VimError.CanOnlyCompareListWithList() });
+      exprTest('function("abs") == {}', {
+        error: VimError.CanOnlyCompareDictionaryWithDictionary(),
+      });
+
+      exprTest('[] is {}', { value: bool(false) });
+      exprTest('[] isnot {}', { value: bool(true) });
+      exprTest('{} is 0z00', { value: bool(false) });
+      exprTest('function("abs") is 1', { value: bool(false) });
+
+      // Within a List or Dictionary, items of different types are never equal
+      exprTest('[1] == [1.0]', { value: bool(false) });
+      exprTest('[1.0] == [1]', { value: bool(false) });
+      exprTest('[1.0] == [1.0]', { value: bool(true) });
+      exprTest("{'a': 1} == {'a': '1'}", { value: bool(false) });
+      exprTest("[[1]] == [['1']]", { value: bool(false) });
+    });
+
+    suite('Strings', () => {
+      // 'ignorecase' is on in the test configuration
+      exprTest("'B' > 'a'", { value: bool(true) });
+      exprTest("'B' ># 'a'", { value: bool(false) });
+      exprTest("'abc' is 'ABC'", { value: bool(true) });
+      exprTest("'abc' is# 'ABC'", { value: bool(false) });
+      exprTest("'10' < '9'", { value: bool(true) });
+      exprTest("10 < '9'", { value: bool(false) });
+    });
+
+    suite('Pattern matching non-Strings', () => {
+      exprTest('1 =~ 1', { value: bool(true) });
+      exprTest("12 =~ '2'", { value: bool(true) });
+      // Like Vim, match against the Float as a String
+      exprTest("1.5 =~ '1'", { value: bool(true) });
+      exprTest('2.0 =~ 1', { value: bool(false) });
+      exprTest("1.0 =~ 'x'", { value: bool(false) });
+    });
+
+    suite('Lists, Dictionaries, and Blobs', () => {
+      exprTest('[1] < [2]', { error: VimError.InvalidOperationForList() });
+      exprTest('[1] =~ [1]', { error: VimError.InvalidOperationForList() });
+      exprTest('{} > {}', { error: VimError.InvalidOperationForDictionary() });
+      exprTest('0z00 > 0z00', { error: VimError.InvalidOperationForBlob() });
+
+      exprTest('[1] != [1]', { value: bool(false) });
+      exprTest('[1] is [1]', { value: bool(false) });
+      exprTest('[1, 2] == [1]', { value: bool(false) });
+      exprTest("['a'] == ['A']", { value: bool(true) });
+      exprTest("['a'] ==# ['A']", { value: bool(false) });
+      exprTest("{'a': 1} == {'b': 1}", { value: bool(false) });
+      exprTest("{'k': 'x'} == {'k': 'X'}", { value: bool(true) });
+      exprTest('0z01 == 0z01', { value: bool(true) });
+      exprTest('0z01 is 0z01', { value: bool(false) });
+      exprTest('0z0102 == 0z01', { value: bool(false) });
+    });
+
+    suite('Funcrefs', () => {
+      exprTest('function("abs") > function("abs")', {
+        error: VimError.InvalidOperationForFuncrefs(),
+      });
+      exprTest('function("abs") =~ function("abs")', {
+        error: VimError.InvalidOperationForFuncrefs(),
+      });
+
+      exprTest('function("abs") == function("abs")', { value: bool(true) });
+      exprTest('function("abs") == function("acos")', { value: bool(false) });
+      exprTest('function("abs") is function("abs")', { value: bool(true) });
+      exprTest('function("abs") is function("acos")', { value: bool(false) });
+
+      // A partial (with arguments or a Dictionary) is only identical to itself
+      exprTest('function("abs", [1]) == function("abs", [1])', { value: bool(true) });
+      exprTest('function("abs", [1]) == function("abs", [2])', { value: bool(false) });
+      exprTest('function("abs", [1]) == function("abs")', { value: bool(false) });
+      exprTest('function("abs", [1]) is function("abs", [1])', { value: bool(false) });
+      exprTest('{f -> f is f}(function("abs", [1]))', { value: bool(true) });
+      exprTest('function("abs", {}) == function("abs", {})', { value: bool(true) });
+      exprTest('function("abs", {}) == function("abs")', { value: bool(false) });
+      exprTest('function("abs", {}) is function("abs", {})', { value: bool(false) });
+
+      exprTest('{-> 1} == {-> 1}', { value: bool(false) });
+      exprTest('{f -> f is f}({-> 1})', { value: bool(true) });
     });
   });
 
