@@ -690,17 +690,22 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
           actionToRecord = undefined;
         } else {
           // Push document content change to the stack
+          const modeData = this.vimState.modeData;
           lastAction.addChanges(
-            this.vimState.historyTracker.currentContentChanges,
+            modeData.mode === Mode.Insert ? modeData.contentChanges : [],
             this.vimState.cursorStopPosition,
           );
-          this.vimState.historyTracker.currentContentChanges = [];
+          if (modeData.mode === Mode.Insert) {
+            modeData.contentChanges = [];
+          }
           recordedState.actionsRun.push(action);
         }
       } else {
         if (actionCanBeMergedWithDocumentChange) {
           // This means we are already in Insert Mode but there is still not DocumentContentChangeAction in stack
-          this.vimState.historyTracker.currentContentChanges = [];
+          if (this.vimState.modeData.mode === Mode.Insert) {
+            this.vimState.modeData.contentChanges = [];
+          }
           const newContentChange = new DocumentContentChangeAction(
             this.vimState.cursorStopPosition,
           );

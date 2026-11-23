@@ -278,6 +278,7 @@ export class VimState implements vscode.Disposable {
               ? {
                   mode,
                   highSurrogate: undefined,
+                  contentChanges: [],
                 }
               : { mode },
     );

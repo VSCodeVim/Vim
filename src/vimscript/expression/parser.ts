@@ -37,7 +37,7 @@ import {
 } from './types';
 
 const blobParser: Parser<BlobValue> = regexp(/0[z]/i).then(
-  regexp(/[0-1a-f]{1,2}/i)
+  regexp(/[0-9a-f]{1,2}/i)
     .sepBy(string('.').fallback(undefined))
     .map<BlobValue>((bytes) => {
       const lastByte = bytes.at(-1);
