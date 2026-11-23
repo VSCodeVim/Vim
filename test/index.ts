@@ -10,6 +10,7 @@
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 import Mocha from 'mocha';
+import { takeCoverage } from 'node:v8';
 import testFiles from 'test-files';
 import * as vscode from 'vscode';
 
@@ -82,6 +83,11 @@ export async function run(): Promise<void> {
     try {
       // Run the mocha test
       mocha.run((failures) => {
+        // Write the coverage `pnpm test --coverage` asked for now, since VS Code may stop this
+        // process without the normal exit that would write it
+        if (process.env.NODE_V8_COVERAGE) {
+          takeCoverage();
+        }
         if (failures > 0) {
           e(new Error(`${failures} tests failed.`));
         } else {

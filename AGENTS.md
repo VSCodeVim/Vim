@@ -14,7 +14,8 @@ pnpm watch           # Rebuild on file changes
 pnpm test-docker                 # Run tests in Docker (preferred)
 pnpm test-docker --grep <REGEX>  # Run filtered tests in Docker (matches suite and test names)
 pnpm test-docker --crlf          # Run tests in Docker with CRLF line endings, as on Windows
-pnpm build-test && pnpm test     # Run tests locally (close all VS Code instances first)
+pnpm test-docker --coverage      # Run tests in Docker and write a coverage report to coverage/
+pnpm build-test && pnpm test     # Run tests locally (close all VS Code instances first); add --coverage for a report
 pnpm build-dev && pnpm test-web  # Run web extension smoke tests (test/web/) in headless Chromium
 
 pnpm lint            # Check code style

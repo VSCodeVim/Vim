@@ -1,4 +1,5 @@
 out
+coverage
 dist
 testing
 node_modules

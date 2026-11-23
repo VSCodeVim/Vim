@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { runTests } from '@vscode/test-electron';
+import { Report } from 'c8';
 
 /**
  * User settings for the VS Code that runs the tests. Each turns off background work that slows the
@@ -12,7 +13,39 @@ const testSettings = {
   'telemetry.telemetryLevel': 'off',
 };
 
+/**
+ * `--coverage` (or `COVERAGE=1`, which `pnpm test-docker --coverage` sets) records which lines of
+ * src/ the tests run and writes a report to coverage/
+ */
+const coverage = process.argv.includes('--coverage') || process.env.COVERAGE === '1';
+const coverageDir = path.resolve(__dirname, '..', 'coverage');
+const rawCoverageDir = path.join(coverageDir, 'tmp');
+
+/**
+ * Turns the V8 coverage the extension host recorded for out/test.js into a report on the files in
+ * src/, using the bundle's source map
+ */
+async function writeCoverageReport() {
+  await new Report({
+    tempDirectory: rawCoverageDir,
+    reportsDirectory: coverageDir,
+    reporter: ['text-summary', 'html', 'lcov'],
+    // Report on the source files the bundle maps back to, leaving out the tests and VS Code's
+    // built-in extensions, which share the extension host. An `include` list of src/ would drop
+    // everything: v8-to-istanbul checks each range against it using the source map's file://
+    // URLs, which never match.
+    excludeAfterRemap: true,
+    exclude: ['test/**', '.vscode-test/**'],
+  }).run();
+  console.log(`Coverage report: ${path.join(coverageDir, 'index.html')}`);
+}
+
 async function main() {
+  if (coverage) {
+    fs.rmSync(coverageDir, { recursive: true, force: true });
+  }
+
+  let failed = false;
   try {
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`
@@ -42,10 +75,21 @@ async function main() {
         '--disable-extensions',
         `--user-data-dir=${userDataDir}`,
       ],
+      // Set only for the extension host, which runs the extension and the tests, so V8 doesn't
+      // record coverage for the rest of VS Code
+      extensionTestsEnv: coverage ? { NODE_V8_COVERAGE: rawCoverageDir } : undefined,
     });
   } catch (err) {
     console.error(err);
     console.error('Failed to run tests');
+    failed = true;
+  }
+
+  // Report coverage even when tests fail, since a few failures barely change it
+  if (coverage) {
+    await writeCoverageReport();
+  }
+  if (failed) {
     process.exit(1);
   }
 }

@@ -1,6 +1,7 @@
 // Builds the test container and runs the tests inside it.
 //   --grep <REGEX>  only run tests whose suite or test name matches REGEX
 //   --crlf          make test documents use CRLF line endings, as they do on Windows
+//   --coverage      write a coverage report to coverage/
 const { spawnSync } = require('child_process');
 const path = require('path');
 const { parseArgs } = require('util');
@@ -9,6 +10,7 @@ const { values: options } = parseArgs({
   options: {
     grep: { type: 'string', default: '' },
     crlf: { type: 'boolean', default: false },
+    coverage: { type: 'boolean', default: false },
   },
 });
 
@@ -44,6 +46,8 @@ process.exit(
     `MOCHA_GREP=${options.grep}`,
     '--env',
     `TEST_EOL=${options.crlf ? 'crlf' : ''}`,
+    '--env',
+    `COVERAGE=${options.coverage ? '1' : ''}`,
     '-v',
     `${root}:/app`,
     // Keep the container's Linux dependencies, build output, VS Code download, and caches in

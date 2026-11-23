@@ -67,6 +67,7 @@ When submitting a PR, please fill out the template that is presented by GitHub w
    pnpm test-docker                 # Run tests inside Docker container
    pnpm test-docker --grep <REGEX>  # Run only tests/suites matching <REGEX> inside Docker container
    pnpm test-docker --crlf          # Run tests inside Docker container with CRLF line endings, as on Windows
+   pnpm test-docker --coverage      # Run tests inside Docker container and write a coverage report to coverage/
 
    # Otherwise, build and run the tests locally:
    pnpm build                       # Build
