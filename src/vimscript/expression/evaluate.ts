@@ -140,6 +140,17 @@ function mapNumber(value: Value, f: (x: number) => number): NumberValue | FloatV
   }
 }
 
+/** A tuple of `N` required arguments */
+type RequiredArgs<N extends number, R extends Value[] = []> = R['length'] extends N
+  ? R
+  : RequiredArgs<N, [...R, Value]>;
+/** Pads `R` with optional arguments until it has length `N` */
+type PadArgs<N extends number, R extends Array<Value | undefined>> = R['length'] extends N
+  ? R
+  : PadArgs<N, [...R, Value | undefined]>;
+/** The evaluated arguments of a function taking between `Min` and `Max` arguments */
+type FunctionArgs<Min extends number, Max extends number> = PadArgs<Max, RequiredArgs<Min>>;
+
 export class Variable {
   public value: Value;
   public locked: boolean = false;
@@ -751,21 +762,22 @@ export class EvaluationContext {
       return arg;
     };
 
-    const getArgs = (min: number, max?: number) => {
-      if (max === undefined) {
-        max = min;
-      }
+    const getArgs = <Min extends number, Max extends number = Min>(
+      min: Min,
+      max?: Max,
+    ): FunctionArgs<Min, Max> => {
+      const _max = max ?? min;
       if (call.args.length < min) {
         throw VimError.NotEnoughArgs(call.func);
       }
-      if (call.args.length > max) {
+      if (call.args.length > _max) {
         throw VimError.TooManyArgs(call.func);
       }
       const args: Array<Value | undefined> = call.args.map((arg) => this.evaluate(arg));
-      while (args.length < max) {
+      while (args.length < _max) {
         args.push(undefined);
       }
-      return args;
+      return args as FunctionArgs<Min, Max>;
     };
 
     type NumericBuiltinOptions<T extends Value> = {
@@ -779,7 +791,7 @@ export class EvaluationContext {
       const [x] = getArgs(1);
       const convert = options.convert;
       const wrap = options.wrap;
-      return wrap(func(convert(x!)));
+      return wrap(func(convert(x)));
     };
     const numericBinary = <T extends Value>(
       func: (x: number, y: number) => number,
@@ -788,7 +800,7 @@ export class EvaluationContext {
       const [x, y] = getArgs(2);
       const convert = options.convert;
       const wrap = options.wrap;
-      return wrap(func(convert(x!), convert(y!)));
+      return wrap(func(convert(x), convert(y)));
     };
     const int1 = (func: (x: number) => number): NumberValue =>
       numericUnary(func, { convert: toInt, wrap: int });
@@ -815,15 +827,15 @@ export class EvaluationContext {
       }
       case 'add': {
         const [l, item] = getArgs(2);
-        if (l!.type === 'blob') {
-          const newBytes = new Uint8Array(l!.data.byteLength + 1);
-          newBytes.set(new Uint8Array(l!.data));
-          newBytes[newBytes.length - 1] = toInt(item!);
-          l!.data = newBytes;
+        if (l.type === 'blob') {
+          const newBytes = new Uint8Array(l.data.byteLength + 1);
+          newBytes.set(new Uint8Array(l.data));
+          newBytes[newBytes.length - 1] = toInt(item);
+          l.data = newBytes;
           return blob(newBytes);
         }
-        const lst = toList(l!);
-        lst.items.push(item!);
+        const lst = toList(l);
+        lst.items.push(item);
         return lst;
       }
       case 'asin': {
@@ -842,10 +854,9 @@ export class EvaluationContext {
       case 'assert_equal': {
         const [expected, actual, msg] = getArgs(2, 3);
         return assertThat(
-          expected!.type === actual!.type &&
-            this.evaluateComparison('==', true, expected!, actual!),
+          expected.type === actual.type && this.evaluateComparison('==', true, expected, actual),
           msg,
-          () => `Expected ${displayValue(expected!)} but got ${displayValue(actual!)}`,
+          () => `Expected ${displayValue(expected)} but got ${displayValue(actual)}`,
         );
       }
       // TODO: assert_equalfile()
@@ -854,27 +865,27 @@ export class EvaluationContext {
       case 'assert_false': {
         const [actual, msg] = getArgs(1, 2);
         return assertThat(
-          this.evaluateComparison('==', true, bool(false), actual!),
+          this.evaluateComparison('==', true, bool(false), actual),
           msg,
-          () => `Expected False but got ${displayValue(actual!)}`,
+          () => `Expected False but got ${displayValue(actual)}`,
         );
       }
       case 'assert_inrange': {
         const [lower, upper, actual, msg] = getArgs(3, 4);
         return assertThat(
-          this.evaluateComparison('>=', true, actual!, lower!) &&
-            this.evaluateComparison('<=', true, actual!, upper!),
+          this.evaluateComparison('>=', true, actual, lower) &&
+            this.evaluateComparison('<=', true, actual, upper),
           msg,
           () =>
-            `Expected range ${displayValue(lower!)} - ${displayValue(upper!)} but got ${displayValue(actual!)}`,
+            `Expected range ${displayValue(lower)} - ${displayValue(upper)} but got ${displayValue(actual)}`,
         );
       }
       case 'assert_match': {
         const [pattern, actual, msg] = getArgs(2, 3);
         return assertThat(
-          this.evaluateComparison('=~', true, actual!, pattern!),
+          this.evaluateComparison('=~', true, actual, pattern),
           msg,
-          () => `Pattern '${toString(pattern!)}' does not match '${toString(actual!)}'`,
+          () => `Pattern '${toString(pattern)}' does not match '${toString(actual)}'`,
         );
       }
       case 'assert_nobeep': {
@@ -883,33 +894,33 @@ export class EvaluationContext {
       case 'assert_notequal': {
         const [expected, actual, msg] = getArgs(2, 3);
         return assertThat(
-          this.evaluateComparison('!=', true, expected!, actual!),
+          this.evaluateComparison('!=', true, expected, actual),
           msg,
-          () => `Expected not equal to ${displayValue(expected!)}`,
+          () => `Expected not equal to ${displayValue(expected)}`,
         );
       }
       case 'assert_notmatch': {
         const [pattern, actual, msg] = getArgs(2, 3);
         return assertThat(
-          !this.evaluateComparison('=~', true, actual!, pattern!),
+          !this.evaluateComparison('=~', true, actual, pattern),
           msg,
-          () => `Pattern '${toString(pattern!)}' does match '${toString(actual!)}'`,
+          () => `Pattern '${toString(pattern)}' does match '${toString(actual)}'`,
         );
       }
       case 'assert_report': {
-        return assertFailed(toString(getArgs(1)[0]!));
+        return assertFailed(toString(getArgs(1)[0]));
       }
       case 'assert_true': {
         const [actual, msg] = getArgs(1, 2);
         return assertThat(
-          this.evaluateComparison('!=', true, bool(false), actual!),
+          this.evaluateComparison('!=', true, bool(false), actual),
           msg,
-          () => `Expected True but got ${displayValue(actual!)}`,
+          () => `Expected True but got ${displayValue(actual)}`,
         );
       }
       case 'byte2line': {
         const [_byte] = getArgs(1);
-        const byte = toInt(_byte!);
+        const byte = toInt(_byte);
         if (byte <= 0) {
           return int(-1);
         }
@@ -918,7 +929,7 @@ export class EvaluationContext {
       // TODO: byteidx[comp]
       case 'call': {
         const [_func, arglist, dict] = getArgs(2, 3);
-        if (arglist!.type !== 'list') {
+        if (arglist.type !== 'list') {
           throw VimError.ListRequiredForArgument(2);
         }
         const func: FuncRefValue = (() => {
@@ -926,23 +937,23 @@ export class EvaluationContext {
             return _func;
           }
           return funcref({
-            name: toString(_func!),
+            name: toString(_func),
             arglist: list([]),
             dict: dict ? toDict(dict) : undefined,
           });
         })();
-        return this.evaluate(funcrefCall(toExpr(func), arglist!.items.map(toExpr)));
+        return this.evaluate(funcrefCall(toExpr(func), arglist.items.map(toExpr)));
       }
       case 'ceil': {
         return float1(Math.ceil);
       }
       case 'col': {
         const [s] = getArgs(1);
-        return int(getpos(toString(s!)).col);
+        return int(getpos(toString(s)).col);
       }
       case 'copy': {
         const [x] = getArgs(1);
-        return copy(x!, false);
+        return copy(x, false);
       }
       case 'cos': {
         return float1(Math.cos);
@@ -954,36 +965,36 @@ export class EvaluationContext {
         let [comp, expr, ic, start] = getArgs(2, 4);
         const matchCase = toInt(ic ?? bool(false)) === 0;
         if (start !== undefined) {
-          if (comp!.type !== 'list') {
+          if (comp.type !== 'list') {
             throw VimError.InvalidArgument474();
           }
-          if (toInt(start) >= comp!.items.length) {
+          if (toInt(start) >= comp.items.length) {
             throw VimError.ListIndexOutOfRange(toInt(start));
           }
           while (toInt(start) < 0) {
-            start = int(toInt(start) + comp!.items.length);
+            start = int(toInt(start) + comp.items.length);
           }
         }
         let count = 0;
-        switch (comp!.type) {
+        switch (comp.type) {
           case 'string':
-            const s = toString(expr!);
+            const s = toString(expr);
             if (s) {
               const regex = new RegExp(escapeRegExp(s), matchCase ? 'g' : 'ig');
-              count = [...comp!.value.matchAll(regex)].length;
+              count = [...comp.value.matchAll(regex)].length;
             }
             break;
           case 'list':
             const startIdx = start ? toInt(start) : 0;
-            for (let i = startIdx; i < comp!.items.length; i++) {
-              if (this.evaluateComparison('==', matchCase, comp!.items[i], expr!)) {
+            for (let i = startIdx; i < comp.items.length; i++) {
+              if (this.evaluateComparison('==', matchCase, comp.items[i], expr)) {
                 count++;
               }
             }
             break;
           case 'dictionary':
-            for (const val of comp!.items.values()) {
-              if (this.evaluateComparison('==', matchCase, val, expr!)) {
+            for (const val of comp.items.values()) {
+              if (this.evaluateComparison('==', matchCase, val, expr)) {
                 count++;
               }
             }
@@ -996,7 +1007,7 @@ export class EvaluationContext {
       // TODO: cursor()
       case 'deepcopy': {
         const [x] = getArgs(1);
-        return copy(x!, true);
+        return copy(x, true);
       }
       case 'empty': {
         let [x] = getArgs(1);
@@ -1023,12 +1034,12 @@ export class EvaluationContext {
       case 'escape': {
         const [s, chars] = getArgs(2);
         return str(
-          toString(s!).replace(new RegExp(`[${escapeRegExp(toString(chars!))}]`, 'g'), '\\$&'),
+          toString(s).replace(new RegExp(`[${escapeRegExp(toString(chars))}]`, 'g'), '\\$&'),
         );
       }
       case 'eval': {
         const [expr] = getArgs(1);
-        return this.evaluate(expressionParser.tryParse(toString(expr!)));
+        return this.evaluate(expressionParser.tryParse(toString(expr)));
       }
       // TODO: exists()
       case 'exp': {
@@ -1041,14 +1052,14 @@ export class EvaluationContext {
       case 'flatten':
       case 'flattennew': {
         const [l, _depth] = getArgs(1, 2);
-        if (l!.type !== 'list') {
+        if (l.type !== 'list') {
           throw VimError.ArgumentMustBeAList(call.func);
         }
         const depth = _depth ? toInt(_depth) : 99999999;
         if (depth < 0) {
           throw VimError.MaxDepthMustBeANonNegativeNumber();
         }
-        let newItems: Value[] = [...l!.items];
+        let newItems: Value[] = [...l.items];
         for (let i = 0; i < depth; ++i) {
           const temp: Value[] = [];
           let foundList = false;
@@ -1068,7 +1079,7 @@ export class EvaluationContext {
           newItems = temp;
         }
         if (call.func === 'flatten') {
-          l!.items = newItems;
+          l.items = newItems;
         }
         return list(newItems);
       }
@@ -1090,7 +1101,7 @@ export class EvaluationContext {
           .then(optWhitespace)
           .then(exCommandNameParser)
           .skip(all)
-          .parse(toString(name!));
+          .parse(toString(name));
         return str(result.status ? fullCommandName(result.value) : '');
       }
       case 'function': {
@@ -1100,13 +1111,13 @@ export class EvaluationContext {
             if (dict && dict.type !== 'dictionary') {
               throw VimError.ExpectedADict();
             }
-            return funcref({ name: toString(name!), arglist, dict });
+            return funcref({ name: toString(name), arglist, dict });
           } else if (arglist.type === 'dictionary') {
             if (dict) {
               // function('abs', {}, {})
               throw VimError.SecondArgumentOfFunction();
             }
-            return funcref({ name: toString(name!), dict: arglist });
+            return funcref({ name: toString(name), dict: arglist });
           } else {
             throw VimError.SecondArgumentOfFunction();
           }
@@ -1118,7 +1129,7 @@ export class EvaluationContext {
         // if (toString(name!) is invalid function) {
         //   throw VimError.fromCode(ErrorCode.UnknownFunction_funcref, toString(name!));
         // }
-        return funcref({ name: toString(name!), arglist, dict });
+        return funcref({ name: toString(name), arglist, dict });
       }
       // TODO: funcref()
       case 'garbagecollect': {
@@ -1127,18 +1138,18 @@ export class EvaluationContext {
       }
       case 'get': {
         const [_haystack, _idx, _default] = getArgs(2, 3);
-        const haystack: Value = _haystack!;
+        const haystack: Value = _haystack;
         if (haystack.type === 'list') {
-          let idx = toInt(_idx!);
+          let idx = toInt(_idx);
           idx = idx < 0 ? haystack.items.length + idx : idx;
           return idx < haystack.items.length ? haystack.items[idx] : (_default ?? int(0));
         } else if (haystack.type === 'blob') {
           const bytes = new Uint8Array(haystack.data);
-          let idx = toInt(_idx!);
+          let idx = toInt(_idx);
           idx = idx < 0 ? bytes.length + idx : idx;
           return idx < bytes.length ? int(bytes[idx]) : (_default ?? int(-1));
         } else if (haystack.type === 'dictionary') {
-          const val = haystack.items.get(toString(_idx!));
+          const val = haystack.items.get(toString(_idx));
           return val ? val : (_default ?? int(0));
         }
         return _default ?? int(0);
@@ -1153,10 +1164,10 @@ export class EvaluationContext {
         const [lnum, _end] = getArgs(1, 2);
         // TODO: When {lnum} is a String that doesn't start with a digit, line() is called
         if (_end === undefined) {
-          return str(this.vimState!.document.lineAt(toInt(lnum!)).text);
+          return str(this.vimState!.document.lineAt(toInt(lnum)).text);
         }
         const lines: string[] = [];
-        for (let i = toInt(lnum!); i <= toInt(_end); i++) {
+        for (let i = toInt(lnum); i <= toInt(_end); i++) {
           lines.push(this.vimState!.document.lineAt(i).text);
         }
         return list(lines.map(str));
@@ -1166,14 +1177,14 @@ export class EvaluationContext {
       }
       case 'getpos': {
         const [s] = getArgs(1);
-        const { bufnum, lnum, col, off } = getpos(toString(s!));
+        const { bufnum, lnum, col, off } = getpos(toString(s));
         return list([int(bufnum), int(lnum), int(col), int(off)]);
       }
       // TODO: getreg()
       // TODO: getreginfo()
       case 'getregtype': {
         const [regname] = getArgs(1);
-        const reg = Register.getSync(toString(regname!));
+        const reg = Register.getSync(toString(regname));
         if (reg === undefined) {
           return str('');
         }
@@ -1193,30 +1204,30 @@ export class EvaluationContext {
       }
       case 'gettext': {
         const [s] = getArgs(1);
-        return str(toString(s!));
+        return str(toString(s));
       }
       // TODO: glob2regpat()
       case 'has': {
         const [feature] = getArgs(1);
-        return bool(toString(feature!) === 'vscode');
+        return bool(toString(feature) === 'vscode');
       }
       case 'has_key': {
         const [d, k] = getArgs(2);
-        return bool(toDict(d!).items.has(toString(k!)));
+        return bool(toDict(d).items.has(toString(k)));
       }
       // TODO: hasmapto()
       // TODO: histadd()/histdel()/histget()/histnr()
       case 'id': {
         // NOTE: Vim behaves differently (generally returning pointer addresses), but this serves the purpose
         const [x] = getArgs(1);
-        if (x!.type === 'number' || x!.type === 'float' || x!.type === 'string') {
-          return str(x!.value.toString());
+        if (x.type === 'number' || x.type === 'float' || x.type === 'string') {
+          return str(x.value.toString());
         }
-        return str(x!.id);
+        return str(x.id);
       }
       case 'index': {
         const [_haystack, _needle, _start, ic] = getArgs(2, 4);
-        const haystack: Value = _haystack!;
+        const haystack: Value = _haystack;
 
         if (haystack.type === 'list') {
           let start: number | undefined;
@@ -1229,7 +1240,7 @@ export class EvaluationContext {
             if (start && idx < start) {
               continue;
             }
-            if (this.evaluateComparison('==', true, item, _needle!)) {
+            if (this.evaluateComparison('==', true, item, _needle)) {
               return int(idx);
             }
           }
@@ -1243,23 +1254,23 @@ export class EvaluationContext {
       case 'insert': {
         const [l, item, _idx] = getArgs(2, 3);
         const idx = _idx ? toInt(_idx) : 0;
-        if (l!.type === 'blob') {
-          if (idx > l!.data.byteLength) {
+        if (l.type === 'blob') {
+          if (idx > l.data.byteLength) {
             throw VimError.InvalidArgument475(idx.toString());
           }
-          const bytes = new Uint8Array(l!.data);
+          const bytes = new Uint8Array(l.data);
           const newBytes = new Uint8Array(bytes.length + 1);
           newBytes.set(bytes.subarray(0, idx), 0);
-          newBytes[idx] = toInt(item!);
+          newBytes[idx] = toInt(item);
           newBytes.set(bytes.subarray(idx), idx + 1);
-          l!.data = newBytes;
+          l.data = newBytes;
           return blob(newBytes);
         }
-        const lst = toList(l!);
+        const lst = toList(l);
         if (idx > lst.items.length) {
           throw VimError.ListIndexOutOfRange(idx);
         }
-        lst.items.splice(idx, 0, item!);
+        lst.items.splice(idx, 0, item);
         return lst;
       }
       case 'invert': {
@@ -1277,12 +1288,12 @@ export class EvaluationContext {
       }
       case 'items': {
         const [d] = getArgs(1);
-        return list([...toDict(d!).items.entries()].map(([k, v]) => list([str(k), v])));
+        return list([...toDict(d).items.entries()].map(([k, v]) => list([str(k), v])));
       }
       case 'join': {
         const [l, sep] = getArgs(1, 2);
         return str(
-          toList(l!)
+          toList(l)
             .items.map(toString)
             .join(sep ? toString(sep) : ''),
         );
@@ -1307,7 +1318,7 @@ export class EvaluationContext {
           }
         };
         const [expr] = getArgs(1);
-        return fromJSObj(JSON.parse(toString(expr!)));
+        return fromJSObj(JSON.parse(toString(expr)));
       }
       case 'json_encode': {
         const toJSObj = (x: Value): unknown => {
@@ -1333,36 +1344,36 @@ export class EvaluationContext {
           }
         };
         const [expr] = getArgs(1);
-        return str(JSON.stringify(toJSObj(expr!), null, 0)); // TODO: Fix whitespace
+        return str(JSON.stringify(toJSObj(expr), null, 0)); // TODO: Fix whitespace
       }
       case 'keys': {
         const [d] = getArgs(1);
-        return list([...toDict(d!).items.keys()].map(str));
+        return list([...toDict(d).items.keys()].map(str));
       }
       case 'len': {
         const [x] = getArgs(1);
-        switch (x!.type) {
+        switch (x.type) {
           case 'number':
-            return int(x!.value.toString().length);
+            return int(x.value.toString().length);
           case 'string':
-            return int(x!.value.length);
+            return int(x.value.length);
           case 'list':
-            return int(x!.items.length);
+            return int(x.items.length);
           case 'dictionary':
-            return int(x!.items.size);
+            return int(x.items.size);
           case 'blob':
-            return int(x!.data.byteLength);
+            return int(x.data.byteLength);
           default:
             throw VimError.InvalidTypeForLen();
         }
       }
       case 'line': {
         const [s, winid] = getArgs(1, 2);
-        return int(getpos(toString(s!)).lnum);
+        return int(getpos(toString(s)).lnum);
       }
       case 'line2byte': {
         const [_line] = getArgs(1);
-        const line = toInt(_line!);
+        const line = toInt(_line);
         if (line <= 0) {
           return int(-1);
         }
@@ -1393,7 +1404,7 @@ export class EvaluationContext {
                       ['v:val', new Variable(val)],
                     ]),
                   );
-                  const retval = this.evaluate(expressionParser.tryParse(toString(fn!)));
+                  const retval = this.evaluate(expressionParser.tryParse(toString(fn)));
                   this.localScopes.pop();
                   return retval;
               }
@@ -1433,7 +1444,7 @@ export class EvaluationContext {
           case Mode.Normal:
             return str('n');
           case Mode.OperatorPendingMode:
-            return nonZeroArg(arg!) ? str('n') : str('no');
+            return nonZeroArg(arg) ? str('n') : str('no');
           case Mode.Visual:
             return str('v');
           case Mode.VisualLine:
@@ -1454,7 +1465,7 @@ export class EvaluationContext {
       case 'nextnonblank':
       case 'prevnonblank': {
         const [_line] = getArgs(1);
-        const line = toInt(_line!);
+        const line = toInt(_line);
         const forward = call.func === 'nextnonblank';
         if (forward ? line <= 0 : line > this.vimState!.document.lineCount) {
           return int(0);
@@ -1479,8 +1490,8 @@ export class EvaluationContext {
       // TODO: rand()
       case 'range': {
         const [val, max, stride] = getArgs(1, 3);
-        const start = max !== undefined ? toInt(val!) : 0;
-        const end = max !== undefined ? toInt(max) : toInt(val!) - 1;
+        const start = max !== undefined ? toInt(val) : 0;
+        const end = max !== undefined ? toInt(max) : toInt(val) - 1;
         const step = stride !== undefined ? toInt(stride) : 1;
         if (step === 0) {
           throw VimError.StrideIsZero();
@@ -1505,17 +1516,17 @@ export class EvaluationContext {
       case 'repeat': {
         const [val, count] = getArgs(2);
         if (val?.type === 'list') {
-          const items: Value[] = new Array<Value[]>(toInt(count!)).fill(val.items).flat();
+          const items: Value[] = new Array<Value[]>(toInt(count)).fill(val.items).flat();
           return list(items);
         } else {
-          return str(toString(val!).repeat(toInt(count!)));
+          return str(toString(val).repeat(toInt(count)));
         }
       }
       case 'remove': {
         const [_haystack, _idx, _end] = getArgs(2, 3);
-        const haystack: Value = _haystack!;
+        const haystack: Value = _haystack;
         if (haystack.type === 'list') {
-          let idx = toInt(_idx!);
+          let idx = toInt(_idx);
           idx = idx < 0 ? haystack.items.length + idx : idx;
           if (_end === undefined) {
             return haystack.items.splice(idx, 1)[0]; // TODO: This doesn't remove the item?
@@ -1525,7 +1536,7 @@ export class EvaluationContext {
         }
         // TODO: remove({blob}, {idx}, [{end}])
         else if (haystack.type === 'dictionary') {
-          const key = toString(_idx!);
+          const key = toString(_idx);
           const val = haystack.items.get(key);
           if (val) {
             haystack.items.delete(key);
@@ -1591,7 +1602,7 @@ export class EvaluationContext {
       case 'split': {
         const [s, pattern, keepempty] = getArgs(1, 3);
         // TODO: Actually parse pattern
-        const result = toString(s!).split(pattern && toString(pattern) ? toString(pattern) : /\s+/);
+        const result = toString(s).split(pattern && toString(pattern) ? toString(pattern) : /\s+/);
         if (!(keepempty && toInt(keepempty))) {
           if (result[0] === '') {
             result.shift();
@@ -1608,7 +1619,7 @@ export class EvaluationContext {
       case 'str2float': {
         // TODO: Support 1e40 (rather than 1.0e40)
         const [_s, quoted] = getArgs(1, 2);
-        const s = toString(_s!);
+        const s = toString(_s);
         if (/^inf/i.test(s)) return float(Infinity);
         if (/^-inf/i.test(s)) return float(-Infinity);
         if (/^nan/i.test(s)) return float(NaN);
@@ -1618,7 +1629,7 @@ export class EvaluationContext {
       case 'str2list': {
         const [s, _ignored] = getArgs(1, 2);
         const result: number[] = [];
-        for (const char of toString(s!)) {
+        for (const char of toString(s)) {
           result.push(char.charCodeAt(0));
         }
         return list(result.map(int));
@@ -1626,7 +1637,7 @@ export class EvaluationContext {
       case 'str2nr': {
         const [_s, _base] = getArgs(1, 2);
         const base = _base ? toInt(_base) : 10;
-        let s = toString(_s!);
+        let s = toString(_s);
 
         if (base === 16) {
           s = s.replace(/^0x/i, '');
@@ -1643,20 +1654,20 @@ export class EvaluationContext {
       case 'stridx': {
         const [haystack, needle, start] = getArgs(2, 3);
 
-        return int(toString(haystack!).indexOf(toString(needle!), start ? toInt(start) : 0));
+        return int(toString(haystack).indexOf(toString(needle), start ? toInt(start) : 0));
       }
       case 'string': {
         const [x] = getArgs(1);
-        return str(displayValue(x!));
+        return str(displayValue(x));
       }
       case 'strlen': {
         const [s] = getArgs(1);
-        return int(toString(s!).length);
+        return int(toString(s).length);
       }
       case 'strpart': {
         const [_src, _start, _len, chars] = getArgs(2, 4);
-        const src = toString(_src!);
-        const start = toInt(_start!);
+        const src = toString(_src);
+        const start = toInt(_start);
         const len = _len ? toInt(_len) : src.length - start;
         return str(src.substring(start, start + len));
       }
@@ -1671,15 +1682,15 @@ export class EvaluationContext {
       // TODO: timer*()
       case 'tolower': {
         const [s] = getArgs(1);
-        return str(toString(s!).toLowerCase());
+        return str(toString(s).toLowerCase());
       }
       case 'toupper': {
         const [s] = getArgs(1);
-        return str(toString(s!).toUpperCase());
+        return str(toString(s).toUpperCase());
       }
       case 'tr': {
         const [_src, _from, _to] = getArgs(1, 3);
-        const src = toString(_src!);
+        const src = toString(_src);
         const from = toString(_from!);
         const to = toString(_to!);
         if (from.length !== to.length) {
@@ -1694,7 +1705,7 @@ export class EvaluationContext {
       case 'trim': {
         const [_s, mask, _dir] = getArgs(1, 3);
         // TODO: use mask
-        let s = toString(_s!);
+        let s = toString(_s);
         const dir = _dir ? toInt(_dir) : 0;
         if (dir === 0) {
           // Trim start and end
@@ -1744,26 +1755,26 @@ export class EvaluationContext {
         const [l, func, dict] = getArgs(1, 3);
         // TODO: Use func (see sort() and try to re-use implementation)
         // TODO: Use dict
-        if (l!.type !== 'list') {
+        if (l.type !== 'list') {
           throw VimError.ArgumentMustBeAList(call.func);
         }
-        if (l!.items.length > 1) {
-          let prev: Value = l!.items[0];
-          for (let i = 1; i < l!.items.length;) {
-            const val = l!.items[i];
+        if (l.items.length > 1) {
+          let prev: Value = l.items[0];
+          for (let i = 1; i < l.items.length;) {
+            const val = l.items[i];
             if (prev.type === val.type && this.evaluateComparison('==', true, prev, val)) {
-              l!.items.splice(i, 1);
+              l.items.splice(i, 1);
             } else {
               prev = val;
               i++;
             }
           }
         }
-        return l!;
+        return l;
       }
       case 'values': {
         const [d] = getArgs(1);
-        return list([...toDict(d!).items.values()]);
+        return list([...toDict(d).items.values()]);
       }
       case 'visualmode': {
         const [arg] = getArgs(1); // TODO: Use arg
