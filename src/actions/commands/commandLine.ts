@@ -11,7 +11,7 @@ import { StatusBar } from '../../statusBar';
 import { TextEditor } from '../../textEditor';
 import { Clipboard } from '../../util/clipboard';
 import { getPathDetails, readDirectory } from '../../util/path';
-import { builtinExCommands } from '../../vimscript/exCommandParser';
+import { builtinExCommandNames, fullCommandName } from '../../vimscript/exCommandNames';
 import { SearchDirection } from '../../vimscript/pattern';
 import { BaseCommand, RegisterAction } from '../base';
 
@@ -25,12 +25,10 @@ abstract class CommandLineAction extends BaseCommand {
   protected abstract run(vimState: VimState, commandLine: CommandLine): Promise<void>;
 
   public override async exec(position: vscode.Position, vimState: VimState): Promise<void> {
-    if (
-      !(
-        vimState.modeData.mode === Mode.CommandlineInProgress ||
-        vimState.modeData.mode === Mode.SearchInProgressMode
-      )
-    ) {
+    if (!(
+      vimState.modeData.mode === Mode.CommandlineInProgress ||
+      vimState.modeData.mode === Mode.SearchInProgressMode
+    )) {
       throw new Error(`Unexpected mode ${vimState.modeData.mode} in CommandLineAction`);
     }
 
@@ -91,8 +89,8 @@ class CommandLineTab extends CommandLineAction {
     const fileRegex = /^\s*\w+\s+/g;
     if (cmdRegex.test(evalCmd)) {
       // Command completion
-      newCompletionItems = builtinExCommands
-        .map((pair) => pair[0][0] + pair[0][1])
+      newCompletionItems = builtinExCommandNames
+        .map(fullCommandName)
         .filter((cmd) => cmd.startsWith(evalCmd))
         // Remove the already typed portion in the array
         .map((cmd) => cmd.slice(cmd.search(evalCmd) + evalCmd.length))

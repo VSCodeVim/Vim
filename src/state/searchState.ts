@@ -163,7 +163,7 @@ export class SearchState {
       return undefined;
     }
 
-    const effectiveDirection = (direction * this.direction) as SearchDirection;
+    const effectiveDirection: SearchDirection = direction * this.direction;
     let index: number | undefined;
 
     if (effectiveDirection === SearchDirection.Forward) {

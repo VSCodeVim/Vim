@@ -1,8 +1,10 @@
 .github/**
 .husky/**
-.yarn/**
+pnpm-lock.yaml
+pnpm-workspace.yaml
 .vscode/**
 .vscode-test/**
+.vscode-test-web/**
 
 **/*.ts
 *.yml
@@ -11,9 +13,8 @@ src/**
 build/**
 test/**
 typings/**
-out/src/**
-out/test/**
-out/*.map
+out/**
+dist/*.map
 node_modules/**
 images/design/**
 
@@ -21,6 +22,6 @@ images/design/**
 .prettierignore
 
 tsconfig.json
-webpack.*.js
+esbuild.mts
 gulpfile.js
 renovate.json

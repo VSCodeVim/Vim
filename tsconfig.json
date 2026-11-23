@@ -1,25 +1,24 @@
 {
   "compilerOptions": {
     "lib": ["ES2021"],
-    "module": "commonjs",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "ES2021",
-    "outDir": "out",
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "sourceMap": true,
     "strict": true,
     "useUnknownInCatchVariables": false,
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
-      "platform/*": ["src/platform/node/*"]
+      "platform/*": ["./src/platform/node/*"]
     },
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true
-    // "isolatedModules": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "noEmit": true
   },
   "exclude": ["node_modules", "!node_modules/@types"]
 }

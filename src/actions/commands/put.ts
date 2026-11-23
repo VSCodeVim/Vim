@@ -224,7 +224,7 @@ abstract class BasePutCommand extends BaseCommand {
             range = new vscode.Range(pos, pos);
           } else {
             range = new vscode.Range(replaceRange.start, replaceRange.end);
-            deletedNewlines = document.getText(range).split('\n').length - 1;
+            deletedNewlines = range.end.line - range.start.line;
           }
         }
 
@@ -344,6 +344,7 @@ class PutCommand extends BasePutCommand {
     if (mode === Mode.Normal) {
       let pos: Position;
       if (registerMode === RegisterMode.CharacterWise || registerMode === RegisterMode.BlockWise) {
+        // TODO: Use getSurrogateAwareRight() to fix `xp` transpose on surrogate pairs (#3070)
         pos = cursor.stop.getRight();
       } else if (registerMode === RegisterMode.LineWise) {
         pos = cursor.stop.getLineEnd();

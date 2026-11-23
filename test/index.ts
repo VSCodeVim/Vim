@@ -9,18 +9,31 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-import glob from 'glob';
 import Mocha from 'mocha';
-import * as path from 'path';
+import { takeCoverage } from 'node:v8';
+import testFiles from 'test-files';
+import * as vscode from 'vscode';
 
 import { Globals } from '../src/globals';
 import { Configuration } from './testConfiguration';
 
+// The test build bundles the extension and the tests into one file, which VS Code loads both as the
+// extension (`main` in out/package.json) and as the test runner, so the tests share module state,
+// such as `Globals`, with the extension
+export { activate, deactivate } from '../extension';
+
 Globals.isTesting = true;
 Globals.mockConfiguration = new Configuration();
 
-export function run(): Promise<void> {
+export async function run(): Promise<void> {
   const mochaGrep = new RegExp(process.env.MOCHA_GREP || '');
+
+  // New documents get their line ending from `files.eol`. It's a user setting, which persists in
+  // the test's VS Code profile, so set it on every run rather than only when `TEST_EOL` is set.
+  const { testEol } = await import('./testUtils');
+  await vscode.workspace
+    .getConfiguration('files')
+    .update('eol', testEol, vscode.ConfigurationTarget.Global);
 
   // Create the mocha test
   const mocha = new Mocha({
@@ -28,32 +41,62 @@ export function run(): Promise<void> {
     color: true,
     timeout: 5000,
     grep: mochaGrep,
+    // Fail in CI if a `newTestOnly` or `.only` was committed, since it would skip every other test
+    forbidOnly: !!process.env.CI,
+    rootHooks: {
+      beforeEach: async () => {
+        const testUtils = await import('./testUtils');
+        testUtils.resetGlobalState();
+        // Runs after the suite's `suiteSetup` hooks, so this undoes only the test's own changes,
+        // including any its `setup` hooks make
+        restoreTestConfig = await testUtils.saveConfig();
+      },
+      afterEach: async () => restoreTestConfig?.(),
+      afterAll: async () => (await import('./testUtils')).removeTestTempDir(),
+    },
   });
+  let restoreTestConfig: (() => Promise<void>) | undefined;
 
-  const testsRoot = path.resolve(__dirname, '.');
+  // Undo each suite's config changes (e.g. from `setupWorkspace` in `suiteSetup`) when it ends, so
+  // they don't leak into the suites after it. The hooks are added as each suite is created, before
+  // its body runs, so they run before the suite's own `suiteSetup` and `suiteTeardown`.
+  const scopeConfigToSuites = (parent: Mocha.Suite) => {
+    parent.on(Mocha.Suite.constants.EVENT_SUITE_ADD_SUITE, (suite: Mocha.Suite) => {
+      let restoreSuiteConfig: (() => Promise<void>) | undefined;
+      suite.beforeAll(async () => {
+        restoreSuiteConfig = await (await import('./testUtils')).saveConfig();
+      });
+      suite.afterAll(async () => restoreSuiteConfig?.());
+      scopeConfigToSuites(suite);
+    });
+  };
+  scopeConfigToSuites(mocha.suite);
+
+  // Load each test file from the bundle, the way `mocha.addFile` would load it from disk
+  for (const [file, load] of testFiles) {
+    mocha.suite.emit(Mocha.Suite.constants.EVENT_FILE_PRE_REQUIRE, globalThis, file, mocha);
+    mocha.suite.emit(Mocha.Suite.constants.EVENT_FILE_REQUIRE, await load(), file, mocha);
+    mocha.suite.emit(Mocha.Suite.constants.EVENT_FILE_POST_REQUIRE, globalThis, file, mocha);
+  }
 
   return new Promise((c, e) => {
-    glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
-      if (err) {
-        return e(err);
-      }
-
-      // Add files to the test suite
-      files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
-
-      try {
-        // Run the mocha test
-        mocha.run((failures) => {
-          if (failures > 0) {
-            e(new Error(`${failures} tests failed.`));
-          } else {
-            c();
-          }
-        });
-      } catch (error) {
-        console.error(error);
-        e(error as Error);
-      }
-    });
+    try {
+      // Run the mocha test
+      mocha.run((failures) => {
+        // Write the coverage `pnpm test --coverage` asked for now, since VS Code may stop this
+        // process without the normal exit that would write it
+        if (process.env.NODE_V8_COVERAGE) {
+          takeCoverage();
+        }
+        if (failures > 0) {
+          e(new Error(`${failures} tests failed.`));
+        } else {
+          c();
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      e(error as Error);
+    }
   });
 }

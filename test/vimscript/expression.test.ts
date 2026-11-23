@@ -21,17 +21,18 @@ import { displayValue } from '../../src/vimscript/expression/displayValue';
 import { EvaluationContext } from '../../src/vimscript/expression/evaluate';
 import { expressionParser } from '../../src/vimscript/expression/parser';
 import { Expression, Value } from '../../src/vimscript/expression/types';
+import { newTest } from '../testSimplifier';
+import { setupWorkspace } from '../testUtils';
 
 function removeIds(value: Value): unknown {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { id, ...rest } = value as any;
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const _value: any = { ...rest };
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
   if (value.type === 'list') {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    _value.items = value.items.map(removeIds);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    _value.items = value.items.map(removeIds);
   } else if (value.type === 'dictionary') {
     const items = new Map<string, unknown>();
     for (const [key, val] of value.items) {
@@ -123,6 +124,10 @@ suite('Vimscript expressions', () => {
       exprTest('""', { expr: str('') });
       exprTest('"\\""', { expr: str('"') });
       exprTest('"one\\ntwo\\tthree"', { expr: str('one\ntwo\tthree') });
+      exprTest('"\\\\"', { expr: str('\\') }); // "\\" -> single backslash
+      exprTest('"\\n"', { expr: str('\n') });
+      exprTest('"\\t"', { expr: str('\t') });
+      exprTest('"hello world"', { expr: str('hello world') });
     });
 
     suite('Literal strings', () => {
@@ -145,6 +150,9 @@ suite('Vimscript expressions', () => {
       });
       exprTest('0zAB.CD', {
         value: blob(new Uint8Array([171, 205])),
+      });
+      exprTest('0z0123456789', {
+        value: blob(new Uint8Array([0x01, 0x23, 0x45, 0x67, 0x89])),
       });
       exprTest('0zabc', {
         error: VimError.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters(),
@@ -214,6 +222,10 @@ suite('Vimscript expressions', () => {
       });
 
       exprTest("['a','b','c'][1]", { value: str('b') });
+      exprTest("['a','b','c'][-1]", { value: str('c') });
+      exprTest("['a','b','c'][-3]", { value: str('a') });
+      exprTest("['a','b','c'][3]", { error: VimError.ListIndexOutOfRange(3) });
+      exprTest("['a','b','c'][-4]", { error: VimError.ListIndexOutOfRange(-4) });
 
       exprTest("#{one: 1, two: 2, three: 3}['one']", { value: int(1) });
       exprTest("#{one: 1, two: 2, three: 3}['two']", { value: int(2) });
@@ -224,7 +236,10 @@ suite('Vimscript expressions', () => {
 
       exprTest('0zABCD[0]', { value: int(171) });
       exprTest('0zABCD[1]', { value: int(205) });
-      // TODO: Blob, negative index
+      exprTest('0zABCD[-1]', { value: int(205) });
+      exprTest('0zABCD[2]', { error: VimError.BlobIndexOutOfRange(2) });
+      // Like Vim, report the index after counting from the end
+      exprTest('0zABCD[-3]', { error: VimError.BlobIndexOutOfRange(-1) });
     });
 
     suite('Entry', () => {
@@ -297,6 +312,11 @@ suite('Vimscript expressions', () => {
           },
           value: str('abcde'),
         });
+
+        exprTest("'abcde'[1:10]", { value: str('bcde') });
+        exprTest("'abcde'[-10:]", { value: str('abcde') });
+        exprTest("'abcde'[0:-10]", { value: str('') });
+        exprTest("'abcde'[-7:-6]", { value: str('') });
       });
 
       suite('List', () => {
@@ -359,12 +379,26 @@ suite('Vimscript expressions', () => {
           },
           value: list([int(1), int(2), int(3), int(4), int(5)]),
         });
+
+        exprTest('[1,2,3][1:10]', { value: list([int(2), int(3)]) });
+        exprTest('[1,2,3][5:]', { value: list([]) });
+        // Unlike a String or Blob, a List is empty when the start is before the first item
+        exprTest('[1,2,3][-10:]', { value: list([]) });
+        exprTest('[1,2,3][0:-10]', { value: list([]) });
       });
 
       suite('Blob', () => {
         exprTest('0zDEADBEEF[1:2]', {
           display: '0zADBE',
         });
+        exprTest('0zABCD[1:]', { display: '0zCD' });
+        exprTest('0zABCD[:]', { display: '0zABCD' });
+        exprTest('0zABCD[-1:]', { display: '0zCD' });
+        exprTest('0zABCDEF[0:-2]', { display: '0zABCD' });
+        exprTest('0zABCD[0:10]', { display: '0zABCD' });
+        exprTest('0zABCD[-10:]', { display: '0zABCD' });
+        exprTest('0zABCD[5:]', { display: '0z' });
+        exprTest('0zABCD[1:0]', { display: '0z' });
       });
     });
 
@@ -411,6 +445,12 @@ suite('Vimscript expressions', () => {
       exprTest('4/5', { value: int(0) });
       exprTest('4/5.0', { display: '0.8' });
       exprTest('4.0/5', { display: '0.8' });
+
+      exprTest('10 - 3', { value: int(7) });
+      exprTest('3 - 10', { value: int(-7) });
+      exprTest('10 - 3.0', { display: '7.0' });
+      exprTest('1 + 2 + 3', { value: int(6) });
+      exprTest('1 + 2 - 3', { value: int(0) });
     });
 
     suite('Precedence', () => {
@@ -452,14 +492,49 @@ suite('Vimscript expressions', () => {
 
   suite('Comparisons', () => {
     suite('String equality', () => {
-      exprTest("'abc' == 'Abc'", { value: bool(false) }); // TODO: this should depend on 'ignorecase'
+      // 'ignorecase' is on in the test configuration
+      exprTest("'abc' == 'Abc'", { value: bool(true) });
       exprTest("'abc' ==# 'Abc'", { value: bool(false) });
       exprTest("'abc' ==? 'Abc'", { value: bool(true) });
+      exprTest("{s -> [s ==? 'x', s][1]}('ABC')", { value: str('ABC') });
     });
 
     suite('Pattern matching', () => {
       exprTest("'apple' =~ '^a.*e$'", { value: bool(true) });
+      exprTest("'apple' =~# '^a.*e$'", { value: bool(true) });
+      exprTest("'apple' =~# '^A.*E$'", { value: bool(false) });
+      exprTest("'apple' =~? '^A.*E$'", { value: bool(true) });
+      exprTest("'Apple' =~# 'apple'", { value: bool(false) });
+      exprTest("'   ' =~? '\\S'", { value: bool(false) });
       // TODO
+    });
+
+    suite('Pattern not-matching', () => {
+      exprTest("'apple' !~ '^a.*e$'", { value: bool(false) });
+      exprTest("'apple' !~ '^b'", { value: bool(true) });
+      exprTest("'foo' !~# '^F'", { value: bool(true) });
+      exprTest("'foo' !~? '^F'", { value: bool(false) });
+    });
+
+    suite('Numeric comparisons', () => {
+      exprTest('1 < 2', { value: bool(true) });
+      exprTest('2 < 1', { value: bool(false) });
+      exprTest('1 < 1', { value: bool(false) });
+      exprTest('1 <= 1', { value: bool(true) });
+      exprTest('2 <= 1', { value: bool(false) });
+      exprTest('1 <= 2', { value: bool(true) });
+      exprTest('2 > 1', { value: bool(true) });
+      exprTest('1 > 2', { value: bool(false) });
+      exprTest('1 > 1', { value: bool(false) });
+      exprTest('2 >= 2', { value: bool(true) });
+      exprTest('1 >= 2', { value: bool(false) });
+      exprTest('2 >= 1', { value: bool(true) });
+      exprTest('1 != 2', { value: bool(true) });
+      exprTest('1 != 1', { value: bool(false) });
+      exprTest('1.5 < 2.5', { value: bool(true) });
+      exprTest('2.5 < 1.5', { value: bool(false) });
+      exprTest('1.0 <= 1.0', { value: bool(true) });
+      exprTest('1.0 != 2.0', { value: bool(true) });
     });
 
     suite('Different types', () => {
@@ -476,6 +551,100 @@ suite('Vimscript expressions', () => {
       exprTest('{} == 10', { error: VimError.CanOnlyCompareDictionaryWithDictionary() });
       exprTest('0 == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
       exprTest('2 == function("abs")', { value: bool(false) });
+      exprTest('function("abs") == 1', { value: bool(false) });
+      exprTest('1 is 1.0', { value: bool(false) });
+      exprTest('1 == 1.0', { value: bool(true) });
+      exprTest("1.0 > 'x'", { error: VimError.UsingAStringAsAFloat() });
+      exprTest("'1.0' == 1.0", { error: VimError.UsingAStringAsAFloat() });
+
+      // Like Vim, check for a Blob, then a List, Dictionary, or Funcref
+      exprTest('[] == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('0z00 == []', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('{} == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('0z00 == {}', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('function("abs") == 0z00', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('0z00 == function("abs")', { error: VimError.CanOnlyCompareBlobWithBlob() });
+      exprTest('function("abs") == []', { error: VimError.CanOnlyCompareListWithList() });
+      exprTest('[] == function("abs")', { error: VimError.CanOnlyCompareListWithList() });
+      exprTest('function("abs") == {}', {
+        error: VimError.CanOnlyCompareDictionaryWithDictionary(),
+      });
+
+      exprTest('[] is {}', { value: bool(false) });
+      exprTest('[] isnot {}', { value: bool(true) });
+      exprTest('{} is 0z00', { value: bool(false) });
+      exprTest('function("abs") is 1', { value: bool(false) });
+
+      // Within a List or Dictionary, items of different types are never equal
+      exprTest('[1] == [1.0]', { value: bool(false) });
+      exprTest('[1.0] == [1]', { value: bool(false) });
+      exprTest('[1.0] == [1.0]', { value: bool(true) });
+      exprTest("{'a': 1} == {'a': '1'}", { value: bool(false) });
+      exprTest("[[1]] == [['1']]", { value: bool(false) });
+    });
+
+    suite('Strings', () => {
+      // 'ignorecase' is on in the test configuration
+      exprTest("'B' > 'a'", { value: bool(true) });
+      exprTest("'B' ># 'a'", { value: bool(false) });
+      exprTest("'abc' is 'ABC'", { value: bool(true) });
+      exprTest("'abc' is# 'ABC'", { value: bool(false) });
+      exprTest("'10' < '9'", { value: bool(true) });
+      exprTest("10 < '9'", { value: bool(false) });
+    });
+
+    suite('Pattern matching non-Strings', () => {
+      exprTest('1 =~ 1', { value: bool(true) });
+      exprTest("12 =~ '2'", { value: bool(true) });
+      // Like Vim, match against the Float as a String
+      exprTest("1.5 =~ '1'", { value: bool(true) });
+      exprTest('2.0 =~ 1', { value: bool(false) });
+      exprTest("1.0 =~ 'x'", { value: bool(false) });
+    });
+
+    suite('Lists, Dictionaries, and Blobs', () => {
+      exprTest('[1] < [2]', { error: VimError.InvalidOperationForList() });
+      exprTest('[1] =~ [1]', { error: VimError.InvalidOperationForList() });
+      exprTest('{} > {}', { error: VimError.InvalidOperationForDictionary() });
+      exprTest('0z00 > 0z00', { error: VimError.InvalidOperationForBlob() });
+
+      exprTest('[1] != [1]', { value: bool(false) });
+      exprTest('[1] is [1]', { value: bool(false) });
+      exprTest('[1, 2] == [1]', { value: bool(false) });
+      exprTest("['a'] == ['A']", { value: bool(true) });
+      exprTest("['a'] ==# ['A']", { value: bool(false) });
+      exprTest("{'a': 1} == {'b': 1}", { value: bool(false) });
+      exprTest("{'k': 'x'} == {'k': 'X'}", { value: bool(true) });
+      exprTest('0z01 == 0z01', { value: bool(true) });
+      exprTest('0z01 is 0z01', { value: bool(false) });
+      exprTest('0z0102 == 0z01', { value: bool(false) });
+    });
+
+    suite('Funcrefs', () => {
+      exprTest('function("abs") > function("abs")', {
+        error: VimError.InvalidOperationForFuncrefs(),
+      });
+      exprTest('function("abs") =~ function("abs")', {
+        error: VimError.InvalidOperationForFuncrefs(),
+      });
+
+      exprTest('function("abs") == function("abs")', { value: bool(true) });
+      exprTest('function("abs") == function("acos")', { value: bool(false) });
+      exprTest('function("abs") is function("abs")', { value: bool(true) });
+      exprTest('function("abs") is function("acos")', { value: bool(false) });
+
+      // A partial (with arguments or a Dictionary) is only identical to itself
+      exprTest('function("abs", [1]) == function("abs", [1])', { value: bool(true) });
+      exprTest('function("abs", [1]) == function("abs", [2])', { value: bool(false) });
+      exprTest('function("abs", [1]) == function("abs")', { value: bool(false) });
+      exprTest('function("abs", [1]) is function("abs", [1])', { value: bool(false) });
+      exprTest('{f -> f is f}(function("abs", [1]))', { value: bool(true) });
+      exprTest('function("abs", {}) == function("abs", {})', { value: bool(true) });
+      exprTest('function("abs", {}) == function("abs")', { value: bool(false) });
+      exprTest('function("abs", {}) is function("abs", {})', { value: bool(false) });
+
+      exprTest('{-> 1} == {-> 1}', { value: bool(false) });
+      exprTest('{f -> f is f}({-> 1})', { value: bool(true) });
     });
   });
 
@@ -588,6 +757,14 @@ suite('Vimscript expressions', () => {
       exprTest("assert_match('^f.*o$', 'foobar')", FAIL);
 
       exprTest('assert_report("whatever")', FAIL);
+
+      exprTest('assert_notequal(1, 2)', PASS);
+      exprTest('assert_notequal(1, 1)', FAIL);
+      exprTest('assert_notequal("abc", "def")', PASS);
+      exprTest('assert_notequal("abc", "abc")', FAIL);
+
+      exprTest("assert_notmatch('^f.*o$', 'bar')", PASS);
+      exprTest("assert_notmatch('^f.*o$', 'foo')", FAIL);
     });
 
     suite('add', () => {
@@ -602,6 +779,7 @@ suite('Vimscript expressions', () => {
     suite('call', () => {
       exprTest('call("abs", [-1])', { value: float(1) });
       exprTest('call(function("abs"), [-1])', { value: float(1) });
+      exprTest('call("abs", 1)', { error: VimError.ListRequiredForArgument(2) });
     });
 
     suite('count', () => {
@@ -617,6 +795,13 @@ suite('Vimscript expressions', () => {
       });
       exprTest('count(["apple", "banana", "Apple", "carrot", "APPLE"], "Apple", v:true, -1)', {
         value: int(1),
+      });
+      exprTest('count([1,2,3,1], 1, 0, -4)', { value: int(2) });
+      exprTest('count([1,2,3,1], 1, 0, -5)', { error: VimError.ListIndexOutOfRange(-5) });
+      exprTest('count([1,2,3,1], 1, 0, 4)', { error: VimError.ListIndexOutOfRange(4) });
+      exprTest('count([], 1, 0, 0)', { value: int(0) });
+      exprTest('count(1, 1)', {
+        error: VimError.ArgumentOfFuncMustBeAListStringOrDictionary('count'),
       });
 
       exprTest('count(#{a:3,b:2,c:3}, 3)', { value: int(2) });
@@ -677,6 +862,7 @@ suite('Vimscript expressions', () => {
       exprTest('flatten([1, [2, [3, 4]], 5], 0)', { display: '[1, [2, [3, 4]], 5]' });
 
       exprTest('flatten({})', { error: VimError.ArgumentMustBeAList('flatten') });
+      exprTest('flatten({}, -1)', { error: VimError.ArgumentMustBeAList('flatten') });
       exprTest('flatten([], -2)', { error: VimError.MaxDepthMustBeANonNegativeNumber() });
     });
 
@@ -697,11 +883,12 @@ suite('Vimscript expressions', () => {
       exprTest('fmod(-4.2, -1.0)', { display: '-0.2' });
     });
 
-    // TODO: Re-enable after we fix circular dependency
-    suite.skip('fullcommand', () => {
-      for (const cmd of ['s', 'sub', ':%substitute']) {
+    suite('fullcommand', () => {
+      for (const cmd of ['s', 'sub', ':%substitute', ': 1,3 s', 's/a/b/g']) {
         exprTest(`fullcommand('${cmd}')`, { value: str('substitute') });
       }
+      // Arguments aren't parsed, so a command that requires them still works
+      exprTest(`fullcommand('norm')`, { value: str('normal') });
       exprTest(`fullcommand('notarealthing')`, { value: str('') });
     });
 
@@ -710,11 +897,14 @@ suite('Vimscript expressions', () => {
       exprTest('get([2,4,6], -1)', { value: int(6) });
       exprTest('get([2,4,6], 3)', { value: int(0) });
       exprTest('get([2,4,6], 3, 999)', { value: int(999) });
+      exprTest('get([2,4,6], -4)', { value: int(0) });
+      exprTest('get([2,4,6], -4, 999)', { value: int(999) });
 
       exprTest('get(0zABCDEF, 1)', { value: int(205) });
       exprTest('get(0zABCDEF, -1)', { value: int(239) });
       exprTest('get(0zABCDEF, 3)', { value: int(-1) });
       exprTest('get(0zABCDEF, 3, 999)', { value: int(999) });
+      exprTest('get(0zABCDEF, -4)', { value: int(-1) });
 
       exprTest('get(#{a: 1, b: 2, c: 3}, "b")', { value: int(2) });
       exprTest('get(#{a: 1, b: 2, c: 3}, "x")', { value: int(0) });
@@ -739,19 +929,31 @@ suite('Vimscript expressions', () => {
       exprTest('index(["A","C","D","C"], "C", 2)', { value: int(3) });
       exprTest('index(["A","C","D","C"], "C", -2)', { value: int(3) });
       exprTest('index(["A","C","D","C"], "C", 5)', { value: int(-1) });
+      exprTest('index(["A","C","D","C"], "C", -10)', { value: int(-1) });
     });
 
     suite('insert', () => {
       exprTest('insert([1,2,3], 4)', { display: '[4, 1, 2, 3]' });
       exprTest('insert([1,2,3], 4, 2)', { display: '[1, 2, 4, 3]' });
+      exprTest('insert([1,2,3], 4, 3)', { display: '[1, 2, 3, 4]' });
+      exprTest('insert([1,2,3], 4, -1)', { display: '[1, 2, 4, 3]' });
+      exprTest('insert([1,2,3], 4, -3)', { display: '[4, 1, 2, 3]' });
+      exprTest('insert([1,2,3], 4, 4)', { error: VimError.ListIndexOutOfRange(4) });
+      exprTest('insert([1,2,3], 4, -4)', { error: VimError.ListIndexOutOfRange(-4) });
       exprTest('insert(insert(insert([], 1), 2), 3)', { display: '[3, 2, 1]' });
 
       exprTest('insert(0zABCD, 0xEF)', { display: '0zEFABCD' });
       exprTest('insert(0zABCD, 0xEF, 1)', { display: '0zABEFCD' });
+      exprTest('insert(0zABCD, 0xEF, 2)', { display: '0zABCDEF' });
+      // Unlike a List, a Blob doesn't take a negative index
+      exprTest('insert(0zABCD, 0xEF, -1)', { error: VimError.InvalidArgument475('-1') });
     });
 
     suite('invert', () => {
+      exprTest('invert(0)', { value: int(-1) });
+      exprTest('invert(-1)', { value: int(0) });
       exprTest('invert(123)', { value: int(-124) });
+      exprTest('invert(-124)', { value: int(123) });
     });
 
     suite('isnan/isinf', () => {
@@ -862,6 +1064,8 @@ suite('Vimscript expressions', () => {
       exprTest('remove([1, 2, 3], 0)', { value: int(1) });
       exprTest('remove([1, 2, 3], 1)', { value: int(2) });
       exprTest('remove([1, 2, 3], -1)', { value: int(3) });
+      exprTest('remove([1, 2, 3], 3)', { error: VimError.ListIndexOutOfRange(3) });
+      exprTest('remove([1, 2, 3], -4)', { error: VimError.ListIndexOutOfRange(-4) });
       exprTest('remove(#{a:1, b:2}, "a")', { value: int(1) });
     });
 
@@ -916,6 +1120,10 @@ suite('Vimscript expressions', () => {
       exprTest('stridx("0123456789", "6")', { value: int(6) });
       exprTest('stridx("0123456789", "456")', { value: int(4) });
       exprTest('stridx("0123456789", "X")', { value: int(-1) });
+      exprTest('stridx("0123456789", "6", 5)', { value: int(6) });
+      exprTest('stridx("0123456789", "6", 7)', { value: int(-1) });
+      exprTest('stridx("abcabc", "b")', { value: int(1) });
+      exprTest('stridx("abcabc", "b", 2)', { value: int(4) });
     });
 
     suite('string', () => {
@@ -956,6 +1164,7 @@ suite('Vimscript expressions', () => {
         error: VimError.InvalidArgument475('short'),
       });
       exprTest("tr('hello there', 'ht', 'HT')", { value: str('Hello THere') });
+      exprTest("tr('hello there', 'ht')", { error: VimError.NotEnoughArgs('tr') });
     });
 
     suite('trim', () => {
@@ -968,6 +1177,7 @@ suite('Vimscript expressions', () => {
 
     suite('uniq', () => {
       exprTest('uniq([1, 2, 3])', { display: '[1, 2, 3]' });
+      exprTest('uniq({})', { error: VimError.ArgumentMustBeAList('uniq') });
       exprTest('uniq([1, 1, 2, 2, 3, 3])', { display: '[1, 2, 3]' });
       exprTest('uniq([1, 2, 1, 3, 2, 3])', { display: '[1, 2, 1, 3, 2, 3]' });
       exprTest("uniq([1, '1'])", { display: "[1, '1']" });
@@ -1008,6 +1218,7 @@ suite('Vimscript expressions', () => {
 
     suite('sort', () => {
       exprTest('sort([])', { value: list([]) });
+      exprTest('sort({})', { error: VimError.ArgumentMustBeAList('sort') });
 
       exprTest("sort(['A', 'c', 'B', 'a', 'C', 'b'])", {
         display: "['A', 'B', 'C', 'a', 'b', 'c']",
@@ -1023,6 +1234,141 @@ suite('Vimscript expressions', () => {
       exprTest('sort([4,2,1,3,5], {x,y->x-y})', { display: '[1, 2, 3, 4, 5]' });
       exprTest('sort([4,2,1,3,5], {x,y->y-x})', { display: '[5, 4, 3, 2, 1]' });
       // TODO
+    });
+
+    suite('abs', () => {
+      exprTest('abs(-5)', { value: float(5) });
+      exprTest('abs(5)', { value: float(5) });
+      exprTest('abs(-3.5)', { value: float(3.5) });
+      exprTest('abs(0)', { value: float(0) });
+    });
+
+    suite('and/or/xor', () => {
+      exprTest('and(0xff, 0x0f)', { value: int(15) });
+      exprTest('and(0b1010, 0b1100)', { value: int(8) });
+      exprTest('and(0, 0xff)', { value: int(0) });
+      exprTest('or(0xf0, 0x0f)', { value: int(255) });
+      exprTest('or(0b1010, 0b0101)', { value: int(15) });
+      exprTest('or(0, 0)', { value: int(0) });
+      exprTest('xor(0xff, 0x0f)', { value: int(240) });
+      exprTest('xor(0b1010, 0b1010)', { value: int(0) });
+      exprTest('xor(0b1010, 0b0101)', { value: int(15) });
+    });
+
+    suite('copy/deepcopy', () => {
+      exprTest('copy([1, 2, 3])', { value: list([int(1), int(2), int(3)]) });
+      exprTest('deepcopy([1, 2, 3])', { value: list([int(1), int(2), int(3)]) });
+      exprTest("copy('hello')", { value: str('hello') });
+      exprTest("deepcopy('hello')", { value: str('hello') });
+      exprTest('copy(42)', { value: int(42) });
+    });
+
+    suite('eval', () => {
+      exprTest("eval('1 + 2')", { value: int(3) });
+      exprTest('eval(\'"hello"\')', { value: str('hello') });
+      exprTest("eval('[1, 2, 3]')", { value: list([int(1), int(2), int(3)]) });
+      exprTest("eval('#{a: 1}')", { display: "{'a': 1}" });
+    });
+
+    suite('exp/log/log10/pow', () => {
+      exprTest('exp(0)', { value: float(1) });
+      exprTest('log(1)', { value: float(0) });
+      exprTest('log10(1)', { value: float(0) });
+      exprTest('log10(100)', { value: float(2) });
+      exprTest('pow(2, 10)', { value: float(1024) });
+      exprTest('pow(9, 0.5)', { value: float(3) });
+      exprTest('pow(2, 0)', { value: float(1) });
+    });
+
+    suite('Trigonometric', () => {
+      exprTest('sin(0)', { value: float(0) });
+      exprTest('cos(0)', { value: float(1) });
+      exprTest('tan(0)', { value: float(0) });
+      exprTest('asin(0)', { value: float(0) });
+      exprTest('acos(1)', { value: float(0) });
+      exprTest('atan2(0, 1)', { value: float(0) });
+      exprTest('sinh(0)', { value: float(0) });
+      exprTest('cosh(0)', { value: float(1) });
+      exprTest('tanh(0)', { value: float(0) });
+    });
+
+    suite('has', () => {
+      exprTest("has('vscode')", { value: bool(true) });
+      exprTest("has('nvim')", { value: bool(false) });
+      exprTest("has('gui')", { value: bool(false) });
+    });
+
+    suite('type', () => {
+      exprTest('type(0)', { value: int(0) });
+      exprTest("type('str')", { value: int(1) });
+      exprTest("type(function('abs'))", { value: int(2) });
+      exprTest('type([])', { value: int(3) });
+      exprTest('type({})', { value: int(4) });
+      exprTest('type(0.0)', { value: int(5) });
+      exprTest('type(0z)', { value: int(8) });
+    });
+
+    suite('flattennew', () => {
+      exprTest('flattennew([1, [2, [3, 4]], 5])', { display: '[1, 2, 3, 4, 5]' });
+      exprTest('flattennew([1, [2, [3, 4]], 5], 1)', { display: '[1, 2, [3, 4], 5]' });
+      exprTest('flattennew([1, [2, [3, 4]], 5], 0)', { display: '[1, [2, [3, 4]], 5]' });
+      exprTest('flattennew({})', { error: VimError.ArgumentMustBeAList('flatten') });
+    });
+
+    suite('mapnew', () => {
+      exprTest('mapnew([10, 20, 30], {k, v -> v * 2})', { display: '[20, 40, 60]' });
+      exprTest("mapnew([10, 20, 30], 'v:val + 1')", { display: '[11, 21, 31]' });
+      exprTest("mapnew([10, 20, 30], 'v:key')", { value: list([int(0), int(1), int(2)]) });
+    });
+  });
+
+  suite('Builtin functions that need an editor', () => {
+    suiteSetup(async () => {
+      await setupWorkspace();
+    });
+
+    suite('mode', () => {
+      newTest({
+        title: 'mode() on the command line',
+        start: ['|'],
+        keysPressed: ':echo mode()\n',
+        end: ['|'],
+        statusBar: 'c',
+      });
+      newTest({
+        title: 'mode() with an argument',
+        start: ['|'],
+        keysPressed: ':echo mode(1)\n',
+        end: ['|'],
+        statusBar: 'c',
+      });
+      newTest({
+        title: 'mode() with too many arguments',
+        start: ['|'],
+        keysPressed: ':echo mode(1, 2)\n',
+        end: ['|'],
+        statusBar: VimError.TooManyArgs('mode').toString(),
+      });
+    });
+
+    suite('Error messages', () => {
+      newTest({
+        title: 'Name the function with parentheses',
+        start: ['|'],
+        keysPressed: ':echo sort({})\n',
+        end: ['|'],
+        statusBar: 'E686: Argument of sort() must be a List',
+      });
+    });
+
+    suite('visualmode', () => {
+      newTest({
+        title: 'visualmode() after Visual Line mode',
+        start: ['|abc'],
+        keysPressed: 'V<Esc>:echo visualmode()\n',
+        end: ['|abc'],
+        statusBar: 'V',
+      });
     });
   });
 });

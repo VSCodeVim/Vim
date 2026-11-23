@@ -4,6 +4,7 @@ import { Position } from 'vscode';
 import { sorted } from '../common/motion/position';
 import { Notation } from '../configuration/notation';
 import { VimError } from '../error';
+import { isGlobalMark } from '../history/historyTracker';
 import { globalState } from '../state/globalState';
 import { StatusBar } from '../statusBar';
 import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../textobject/paragraph';
@@ -540,7 +541,7 @@ export abstract class BaseMarkMovement extends BaseMovement {
     }
 
     if (
-      mark.isUppercaseMark &&
+      isGlobalMark(mark) &&
       vimState.recordedState.operator &&
       mark.document !== vimState.document
     ) {
@@ -551,11 +552,11 @@ export abstract class BaseMarkMovement extends BaseMovement {
       vimState.currentRegisterMode = this.registerMode;
     }
 
-    const document = mark.isUppercaseMark ? mark.document : vimState.document;
+    const document = isGlobalMark(mark) ? mark.document : vimState.document;
     const newPosition = this.getNewPosition(document, mark.position);
 
     // Navigate to mark in another document
-    if (mark.isUppercaseMark && mark.document !== vimState.document) {
+    if (isGlobalMark(mark) && mark.document !== vimState.document) {
       const options: vscode.TextDocumentShowOptions = {
         selection: new vscode.Range(newPosition, newPosition),
       };
@@ -667,6 +668,7 @@ export class MoveLeft extends BaseMovement {
   keys = [['h'], ['<left>'], ['<BS>'], ['<C-BS>'], ['<S-BS>']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    // TODO: Consider replacing with getSurrogateAwareLeft()
     const getLeftWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
 
@@ -704,6 +706,7 @@ export class MoveRight extends BaseMovement {
   keys = [['l'], ['<right>'], [' ']];
 
   public override async execAction(position: Position, vimState: VimState): Promise<Position> {
+    // TODO: Consider replacing with getSurrogateAwareRight()
     const getRightWhile = (p: Position): Position => {
       const line = vimState.document.lineAt(p.line).text;
       const newPosition = p.getRight();

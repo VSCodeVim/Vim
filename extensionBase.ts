@@ -107,8 +107,11 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
   extensionContext.subscriptions.push(StatusBar);
 
   // Load state
-  Register.loadFromDisk(handleLocal);
-  await Promise.all([ExCommandLine.loadHistory(context), SearchCommandLine.loadHistory(context)]);
+  await Promise.all([
+    Register.loadFromDisk(handleLocal),
+    ExCommandLine.loadHistory(context),
+    SearchCommandLine.loadHistory(context),
+  ]);
 
   const document = vscode.window.activeTextEditor?.document;
   if (document) {
@@ -153,14 +156,12 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
       }
     }
 
-    const mh = ModeHandlerMap.get(event.document.uri);
-    if (mh) {
-      // Change from VSCode editor should set document.isDirty to true but they initially don't!
-      // There is a timing issue in VSCode codebase between when the isDirty flag is set and
-      // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
-      if (mh.vimState.currentMode === Mode.Insert) {
-        mh.vimState.historyTracker.currentContentChanges.push(...event.contentChanges);
-      }
+    const modeData = ModeHandlerMap.get(event.document.uri)?.vimState.modeData;
+    // Change from VSCode editor should set document.isDirty to true but they initially don't!
+    // There is a timing issue in VSCode codebase between when the isDirty flag is set and
+    // when registered callbacks are fired. https://github.com/Microsoft/vscode/issues/11339
+    if (modeData?.mode === Mode.Insert) {
+      modeData.contentChanges.push(...event.contentChanges);
     }
   });
 
@@ -222,7 +223,7 @@ export async function activate(context: vscode.ExtensionContext, handleLocal: bo
 
       if (relativePath !== oldFileRegister) {
         if (oldFileRegister && oldFileRegister !== '') {
-          Register.setReadonlyRegister('#', oldFileRegister as string);
+          Register.setReadonlyRegister('#', oldFileRegister);
         }
         Register.setReadonlyRegister('%', relativePath);
       }

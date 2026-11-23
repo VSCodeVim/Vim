@@ -53,10 +53,7 @@ type Slice = {
 
 export type LetCommandOperation = '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '.=' | '..=';
 export type LetCommandVariable =
-  | VariableExpression
-  | OptionExpression
-  | RegisterExpression
-  | EnvVariableExpression;
+  VariableExpression | OptionExpression | RegisterExpression | EnvVariableExpression;
 export type LetCommandArgs =
   | {
       operation: LetCommandOperation;

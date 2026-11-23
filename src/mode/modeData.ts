@@ -1,3 +1,4 @@
+import type { TextDocumentContentChangeEvent } from 'vscode';
 import { ExCommandLine, SearchCommandLine } from '../cmd_line/commandLine';
 import { ReplaceState } from '../state/replaceState';
 import { Mode } from './mode';
@@ -28,6 +29,8 @@ export type ModeData =
       mode: Mode.Insert;
       /** The high surrogate of an incomplete pair */
       highSurrogate: string | undefined;
+      /** Document changes made in this Insert session that no action has recorded yet */
+      contentChanges: TextDocumentContentChangeEvent[];
     }
   | {
       mode: SimpleMode;
