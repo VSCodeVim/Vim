@@ -1,5 +1,6 @@
 import { escapeRegExp, isInteger } from 'lodash';
-import { all, alt } from 'parsimmon';
+// eslint-disable-next-line id-denylist
+import { all, alt, optWhitespace, string } from 'parsimmon';
 import { Position } from 'vscode';
 import { configuration } from '../../configuration/configuration';
 import { VimError } from '../../error';
@@ -8,6 +9,8 @@ import { Register, RegisterMode } from '../../register/register';
 import { globalState } from '../../state/globalState';
 import { RecordedState } from '../../state/recordedState';
 import { VimState } from '../../state/vimState';
+import { exCommandNameParser, fullCommandName } from '../exCommandNames';
+import { LineRange } from '../lineRange';
 import { Pattern, SearchDirection } from '../pattern';
 import {
   blob,
@@ -1078,15 +1081,18 @@ export class EvaluationContext {
       case 'fmod': {
         return float2((x, y) => x % y);
       }
-      // TODO: Fix circular dependency
-      // case 'fullcommand': {
-      //   const [name] = getArgs(1);
-      //   try {
-      //     return str(exCommandParser.tryParse(toString(name!)).name);
-      //   } catch {
-      //     return str('');
-      //   }
-      // }
+      case 'fullcommand': {
+        const [name] = getArgs(1);
+        // Like Vim, skip any colons and range, and ignore the arguments
+        const result = optWhitespace
+          .then(string(':').skip(optWhitespace).many())
+          .then(LineRange.parser.fallback(undefined))
+          .then(optWhitespace)
+          .then(exCommandNameParser)
+          .skip(all)
+          .parse(toString(name!));
+        return str(result.status ? fullCommandName(result.value) : '');
+      }
       case 'function': {
         const [name, arglist, dict] = getArgs(1, 3);
         if (arglist) {

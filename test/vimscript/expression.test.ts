@@ -751,11 +751,12 @@ suite('Vimscript expressions', () => {
       exprTest('fmod(-4.2, -1.0)', { display: '-0.2' });
     });
 
-    // TODO: Re-enable after we fix circular dependency
-    suite.skip('fullcommand', () => {
-      for (const cmd of ['s', 'sub', ':%substitute']) {
+    suite('fullcommand', () => {
+      for (const cmd of ['s', 'sub', ':%substitute', ': 1,3 s', 's/a/b/g']) {
         exprTest(`fullcommand('${cmd}')`, { value: str('substitute') });
       }
+      // Arguments aren't parsed, so a command that requires them still works
+      exprTest(`fullcommand('norm')`, { value: str('normal') });
       exprTest(`fullcommand('notarealthing')`, { value: str('') });
     });
 
