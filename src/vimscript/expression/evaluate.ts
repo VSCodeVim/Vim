@@ -741,10 +741,10 @@ export class EvaluationContext {
     };
 
     // See `:help non-zero-arg`
-    const nonZeroArg = (arg: Value): boolean => {
-      if (arg.type === 'number' && arg.value !== 0) {
+    const nonZeroArg = (arg: Value | undefined): boolean => {
+      if (arg?.type === 'number' && arg.value !== 0) {
         return true;
-      } else if (arg.type === 'string' && arg.value.length !== 0) {
+      } else if (arg?.type === 'string' && arg.value.length !== 0) {
         return true;
       }
       return false;
@@ -832,7 +832,7 @@ export class EvaluationContext {
           newBytes.set(new Uint8Array(l.data));
           newBytes[newBytes.length - 1] = toInt(item);
           l.data = newBytes;
-          return blob(newBytes);
+          return l;
         }
         const lst = toList(l);
         lst.items.push(item);
@@ -933,7 +933,7 @@ export class EvaluationContext {
           throw VimError.ListRequiredForArgument(2);
         }
         const func: FuncRefValue = (() => {
-          if (_func?.type === 'funcref') {
+          if (_func.type === 'funcref') {
             return _func;
           }
           return funcref({
@@ -1010,8 +1010,7 @@ export class EvaluationContext {
         return copy(x, true);
       }
       case 'empty': {
-        let [x] = getArgs(1);
-        x = x!;
+        const [x] = getArgs(1);
         switch (x.type) {
           case 'number':
           case 'float':
@@ -1137,8 +1136,7 @@ export class EvaluationContext {
         return int(0); // No-op
       }
       case 'get': {
-        const [_haystack, _idx, _default] = getArgs(2, 3);
-        const haystack: Value = _haystack;
+        const [haystack, _idx, _default] = getArgs(2, 3);
         if (haystack.type === 'list') {
           let idx = toInt(_idx);
           idx = idx < 0 ? haystack.items.length + idx : idx;
@@ -1226,8 +1224,7 @@ export class EvaluationContext {
         return str(x.id);
       }
       case 'index': {
-        const [_haystack, _needle, _start, ic] = getArgs(2, 4);
-        const haystack: Value = _haystack;
+        const [haystack, _needle, _start, ic] = getArgs(2, 4);
 
         if (haystack.type === 'list') {
           let start: number | undefined;
@@ -1264,7 +1261,7 @@ export class EvaluationContext {
           newBytes[idx] = toInt(item);
           newBytes.set(bytes.subarray(idx), idx + 1);
           l.data = newBytes;
-          return blob(newBytes);
+          return l;
         }
         const lst = toList(l);
         if (idx > lst.items.length) {
@@ -1391,10 +1388,10 @@ export class EvaluationContext {
       case 'map':
       case 'mapnew': {
         const [seq, fn] = getArgs(2);
-        switch (seq?.type) {
+        switch (seq.type) {
           case 'list':
             const newItems = seq.items.map((val, idx) => {
-              switch (fn?.type) {
+              switch (fn.type) {
                 case 'funcref':
                   return this.evaluate(funcrefCall(toExpr(fn), [int(idx), toExpr(val)]));
                 default:
@@ -1428,9 +1425,9 @@ export class EvaluationContext {
       case 'min': {
         const [l] = getArgs(1);
         let values: Value[];
-        if (l?.type === 'list') {
+        if (l.type === 'list') {
           values = l.items;
-        } else if (l?.type === 'dictionary') {
+        } else if (l.type === 'dictionary') {
           values = [...l.items.values()];
         } else {
           throw VimError.ArgumentOfFuncMustBeAListOrDictionary(call.func);
@@ -1439,7 +1436,7 @@ export class EvaluationContext {
         return int(values.length === 0 ? 0 : fn(...values.map(toInt)));
       }
       case 'mode': {
-        const [arg] = getArgs(1);
+        const [arg] = getArgs(0, 1);
         switch (this.vimState!.currentModeIncludingPseudoModes) {
           case Mode.Normal:
             return str('n');
@@ -1515,7 +1512,7 @@ export class EvaluationContext {
       // TODO: reltime*()
       case 'repeat': {
         const [val, count] = getArgs(2);
-        if (val?.type === 'list') {
+        if (val.type === 'list') {
           const items: Value[] = new Array<Value[]>(toInt(count)).fill(val.items).flat();
           return list(items);
         } else {
@@ -1523,8 +1520,7 @@ export class EvaluationContext {
         }
       }
       case 'remove': {
-        const [_haystack, _idx, _end] = getArgs(2, 3);
-        const haystack: Value = _haystack;
+        const [haystack, _idx, _end] = getArgs(2, 3);
         if (haystack.type === 'list') {
           let idx = toInt(_idx);
           idx = idx < 0 ? haystack.items.length + idx : idx;
@@ -1547,10 +1543,10 @@ export class EvaluationContext {
       }
       case 'reverse': {
         const [l] = getArgs(1);
-        if (l?.type === 'list') {
+        if (l.type === 'list') {
           l.items.reverse();
           return l;
-        } else if (l?.type === 'blob') {
+        } else if (l.type === 'blob') {
           l.data = new Uint8Array(l.data).reverse();
           return l;
         }
@@ -1571,7 +1567,7 @@ export class EvaluationContext {
       case 'sort': {
         // TODO: use dict
         const [l, func, dict] = getArgs(1, 3);
-        if (l?.type !== 'list') {
+        if (l.type !== 'list') {
           throw VimError.ArgumentMustBeAList(call.func);
         }
         let compare: (x: Value, y: Value) => number;
@@ -1689,10 +1685,10 @@ export class EvaluationContext {
         return str(toString(s).toUpperCase());
       }
       case 'tr': {
-        const [_src, _from, _to] = getArgs(1, 3);
+        const [_src, _from, _to] = getArgs(3);
         const src = toString(_src);
-        const from = toString(_from!);
-        const to = toString(_to!);
+        const from = toString(_from);
+        const to = toString(_to);
         if (from.length !== to.length) {
           throw VimError.InvalidArgument475(from);
         }
@@ -1725,8 +1721,7 @@ export class EvaluationContext {
         return float1(Math.trunc);
       }
       case 'type': {
-        let [x] = getArgs(1);
-        x = x!;
+        const [x] = getArgs(1);
         switch (x.type) {
           case 'number':
             return int(0);
@@ -1777,7 +1772,7 @@ export class EvaluationContext {
         return list([...toDict(d).items.values()]);
       }
       case 'visualmode': {
-        const [arg] = getArgs(1); // TODO: Use arg
+        const [arg] = getArgs(0, 1); // TODO: Use arg
         const mode = this.vimState?.lastVisualSelection?.mode;
         if (mode === undefined) {
           return str('');

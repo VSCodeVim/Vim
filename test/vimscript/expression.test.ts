@@ -21,6 +21,8 @@ import { displayValue } from '../../src/vimscript/expression/displayValue';
 import { EvaluationContext } from '../../src/vimscript/expression/evaluate';
 import { expressionParser } from '../../src/vimscript/expression/parser';
 import { Expression, Value } from '../../src/vimscript/expression/types';
+import { newTest } from '../testSimplifier';
+import { setupWorkspace } from '../testUtils';
 
 function removeIds(value: Value): unknown {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -1018,6 +1020,7 @@ suite('Vimscript expressions', () => {
         error: VimError.InvalidArgument475('short'),
       });
       exprTest("tr('hello there', 'ht', 'HT')", { value: str('Hello THere') });
+      exprTest("tr('hello there', 'ht')", { error: VimError.NotEnoughArgs('tr') });
     });
 
     suite('trim', () => {
@@ -1170,6 +1173,46 @@ suite('Vimscript expressions', () => {
       exprTest('mapnew([10, 20, 30], {k, v -> v * 2})', { display: '[20, 40, 60]' });
       exprTest("mapnew([10, 20, 30], 'v:val + 1')", { display: '[11, 21, 31]' });
       exprTest("mapnew([10, 20, 30], 'v:key')", { value: list([int(0), int(1), int(2)]) });
+    });
+  });
+
+  suite('Builtin functions that need an editor', () => {
+    suiteSetup(async () => {
+      await setupWorkspace();
+    });
+
+    suite('mode', () => {
+      newTest({
+        title: 'mode() on the command line',
+        start: ['|'],
+        keysPressed: ':echo mode()\n',
+        end: ['|'],
+        statusBar: 'c',
+      });
+      newTest({
+        title: 'mode() with an argument',
+        start: ['|'],
+        keysPressed: ':echo mode(1)\n',
+        end: ['|'],
+        statusBar: 'c',
+      });
+      newTest({
+        title: 'mode() with too many arguments',
+        start: ['|'],
+        keysPressed: ':echo mode(1, 2)\n',
+        end: ['|'],
+        statusBar: VimError.TooManyArgs('mode').toString(),
+      });
+    });
+
+    suite('visualmode', () => {
+      newTest({
+        title: 'visualmode() after Visual Line mode',
+        start: ['|abc'],
+        keysPressed: 'V<Esc>:echo visualmode()\n',
+        end: ['|abc'],
+        statusBar: 'V',
+      });
     });
   });
 });
