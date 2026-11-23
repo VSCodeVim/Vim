@@ -151,6 +151,9 @@ suite('Vimscript expressions', () => {
       exprTest('0zAB.CD', {
         value: blob(new Uint8Array([171, 205])),
       });
+      exprTest('0z0123456789', {
+        value: blob(new Uint8Array([0x01, 0x23, 0x45, 0x67, 0x89])),
+      });
       exprTest('0zabc', {
         error: VimError.BlobLiteralShouldHaveAnEvenNumberOfHexCharacters(),
       });
