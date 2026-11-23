@@ -1,5 +1,13 @@
 import { strict as assert } from 'assert';
+import { AsciiCommand } from '../../src/cmd_line/commands/ascii';
+import { BangCommand } from '../../src/cmd_line/commands/bang';
+import {
+  AddBreakpointCommand,
+  DeleteBreakpointCommand,
+  ListBreakpointsCommand,
+} from '../../src/cmd_line/commands/breakpoints';
 import { BufferDeleteCommand } from '../../src/cmd_line/commands/bufferDelete';
+import { ChangeCommand } from '../../src/cmd_line/commands/change';
 import { CloseCommand } from '../../src/cmd_line/commands/close';
 import { CopyCommand } from '../../src/cmd_line/commands/copy';
 import { DeleteCommand } from '../../src/cmd_line/commands/delete';
@@ -13,21 +21,33 @@ import {
   ExFolddoopenCommand,
   ExFoldopenCommand,
 } from '../../src/cmd_line/commands/exFold';
+import { ExploreCommand } from '../../src/cmd_line/commands/explore';
 import { FileCommand } from '../../src/cmd_line/commands/file';
+import { FileInfoCommand } from '../../src/cmd_line/commands/fileInfo';
 import { GotoCommand } from '../../src/cmd_line/commands/goto';
 import { GotoLineCommand } from '../../src/cmd_line/commands/gotoLine';
 import { GrepCommand } from '../../src/cmd_line/commands/grep';
 import { HistoryCommand, HistoryCommandType } from '../../src/cmd_line/commands/history';
+import { ClearJumpsCommand, JumpsCommand } from '../../src/cmd_line/commands/jumps';
 import { LeftCommand, RightCommand } from '../../src/cmd_line/commands/leftRightCenter';
 import { LetCommand, LetCommandArgs, LetCommandOperation } from '../../src/cmd_line/commands/let';
 import { DeleteMarksCommand, MarkCommand, MarksCommand } from '../../src/cmd_line/commands/marks';
+import { MoveCommand } from '../../src/cmd_line/commands/move';
+import { NohlCommand } from '../../src/cmd_line/commands/nohl';
+import { NormalCommand } from '../../src/cmd_line/commands/normal';
+import { OnlyCommand } from '../../src/cmd_line/commands/only';
+import { PrintCommand } from '../../src/cmd_line/commands/print';
 import { PutExCommand } from '../../src/cmd_line/commands/put';
+import { PwdCommand } from '../../src/cmd_line/commands/pwd';
 import { QuitCommand } from '../../src/cmd_line/commands/quit';
 import { ReadCommand } from '../../src/cmd_line/commands/read';
+import { RedoCommand } from '../../src/cmd_line/commands/redo';
 import { RegisterCommand } from '../../src/cmd_line/commands/register';
 import { RetabCommand } from '../../src/cmd_line/commands/retab';
 import { SetCommand } from '../../src/cmd_line/commands/set';
+import { ShCommand } from '../../src/cmd_line/commands/sh';
 import { ShiftCommand } from '../../src/cmd_line/commands/shift';
+import { SmileCommand } from '../../src/cmd_line/commands/smile';
 import { ISortCommandArguments, SortCommand } from '../../src/cmd_line/commands/sort';
 import {
   ReplaceString,
@@ -35,8 +55,13 @@ import {
   SubstituteFlags,
 } from '../../src/cmd_line/commands/substitute';
 import { TabCommand, TabCommandType } from '../../src/cmd_line/commands/tab';
+import { TerminalCommand } from '../../src/cmd_line/commands/terminal';
+import { UndoCommand } from '../../src/cmd_line/commands/undo';
 import { VsCodeCommand } from '../../src/cmd_line/commands/vscode';
+import { WallCommand } from '../../src/cmd_line/commands/wall';
 import { IWriteCommandArguments, WriteCommand } from '../../src/cmd_line/commands/write';
+import { WriteQuitCommand } from '../../src/cmd_line/commands/writequit';
+import { WriteQuitAllCommand } from '../../src/cmd_line/commands/writequitall';
 import { YankCommand } from '../../src/cmd_line/commands/yank';
 import { VimError } from '../../src/error';
 import { ExCommand } from '../../src/vimscript/exCommand';
@@ -168,7 +193,14 @@ suite('Ex command parsing', () => {
   });
 
   suite(':!', () => {
-    // TODO
+    exParseTest(':!', new BangCommand({ command: '' }));
+    exParseTest(':!ls', new BangCommand({ command: 'ls' }));
+    exParseTest(':!ls -la | wc', new BangCommand({ command: 'ls -la | wc' }));
+    exParseTest(
+      ':.,.+2!sort',
+      new BangCommand({ command: 'sort' }),
+      new LineRange(currentLine(), ',', currentLine(2)),
+    );
   });
 
   suite(':#!', () => {
@@ -233,6 +265,54 @@ suite('Ex command parsing', () => {
     exParseTest(':buffer 5', buffer(5));
     exParseTest(':buffer bufname', buffer('bufname'));
     exParseTest(':buffer +20 bufname', buffer('bufname', 20));
+  });
+
+  suite(':breaka[dd]', () => {
+    exParseTest(':breakadd', new AddBreakpointCommand({ type: 'here' }));
+    exParseTest(':breaka here', new AddBreakpointCommand({ type: 'here' }));
+    exParseTest(':breakadd file', new AddBreakpointCommand({ type: 'file', line: 1, file: '' }));
+    exParseTest(
+      ':breakadd file 10 foo.ts',
+      new AddBreakpointCommand({ type: 'file', line: 10, file: 'foo.ts' }),
+    );
+    exParseTest(
+      ':breakadd func myFunc',
+      new AddBreakpointCommand({ type: 'func', function: 'myFunc' }),
+    );
+    exParseTest(
+      ':breakadd func 5 myFunc',
+      new AddBreakpointCommand({ type: 'func', function: 'myFunc' }),
+    );
+    exParseTest(':breakadd expr x > 5', new AddBreakpointCommand({ type: 'expr', expr: 'x > 5' }));
+
+    exParseFails(':breakadd foo', VimError.InvalidArgument474());
+  });
+
+  suite(':breakd[el]', () => {
+    exParseTest(':breakdel', new DeleteBreakpointCommand({ type: 'here' }));
+    exParseTest(':breakd here', new DeleteBreakpointCommand({ type: 'here' }));
+    exParseTest(':breakdel *', new DeleteBreakpointCommand({ type: 'all' }));
+    exParseTest(':breakdel 3', new DeleteBreakpointCommand({ type: 'byId', id: 3 }));
+    exParseTest(
+      ':breakdel file 10 foo.ts',
+      new DeleteBreakpointCommand({ type: 'file', line: 10, file: 'foo.ts' }),
+    );
+    exParseTest(
+      ':breakdel func myFunc',
+      new DeleteBreakpointCommand({ type: 'func', function: 'myFunc' }),
+    );
+  });
+
+  suite(':breakl[ist]', () => {
+    exParseTest(':breakl', new ListBreakpointsCommand());
+    exParseTest(':breaklist', new ListBreakpointsCommand());
+  });
+
+  suite(':c[hange]', () => {
+    exParseTest(':c', new ChangeCommand({ register: undefined, count: undefined }));
+    exParseTest(':change a', new ChangeCommand({ register: 'a', count: undefined }));
+    exParseTest(':c 5', new ChangeCommand({ register: undefined, count: 5 }));
+    exParseTest(':c a 5', new ChangeCommand({ register: 'a', count: 5 }));
   });
 
   suite(':clo[se]', () => {
@@ -337,6 +417,12 @@ suite('Ex command parsing', () => {
     exParseFails(':eval', VimError.InvalidExpression(''));
     // TODO: exParseFails(':eval 6abc', VimError.InvalidExpression('6abc'));
     exParseFails(':eval 1 1', VimError.TrailingCharacters('1'));
+  });
+
+  suite(':f[ile]', () => {
+    exParseTest(':f', new FileInfoCommand({ bang: false, fileName: '' }));
+    exParseTest(':file!', new FileInfoCommand({ bang: true, fileName: '' }));
+    exParseTest(':file foo.txt', new FileInfoCommand({ bang: false, fileName: 'foo.txt' }));
   });
 
   suite(':go[to]', () => {
@@ -448,8 +534,39 @@ suite('Ex command parsing', () => {
     exParseFails(':mark', VimError.ArgumentRequired());
   });
 
-  suite(':p[rint]', () => {
-    // TODO
+  suite(':m[ove]', () => {
+    exParseTest(':m', new MoveCommand());
+    exParseTest(':m 0', new MoveCommand(line(0)));
+    exParseTest(':move0', new MoveCommand(line(0)));
+    exParseTest(':m $', new MoveCommand(new Address({ type: 'last_line' })));
+    exParseTest(':m +2', new MoveCommand(currentLine(2)));
+    exParseTest(":m 'a", new MoveCommand(new Address({ type: 'mark', mark: 'a' })));
+  });
+
+  suite(':norm[al]', () => {
+    exParseTest(':norm dd', new NormalCommand('dd'));
+    exParseTest(':normal   ihello world', new NormalCommand('ihello world'));
+    exParseTest(
+      ':%norm A;',
+      new NormalCommand('A;'),
+      new LineRange(new Address({ type: 'entire_file' })),
+    );
+
+    exParseFails(':normal', VimError.ArgumentRequired());
+    exParseFails(':normal! dd', VimError.InvalidArgument474()); // TODO: Support `:normal!`
+  });
+
+  suite(':p[rint] and friends', () => {
+    const print = (printNumbers: boolean, printText: boolean) =>
+      new PrintCommand({ printNumbers, printText });
+    exParseTest(':p', print(false, true));
+    exParseTest(':print', print(false, true));
+    exParseTest(':l', print(false, true));
+    exParseTest(':list', print(false, true));
+    exParseTest(':nu', print(true, true));
+    exParseTest(':number', print(true, true));
+    exParseTest(':#', print(true, true));
+    exParseTest(':=', print(true, false));
   });
 
   suite(':pu[t]', () => {
@@ -498,6 +615,11 @@ suite('Ex command parsing', () => {
       new ReadCommand({ opt: [['enc', 'foo']], file: 'abc.txt' }),
     );
     exParseTest(':r ++enc=foo !ls', new ReadCommand({ opt: [['enc', 'foo']], cmd: 'ls' }));
+  });
+
+  suite(':red[o]', () => {
+    exParseTest(':red', new RedoCommand());
+    exParseTest(':redo 3', new RedoCommand(3));
   });
 
   suite(':reg[isters]', () => {
@@ -613,6 +735,13 @@ suite('Ex command parsing', () => {
     }
   });
 
+  suite(':u[ndo]', () => {
+    exParseTest(':u', new UndoCommand());
+    exParseTest(':undo', new UndoCommand());
+    exParseTest(':u 3', new UndoCommand(3));
+    exParseTest(':u3', new UndoCommand(3));
+  });
+
   suite(':vim[grep]', () => {
     exParseTest(
       ':vimgrep t*st foo.txt',
@@ -693,5 +822,54 @@ suite('Ex command parsing', () => {
     exParseTest(':w !', write({ cmd: '' }));
 
     // TODO
+  });
+
+  suite(':wa[ll]', () => {
+    exParseTest(':wa', new WallCommand(false));
+    exParseTest(':wall!', new WallCommand(true));
+  });
+
+  suite(':wq, :x[it], and :exi[t]', () => {
+    for (const cmd of [':wq', ':x', ':xit', ':exit']) {
+      exParseTest(cmd, new WriteQuitCommand({ bang: false, opt: [] }));
+      exParseTest(`${cmd}!`, new WriteQuitCommand({ bang: true, opt: [] }));
+    }
+    exParseTest(':wq foo.txt', new WriteQuitCommand({ bang: false, opt: [], file: 'foo.txt' }));
+    exParseTest(
+      ':wq! ++enc=foo foo.txt',
+      new WriteQuitCommand({ bang: true, opt: [['enc', 'foo']], file: 'foo.txt' }),
+    );
+  });
+
+  suite(':wqa[ll] and :xa[ll]', () => {
+    for (const cmd of [':wqa', ':wqall', ':xa', ':xall']) {
+      exParseTest(cmd, new WriteQuitAllCommand({ bang: false, fileOpt: [] }));
+      exParseTest(`${cmd}!`, new WriteQuitAllCommand({ bang: true, fileOpt: [] }));
+    }
+    exParseTest(
+      ':wqa ++enc=foo',
+      new WriteQuitAllCommand({ bang: false, fileOpt: [['enc', 'foo']] }),
+    );
+  });
+
+  suite('Commands without arguments', () => {
+    const commands: Array<[string[], () => ExCommand]> = [
+      [[':as', ':ascii'], () => new AsciiCommand()],
+      [[':cle', ':clearjumps'], () => new ClearJumpsCommand()],
+      [[':Ex', ':Explore'], () => new ExploreCommand()],
+      [[':ju', ':jumps'], () => new JumpsCommand()],
+      [[':noh', ':nohlsearch'], () => new NohlCommand()],
+      [[':on', ':only'], () => new OnlyCommand()],
+      [[':pw', ':pwd'], () => new PwdCommand()],
+      [[':sh', ':shell'], () => new ShCommand()],
+      [[':smile'], () => new SmileCommand()],
+      [[':te', ':terminal'], () => new TerminalCommand()], // TODO: Vim accepts `:terminal {cmd}`
+    ];
+    for (const [names, command] of commands) {
+      for (const name of names) {
+        exParseTest(name, command());
+      }
+      exParseFails(`${names.at(-1)} x`, VimError.TrailingCharacters('x'));
+    }
   });
 });
