@@ -49,13 +49,14 @@ import {
   variable,
 } from '../../src/vimscript/expression/build';
 import { Expression } from '../../src/vimscript/expression/types';
-import { Address } from '../../src/vimscript/lineRange';
+import { Address, LineRange } from '../../src/vimscript/lineRange';
 import { Pattern, SearchDirection } from '../../src/vimscript/pattern';
 
-function exParseTest(input: string, parsed: ExCommand) {
+function exParseTest(input: string, parsed: ExCommand, lineRange?: LineRange) {
   test(input, () => {
-    const { command } = exCommandParser.tryParse(input);
-    assert.deepStrictEqual(command, parsed);
+    const result = exCommandParser.tryParse(input);
+    assert.deepStrictEqual(result.command, parsed);
+    assert.deepStrictEqual(result.lineRange, lineRange);
   });
 }
 
@@ -65,6 +66,10 @@ function exParseFails(input: string, error: VimError) {
   });
 }
 
+const line = (num: number) => new Address({ type: 'number', num });
+const currentLine = (offset?: number) => new Address({ type: 'current_line' }, offset);
+const forwardPattern = Pattern.parser({ direction: SearchDirection.Forward, delimiter: '/' });
+
 suite('Ex command parsing', () => {
   suite('Unknown command', () => {
     exParseFails(':fakecmd', VimError.NotAnEditorCommand('fakecmd'));
@@ -73,12 +78,69 @@ suite('Ex command parsing', () => {
 
   suite(':[range]', () => {
     exParseTest(':', new GotoLineCommand());
-    exParseTest(':5', new GotoLineCommand());
-    exParseTest(':%', new GotoLineCommand());
-    exParseTest(':.+5', new GotoLineCommand());
-    exParseTest(':.+,.+-+3', new GotoLineCommand());
-    exParseTest(':,5', new GotoLineCommand());
-    exParseTest(':,', new GotoLineCommand());
+    exParseTest(':5', new GotoLineCommand(), new LineRange(line(5)));
+    exParseTest(':%', new GotoLineCommand(), new LineRange(new Address({ type: 'entire_file' })));
+    exParseTest(':.+5', new GotoLineCommand(), new LineRange(currentLine(5)));
+    exParseTest(
+      ':.+,.+-+3',
+      new GotoLineCommand(),
+      new LineRange(currentLine(1), ',', currentLine(3)),
+    );
+    exParseTest(':,5', new GotoLineCommand(), new LineRange(currentLine(), ',', line(5)));
+    exParseTest(':,', new GotoLineCommand(), new LineRange(currentLine(), ',', undefined));
+    exParseTest(':3;+2', new GotoLineCommand(), new LineRange(line(3), ';', currentLine(2)));
+    exParseTest(': : 5', new GotoLineCommand(), new LineRange(line(5)));
+  });
+
+  suite(':[range]{command}', () => {
+    exParseTest(
+      ':1,3d',
+      new DeleteCommand({ register: undefined, count: undefined }),
+      new LineRange(line(1), ',', line(3)),
+    );
+    exParseTest(
+      ':1,3 d a 5',
+      new DeleteCommand({ register: 'a', count: 5 }),
+      new LineRange(line(1), ',', line(3)),
+    );
+    exParseTest(
+      ':%y',
+      new YankCommand({ register: undefined, count: undefined }),
+      new LineRange(new Address({ type: 'entire_file' })),
+    );
+    exParseTest(
+      ":'<,'>sort",
+      new SortCommand({ reverse: false, ignoreCase: false, unique: false, numeric: false }),
+      new LineRange(
+        new Address({ type: 'mark', mark: '<' }),
+        ',',
+        new Address({ type: 'mark', mark: '>' }),
+      ),
+    );
+    exParseTest(
+      ':$copy 0',
+      new CopyCommand(line(0)),
+      new LineRange(new Address({ type: 'last_line' })),
+    );
+    exParseTest(
+      ':.,.+2>',
+      new ShiftCommand({ dir: '>', depth: 1, numLines: undefined }),
+      new LineRange(currentLine(), ',', currentLine(2)),
+    );
+    exParseTest(
+      ':/foo/,$s/a/b/g',
+      new SubstituteCommand({
+        pattern: forwardPattern.tryParse('a/'),
+        replace: new ReplaceString([{ type: 'string', value: 'b' }]),
+        flags: { replaceAll: true },
+        count: undefined,
+      }),
+      new LineRange(
+        new Address({ type: 'pattern_next', pattern: forwardPattern.tryParse('foo/') }),
+        ',',
+        new Address({ type: 'last_line' }),
+      ),
+    );
   });
 
   suite(':"', () => {
