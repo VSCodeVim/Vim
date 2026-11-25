@@ -1,7 +1,7 @@
 import { Position, Range } from 'vscode';
 import { PositionDiff } from '../common/motion/position';
 import { Logger } from '../util/logger';
-import { stringify, Transformation } from './transformations';
+import { isTextTransformation, stringify, Transformation } from './transformations';
 
 /**
  * This class is (ideally) responsible for managing all changes made to document state, via @see Transformation.
@@ -12,7 +12,16 @@ import { stringify, Transformation } from './transformations';
 export class Transformer {
   public readonly transformations: Transformation[] = [];
 
+  /**
+   * The index of the cursor the running action is working on. Text transformations added without
+   * an explicit `cursorIndex` are attributed to this cursor.
+   */
+  public cursorIndex = 0;
+
   public addTransformation(transformation: Transformation): void {
+    if (isTextTransformation(transformation)) {
+      transformation.cursorIndex ??= this.cursorIndex;
+    }
     Logger.debug(`Adding Transformation ${stringify(transformation)}`);
     this.transformations.push(transformation);
   }

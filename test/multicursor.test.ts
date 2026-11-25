@@ -79,6 +79,13 @@ suite('Multicursor', () => {
     });
 
     // TODO: VisualBlock mode
+
+    newTest({
+      title: 'dit on empty tag blocks moves each cursor inside its own tag',
+      start: ['<bli|nk></blink>', '<a|></a>'],
+      keysPressed: 'dit',
+      end: ['<blink>|</blink>', '<a>|</a>'],
+    });
   });
 
   suite('Replace', () => {

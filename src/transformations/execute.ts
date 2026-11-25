@@ -206,13 +206,6 @@ export async function executeTransformations(
             await modeHandler.handleMultipleKeyEvents(keyStrokes);
           }
 
-          // TODO: Copied from `BaseAction.execCount`. This is all terrible.
-          for (const t of vimState.recordedState.transformer.transformations) {
-            if (isTextTransformation(t) && t.cursorIndex === undefined) {
-              t.cursorIndex = 0;
-            }
-          }
-
           await executeTransformations(
             modeHandler,
             vimState.recordedState.transformer.transformations,

@@ -6,7 +6,6 @@ import { Mode } from '../../mode/mode';
 import { RegisterMode } from '../../register/register';
 import { VimState } from '../../state/vimState';
 import { TextEditor } from '../../textEditor';
-import { isTextTransformation } from '../../transformations/transformations';
 import { BaseCommand, RegisterAction } from '../base';
 
 @RegisterAction
@@ -123,6 +122,7 @@ class ActionJoin extends BaseCommand {
     const resultingCursors: Cursor[] = [];
     for (const [idx, { start, stop }] of cursorsToIterateOver.entries()) {
       this.multicursorIndex = idx;
+      vimState.recordedState.transformer.cursorIndex = idx;
 
       vimState.cursorStopPosition = stop;
       vimState.cursorStartPosition = start;
@@ -130,12 +130,6 @@ class ActionJoin extends BaseCommand {
       await this.execJoinLines(start, stop, vimState, vimState.recordedState.count || 1);
 
       resultingCursors.push(new Cursor(vimState.cursorStartPosition, vimState.cursorStopPosition));
-
-      for (const transformation of vimState.recordedState.transformer.transformations) {
-        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
-          transformation.cursorIndex = this.multicursorIndex;
-        }
-      }
     }
 
     vimState.cursors = resultingCursors;

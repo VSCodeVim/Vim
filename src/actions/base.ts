@@ -2,7 +2,6 @@ import { Position } from 'vscode';
 import { Cursor } from '../common/motion/cursor';
 import { isLiteralMode, unmapLiteral } from '../configuration/langmap';
 import { Notation } from '../configuration/notation';
-import { isTextTransformation } from '../transformations/transformations';
 import { configuration } from './../configuration/configuration';
 import { Mode } from './../mode/mode';
 import { VimState } from './../state/vimState';
@@ -189,14 +188,9 @@ export abstract class BaseCommand extends BaseAction {
     const timesToRepeat = this.runsOnceForEachCountPrefix ? vimState.recordedState.count || 1 : 1;
 
     if (!this.runsOnceForEveryCursor()) {
+      vimState.recordedState.transformer.cursorIndex = 0;
       for (let i = 0; i < timesToRepeat; i++) {
         await this.exec(position, vimState);
-      }
-
-      for (const transformation of vimState.recordedState.transformer.transformations) {
-        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
-          transformation.cursorIndex = 0;
-        }
       }
 
       return;
@@ -213,6 +207,7 @@ export abstract class BaseCommand extends BaseAction {
 
     for (const [index, { start, stop }] of cursorsToIterateOver.entries()) {
       this.multicursorIndex = index;
+      vimState.recordedState.transformer.cursorIndex = index;
 
       vimState.cursorStopPosition = stop;
       vimState.cursorStartPosition = start;
@@ -222,12 +217,6 @@ export abstract class BaseCommand extends BaseAction {
       }
 
       resultingCursors.push(new Cursor(vimState.cursorStartPosition, vimState.cursorStopPosition));
-
-      for (const transformation of vimState.recordedState.transformer.transformations) {
-        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
-          transformation.cursorIndex = this.multicursorIndex;
-        }
-      }
     }
 
     vimState.cursors = resultingCursors;

@@ -24,7 +24,7 @@ import { globalState } from '../state/globalState';
 import { RemapState } from '../state/remapState';
 import { StatusBar } from '../statusBar';
 import { IModeHandler, executeTransformations } from '../transformations/execute';
-import { ReplayActions, isTextTransformation } from '../transformations/transformations';
+import { ReplayActions } from '../transformations/transformations';
 import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
@@ -1014,6 +1014,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // they make to the cursor directly are discarded.
       const primaryCursor = this.vimState.cursor;
       movement.multicursorIndex = i;
+      recordedState.transformer.cursorIndex = i;
       this.vimState.cursor = this.vimState.cursors[i];
 
       let result: Position | IMovement;
@@ -1087,6 +1088,7 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     const resultingCursors: Cursor[] = [];
     for (let [i, { start, stop }] of this.vimState.cursors.entries()) {
       operator.multicursorIndex = i;
+      this.vimState.recordedState.transformer.cursorIndex = i;
 
       if (start.isAfter(stop)) {
         [start, stop] = [stop, start];
@@ -1111,12 +1113,6 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
         await operator.runRepeat(this.vimState, start, recordedState.count);
       } else {
         await operator.run(this.vimState, start, stop);
-      }
-
-      for (const transformation of this.vimState.recordedState.transformer.transformations) {
-        if (isTextTransformation(transformation) && transformation.cursorIndex === undefined) {
-          transformation.cursorIndex = operator.multicursorIndex;
-        }
       }
 
       const resultingCursor = new Cursor(
