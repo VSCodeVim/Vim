@@ -225,7 +225,8 @@ export class RecordedState {
     if (
       operators.length === 0 ||
       this.hasRunOperator ||
-      // TODO: Is this mode check necessary?
+      // Wait until the search/command line is submitted: `/` counts as a motion, so `d/` would
+      // otherwise run immediately, and keys typed there shouldn't use operator-pending remaps.
       mode === Mode.SearchInProgressMode ||
       mode === Mode.CommandlineInProgress
     ) {
