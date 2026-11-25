@@ -4,6 +4,10 @@ export function displayValue(value: Value): string {
   return _displayValue(value, true);
 }
 
+function quote(str: string): string {
+  return `'${str.replaceAll("'", "''")}'`;
+}
+
 function _displayValue(value: Value, topLevel = false): string {
   switch (value.type) {
     case 'number':
@@ -17,12 +21,12 @@ function _displayValue(value: Value, topLevel = false): string {
       return result;
     }
     case 'string':
-      return topLevel ? value.value : `'${value.value.replace("'", "''")}'`;
+      return topLevel ? value.value : quote(value.value);
     case 'list':
       return `[${value.items.map((v) => _displayValue(v, false)).join(', ')}]`;
     case 'dictionary':
       return `{${[...value.items]
-        .map(([k, v]) => `'${k}': ${_displayValue(v, false)}`)
+        .map(([k, v]) => `${quote(k)}: ${_displayValue(v, false)}`)
         .join(', ')}}`;
     case 'funcref':
       if (!value.arglist?.items.length) {

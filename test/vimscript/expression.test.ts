@@ -1132,6 +1132,8 @@ suite('Vimscript expressions', () => {
       exprTest('string(123.0)', { value: str('123.0') });
       exprTest('string([1,2,3])', { value: str('[1, 2, 3]') });
       exprTest('string(#{a:1,b:2})', { value: str("{'a': 1, 'b': 2}") });
+      exprTest('string(["\'a\'"])', { value: str("['\'\'a\'\'']") });
+      exprTest('string({"\'a\'": 1})', { value: str("{'\'\'a\'\'': 1}") });
     });
 
     suite('strlen', () => {
