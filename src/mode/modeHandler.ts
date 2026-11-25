@@ -24,7 +24,7 @@ import { globalState } from '../state/globalState';
 import { RemapState } from '../state/remapState';
 import { StatusBar } from '../statusBar';
 import { IModeHandler, executeTransformations } from '../transformations/execute';
-import { Dot, isTextTransformation } from '../transformations/transformations';
+import { ReplayActions, isTextTransformation } from '../transformations/transformations';
 import { SearchDecorations, getDecorationsForSearchMatchRanges } from '../util/decorationUtils';
 import { Logger } from '../util/logger';
 import { SpecialKeys } from '../util/specialKeys';
@@ -1136,9 +1136,9 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
     }
   }
 
-  public async rerunRecordedState(transformation: Dot): Promise<void> {
-    let recordedState = transformation.recordedState.clone();
-    const actions = [...recordedState.actionsRun];
+  public async replayActions(transformation: ReplayActions): Promise<void> {
+    const actions = [...transformation.actions];
+    let recordedState = new RecordedState();
 
     this.vimState.dotCommandStatus = DotCommandStatus.Executing;
 

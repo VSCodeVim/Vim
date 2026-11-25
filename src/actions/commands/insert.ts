@@ -334,23 +334,18 @@ export class InsertPreviousText extends BaseCommand {
       throw VimError.NoInsertedTextYet();
     }
 
-    const recordedState = register.text.clone();
+    // Drop the first and last actions, which enter and leave Insert mode
+    const actions = register.text.actionsRun.slice(1, -1);
 
-    // The first action is entering Insert Mode, which is not necessary in this case
-    recordedState.actionsRun.shift();
-
-    // The last action is leaving Insert Mode, which is not necessary in this case
-    recordedState.actionsRun.pop();
-
-    if (recordedState.actionsRun?.[0] instanceof ArrowsInInsertMode) {
+    if (actions[0] instanceof ArrowsInInsertMode) {
       // Note, arrow keys are the only Insert action command that can't be repeated here as far as @rebornix knows.
-      recordedState.actionsRun.shift();
+      actions.shift();
     }
 
     vimState.recordedState.transformer.addTransformation({
-      type: 'replayRecordedState',
+      type: 'replayActions',
       count: 1,
-      recordedState,
+      actions,
     });
   }
 }

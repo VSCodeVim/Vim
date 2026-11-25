@@ -15,9 +15,9 @@ import {
   keystrokesExpressionParser,
 } from '../vimscript/parserUtils';
 import {
-  Dot,
   ExecuteNormalTransformation,
   InsertTextVSCodeTransformation,
+  ReplayActions,
   TextTransformations,
   Transformation,
   areAllSameTransformation,
@@ -35,7 +35,7 @@ export interface IModeHandler {
   runMacro(recordedMacro: RecordedState): Promise<void>;
   handleMultipleKeyEvents(keys: string[]): Promise<void>;
   handleKeyEvent(key: string): Promise<void>;
-  rerunRecordedState(transformation: Dot): Promise<void>;
+  replayActions(transformation: ReplayActions): Promise<void>;
 }
 
 export async function executeTransformations(
@@ -156,8 +156,8 @@ export async function executeTransformations(
         vimState.cursor = Cursor.fromSelection(vimState.editor.selection);
         break;
 
-      case 'replayRecordedState':
-        await modeHandler.rerunRecordedState(transformation);
+      case 'replayActions':
+        await modeHandler.replayActions(transformation);
         break;
 
       case 'macro':

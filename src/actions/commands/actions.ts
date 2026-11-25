@@ -394,9 +394,9 @@ class DotRepeat extends BaseCommand {
       const count = vimState.recordedState.count || 1;
 
       vimState.recordedState.transformer.addTransformation({
-        type: 'replayRecordedState',
+        type: 'replayActions',
         count,
-        recordedState: globalState.previousFullAction,
+        actions: globalState.previousFullAction.actionsRun,
       });
     } else {
       // No previous action to repeat, so mark this as non-repeatable

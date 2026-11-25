@@ -1,5 +1,5 @@
 import { Position, Range, TextDocumentContentChangeEvent } from 'vscode';
-import { RecordedState } from '../state/recordedState';
+import { IBaseAction } from '../actions/types';
 import { LineRange } from '../vimscript/lineRange';
 import { PositionDiff } from './../common/motion/position';
 
@@ -155,12 +155,12 @@ export interface MoveCursorTransformation {
 }
 
 /**
- * Replays a RecordedState. Used for `.`, primarily.
+ * Replays a list of actions. Used for `.` and `<C-a>`.
  */
-export interface Dot {
-  type: 'replayRecordedState';
+export interface ReplayActions {
+  type: 'replayActions';
   count: number;
-  recordedState: RecordedState;
+  actions: IBaseAction[];
 }
 
 export interface VSCodeCommandTransformation {
@@ -199,7 +199,7 @@ export type Transformation =
   | ReplaceTextTransformation
   | DeleteTextRangeTransformation
   | MoveCursorTransformation
-  | Dot
+  | ReplayActions
   | Macro
   | ContentChangeTransformation
   | ExecuteNormalTransformation
@@ -295,10 +295,8 @@ export const areAllSameTransformation = (transformations: Transformation[]): boo
 };
 
 export function stringify(transformation: Transformation): string {
-  if (transformation.type === 'replayRecordedState') {
-    return `Replay: ${transformation.recordedState.actionsRun
-      .map((x) => x.keysPressed.join(''))
-      .join('')}`;
+  if (transformation.type === 'replayActions') {
+    return `Replay: ${transformation.actions.map((x) => x.keysPressed.join('')).join('')}`;
   } else {
     return JSON.stringify(transformation);
   }

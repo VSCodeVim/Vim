@@ -206,18 +206,6 @@ export class RecordedState {
    */
   public registerKey: string = '';
 
-  public clone(): RecordedState {
-    const res = new RecordedState();
-
-    // TODO: Actual clone.
-
-    res.actionKeys = this.actionKeys.slice(0);
-    res.actionsRun = this.actionsRun.slice(0);
-    res.hasRunOperator = this.hasRunOperator;
-
-    return res;
-  }
-
   public getOperatorState(mode: Mode): 'pending' | 'ready' | undefined {
     const operators = this.operators;
 
