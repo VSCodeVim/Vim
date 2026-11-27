@@ -253,11 +253,8 @@ class CommandCmdA extends BaseCommand {
   keys = ['<D-a>'];
 
   public override async exec(position: Position, vimState: VimState): Promise<void> {
-    vimState.cursorStartPosition = new Position(0, vimState.desiredColumn);
-    vimState.cursorStopPosition = new Position(
-      vimState.document.lineCount - 1,
-      vimState.desiredColumn,
-    );
+    vimState.cursorStartPosition = vimState.positionAtDesiredColumn(0);
+    vimState.cursorStopPosition = vimState.positionAtDesiredColumn(vimState.document.lineCount - 1);
     await vimState.setCurrentMode(Mode.VisualLine);
   }
 }

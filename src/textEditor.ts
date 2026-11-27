@@ -159,6 +159,32 @@ export class TextEditor {
   }
 
   /**
+   * @returns the visible column at which `character` begins in `line`, expanding tabs
+   */
+  static getVisualColumn(line: string, character: number, tabSize: number): number {
+    let visibleColumn = 0;
+    for (let i = 0; i < Math.min(character, line.length); i++) {
+      visibleColumn += line[i] === '\t' ? tabSize - (visibleColumn % tabSize) : 1;
+    }
+    return visibleColumn + Math.max(character - line.length, 0);
+  }
+
+  /**
+   * @returns the character displayed at visible column `visualColumn` of `line`, expanding tabs,
+   * or the length of `line` if the column is past its end
+   */
+  static getCharacterAtVisualColumn(line: string, visualColumn: number, tabSize: number): number {
+    let visibleColumn = 0;
+    for (let i = 0; i < line.length; i++) {
+      visibleColumn += line[i] === '\t' ? tabSize - (visibleColumn % tabSize) : 1;
+      if (visibleColumn > visualColumn) {
+        return i;
+      }
+    }
+    return line.length;
+  }
+
+  /**
    * @returns `line` with its indentation replaced with `screenCharacters` visible columns of whitespace
    */
   static setIndentationLevel(line: string, screenCharacters: number, expandtab: boolean): string {
