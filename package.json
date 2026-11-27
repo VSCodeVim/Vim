@@ -1225,7 +1225,7 @@
   "devDependencies": {
     "@sinonjs/fake-timers": "15.5.0",
     "@types/diff-match-patch": "1.0.36",
-    "@types/lodash": "4.17.23",
+    "@types/lodash": "4.17.28",
     "@types/mocha": "10.0.10",
     "@types/node": "22.20.5",
     "@types/parsimmon": "1.10.9",
