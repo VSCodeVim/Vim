@@ -389,6 +389,54 @@ suite('Mode Insert', () => {
       end: ['XXX', '12XXX|3456'],
       endMode: Mode.Insert,
     });
+
+    newTest({
+      title: '<C-o>G moves to the last line without leaving a selection',
+      start: ['one', 'tw|o', '  three'],
+      keysPressed: 'i<C-o>G',
+      end: ['one', 'two', '  |three'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-o>gg moves to the first line without leaving a selection',
+      start: ['  one', 'two', 'thr|ee'],
+      keysPressed: 'i<C-o>gg',
+      end: ['  |one', 'two', 'three'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-o>2G moves to line 2 without leaving a selection',
+      start: ['one', 'two', 'thr|ee'],
+      keysPressed: 'i<C-o>2Gx',
+      end: ['one', 'x|two', 'three'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-o>2gg moves to line 2 without leaving a selection',
+      start: ['one', 'two', 'thr|ee'],
+      keysPressed: 'i<C-o>2ggx',
+      end: ['one', 'x|two', 'three'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: '<C-o>H and <C-o>L move without leaving a selection',
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'i<C-o>L' + 'x' + '<C-o>H' + 'y',
+      end: ['y|one', 'two', 'xthree'],
+      endMode: Mode.Insert,
+    });
+
+    newTest({
+      title: 'Typing after <C-o>G inserts text instead of replacing a selection',
+      start: ['one', 'tw|o', 'three'],
+      keysPressed: 'i<C-o>Gx',
+      end: ['one', 'two', 'x|three'],
+      endMode: Mode.Insert,
+    });
   });
 
   newTest({

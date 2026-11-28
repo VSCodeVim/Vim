@@ -903,6 +903,11 @@ export class ModeHandler implements vscode.Disposable, IModeHandler {
       // Return to insert mode after 1 command in this case for <C-o>
       if (this.vimState.returnToInsertAfterCommand) {
         if (this.vimState.actionCount > 0) {
+          // The command ran in Normal mode, so collapse the cursors like Normal mode does below.
+          // Otherwise motions like `G` and `gg` leave a selection behind in Insert mode.
+          this.vimState.cursors = this.vimState.cursors.map((cursor) =>
+            Cursor.atPosition(cursor.stop),
+          );
           await this.setCurrentMode(Mode.Insert);
         } else {
           this.vimState.actionCount++;
